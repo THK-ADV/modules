@@ -1,20 +1,15 @@
 <script lang="ts">
-	import '../app.css';
-	import AppSidebar from "$lib/components/app-sidebar.svelte";
-	import * as Breadcrumb from "$lib/components/ui/breadcrumb/index.js";
-	import { Separator } from "$lib/components/ui/separator/index.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+	import AppSidebar from '$lib/components/app-sidebar.svelte'
+	import { Separator } from '$lib/components/ui/separator/index.js'
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+	import { ModeWatcher } from 'mode-watcher'
+	import '../app.css'
+	import NavBreadcrumb from './nav-breadcrumb.svelte'
 
-	let { children } = $props();
+	let { children } = $props()
 </script>
 
-<!--<Sidebar.Provider>-->
-<!--	<AppSidebar />-->
-<!--	<main>-->
-<!--		<Sidebar.Trigger />-->
-<!--		{@render children?.()}-->
-<!--	</main>-->
-<!--</Sidebar.Provider>-->
+<ModeWatcher />
 
 <Sidebar.Provider>
 	<AppSidebar />
@@ -25,17 +20,7 @@
 			<div class="flex items-center gap-2 px-4">
 				<Sidebar.Trigger class="-ml-1" />
 				<Separator orientation="vertical" class="mr-2 h-4" />
-				<Breadcrumb.Root>
-					<Breadcrumb.List>
-						<Breadcrumb.Item class="hidden md:block">
-							<Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
-						</Breadcrumb.Item>
-						<Breadcrumb.Separator class="hidden md:block" />
-						<Breadcrumb.Item>
-							<Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
-						</Breadcrumb.Item>
-					</Breadcrumb.List>
-				</Breadcrumb.Root>
+				<NavBreadcrumb />
 			</div>
 		</header>
 		<main>

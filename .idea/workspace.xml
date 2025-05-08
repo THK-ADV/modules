@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="17bd4eeb-bac5-41da-abe5-de583756d7d8" name="Changes" comment="" />
+    <list default="true" id="17bd4eeb-bac5-41da-abe5-de583756d7d8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/components/module-filter/filter.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/components/module-filter/filter.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/modules/data-table-filter.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/modules/data-table-filter.svelte" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/modules/data-table.svelte" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/modules/data-table.svelte" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,11 +21,26 @@
         <option value="modules" />
         <option value="app-sidebar" />
         <option value="+page" />
+        <option value="dynamic-breadcrumb.svelte" />
+        <option value="data-table" />
+        <option value="data-table-actions" />
+        <option value="data-table-email-button" />
+        <option value="+error" />
+        <option value="module-filter" />
+        <option value="TypeScript File" />
+        <option value="study-program-filter" />
+        <option value="data-table-filter" />
+        <option value="data-table-filter-option" />
+        <option value="data-table-pagination" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/node_modules/@lucide/svelte/dist/icons/book.svelte.d.ts" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/node_modules/@tanstack/table-core/src/utils/getFilteredRowModel.ts" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
@@ -41,7 +61,8 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;copyright.filetypes.TypeScript&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/Users/alex/Developer/modules/node_modules/prettier&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
     &quot;ts.external.directory.path&quot;: &quot;/Users/alex/Developer/modules/node_modules/typescript/lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -49,6 +70,12 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/routes/modules" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/lib/components/module-filter" />
+      <recent name="$PROJECT_DIR$/src/lib/types" />
+      <recent name="$PROJECT_DIR$/src/lib" />
+      <recent name="$PROJECT_DIR$/src/routes" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -65,7 +92,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1746448169066</updated>
-      <workItem from="1746448170393" duration="14559000" />
+      <workItem from="1746448170393" duration="23905000" />
+      <workItem from="1746611754248" duration="61336000" />
+      <workItem from="1747160771916" duration="9000" />
     </task>
     <servers />
   </component>

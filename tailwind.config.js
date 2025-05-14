@@ -1,5 +1,7 @@
 import { fontFamily } from 'tailwindcss/defaultTheme'
 import tailwindcssAnimate from 'tailwindcss-animate'
+import typography from '@tailwindcss/typography'
+import forms from '@tailwindcss/forms'
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -90,7 +92,7 @@ const config = {
 			}
 		}
 	},
-	plugins: [tailwindcssAnimate]
+	plugins: [tailwindcssAnimate, typography, forms]
 }
 
 export default config

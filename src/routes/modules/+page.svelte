@@ -1,8 +1,7 @@
 <script lang="ts" module>
-	import { renderComponent } from '$lib/components/ui/data-table/index.js'
+	import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
 	import type { ModuleView, PersonShort, StudyProgramModuleAssociation } from '$lib/types/module'
 	import type { ColumnDef } from '@tanstack/table-core'
-	import DataTableActions from './data-table-actions.svelte'
 	import DataTableTitleButton from './data-table-title-button.svelte'
 
 	const fmtCredits = new Intl.NumberFormat('de-DE', {
@@ -67,6 +66,15 @@
 				return renderComponent(DataTableTitleButton, {
 					onclick: column.getToggleSortingHandler()
 				})
+			},
+			cell: ({ row }) => {
+				const snippet = createRawSnippet<[string]>((getTitle) => {
+					const title = getTitle()
+					return {
+						render: () => `<a href="/modules/${row.original.id}">${title}</a>`
+					}
+				})
+				return renderSnippet(snippet, row.original.title)
 			},
 			filterFn: 'includesString'
 		},
@@ -133,9 +141,10 @@
 </script>
 
 <script lang="ts">
+	import { createRawSnippet } from 'svelte'
 	import type { PageProps } from './$types'
-	import DataTable from './data-table.svelte'
 	import DataTableModuleTypeCell from './data-table-moduleType-cell.svelte'
+	import DataTable from './data-table.svelte'
 
 	let { data }: PageProps = $props()
 </script>

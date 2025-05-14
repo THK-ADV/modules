@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AppSidebar from '$lib/components/app-sidebar.svelte'
+	import AppSidebar from './app-sidebar.svelte'
 	import { Separator } from '$lib/components/ui/separator/index.js'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
 	import { ModeWatcher } from 'mode-watcher'

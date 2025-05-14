@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb'
-	import { routes } from '$lib/routes'
+	import { routesMap } from '$lib/routes.svelte'
+
+	const { routes } = routesMap
 
 	let breadcrumbItems = $state([{ path: '/', name: 'Home', id: 'home' }])
 
@@ -10,13 +12,28 @@
 		const items = [{ path: '/', name: 'Home', id: 'home' }]
 
 		if (path !== '/') {
-			const pathSegment = path.split('/').pop() || ''
-			const { name } =
-				routes[path] || pathSegment.charAt(0).toUpperCase() + pathSegment.slice(1) || 'Page'
-			items.push({ path, name, id: path.replace(/\//g, '-') || 'current-page' })
+			const pathSegments = path.split('/')
+			pathSegments.shift()
+
+			for (const id of pathSegments) {
+				const path = `/${id}`
+				const name = routes[path]?.name || '???'
+				items.push({ path, name, id })
+			}
 		}
 
 		breadcrumbItems = items
+	})
+
+	$effect(() => {
+		const module = routesMap.selectedModule
+		if (module) {
+			for (const item of breadcrumbItems) {
+				if (item.id === module.id) {
+					item.name = module.title
+				}
+			}
+		}
 	})
 </script>
 

@@ -1,7 +1,8 @@
 <script lang="ts">
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-	import { routes } from '$lib/routes'
+	import { routesMap } from '$lib/routes.svelte'
+
+	const { routes } = routesMap
 </script>
 
 <Sidebar.Group>

@@ -3,12 +3,7 @@
 	import Command from '@lucide/svelte/icons/command'
 	import GalleryVerticalEnd from '@lucide/svelte/icons/gallery-vertical-end'
 
-	// This is sample data.
 	const data = {
-		user: {
-			name: 'shadcn',
-			email: 'm@example.com'
-		},
 		teams: [
 			{
 				name: 'Acme Inc',
@@ -30,17 +25,19 @@
 </script>
 
 <script lang="ts">
-	import NavProjects from './nav-projects.svelte'
-	import NavUser from './nav-user.svelte'
+	import NavMenu from './nav-menu.svelte'
+	import NavUserLogin from './nav-user-login.svelte'
 	import TeamSwitcher from '$lib/components/team-switcher.svelte'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
 	import type { ComponentProps } from 'svelte'
+	import type { User } from '$lib/keycloak.svelte'
 
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
+		user,
 		...restProps
-	}: ComponentProps<typeof Sidebar.Root> = $props()
+	}: ComponentProps<typeof Sidebar.Root> & { user?: User } = $props()
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -48,10 +45,10 @@
 		<TeamSwitcher teams={data.teams} />
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavProjects />
+		<NavMenu {user} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<NavUser user={data.user} />
+		<NavUserLogin {user} />
 	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>

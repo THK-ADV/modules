@@ -3,7 +3,7 @@
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb'
 	import { routesMap } from '$lib/routes.svelte'
 
-	const { routes } = routesMap
+	let { allRoutes } = routesMap
 
 	let breadcrumbItems = $state([{ path: '/', name: 'Home', id: 'home' }])
 
@@ -15,25 +15,23 @@
 			const pathSegments = path.split('/')
 			pathSegments.shift()
 
+			let selectedModule = routesMap.selectedModule
+
 			for (const id of pathSegments) {
 				const path = `/${id}`
-				const name = routes[path]?.name || '???'
+				let name
+				if (path in allRoutes) {
+					name = allRoutes[path].name
+				} else if (id === selectedModule?.id) {
+					name = selectedModule.title
+				} else {
+					name = '???'
+				}
 				items.push({ path, name, id })
 			}
 		}
 
 		breadcrumbItems = items
-	})
-
-	$effect(() => {
-		const module = routesMap.selectedModule
-		if (module) {
-			for (const item of breadcrumbItems) {
-				if (item.id === module.id) {
-					item.name = module.title
-				}
-			}
-		}
 	})
 </script>
 

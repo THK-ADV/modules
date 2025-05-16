@@ -2,4 +2,4 @@
 	import { page } from '$app/state'
 </script>
 
-<h1>{page.status}: {JSON.stringify(page.error)}</h1>
+<pre>{page.status}: {JSON.stringify(page, null, 2)}</pre>

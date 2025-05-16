@@ -149,7 +149,7 @@
 	let { data }: PageProps = $props()
 </script>
 
-<div class="flex h-full flex-1 flex-col space-y-8 p-4">
+<div class="flex h-full flex-1 flex-col space-y-8">
 	<div class="space-y-2">
 		<h2 class="text-2xl font-bold tracking-tight">Modulbeschreibungen</h2>
 		<p class="text-muted-foreground">

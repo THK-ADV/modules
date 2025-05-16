@@ -1,4 +1,4 @@
-import { Book, FolderSearch, Home, type IconProps } from '@lucide/svelte'
+import { Book, Eye, Home, Pencil, Search, Signature, type IconProps } from '@lucide/svelte'
 import type { Component } from 'svelte'
 
 export type RouteInfo = {
@@ -9,14 +9,14 @@ export type RouteInfo = {
 export type RoutesMap = Record<string, RouteInfo>
 
 function createRoutes() {
-	const routes: RoutesMap = {
+	const defaultRoutes: RoutesMap = {
 		'/': {
 			name: 'Home',
 			icon: Home
 		},
 		'/modules': {
 			name: 'Modulsuche',
-			icon: FolderSearch
+			icon: Search
 		},
 		'/module-catalogs': {
 			name: 'Modulhandbücher',
@@ -24,11 +24,38 @@ function createRoutes() {
 		}
 	}
 
+	const managerRoutes: RoutesMap = {
+		'/my-modules': {
+			name: 'Meine Module',
+			icon: Pencil
+		}
+	}
+
+	const pavRoutes: RoutesMap = {
+		'/module-approvals': {
+			name: 'Änderungsfreigaben',
+			icon: Signature
+		},
+		'/preview': {
+			name: 'Vorschau',
+			icon: Eye
+		}
+	}
+
 	let selectedModule: { id: string; title: string } | undefined = $state(undefined)
 
 	return {
-		get routes() {
-			return routes
+		get defaultRoutes() {
+			return defaultRoutes
+		},
+		get managerRoutes() {
+			return managerRoutes
+		},
+		get pavRoutes() {
+			return pavRoutes
+		},
+		get allRoutes() {
+			return { ...defaultRoutes, ...managerRoutes, ...pavRoutes }
 		},
 		get selectedModule() {
 			return selectedModule

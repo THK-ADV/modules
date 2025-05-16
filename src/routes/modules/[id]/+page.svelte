@@ -1,15 +1,12 @@
 <script lang="ts">
-	import { routesMap } from '$lib/routes.svelte'
 	import { marked } from 'marked'
 	import type { PageProps } from './$types'
 
 	let { data }: PageProps = $props()
 	const { metadata, deContent } = data.module
-
-	routesMap.selectedModule = { id: data.module.id, title: metadata.title }
 </script>
 
-<div class="prose max-w-none p-4">
+<div class="prose max-w-none">
 	<h1>{metadata.title}</h1>
 
 	<h2>Angestrebte Lernergebnisse</h2>

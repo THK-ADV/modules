@@ -1,4 +1,5 @@
 import { url } from '$lib/http'
+import { routesMap } from '$lib/routes.svelte'
 import { error } from '@sveltejs/kit'
 import type { PageLoad } from './$types'
 
@@ -8,5 +9,6 @@ export const load: PageLoad = async ({ fetch, params }) => {
 		throw error(res.status, `Failed to load ${params}`)
 	}
 	const module = await res.json()
+	routesMap.selectedModule = { id: module.id, title: module.metadata.title }
 	return { module }
 }

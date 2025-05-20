@@ -25,19 +25,17 @@
 </script>
 
 <script lang="ts">
-	import NavMenu from './nav-menu.svelte'
-	import NavUserLogin from './nav-user-login.svelte'
 	import TeamSwitcher from '$lib/components/team-switcher.svelte'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
 	import type { ComponentProps } from 'svelte'
-	import type { User } from '$lib/keycloak.svelte'
+	import NavMenu from './nav-menu.svelte'
+	import NavUserLogin from './nav-user-login.svelte'
 
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
-		user,
 		...restProps
-	}: ComponentProps<typeof Sidebar.Root> & { user?: User } = $props()
+	}: ComponentProps<typeof Sidebar.Root> = $props()
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -45,10 +43,10 @@
 		<TeamSwitcher teams={data.teams} />
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavMenu {user} />
+		<NavMenu />
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<NavUserLogin {user} />
+		<NavUserLogin />
 	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>

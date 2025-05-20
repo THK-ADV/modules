@@ -3,16 +3,17 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
 	import { ModeWatcher } from 'mode-watcher'
 	import '../app.css'
+	import type { LayoutProps } from './$types'
 	import AppSidebar from './app-sidebar.svelte'
 	import NavBreadcrumb from './nav-breadcrumb.svelte'
 
-	let { children, data } = $props()
+	let { children }: LayoutProps = $props()
 </script>
 
 <ModeWatcher />
 
 <Sidebar.Provider>
-	<AppSidebar user={data.user} />
+	<AppSidebar />
 	<Sidebar.Inset>
 		<header
 			class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12"

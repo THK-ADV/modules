@@ -5,7 +5,7 @@
 
 	type ModuleType = {
 		label: string
-		Icon: Component<IconProps, {}, ''> | undefined
+		Icon: Component<IconProps, object, ''> | undefined
 	}
 
 	function getModuleType(studyPrograms: StudyProgramModuleAssociation[]): ModuleType {

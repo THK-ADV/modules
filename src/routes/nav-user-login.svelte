@@ -1,21 +1,23 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
+	import { page } from '$app/state'
 	import * as Avatar from '$lib/components/ui/avatar/index.js'
 	import Button from '$lib/components/ui/button/button.svelte'
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-	import { keycloak, type User } from '$lib/keycloak.svelte'
+	import { type User } from '$lib/keycloak.svelte'
 	import { LogIn } from '@lucide/svelte'
 	import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down'
 	import LogOut from '@lucide/svelte/icons/log-out'
 
-	let { user }: { user?: User } = $props()
+	let user: User | undefined = page.data.user
 
 	async function login() {
-		await keycloak.login()
+		await goto('/login')
 	}
 
 	async function logout() {
-		await keycloak.logout()
+		await goto('/logout')
 	}
 
 	function abbreviation(user: User) {

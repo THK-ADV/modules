@@ -1,9 +1,11 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/button/button.svelte'
 	import * as Select from '$lib/components/ui/select/index'
+	import type { ModuleView } from '$lib/types/module'
 	import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from '@lucide/svelte'
+	import type { Table } from '@tanstack/table-core'
 
-	let { table }: { table: any } = $props()
+	let { table }: { table: Table<ModuleView> } = $props()
 
 	const pages = ['10', '20', '30', '40', '50']
 </script>

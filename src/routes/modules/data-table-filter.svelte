@@ -2,10 +2,12 @@
 	import { Button } from '$lib/components/ui/button/index.js'
 	import { Input } from '$lib/components/ui/input/index.js'
 	import { moduleFilter } from '$lib/store.svelte'
+	import type { ModuleView } from '$lib/types/module'
 	import X from '@lucide/svelte/icons/x'
+	import type { Table } from '@tanstack/table-core'
 	import DataTableFilterOption from './data-table-filter-option.svelte'
 
-	let { table }: { table: any } = $props()
+	let { table }: { table: Table<ModuleView> } = $props()
 
 	let showReset = $derived.by(() => {
 		const tableFilter = table.getColumn('title')?.getFilterValue() as string

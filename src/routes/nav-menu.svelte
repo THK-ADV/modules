@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/state'
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-	import { isEmployee, type User } from '$lib/keycloak.svelte'
+	import { isEmployee, type User } from '$lib/auth'
 	import { routesMap } from '$lib/routes.svelte'
 
 	const { defaultRoutes, managerRoutes, pavRoutes } = routesMap
 
-	let { user }: { user: User | undefined } = $props()
+	let user: User | undefined = page.data.user
 
 	let isEmp = $derived(user ? isEmployee(user) : false)
 </script>

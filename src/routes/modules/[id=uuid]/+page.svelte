@@ -1,48 +1,29 @@
 <script lang="ts">
+	import type { ModuleDetail } from '$lib/types/module-details'
 	import { marked } from 'marked'
 	import type { PageProps } from './$types'
 
 	let { data }: PageProps = $props()
-	const { metadata, deContent } = data.module
+	let module: ModuleDetail = data.module
 </script>
 
+{#snippet markdownContent(title: string, body: string)}
+	<h2>{title}</h2>
+	{#if body}
+		<div>{@html marked.parse(body)}</div>
+	{:else}
+		<p>Keine Angabe</p>
+	{/if}
+{/snippet}
+
 <div class="prose max-w-none">
-	<h1>{metadata.title}</h1>
+	<h1>{module.title}</h1>
 
-	<h2>Angestrebte Lernergebnisse</h2>
-	{#if deContent.learningOutcome}
-		<div>{@html marked.parse(deContent.learningOutcome)}</div>
-	{:else}
-		<p>Keine Angabe</p>
-	{/if}
-
-	<h2>Modulinhalte</h2>
-	{#if deContent.content}
-		<div>{@html marked.parse(deContent.content)}</div>
-	{:else}
-		<p>Keine Angabe</p>
-	{/if}
-
-	<h2>Lehr- und Lernmethoden (Medienformen)</h2>
-	{#if deContent.teachingAndLearningMethods}
-		<div>{@html marked.parse(deContent.teachingAndLearningMethods)}</div>
-	{:else}
-		<p>Keine Angabe</p>
-	{/if}
-
-	<h2>Empfohlene Literatur</h2>
-	{#if deContent.recommendedReading}
-		<div>{@html marked.parse(deContent.recommendedReading)}</div>
-	{:else}
-		<p>Keine Angabe</p>
-	{/if}
-
-	<h2>Besonderheiten</h2>
-	{#if deContent.particularities}
-		<div>{@html marked.parse(deContent.particularities)}</div>
-	{:else}
-		<p>Keine Angabe</p>
-	{/if}
+	{@render markdownContent('Angestrebte Lernergebnisse', module.content.learningOutcome)}
+	{@render markdownContent('Modulinhalte', module.content.moduleContent)}
+	{@render markdownContent('Lehr- und Lernmethoden (Medienformen)', module.content.learningMethods)}
+	{@render markdownContent('Empfohlene Literatur', module.content.literature)}
+	{@render markdownContent('Besonderheiten', module.content.particularities)}
 
 	<!-- <div>{@html marked.parse(page)}</div> -->
 </div>

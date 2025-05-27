@@ -5,11 +5,11 @@ import type { Config } from 'tailwindcss'
 // TODO this file can be deleted
 
 export default {
-	content: ['./src/**/*.{html,js,svelte,ts}'],
+  content: ['./src/**/*.{html,js,svelte,ts}'],
 
-	theme: {
-		extend: {}
-	},
+  theme: {
+    extend: {}
+  },
 
-	plugins: [typography, forms]
+  plugins: [typography, forms]
 } satisfies Config

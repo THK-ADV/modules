@@ -1,59 +1,101 @@
 // Identity
 
 export interface Person {
-	id: string
-	lastname: string
-	firstname: string
-	title: string
-	abbreviation: string
-	kind: 'person'
+  id: string
+  lastname: string
+  firstname: string
+  title: string
+  abbreviation: string
+  kind: 'person'
 }
 
 export interface UnknownIdentity {
-	id: string
-	label: string
-	kind: 'unknown'
+  id: string
+  label: string
+  kind: 'unknown'
 }
 
 export interface Group {
-	id: string
-	label: string
-	kind: 'group'
+  id: string
+  label: string
+  kind: 'group'
 }
 
 export type Identity = Person | UnknownIdentity | Group
 
+export interface DisplayIdentity {
+  identity: Identity
+  label: string
+}
+
 // Degree
 
 export interface Degree {
-	id: string
-	deLabel: string
-	enLabel: string
-	deDesc: string
-	enDesc: string
+  id: string
+  deLabel: string
+  enLabel: string
+  deDesc: string
+  enDesc: string
 }
 
 // Participants
 
 export interface Participants {
-	min: number
-	max: number
+  min: number
+  max: number
 }
 
 // Workload
 
 export interface Workload {
-	lecture: number
-	seminar: number
-	practical: number
-	exercise: number
-	projectSupervision: number
-	projectWork: number
-	selfStudy: number
-	total: number
+  lecture: number
+  seminar: number
+  practical: number
+  exercise: number
+  projectSupervision: number
+  projectWork: number
+  selfStudy: number
+  total: number
 }
 
 export interface ModuleType {
-	id: string
-	deLabel: string
+  id: string
+  deLabel: string
+}
+
+export interface Language {
+  id: string
+  deLabel: string
+}
+
+export interface Season {
+  id: string
+  deLabel: string
+}
+
+export interface Location {
+  id: string
+  deLabel: string
+}
+
+export interface Status {
+  id: string
+  deLabel: string
+}
+
+export interface AssessmentMethod {
+  id: string
+  deLabel: string
+  isRPO: boolean
+}
+
+export interface ExamPhase {
+  id: string
+  label: string
+  abbrev: string
+}
+
+export interface Precondition {
+  id: string
+  label: string
 }

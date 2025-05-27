@@ -67,7 +67,7 @@
 	</Popover.Trigger>
 	<Popover.Content class="w-[350px] p-0" align="start">
 		<Command.Root>
-			<Command.Input placeholder={title} class="h-8 border-0 focus:ring-0 shadow-none" />
+			<Command.Input placeholder={title} class="h-8 border-0 shadow-none focus:ring-0" />
 			<Command.List>
 				<Command.Empty>Keine Ergebnisse</Command.Empty>
 				{#if filterValues.length > 0}

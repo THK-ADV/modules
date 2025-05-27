@@ -29,6 +29,8 @@
 	</Sidebar.Menu>
 </Sidebar.Group>
 
+<!-- TODO: isEmp is not sufficient enough. It should if the user has permissions to edit modules -->
+
 {#if isEmp}
 	<Sidebar.Separator />
 	<Sidebar.Group>
@@ -50,6 +52,9 @@
 		</Sidebar.Menu>
 	</Sidebar.Group>
 {/if}
+
+<!-- TODO: real check for PAVs or SGLs -->
+<!-- TODO: use badge to indicate actions -->
 
 {#if isEmp}
 	<Sidebar.Separator />

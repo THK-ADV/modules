@@ -1,8 +1,10 @@
 <script lang="ts" module>
+	import DataTableTitleButton from '$lib/components/modules-table-title-button.svelte'
 	import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
 	import type { ModuleView, PersonShort, StudyProgramModuleAssociation } from '$lib/types/module'
 	import type { ColumnDef } from '@tanstack/table-core'
-	import DataTableTitleButton from './data-table-title-button.svelte'
+	import { createRawSnippet } from 'svelte'
+	import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
 	const fmtCredits = new Intl.NumberFormat('de-DE', {
 		minimumFractionDigits: 0,
@@ -59,7 +61,7 @@
 		return res.join(', ')
 	}
 
-	export const columns: ColumnDef<ModuleView>[] = [
+	const columns: ColumnDef<ModuleView>[] = [
 		{
 			accessorKey: 'title',
 			header: ({ column }) => {
@@ -141,10 +143,8 @@
 </script>
 
 <script lang="ts">
-	import { createRawSnippet } from 'svelte'
 	import type { PageProps } from './$types'
-	import DataTableModuleTypeCell from './data-table-moduleType-cell.svelte'
-	import DataTable from './data-table.svelte'
+	import ModulesTable from './(components)/modules-table.svelte'
 
 	let { data }: PageProps = $props()
 </script>
@@ -156,5 +156,5 @@
 			Veröffentlichte Modulbeschreibungen aller Studiengänge der TH Köln am Campus Gummersbach.
 		</p>
 	</div>
-	<DataTable data={data.modules} {columns} />
+	<ModulesTable data={data.modules} {columns} />
 </div>

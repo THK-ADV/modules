@@ -12,8 +12,8 @@
 		type PaginationState,
 		type SortingState
 	} from '@tanstack/table-core'
-	import DataTableFilter from './data-table-filter.svelte'
-	import DataTablePagination from './data-table-pagination.svelte'
+	import DataTableFilter from './modules-table-filter.svelte'
+	import DataTablePagination from './modules-table-pagination.svelte'
 
 	type DataTableProps = {
 		columns: ColumnDef<ModuleView>[]

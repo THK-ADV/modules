@@ -5,7 +5,7 @@
 	import type { ModuleView } from '$lib/types/module'
 	import X from '@lucide/svelte/icons/x'
 	import type { Table } from '@tanstack/table-core'
-	import DataTableFilterOption from './data-table-filter-option.svelte'
+	import DataTableFilterOption from './modules-table-filter-option.svelte'
 
 	let { table }: { table: Table<ModuleView> } = $props()
 

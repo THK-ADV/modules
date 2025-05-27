@@ -19,6 +19,8 @@
 <div class="prose max-w-none">
 	<h1>{module.title}</h1>
 
+	<!-- TODO: render more data -->
+
 	{@render markdownContent('Angestrebte Lernergebnisse', module.content.learningOutcome)}
 	{@render markdownContent('Modulinhalte', module.content.moduleContent)}
 	{@render markdownContent('Lehr- und Lernmethoden (Medienformen)', module.content.learningMethods)}

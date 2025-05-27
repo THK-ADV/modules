@@ -1,7 +1,10 @@
-import type { StudyProgram } from '$lib/types/study-program'
-import { url } from '$lib/http'
+import { authHeader, url } from '$lib/http'
 import type { Identity } from '$lib/types/identity'
+import type { StudyProgram } from '$lib/types/study-program'
+import { error } from '@sveltejs/kit'
 import type { FilterData } from '../routes/modules/data-table-filter-option.svelte'
+import type { ModuleType } from './types/core'
+import type { ModuleProtocol } from './types/module-protocol'
 
 function ordinalKind(a: Identity): number {
 	switch (a.kind) {
@@ -168,4 +171,67 @@ function createModuleFilter() {
 	}
 }
 
+// const all = Promise.allSettled([
+//   fetch(`${url}/modules?source=all`, info),
+//   fetch(`${url}/modules?type=generic&source=all`, info),
+//   fetch(`${url}/moduleTypes`, info),
+//   fetch(`${url}/seasons`, info),
+//   fetch(`${url}/languages`, info),
+//   fetch(`${url}/locations`, info),
+//   fetch(`${url}/status`, info),
+//   fetch(`${url}/identities`, info),
+//   fetch(`${url}/assessmentMethods`, info),
+//   fetch(`${url}/studyPrograms?extend=true`, info),
+//   fetch(`${url}/examPhases`, info),
+// ])
+function createModuleUpdateState() {
+	let module: ModuleProtocol | undefined = $state.raw(undefined)
+	let moduleTypes = $state.raw(new Array<ModuleType>())
+
+	return {
+		get module() {
+			return module
+		},
+		get moduleTypes() {
+			return moduleTypes
+		},
+		async fetchModule(
+			id: string,
+			accessToken: string,
+			fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+		): Promise<ModuleProtocol> {
+			if (module) {
+				return module
+			}
+			const auth = authHeader(accessToken)
+			const res = await fetch(`${url}/modules/${id}/latest`, auth)
+			if (!res.ok) {
+				const err = await res.json()
+				const message = `Modul konnte nicht geladen werden: ${err.message}`
+				throw error(res.status, { message })
+			}
+			const m = await res.json()
+			module = m
+			return m
+		},
+		async fetchGenerationInformationState(
+			accessToken: string,
+			fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+		) {
+			if (moduleTypes.length === 0) {
+				console.log('fetching general information…')
+				const auth = authHeader(accessToken)
+
+				const [mt] = await Promise.allSettled([fetch(`${url}/moduleTypes`, auth)])
+
+				if (mt.status === 'fulfilled' && mt.value.ok) {
+					moduleTypes = await mt.value.json()
+				}
+			}
+		}
+	}
+}
+
 export const moduleFilter = createModuleFilter()
+
+export const moduleUpdateState = createModuleUpdateState()

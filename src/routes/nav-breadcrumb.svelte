@@ -5,29 +5,43 @@
 
 	let { allRoutes } = routesMap
 
-	let breadcrumbItems = $state([{ path: '/', name: 'Home', id: 'home' }])
+	let breadcrumbItems = $state([{ path: '/', name: 'Home', id: 'home', clickable: true }])
 
 	$effect(() => {
 		const path = page.url.pathname
-		const items = [{ path: '/', name: 'Home', id: 'home' }]
+		const items = [{ path: '/', name: 'Home', id: 'home', clickable: true }]
 
 		if (path !== '/') {
 			const pathSegments = path.split('/')
 			pathSegments.shift()
 
 			let selectedModule = routesMap.selectedModule
+			let firstUnClickable = false
 
 			for (const id of pathSegments) {
 				const path = `/${id}`
 				let name
+				let clickable
 				if (path in allRoutes) {
 					name = allRoutes[path].name
+					clickable = true
 				} else if (id === selectedModule?.id) {
 					name = selectedModule.title
+					clickable = false
 				} else {
 					name = '???'
+					clickable = false
 				}
-				items.push({ path, name, id })
+
+				if (!firstUnClickable) {
+					items.push({ path, name, id, clickable })
+				}
+
+				/*	skips breadcrumbs as soon as one gets not clickable.
+					 	navigation gets broken otherwise */
+				if (!clickable) {
+					firstUnClickable = true
+				}
 			}
 		}
 
@@ -42,8 +56,10 @@
 			<Breadcrumb.Item>
 				{#if i === breadcrumbItems.length - 1}
 					<Breadcrumb.Page>{item.name}</Breadcrumb.Page>
-				{:else}
+				{:else if item.clickable}
 					<Breadcrumb.Link href={item.path}>{item.name}</Breadcrumb.Link>
+				{:else}
+					<Breadcrumb.Page>{item.name}</Breadcrumb.Page>
 				{/if}
 			</Breadcrumb.Item>
 			{#if i < breadcrumbItems.length - 1}

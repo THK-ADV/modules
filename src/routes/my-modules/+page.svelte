@@ -2,10 +2,10 @@
 	import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
 	import type { ModuleDraft } from '$lib/types/module-draft'
 	import type { ColumnDef } from '@tanstack/table-core'
-	import ModuleDraftStatusCell from './(components)/module-draft-status-cell.svelte'
-	import ModuleDraftTable from './(components)/module-draft-table.svelte'
 	import { createRawSnippet } from 'svelte'
+	import ModuleDraftStatusCell from './(components)/module-draft-status-cell.svelte'
 	import ModuleDraftTableActions from './(components)/module-draft-table-actions.svelte'
+	import ModuleDraftTable from './(components)/module-draft-table.svelte'
 
 	const columns: ColumnDef<ModuleDraft>[] = [
 		{
@@ -45,25 +45,7 @@
 				return renderComponent(ModuleDraftTableActions, {
 					moduleId: row.original.module.id,
 					state: row.original.moduleDraftState.id,
-					isPrivilegedForModule: row.original.privilegedForModule,
-					onEdit: () => {
-						console.log('TODO: onEdit')
-					},
-					onPublish: () => {
-						console.log('TODO: onPublish')
-					},
-					onRequestReview: () => {
-						console.log('TODO: onRequestReview')
-					},
-					onCancelReview: () => {
-						console.log('TODO: onCancelReview')
-					},
-					onDiscardChanges: () => {
-						console.log('TODO: onDiscardChanges')
-					},
-					onPermissionUpdate: () => {
-						console.log('TODO: onPermissionUpdate')
-					}
+					isPrivilegedForModule: row.original.privilegedForModule
 				})
 			}
 		}

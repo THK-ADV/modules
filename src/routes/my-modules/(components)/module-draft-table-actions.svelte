@@ -3,12 +3,6 @@
 		moduleId: string
 		state: ModuleDraftState
 		isPrivilegedForModule: boolean
-		onEdit: (id: string) => void
-		onPublish: (id: string) => void
-		onRequestReview: (id: string) => void
-		onCancelReview: (id: string) => void
-		onDiscardChanges: (id: string) => void
-		onPermissionUpdate: (id: string) => void
 	}
 
 	interface Action {
@@ -54,18 +48,10 @@
 	import { cn } from '$lib/utils'
 	import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
 	import type { Component } from 'svelte'
+	import { goto } from '$app/navigation'
+	import { page } from '$app/state'
 
-	let {
-		moduleId,
-		state,
-		isPrivilegedForModule,
-		onEdit,
-		onPublish,
-		onRequestReview,
-		onCancelReview,
-		onDiscardChanges,
-		onPermissionUpdate
-	}: Props = $props()
+	let { moduleId, state, isPrivilegedForModule }: Props = $props()
 
 	let moduleActions = $derived.by(() => {
 		const actions = new Array<Action>()
@@ -75,7 +61,7 @@
 				key: 'edit',
 				label: 'Bearbeiten',
 				Icon: Edit,
-				onclick: () => onEdit(moduleId),
+				onclick: () => goto(`${page.url.pathname}/${moduleId}`),
 				variant: 'outline',
 				className:
 					'border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 hover:border-blue-300'
@@ -87,7 +73,7 @@
 				key: 'publish',
 				label: 'Änderungen übernehmen',
 				Icon: Upload,
-				onclick: () => onPublish(moduleId),
+				onclick: () => {},
 				variant: 'default',
 				className: 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
 			})
@@ -98,7 +84,7 @@
 				key: 'requestReview',
 				label: 'Review anfragen',
 				Icon: Eye,
-				onclick: () => onRequestReview(moduleId),
+				onclick: () => {},
 				variant: 'outline',
 				className:
 					'border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300'
@@ -110,7 +96,7 @@
 				key: 'cancelReview',
 				label: 'Review zurückziehen',
 				Icon: X,
-				onclick: () => onCancelReview(moduleId),
+				onclick: () => {},
 				variant: 'outline',
 				className:
 					'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300'
@@ -122,7 +108,7 @@
 				key: 'discardChanges',
 				label: 'Änderungen verwerfen',
 				Icon: Trash2,
-				onclick: () => onDiscardChanges(moduleId),
+				onclick: () => {},
 				variant: 'outline',
 				className:
 					'border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 hover:border-red-300'
@@ -140,7 +126,7 @@
 				key: 'managePermissions',
 				label: 'Bearbeitungsrechte setzen',
 				Icon: Shield,
-				onclick: () => onPermissionUpdate(moduleId),
+				onclick: () => {},
 				variant: 'outline',
 				className:
 					'border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300'

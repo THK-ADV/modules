@@ -1,4 +1,4 @@
-import type { Participants } from './core'
+import type { Participants, Workload } from './core'
 
 export interface Content {
 	learningOutcome: string
@@ -6,17 +6,6 @@ export interface Content {
 	learningMethods: string
 	literature: string
 	particularities: string
-}
-
-export interface Workload {
-	lecture: number
-	seminar: number
-	practical: number
-	exercise: number
-	projectSupervision: number
-	projectWork: number
-	selfStudy: number
-	total: number
 }
 
 export interface ModuleShort {

@@ -40,16 +40,20 @@ export interface Participants {
 	max: number
 }
 
-// ModuleRelation
+// Workload
 
-export interface Parent {
-	kind: 'parent'
-	children: string[]
+export interface Workload {
+	lecture: number
+	seminar: number
+	practical: number
+	exercise: number
+	projectSupervision: number
+	projectWork: number
+	selfStudy: number
+	total: number
 }
 
-export interface Child {
-	kind: 'child'
-	parent: string
+export interface ModuleType {
+	id: string
+	deLabel: string
 }
-
-export type ModuleRelation = Parent | Child

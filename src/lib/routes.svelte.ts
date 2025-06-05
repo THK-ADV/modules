@@ -8,6 +8,8 @@ export type RouteInfo = {
 
 export type RoutesMap = Record<string, RouteInfo>
 
+// TODO a few routes should not appear on the side bar, but should be resolved in the breadcrumb
+
 function createRoutes() {
   const defaultRoutes: RoutesMap = {
     '/': {

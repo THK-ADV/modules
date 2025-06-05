@@ -253,6 +253,9 @@
         <a href="/privacy" class="text-muted-foreground transition-colors hover:text-foreground">
           Datenschutzerklärung
         </a>
+        <a href="/help" class="text-muted-foreground transition-colors hover:text-foreground">
+          Hilfe
+        </a>
       </div>
     </div>
   </footer>

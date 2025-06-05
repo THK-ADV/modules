@@ -28,6 +28,6 @@ npm run dev
 
 [schedule-dev@gm.fh-koeln.de](mailto:schedule-dev@gm.fh-koeln.de)
 
---- 
+---
 
-*© 2025 TH Köln - Campus Gummersbach | Fakultät für Informatik und Ingenieurwissenschaften*
+_© 2025 TH Köln - Campus Gummersbach | Fakultät für Informatik und Ingenieurwissenschaften_

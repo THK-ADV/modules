@@ -1,38 +1,33 @@
-# sv
+# Modulverwaltung - TH Köln Campus Gummersbach
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+App für die Verwaltung von Modulbeschreibungen, Modulhandbüchern und Prüfungslisten aller Studiengänge der Fakultät 10.
 
-## Creating a project
+## Hauptfunktionen
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Modulsuche**: Alle veröffentlichten Modulbeschreibungen mit umfangreichen Filter- und Sortiermöglichkeiten durchsuchen
+- **Modulhandbücher**: Aktuelle und vergangene Modulhandbücher aller Studiengänge inkl. PO als PDF herunterladen
+- **Prüfungslisten**: Aktuelle und vergangene Prüfungslisten mit Details zu Prüfungsformen, Phasen und Prüfern als PDF herunterladen
+- **Module bearbeiten**: Modulverantwortliche können ihre Module direkt online bearbeiten und Änderungen zur Freigabe einreichen
+
+## Technologie-Stack
+
+- **Framework**: Svelte 5
+- **Styling**: Tailwind
+- **UI Components**: shadcn
+- **Icons**: Lucide
+- **Forms**: Superforms und Zod
+
+## Getting Started
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Kontakt & Support
 
-To create a production version of your app:
+[schedule-dev@gm.fh-koeln.de](mailto:schedule-dev@gm.fh-koeln.de)
 
-```bash
-npm run build
-```
+--- 
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+*© 2025 TH Köln - Campus Gummersbach | Fakultät für Informatik und Ingenieurwissenschaften*

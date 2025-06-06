@@ -9,6 +9,9 @@ export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
     throw error(400, { message: 'Authorization code missing' })
   }
 
-  await exchangeToken(url.origin, code, cookies, fetch)
-  throw redirect(303, url.origin)
+  const redirectTo = url.searchParams.get('redirectTo')
+
+  await exchangeToken(url.origin, code, cookies, fetch, redirectTo)
+
+  throw redirect(303, url.origin + (redirectTo || '/'))
 }

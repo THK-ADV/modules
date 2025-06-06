@@ -1,7 +1,5 @@
-import { url } from '$lib/http'
-import { getValidAccessToken } from '$lib/server/auth'
 import type { ModuleDraft, ModuleDraftState } from '$lib/types/module-draft'
-import { error, redirect } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
 function moduleDraftStateOrd(state: ModuleDraftState): number {
@@ -23,18 +21,9 @@ function moduleDraftStateOrd(state: ModuleDraftState): number {
   }
 }
 
-export const load: PageServerLoad = async ({ cookies, fetch }) => {
-  const accessToken = await getValidAccessToken(cookies, fetch)
+export const load: PageServerLoad = async ({ fetch }) => {
+  const res = await fetch(`/api/moduleDrafts/own`)
 
-  if (!accessToken) {
-    throw redirect(303, 'login')
-  }
-
-  const res = await fetch(`${url}/moduleDrafts/own`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    }
-  })
   if (!res.ok) {
     const err = await res.json()
     const message = `Module konnten nicht geladen werden: ${err.message}`

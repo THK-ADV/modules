@@ -44,6 +44,8 @@ function createRoutes() {
     }
   }
 
+  const protectedRoutes = [...Object.keys(managerRoutes), ...Object.keys(pavRoutes)]
+
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
 
   return {
@@ -58,6 +60,9 @@ function createRoutes() {
     },
     get allRoutes() {
       return { ...defaultRoutes, ...managerRoutes, ...pavRoutes }
+    },
+    get protectedRoutes() {
+      return protectedRoutes
     },
     get selectedModule() {
       return selectedModule

@@ -32,8 +32,8 @@ function shouldRefreshToken(cookies: Cookies): boolean {
     const currTime = Date.now()
     const timeUntilExpiry = expTime - currTime
 
-    // refresh if token will expire in less than 5 minutes (300 seconds)
-    return timeUntilExpiry < 300
+    // refresh if token will expire in less than 10 minutes (600 seconds)
+    return timeUntilExpiry < 600
   } catch {
     // assume refreshing if there is an error
     return true
@@ -150,12 +150,12 @@ export function deleteCookies(cookies: Cookies) {
   cookies.delete(RefreshTokenKey, { path: '/' })
 }
 
-export function loginUrl(baseUrl: string): string {
+export function loginUrl(baseUrl: string, redirectTo: string = '/'): string {
   const realmUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth`
   const params = new URLSearchParams()
   params.append('response_type', 'code')
   params.append('scope', 'openid profile email')
-  params.append('redirect_uri', `${baseUrl}/auth`)
+  params.append('redirect_uri', `${baseUrl}/auth?redirectTo=${encodeURIComponent(redirectTo)}`)
   params.append('client_id', KEYCLOAK_CLIENT_ID)
   return `${realmUrl}?${params.toString()}`
 }
@@ -165,17 +165,21 @@ export async function exchangeToken(
   baseUrl: string,
   authCode: string,
   cookies: Cookies,
-  fetch: typeof globalThis.fetch
+  fetch: typeof globalThis.fetch,
+  redirectUri: string | null
 ): Promise<void> {
   try {
     const endpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
-    const redirectUri = `${baseUrl}/auth`
+    let finalRedirectUri = `${baseUrl}/auth`
+    if (redirectUri) {
+      finalRedirectUri += `?redirectTo=${encodeURIComponent(redirectUri)}`
+    }
 
     const params = new URLSearchParams()
     params.append('grant_type', 'authorization_code')
     params.append('client_id', KEYCLOAK_CLIENT_ID)
     params.append('code', authCode)
-    params.append('redirect_uri', redirectUri)
+    params.append('redirect_uri', finalRedirectUri)
 
     const response = await fetch(endpoint, {
       method: 'POST',

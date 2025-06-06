@@ -2,6 +2,53 @@ import { z } from 'zod'
 
 // TODO update to zod v4 (https://zod.dev/v4/changelog)
 
+const yamlSafeText = z
+  .string()
+  .refine(
+    (text) => {
+      if (text === '') return true // empty strings are allowed
+
+      // check for YAML special characters that are forbidden in scalar values
+      const forbiddenChars = [
+        "'", // single quotes
+        '"', // double quotes
+        ':', // colons (key-value separator)
+        '\n', // newlines
+        '\r', // carriage returns
+        '\t', // tab characters
+        '#', // hash/pound (comments)
+        '&', // ampersand (anchors)
+        '*', // asterisk (aliases)
+        '[',
+        ']', // square brackets (flow sequences)
+        '{',
+        '}', // curly braces (flow mappings)
+        '|', // pipe (literal block scalars)
+        '>', // greater than (folded block scalars)
+        '!', // exclamation mark (tags)
+        '%', // percent (directives)
+        '@', // at symbol (reserved)
+        '`' // backtick (reserved)
+      ]
+
+      return !forbiddenChars.some((char) => text.includes(char))
+    },
+    {
+      message:
+        'Text enthält nicht erlaubte Zeichen: Anführungszeichen (\' "), Doppelpunkte (:), Zeilenumbrüche, Tabs, Raute (#), Und-Zeichen (&), Sterne (*), eckige Klammern ([]), geschweifte Klammern ({}), senkrechte Striche (|), Größer-Zeichen (>), Ausrufezeichen (!), Prozentzeichen (%), At-Zeichen (@) und Backticks (`)'
+    }
+  )
+  .refine(
+    (text) => {
+      if (text === '') return true
+      // check for leading/trailing spaces which can be problematic in YAML
+      return text === text.trim()
+    },
+    {
+      message: 'Text darf nicht mit Leerzeichen beginnen oder enden'
+    }
+  )
+
 export const moduleSchema = z
   .object({
     title: z
@@ -70,7 +117,19 @@ export const moduleSchema = z
         .number({ message: 'Eintrag erforderlich' })
         .int('Muss eine ganze Zahl sein')
         .min(0, 'Muss mindestens 0 sein')
-    })
+    }),
+    recommendedPrerequisites: z
+      .object({
+        text: yamlSafeText,
+        modules: z.array(z.string())
+      })
+      .nullable(),
+    requiredPrerequisites: z
+      .object({
+        text: yamlSafeText,
+        modules: z.array(z.string())
+      })
+      .nullable()
   })
   .refine(
     (data) => {

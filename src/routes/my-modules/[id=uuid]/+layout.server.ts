@@ -22,6 +22,22 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   const module: ModuleProtocol = await res.json()
 
+  let recommendedPrerequisites = null
+  if (module.metadata.prerequisites.recommended) {
+    recommendedPrerequisites = {
+      text: module.metadata.prerequisites.recommended.text,
+      modules: module.metadata.prerequisites.recommended.modules
+    }
+  }
+
+  let requiredPrerequisites = null
+  if (module.metadata.prerequisites.required) {
+    requiredPrerequisites = {
+      text: module.metadata.prerequisites.required.text,
+      modules: module.metadata.prerequisites.required.modules
+    }
+  }
+
   const form = await superValidate(
     {
       title: module.metadata.title,
@@ -50,7 +66,9 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
         practical: module.metadata.workload.practical,
         projectSupervision: module.metadata.workload.projectSupervision,
         projectWork: module.metadata.workload.projectWork
-      }
+      },
+      recommendedPrerequisites,
+      requiredPrerequisites
     },
     zod(moduleSchema)
   )

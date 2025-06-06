@@ -1,5 +1,7 @@
 // Identity
 
+import type { IdentityKind } from './module'
+
 export interface Person {
   id: string
   lastname: string
@@ -98,4 +100,20 @@ export interface ExamPhase {
 export interface Precondition {
   id: string
   label: string
+}
+
+export interface ModuleManagement {
+  id: string
+  kind: IdentityKind
+  lastname: string
+  firstname: string
+}
+
+export interface ModuleCore {
+  id: string
+  title: string
+  abbreviation: string
+  ects: number
+  isLive: boolean
+  moduleManagement: ModuleManagement[]
 }

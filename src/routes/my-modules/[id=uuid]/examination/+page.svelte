@@ -18,44 +18,79 @@
   const { form: formData, errors } = form
 </script>
 
-<AssessmentMethodsForm
-  {form}
-  name="assessmentMethods"
-  label="Prüfungsformen"
-  {assessmentMethods}
-  {preconditions}
-  bind:value={$formData.assessmentMethods}
-  {errors}
-/>
+<div class="space-y-8">
+  <div class="space-y-4">
+    <div class="border-b pb-2">
+      <h3 class="text-lg font-medium text-foreground">Prüfungsleistungen</h3>
+      <p class="text-sm text-muted-foreground">
+        Definition der Prüfungsformen, Prüfer und Prüfungsmodalitäten für das Modul.
+      </p>
+    </div>
+  </div>
 
-<Combobox
-  {form}
-  name="firstExaminer"
-  label="Erstprüfer*in"
-  placeholder="Erstprüfer*in suchen…"
-  description="Wird in den Prüfungslisten verwendet."
-  options={identityOptions}
-  bind:value={$formData.firstExaminer}
-  {errors}
-/>
+  <div class="space-y-4">
+    <AssessmentMethodsForm
+      {form}
+      name="assessmentMethods"
+      label="Prüfungsformen"
+      {assessmentMethods}
+      {preconditions}
+      bind:value={$formData.assessmentMethods}
+      {errors}
+    />
+  </div>
 
-<Combobox
-  {form}
-  name="secondExaminer"
-  label="Zweitprüfer*in"
-  placeholder="Zweitprüfer*in suchen…"
-  description="Bei unbekannter bzw. ausstehender Angabe soll &bdquo;N.N.&ldquo; angegeben werden. Wird in den Prüfungslisten verwendet."
-  options={identityOptions}
-  bind:value={$formData.secondExaminer}
-  {errors}
-/>
+  <div class="space-y-4">
+    <div class="border-b pb-2">
+      <h4 class="text-base font-medium text-foreground">Prüfer</h4>
+      <p class="text-sm text-muted-foreground">
+        Festlegung der Erst- und Zweitprüfer für die Prüfungsleistungen.
+      </p>
+    </div>
 
-<MultiSelectCombobox
-  {form}
-  name="examPhases"
-  label="Prüfungsphasen"
-  description="Gibt an, in welchen Phasen die Prüfung grundsätzlich angeboten wird. Ist nicht beschränkt auf das kommende Semester. Wird in den Prüfungslisten verwendet."
-  options={moduleUpdateState.examPhases}
-  bind:value={$formData.examPhases}
-  {errors}
-/>
+    <div class="space-y-4">
+      <Combobox
+        {form}
+        name="firstExaminer"
+        label="Erstprüfer*in"
+        placeholder="Erstprüfer*in suchen…"
+        description="Wird in den Prüfungslisten verwendet."
+        options={identityOptions}
+        bind:value={$formData.firstExaminer}
+        {errors}
+      />
+
+      <Combobox
+        {form}
+        name="secondExaminer"
+        label="Zweitprüfer*in"
+        placeholder="Zweitprüfer*in suchen…"
+        description="Bei unbekannter bzw. ausstehender Angabe soll &bdquo;N.N.&ldquo; angegeben werden. Wird in den Prüfungslisten verwendet."
+        options={identityOptions}
+        bind:value={$formData.secondExaminer}
+        {errors}
+      />
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="border-b pb-2">
+      <h4 class="text-base font-medium text-foreground">Prüfungsorganisation</h4>
+      <p class="text-sm text-muted-foreground">
+        Festlegung der möglichen Prüfungsphasen und zeitlichen Organisation.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <MultiSelectCombobox
+        {form}
+        name="examPhases"
+        label="Prüfungsphasen"
+        description="Gibt an, in welchen Phasen die Prüfung grundsätzlich angeboten wird. Ist nicht beschränkt auf das kommende Semester. Wird in den Prüfungslisten verwendet."
+        options={moduleUpdateState.examPhases}
+        bind:value={$formData.examPhases}
+        {errors}
+      />
+    </div>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import type {
   Identity,
   Language,
   Location,
+  ModuleCore,
   ModuleType,
   Season,
   Status
@@ -179,9 +180,8 @@ function createModuleFilter() {
 }
 
 // const all = Promise.allSettled([
-//   fetch(`${url}/modules?source=all`, info),
+//
 //   fetch(`${url}/modules?type=generic&source=all`, info),
-//   fetch(`${url}/identities`, info),
 //   fetch(`${url}/studyPrograms?extend=true`, info),
 // ])
 function createModuleUpdateState() {
@@ -193,6 +193,7 @@ function createModuleUpdateState() {
   let identities = $state.raw(new Array<DisplayIdentity>())
   let assessmentMethods = $state.raw(new Array<AssessmentMethod>())
   let examPhases = $state.raw(new Array<ExamPhase>())
+  let modules = $state.raw(new Array<ModuleCore>())
 
   return {
     get moduleTypes() {
@@ -218,6 +219,9 @@ function createModuleUpdateState() {
     },
     get examPhases() {
       return examPhases
+    },
+    get modules() {
+      return modules
     },
     async fetchGenerationInformationState(accessToken: string, fetch: typeof globalThis.fetch) {
       if (
@@ -301,6 +305,18 @@ function createModuleUpdateState() {
           const xs: Identity[] = await ids.value.json()
           xs.sort(peopleOrdering)
           identities = xs.map((i) => ({ identity: i, label: fmtPerson(i) }))
+        }
+      }
+    },
+    async fetchPrerequisitesInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+      if (modules.length === 0) {
+        console.log('fetching prerequisites info...')
+        const auth = authHeader(accessToken)
+        const res = await fetch(`${url}/modules?source=all`, auth)
+        if (res.ok) {
+          const xs: ModuleCore[] = await res.json()
+          xs.sort((a, b) => a.title.localeCompare(b.title))
+          modules = xs
         }
       }
     }

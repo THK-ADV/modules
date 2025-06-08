@@ -68,7 +68,11 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
         projectWork: module.metadata.workload.projectWork
       },
       recommendedPrerequisites,
-      requiredPrerequisites
+      requiredPrerequisites,
+      po: {
+        mandatory: module.metadata.po.mandatory,
+        optional: module.metadata.po.optional
+      }
     },
     zod(moduleSchema)
   )

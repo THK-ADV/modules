@@ -3,6 +3,7 @@ import type {
   AssessmentMethod,
   DisplayIdentity,
   ExamPhase,
+  GenericModule,
   Identity,
   Language,
   Location,
@@ -12,71 +13,14 @@ import type {
   Status
 } from '$lib/types/core'
 import type { StudyProgram } from '$lib/types/study-program'
+import {
+  fmtPerson,
+  fmtPersonShort,
+  fmtStudyProgram,
+  fmtStudyProgramShort,
+  peopleOrdering
+} from './formats'
 import type { FilterData } from './types/filter-data'
-
-function ordinalKind(a: Identity): number {
-  switch (a.kind) {
-    case 'person':
-      return 0
-    case 'group':
-      return 1
-    case 'unknown':
-      return 2
-  }
-}
-
-function peopleOrdering(a: Identity, b: Identity): number {
-  if (a.kind === b.kind) {
-    if (a.kind === 'person' && b.kind === 'person') {
-      return a.lastname.localeCompare(b.lastname)
-    } else if (a.kind === 'group' && b.kind === 'group') {
-      return a.label.localeCompare(b.label)
-    } else {
-      return a.id.localeCompare(b.id)
-    }
-  } else {
-    return ordinalKind(a) - ordinalKind(b)
-  }
-}
-
-function fmtStudyProgram(sp: StudyProgram) {
-  const degree = sp.degree.deLabel.charAt(0)
-  if (sp.specialization) {
-    return `${sp.deLabel} ${sp.specialization.deLabel} (${degree}., PO ${sp.po.version})`
-  }
-  return `${sp.deLabel} (${degree}., PO ${sp.po.version})`
-}
-
-function fmtStudyProgramShort(sp: StudyProgram) {
-  const degree = sp.degree.deLabel.charAt(0)
-  if (sp.specialization) {
-    const spec = sp.specialization.id.split('_').at(-1)?.toUpperCase() ?? sp.specialization.deLabel
-    return `${sp.abbreviation} ${spec} ${degree}. ${sp.po.version}`
-  }
-  return `${sp.abbreviation} ${degree} ${sp.po.version}`
-}
-
-function fmtPerson(p: Identity): string {
-  switch (p.kind) {
-    case 'person':
-      return `${p.lastname}, ${p.firstname}`
-    case 'group':
-      return p.label
-    case 'unknown':
-      return p.label
-  }
-}
-
-function fmtPersonShort(p: Identity): string {
-  switch (p.kind) {
-    case 'person':
-      return p.abbreviation
-    case 'group':
-      return p.id.toUpperCase()
-    case 'unknown':
-      return p.id.toUpperCase()
-  }
-}
 
 function createModuleFilter() {
   let studyPrograms = $state.raw(new Array<FilterData>())
@@ -179,11 +123,6 @@ function createModuleFilter() {
   }
 }
 
-// const all = Promise.allSettled([
-//
-//   fetch(`${url}/modules?type=generic&source=all`, info),
-//   fetch(`${url}/studyPrograms?extend=true`, info),
-// ])
 function createModuleUpdateState() {
   let moduleTypes = $state.raw(new Array<ModuleType>())
   let languages = $state.raw(new Array<Language>())
@@ -194,6 +133,8 @@ function createModuleUpdateState() {
   let assessmentMethods = $state.raw(new Array<AssessmentMethod>())
   let examPhases = $state.raw(new Array<ExamPhase>())
   let modules = $state.raw(new Array<ModuleCore>())
+  let studyPrograms = $state.raw(new Array<StudyProgram>())
+  let genericModules = $state.raw(new Array<GenericModule>())
 
   return {
     get moduleTypes() {
@@ -222,6 +163,12 @@ function createModuleUpdateState() {
     },
     get modules() {
       return modules
+    },
+    get studyPrograms() {
+      return studyPrograms
+    },
+    get genericModules() {
+      return genericModules
     },
     async fetchGenerationInformationState(accessToken: string, fetch: typeof globalThis.fetch) {
       if (
@@ -317,6 +264,36 @@ function createModuleUpdateState() {
           const xs: ModuleCore[] = await res.json()
           xs.sort((a, b) => a.title.localeCompare(b.title))
           modules = xs
+        }
+      }
+    },
+    async fetchStudyProgramsInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+      if (studyPrograms.length === 0 || genericModules.length === 0) {
+        console.log('fetching study programs info...')
+        const auth = authHeader(accessToken)
+        const [sp, gm] = await Promise.allSettled([
+          fetch(`${url}/studyPrograms?extend=true`, auth),
+          fetch(`${url}/modules?type=generic&source=all`, auth)
+        ])
+        if (sp.status === 'fulfilled' && sp.value.ok) {
+          const xs: StudyProgram[] = await sp.value.json()
+          xs.sort((a, b) => {
+            const label = a.deLabel.localeCompare(b.deLabel)
+            if (label !== 0) {
+              return label
+            }
+            const degree = a.degree.id.localeCompare(b.degree.id)
+            if (degree !== 0) {
+              return degree
+            }
+            return a.po.version - b.po.version
+          })
+          studyPrograms = xs
+        }
+        if (gm.status === 'fulfilled' && gm.value.ok) {
+          const xs: GenericModule[] = await gm.value.json()
+          xs.sort((a, b) => a.title.localeCompare(b.title))
+          genericModules = xs
         }
       }
     }

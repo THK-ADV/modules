@@ -1,4 +1,4 @@
-import type { Degree } from '$lib/types/degree'
+import type { Degree } from '$lib/types/core'
 
 export interface LocalizedCore {
   id: string
@@ -16,4 +16,8 @@ export interface StudyProgram extends LocalizedCore {
   specialization?: LocalizedCore
   degree: Degree
   abbreviation: string
+}
+
+export function getFullPOId({ specialization, po }: StudyProgram): string {
+  return specialization?.id ?? po.id
 }

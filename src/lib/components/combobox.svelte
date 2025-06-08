@@ -13,6 +13,7 @@
     options: Option[]
     value: string
     errors?: any
+    width?: string // optional width for popover content
   }
 </script>
 
@@ -32,7 +33,8 @@
     description,
     options,
     value = $bindable(),
-    errors = {}
+    errors = {},
+    width = 'w-[350px]' // Default width
   }: Props = $props()
 
   let open = $state(false)
@@ -65,7 +67,7 @@
         <input hidden {value} name={props.name} />
       {/snippet}
     </Form.Control>
-    <Popover.Content class="w-[350px] p-0" align="start">
+    <Popover.Content class="{width} p-0" align="start">
       <Command.Root>
         <Command.Input placeholder="Suchen…" class="h-8 border-0 shadow-none focus:ring-0" />
         <Command.List>

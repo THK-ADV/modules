@@ -117,3 +117,10 @@ export interface ModuleCore {
   isLive: boolean
   moduleManagement: ModuleManagement[]
 }
+
+export interface GenericModule {
+  id: string
+  title: string
+  abbrev: string
+  pos: string[]
+}

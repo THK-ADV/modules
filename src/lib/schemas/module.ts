@@ -49,6 +49,11 @@ const yamlSafeText = z
     }
   )
 
+const workloadNumber = z
+  .number({ message: 'Eintrag erforderlich' })
+  .int('Muss eine ganze Zahl sein')
+  .min(0, 'Muss mindestens 0 sein')
+
 export const moduleSchema = z
   .object({
     title: z
@@ -93,30 +98,12 @@ export const moduleSchema = z
       )
       .min(1, 'Keine Prüfungsform angegeben'),
     workload: z.object({
-      lecture: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein'),
-      seminar: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein'),
-      exercise: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein'),
-      practical: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein'),
-      projectSupervision: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein'),
-      projectWork: z
-        .number({ message: 'Eintrag erforderlich' })
-        .int('Muss eine ganze Zahl sein')
-        .min(0, 'Muss mindestens 0 sein')
+      lecture: workloadNumber,
+      seminar: workloadNumber,
+      exercise: workloadNumber,
+      practical: workloadNumber,
+      projectSupervision: workloadNumber,
+      projectWork: workloadNumber
     }),
     recommendedPrerequisites: z
       .object({
@@ -129,7 +116,25 @@ export const moduleSchema = z
         text: yamlSafeText,
         modules: z.array(z.string())
       })
-      .nullable()
+      .nullable(),
+    po: z.object({
+      mandatory: z.array(
+        z.object({
+          po: z.string().nonempty('Studiengang erforderlich'),
+          specialization: z.string().nullable(),
+          recommendedSemester: z.array(z.number())
+        })
+      ),
+      optional: z.array(
+        z.object({
+          po: z.string().nonempty('Studiengang erforderlich'),
+          specialization: z.string().nullable(),
+          recommendedSemester: z.array(z.number()),
+          instanceOf: z.string().nonempty('Modul erforderlich'),
+          partOfCatalog: z.boolean().default(false)
+        })
+      )
+    })
   })
   .refine(
     (data) => {

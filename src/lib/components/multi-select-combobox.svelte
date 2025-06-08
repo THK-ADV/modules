@@ -14,7 +14,7 @@
     value: string[]
     errors?: any
     maxVisibleBadges?: number
-    width?: string // Optional width for popover content
+    width?: string // optional width for popover content
   }
 </script>
 

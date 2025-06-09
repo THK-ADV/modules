@@ -1,9 +1,10 @@
-<!-- TODO: reload on management is broken -->
-
 <script lang="ts">
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
   import { getModuleFormContext } from '../context'
+
+  const form = getModuleFormContext()
+  const { form: formData, errors } = form
 
   const identities = moduleUpdateState.identities
   const people = identities.filter((a) => a.identity.kind === 'person')
@@ -12,9 +13,6 @@
     const currentManagement = $formData.management
     return people.filter((a) => !currentManagement.includes(a.identity.id))
   })
-
-  const form = getModuleFormContext()
-  const { form: formData, errors } = form
 
   const identityOptions = identities.map(({ identity, label }) => ({
     id: identity.id,

@@ -58,6 +58,8 @@
     }
   )
 
+  const { form: dialogFormData, errors: dialogErrors, reset, validate } = dialogForm
+
   const isDialogFormValid = $derived.by(() => {
     const errors = $dialogErrors
     return (
@@ -65,8 +67,6 @@
       $dialogFormData.method !== ''
     )
   })
-
-  const { form: dialogFormData, errors: dialogErrors, reset, validate } = dialogForm
 
   async function handleSubmit() {
     const methodValid = await validate('method')

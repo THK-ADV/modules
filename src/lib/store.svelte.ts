@@ -296,6 +296,18 @@ function createModuleUpdateState() {
           genericModules = xs
         }
       }
+    },
+    async fetchMiscInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+      if (modules.length === 0) {
+        console.log('fetching misc info...')
+        const auth = authHeader(accessToken)
+        const res = await fetch(`${url}/modules?source=all`, auth)
+        if (res.ok) {
+          const xs: ModuleCore[] = await res.json()
+          xs.sort((a, b) => a.title.localeCompare(b.title))
+          modules = xs
+        }
+      }
     }
   }
 }

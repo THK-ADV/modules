@@ -134,7 +134,30 @@ export const moduleSchema = z
           partOfCatalog: z.boolean().default(false)
         })
       )
-    })
+    }),
+    participants: z
+      .object({
+        min: z.number().positive('Mindestteilnehmerzahl muss positiv sein'),
+        max: z.number().positive('Maximale Teilnehmerzahl muss positiv sein')
+      })
+      .refine(({ min, max }) => max > min, {
+        message: 'Maximale Teilnehmerzahl muss größer als Mindestteilnehmerzahl sein',
+        path: ['max']
+      })
+      .nullable(),
+    moduleRelation: z
+      .discriminatedUnion('kind', [
+        z.object({
+          kind: z.literal('parent'),
+          children: z.array(z.string()).min(1, 'Mindestens ein Kind-Modul erforderlich')
+        }),
+        z.object({
+          kind: z.literal('child'),
+          parent: z.string().nonempty('Parent-Modul erforderlich')
+        })
+      ])
+      .nullable(),
+    taughtWith: z.array(z.string()).nullable()
   })
   .refine(
     (data) => {

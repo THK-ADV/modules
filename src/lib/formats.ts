@@ -1,4 +1,4 @@
-import type { Identity } from './types/core'
+import type { Identity, ModuleCore, ModuleManagement } from './types/core'
 import type { StudyProgram } from './types/study-program'
 
 export function ordinalKind(a: Identity): number {
@@ -63,4 +63,19 @@ export function fmtPersonShort(p: Identity): string {
     case 'unknown':
       return p.id.toUpperCase()
   }
+}
+
+export function fmtManagement(m: ModuleManagement): string {
+  switch (m.kind) {
+    case 'person':
+      return m.lastname
+    case 'group':
+      return m.id
+    case 'unknown':
+      return m.id
+  }
+}
+
+export function fmtModule(m: ModuleCore): string {
+  return `${m.title}; ${fmtManagement(m.moduleManagement[0])}; ${m.ects} ECTS`
 }

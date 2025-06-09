@@ -8,7 +8,7 @@ export function showPO(studyPrograms: StudyProgram[]): (po: POMandatory) => stri
       if (specialization) {
         return sp.po.id === po && sp.specialization?.id === specialization
       }
-      return sp.po.id === po
+      return sp.po.id === po && sp.specialization === null
     })
     return sp ? fmtStudyProgram(sp) : specialization || po
   }

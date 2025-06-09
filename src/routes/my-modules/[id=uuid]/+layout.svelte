@@ -50,9 +50,9 @@
       href: `/my-modules/${id}/study-programs`
     },
     {
-      id: 'other',
+      id: 'misc',
       label: 'Sonstige Informationen',
-      href: `/my-modules/${id}/other`
+      href: `/my-modules/${id}/misc`
     }
   ]
 

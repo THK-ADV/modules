@@ -1,31 +1,16 @@
-<script lang="ts" module>
-  function fmtManagement(m: ModuleManagement): string {
-    switch (m.kind) {
-      case 'person':
-        return m.lastname
-      case 'group':
-        return m.id
-      case 'unknown':
-        return m.id
-    }
-  }
-</script>
-
 <script lang="ts">
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
+  import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
-  import type { ModuleManagement } from '$lib/types/core'
   import { getModuleFormContext } from '../context'
 
-  const moduleOptions = $derived(
-    moduleUpdateState.modules.map(({ id, title, abbreviation, ects, moduleManagement }) => ({
-      id,
-      label: `${title}; ${fmtManagement(moduleManagement[0])}; ${ects} ECTS`,
-      abbrev: abbreviation
-    }))
-  )
+  const moduleOptions = moduleUpdateState.modules.map((m) => ({
+    id: m.id,
+    label: fmtModule(m),
+    abbrev: m.abbreviation
+  }))
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form

@@ -32,7 +32,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Workload</h3>
       <p class="text-sm text-muted-foreground">
         Der Workload orientiert sich an der SWS Rechnung. Alle Angaben in Stunden. Das Selbststudium
@@ -100,14 +100,14 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Stunden pro Kategorie</h4>
       <p class="text-sm text-muted-foreground">
         Angabe der Arbeitsstunden je Veranstaltungstyp für das gesamte Semester.
       </p>
     </div>
 
-    <div class="space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
+    <div class="space-y-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0">
       <Form.Field {form} name="workload.lecture">
         <Form.Control>
           {#snippet children({ props })}

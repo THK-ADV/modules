@@ -20,7 +20,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Prüfungsleistungen</h3>
       <p class="text-sm text-muted-foreground">
         Definition der Prüfungsformen, Prüfer und Prüfungsmodalitäten für das Modul.
@@ -41,7 +41,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Prüfer</h4>
       <p class="text-sm text-muted-foreground">
         Festlegung der Erst- und Zweitprüfer für die Prüfungsleistungen.
@@ -74,7 +74,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Prüfungsorganisation</h4>
       <p class="text-sm text-muted-foreground">
         Festlegung der möglichen Prüfungsphasen und zeitlichen Organisation.

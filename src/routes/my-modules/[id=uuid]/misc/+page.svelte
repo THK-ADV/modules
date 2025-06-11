@@ -155,7 +155,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Sonstige Informationen</h3>
       <p class="text-sm text-muted-foreground">
         Zusätzliche organisatorische Informationen wie Teilnehmerbegrenzungen, gemeinsame
@@ -165,7 +165,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Teilnehmerbegrenzung (optional)</h4>
       <p class="text-sm text-muted-foreground">Wird häufig für Wahlmodule bzw. WPFs verwendet.</p>
     </div>
@@ -208,7 +208,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Gemeinsame Veranstaltung (optional)</h4>
       <p class="text-sm text-muted-foreground">
         Das Modul wird mit einem anderen Modul gemeinsam gelehrt. Wird häufig für inhaltlich
@@ -231,7 +231,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Modulbeziehung (optional)</h4>
       <p class="text-sm text-muted-foreground">
         Ein Modul kann ein Ober- oder Kind-Modul sein. Wird häufig verwendet, um mehrere Module zu

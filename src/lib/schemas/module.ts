@@ -157,7 +157,21 @@ export const moduleSchema = z
         })
       ])
       .nullable(),
-    taughtWith: z.array(z.string()).nullable()
+    taughtWith: z.array(z.string()).nullable(),
+    deContent: z.object({
+      learningOutcome: z.string(),
+      content: z.string(),
+      teachingAndLearningMethods: z.string(),
+      recommendedReading: z.string(),
+      particularities: z.string()
+    }),
+    enContent: z.object({
+      learningOutcome: z.string(),
+      content: z.string(),
+      teachingAndLearningMethods: z.string(),
+      recommendedReading: z.string(),
+      particularities: z.string()
+    })
   })
   .refine(
     (data) => {

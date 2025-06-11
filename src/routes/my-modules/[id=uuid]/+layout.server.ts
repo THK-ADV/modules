@@ -75,7 +75,9 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       },
       participants: module.metadata.participants,
       moduleRelation: module.metadata.moduleRelation,
-      taughtWith: module.metadata.taughtWith
+      taughtWith: module.metadata.taughtWith,
+      deContent: module.deContent,
+      enContent: module.enContent
     },
     zod(moduleSchema)
   )

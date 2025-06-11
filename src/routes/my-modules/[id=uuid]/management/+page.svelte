@@ -29,7 +29,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Verantwortliche</h3>
       <p class="text-sm text-muted-foreground">
         Festlegung der Modulverantwortung, Dozierenden und Bearbeitungsrechte.
@@ -38,7 +38,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Modulverantwortung und Lehre</h4>
       <p class="text-sm text-muted-foreground">
         Hauptverantwortliche und aktive Lehrende des Moduls.
@@ -69,7 +69,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Bearbeitungsrechte</h4>
       <p class="text-sm text-muted-foreground">
         Zusätzliche Personen mit Berechtigung zur Bearbeitung der Modulinformationen.

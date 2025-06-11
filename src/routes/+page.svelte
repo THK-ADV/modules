@@ -220,7 +220,11 @@
             <Card.Title>Open Source</Card.Title>
           </Card.Header>
           <Card.Content>
-            <p class="mb-4 text-muted-foreground">Entwickelt mit ❤️ und vollständig Open Source</p>
+            <p class="mb-4 text-muted-foreground">
+              Entwickelt mit <span class="dark:hidden">🖤</span><span class="hidden dark:inline"
+                >🤍</span
+              > und vollständig Open Source
+            </p>
             <a
               href="https://github.com/THK-ADV/modules"
               target="_blank"

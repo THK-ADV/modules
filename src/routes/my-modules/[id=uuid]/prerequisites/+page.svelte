@@ -94,7 +94,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Empfohlene Voraussetzungen (optional)</h3>
       <p class="text-sm text-muted-foreground">
         Module oder Kenntnisse, die zur erfolgreichen Teilnahme empfohlen werden.
@@ -134,7 +134,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Zwingende Voraussetzungen (optional)</h3>
       <p class="text-sm text-muted-foreground">
         Module oder Kenntnisse, die zwingend erforderlich sind. Nur erlaubt, wenn diese akkreditiert

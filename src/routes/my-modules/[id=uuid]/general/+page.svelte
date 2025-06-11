@@ -17,7 +17,7 @@
 
 <div class="space-y-8">
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h3 class="text-lg font-medium text-foreground">Allgemeine Informationen</h3>
       <p class="text-sm text-muted-foreground">
         Grundlegende Informationen und Klassifizierung des Moduls.
@@ -26,7 +26,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Grundangaben</h4>
       <p class="text-sm text-muted-foreground">Name, Abkürzung und Credits des Moduls.</p>
     </div>
@@ -93,7 +93,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Klassifizierung</h4>
       <p class="text-sm text-muted-foreground">
         Art, Sprache und organisatorische Einordnung des Moduls.
@@ -137,7 +137,7 @@
   </div>
 
   <div class="space-y-4">
-    <div class="border-b pb-2">
+    <div class="space-y-2 border-b pb-4">
       <h4 class="text-base font-medium text-foreground">Terminplanung</h4>
       <p class="text-sm text-muted-foreground">Zeitliche und örtliche Einordnung des Moduls.</p>
     </div>

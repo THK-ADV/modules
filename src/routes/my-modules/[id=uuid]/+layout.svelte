@@ -40,14 +40,39 @@
       href: `/my-modules/${id}/workload`
     },
     {
-      id: 'prerequisites',
-      label: 'Voraussetzungen',
-      href: `/my-modules/${id}/prerequisites`
-    },
-    {
       id: 'study-programs',
       label: 'Zuordnung zu Studiengängen',
       href: `/my-modules/${id}/study-programs`
+    },
+    {
+      id: 'learning-outcomes',
+      label: 'Learning Outcomes',
+      href: `/my-modules/${id}/learning-outcomes`
+    },
+    {
+      id: 'module-content',
+      label: 'Modulinhalte',
+      href: `/my-modules/${id}/module-content`
+    },
+    {
+      id: 'teaching-methods',
+      label: 'Lehr- und Lernmethoden',
+      href: `/my-modules/${id}/teaching-methods`
+    },
+    {
+      id: 'literature',
+      label: 'Empfohlene Literatur',
+      href: `/my-modules/${id}/literature`
+    },
+    {
+      id: 'particularities',
+      label: 'Besonderheiten',
+      href: `/my-modules/${id}/particularities`
+    },
+    {
+      id: 'prerequisites',
+      label: 'Voraussetzungen',
+      href: `/my-modules/${id}/prerequisites`
     },
     {
       id: 'misc',

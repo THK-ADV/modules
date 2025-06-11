@@ -2,9 +2,16 @@
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  let { data }: PageProps = $props()
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
+
+  const managementStatus = data.fieldStatuses?.management
+  const lecturersStatus = data.fieldStatuses?.lecturers
+  const updatePermissionsStatus = data.fieldStatuses?.updatePermissions
 
   const identities = moduleUpdateState.identities
   const people = identities.filter((a) => a.identity.kind === 'person')
@@ -54,6 +61,7 @@
         options={identityOptions}
         bind:value={$formData.management}
         {errors}
+        modificationStatus={managementStatus}
       />
 
       <MultiSelectCombobox
@@ -64,6 +72,7 @@
         options={identityOptions}
         bind:value={$formData.lecturers}
         {errors}
+        modificationStatus={lecturersStatus}
       />
     </div>
   </div>
@@ -85,6 +94,7 @@
         options={nonManagementOptions}
         bind:value={$formData.updatePermissions}
         {errors}
+        modificationStatus={updatePermissionsStatus}
       />
     </div>
   </div>

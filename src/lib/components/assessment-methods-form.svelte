@@ -1,15 +1,3 @@
-<script lang="ts" module>
-  interface Props {
-    form: any
-    name: string // name of the field in the form
-    label: string
-    assessmentMethods: AssessmentMethod[]
-    preconditions: Precondition[]
-    value: AssessmentEntry[]
-    errors?: any
-  }
-</script>
-
 <script lang="ts">
   import Combobox from '$lib/components/combobox.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
@@ -22,11 +10,25 @@
   import { moduleSchema } from '$lib/schemas/module'
   import type { AssessmentMethod, Precondition } from '$lib/types/core'
   import type { AssessmentEntry } from '$lib/types/module-protocol'
+  import type { ModificationStatus } from '$lib/types/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import ModificationIndicator from './modification-indicator.svelte'
   import { Edit, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
 
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale gewichtung hat, soll die der zweiten auf die differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
+
+  interface Props {
+    form: any
+    name: string // name of the field in the form
+    label: string
+    assessmentMethods: AssessmentMethod[]
+    preconditions: Precondition[]
+    value: AssessmentEntry[]
+    errors?: any
+    modificationStatus?: ModificationStatus // optional modification tracking
+  }
 
   const assessmentEntrySchema = moduleSchema.innerType().shape.assessmentMethods.element
 
@@ -37,7 +39,8 @@
     assessmentMethods,
     preconditions,
     value = $bindable(),
-    errors = {}
+    errors = {},
+    modificationStatus
   }: Props = $props()
 
   let dialogOpen = $state(false)
@@ -174,216 +177,240 @@
   }
 </script>
 
-<Form.Field {form} {name}>
-  <Form.Control>
-    {#snippet children({ props })}
+{#snippet assessmentContent(props: any)}
+  <div class="space-y-6">
+    {#if value.length > 0}
       <div class="space-y-4">
-        <div class="border-b pb-2">
-          <Form.Label class="text-lg font-medium text-foreground">{label}</Form.Label>
-          <Form.Description class="mt-1 text-sm text-muted-foreground">
-            Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
-          </Form.Description>
+        <!-- Add Button -->
+        <Button type="button" variant="outline" onclick={openAddDialog} class="w-full sm:w-auto">
+          <Plus class="mr-2 h-4 w-4" />
+          Prüfungsform hinzufügen
+        </Button>
+
+        <!-- Assessment Methods Table -->
+        <div class="rounded-md border">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head>Prüfungsform</Table.Head>
+                <Table.Head>Prozentuale Gewichtung</Table.Head>
+                <Table.Head>Voraussetzung</Table.Head>
+                <Table.Head class="w-24">Aktionen</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each value as entry, index (entry.method)}
+                <Table.Row>
+                  <Table.Cell class="font-medium">
+                    {#if isRPO(entry.method)}
+                      {showAssessmentMethod(entry.method)}
+                    {:else}
+                      <Tooltip.Provider>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger>
+                            <div class="flex items-center">
+                              <TriangleAlert class="mr-2 h-4 w-4 flex-shrink-0 text-red-500" />
+                              <span>{showAssessmentMethod(entry.method)}</span>
+                            </div>
+                          </Tooltip.Trigger>
+                          <Tooltip.Content class="max-w-md break-words">
+                            Die Prüfungsform ist nicht in der Rahmenprüfungsordnung enthalten und
+                            sollte nicht verwendet werden.
+                          </Tooltip.Content>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {entry.percentage !== null ? `${entry.percentage} %` : '-'}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {entry.precondition.length > 0 ? showPreconditions(entry.precondition) : '-'}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div class="flex gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
+                        onclick={() => openEditDialog(index)}
+                      >
+                        <Edit class="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        onclick={() => deleteEntry(index)}
+                      >
+                        <Trash2 class="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
         </div>
       </div>
-
-      <div class="space-y-6">
-        {#if value.length > 0}
-          <div class="space-y-4">
-            <!-- Add Button -->
-            <Button
-              type="button"
-              variant="outline"
-              onclick={openAddDialog}
-              class="w-full sm:w-auto"
+    {:else}
+      <div class="rounded-md border border-dashed border-muted-foreground/25 bg-muted/10">
+        <div class="flex flex-col items-center justify-center px-6 py-8 text-center">
+          <div class="mb-3 rounded-full bg-muted p-3">
+            <svg
+              class="h-6 w-6 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <Plus class="mr-2 h-4 w-4" />
-              Prüfungsform hinzufügen
-            </Button>
-
-            <!-- Assessment Methods Table -->
-            <div class="rounded-md border">
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head>Prüfungsform</Table.Head>
-                    <Table.Head>Prozentuale Gewichtung</Table.Head>
-                    <Table.Head>Voraussetzung</Table.Head>
-                    <Table.Head class="w-24">Aktionen</Table.Head>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {#each value as entry, index (entry.method)}
-                    <Table.Row>
-                      <Table.Cell class="font-medium">
-                        {#if isRPO(entry.method)}
-                          {showAssessmentMethod(entry.method)}
-                        {:else}
-                          <Tooltip.Provider>
-                            <Tooltip.Root>
-                              <Tooltip.Trigger>
-                                <div class="flex items-center">
-                                  <TriangleAlert class="mr-2 h-4 w-4 flex-shrink-0 text-red-500" />
-                                  <span>{showAssessmentMethod(entry.method)}</span>
-                                </div>
-                              </Tooltip.Trigger>
-                              <Tooltip.Content class="max-w-md break-words">
-                                Die Prüfungsform ist nicht in der Rahmenprüfungsordnung enthalten
-                                und sollte nicht verwendet werden.
-                              </Tooltip.Content>
-                            </Tooltip.Root>
-                          </Tooltip.Provider>
-                        {/if}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {entry.percentage !== null ? `${entry.percentage} %` : '-'}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {entry.precondition.length > 0
-                          ? showPreconditions(entry.precondition)
-                          : '-'}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div class="flex gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
-                            onclick={() => openEditDialog(index)}
-                          >
-                            <Edit class="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                            onclick={() => deleteEntry(index)}
-                          >
-                            <Trash2 class="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  {/each}
-                </Table.Body>
-              </Table.Root>
-            </div>
-          </div>
-        {:else}
-          <div class="rounded-md border border-dashed border-muted-foreground/25 bg-muted/10">
-            <div class="flex flex-col items-center justify-center px-6 py-8 text-center">
-              <div class="mb-3 rounded-full bg-muted p-3">
-                <svg
-                  class="h-6 w-6 text-muted-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 class="mb-2 text-base font-medium text-foreground">
-                Keine Prüfungsformen definiert
-              </h3>
-              <p class="mb-4 max-w-sm text-sm text-muted-foreground">
-                Es wurden noch keine Prüfungsformen für dieses Modul festgelegt.
-              </p>
-              <Button type="button" variant="outline" onclick={openAddDialog}>
-                <Plus class="mr-2 h-4 w-4" />
-                Prüfungsform hinzufügen
-              </Button>
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      <!-- Hidden input for form integration -->
-      <input hidden value={JSON.stringify(value)} name={props.name} />
-    {/snippet}
-  </Form.Control>
-
-  <Form.FieldErrors />
-
-  <Form.Description class="mt-4">
-    Änderungen an den Prüfungsformen müssen vom <a
-      href="/help/approval"
-      class="text-primary underline hover:no-underline">PAV geprüft</a
-    >
-    werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
-    <a href="/help/assessment-methods" class="text-primary underline hover:no-underline"
-      >Rahmenprüfungsordnung (RPO)</a
-    > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
-  </Form.Description>
-
-  <!-- Add/Edit Dialog -->
-  <Dialog.Root bind:open={dialogOpen}>
-    <Dialog.Content class="max-w-lg">
-      <Dialog.Header>
-        <Dialog.Title>
-          {editingIndex !== null ? 'Prüfungsform bearbeiten' : 'Prüfungsform hinzufügen'}
-        </Dialog.Title>
-      </Dialog.Header>
-
-      <div class="space-y-4 py-4">
-        <!-- Assessment Method Selection -->
-        <Combobox
-          form={dialogForm}
-          name="method"
-          label="Prüfungsform"
-          placeholder="Prüfungsform auswählen…"
-          description="Wählen Sie eine gültige Prüfungsform aus der Rahmenprüfungsordnung."
-          options={assessmentMethodOptions}
-          bind:value={$dialogFormData.method}
-          errors={$dialogErrors}
-        />
-
-        <!-- Percentage Input -->
-        <Form.Field form={dialogForm} name="percentage">
-          <Form.Control>
-            {#snippet children({ props })}
-              <Form.Label>Prozentsatz (optional)</Form.Label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                {...props}
-                bind:value={$dialogFormData.percentage}
-                placeholder="z.B. 50"
-                class={$dialogErrors.percentage ? 'border-destructive' : ''}
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
-            {/snippet}
-          </Form.Control>
-          <Form.Description>Prozentuale Gewichtung bei mehreren Prüfungsformen</Form.Description>
-          <Form.FieldErrors />
-        </Form.Field>
-
-        <!-- Precondition Selection -->
-        <MultiSelectCombobox
-          form={dialogForm}
-          name="precondition"
-          label="Voraussetzungen (optional)"
-          description="Prüfungsvoraussetzungen laut Prüfungsordnung. z.B. Praktikum."
-          options={preconditionOptions}
-          bind:value={$dialogFormData.precondition}
-          errors={$dialogErrors}
-        />
+            </svg>
+          </div>
+          <h3 class="mb-2 text-base font-medium text-foreground">Keine Prüfungsformen definiert</h3>
+          <p class="mb-4 max-w-sm text-sm text-muted-foreground">
+            Es wurden noch keine Prüfungsformen für dieses Modul festgelegt.
+          </p>
+          <Button type="button" variant="outline" onclick={openAddDialog}>
+            <Plus class="mr-2 h-4 w-4" />
+            Prüfungsform hinzufügen
+          </Button>
+        </div>
       </div>
+    {/if}
+  </div>
 
-      <Dialog.Footer class="gap-2">
-        <Button type="button" variant="outline" onclick={() => (dialogOpen = false)}>
-          Abbrechen
-        </Button>
-        <Button type="button" disabled={!isDialogFormValid} onclick={handleSubmit}>
-          {editingIndex !== null ? 'Änderungen speichern' : 'Hinzufügen'}
-        </Button>
-      </Dialog.Footer>
-    </Dialog.Content>
-  </Dialog.Root>
-</Form.Field>
+  <!-- Hidden input for form integration -->
+  <input hidden value={JSON.stringify(value)} name={props.name} />
+{/snippet}
+
+{#if modificationStatus}
+  <!-- Enhanced version with modification tracking -->
+  <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
+    <div class="flex items-center justify-between">
+      <span class="text-lg font-medium text-foreground">{label}</span>
+      <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
+    </div>
+    <p class="text-sm text-muted-foreground">
+      Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
+    </p>
+    <Form.Field {form} {name}>
+      <Form.Control>
+        {#snippet children({ props })}
+          {@render assessmentContent(props)}
+        {/snippet}
+      </Form.Control>
+      <Form.FieldErrors />
+      <Form.Description class="mt-4">
+        Änderungen an den Prüfungsformen müssen vom <a
+          href="/help/approval"
+          class="text-primary underline hover:no-underline">PAV geprüft</a
+        >
+        werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+        <a href="/help/assessment-methods" class="text-primary underline hover:no-underline"
+          >Rahmenprüfungsordnung (RPO)</a
+        > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
+      </Form.Description>
+    </Form.Field>
+  </div>
+{:else}
+  <!-- Standard version without modification tracking -->
+  <Form.Field {form} {name}>
+    <Form.Control>
+      {#snippet children({ props })}
+        <div class="space-y-4">
+          <div class="border-b pb-2">
+            <Form.Label class="text-lg font-medium text-foreground">{label}</Form.Label>
+            <Form.Description class="mt-1 text-sm text-muted-foreground">
+              Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
+            </Form.Description>
+          </div>
+        </div>
+        {@render assessmentContent(props)}
+      {/snippet}
+    </Form.Control>
+    <Form.FieldErrors />
+    <Form.Description class="mt-4">
+      Änderungen an den Prüfungsformen müssen vom <a
+        href="/help/approval"
+        class="text-primary underline hover:no-underline">PAV geprüft</a
+      >
+      werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+      <a href="/help/assessment-methods" class="text-primary underline hover:no-underline"
+        >Rahmenprüfungsordnung (RPO)</a
+      > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
+    </Form.Description>
+  </Form.Field>
+{/if}
+
+<!-- Add/Edit Dialog -->
+<Dialog.Root bind:open={dialogOpen}>
+  <Dialog.Content class="max-w-lg">
+    <Dialog.Header>
+      <Dialog.Title>
+        {editingIndex !== null ? 'Prüfungsform bearbeiten' : 'Prüfungsform hinzufügen'}
+      </Dialog.Title>
+    </Dialog.Header>
+
+    <div class="space-y-4 py-4">
+      <!-- Assessment Method Selection -->
+      <Combobox
+        form={dialogForm}
+        name="method"
+        label="Prüfungsform"
+        placeholder="Prüfungsform auswählen…"
+        description="Wählen Sie eine gültige Prüfungsform aus der Rahmenprüfungsordnung."
+        options={assessmentMethodOptions}
+        bind:value={$dialogFormData.method}
+        errors={$dialogErrors}
+      />
+
+      <!-- Percentage Input -->
+      <Form.Field form={dialogForm} name="percentage">
+        <Form.Control>
+          {#snippet children({ props })}
+            <Form.Label>Prozentsatz (optional)</Form.Label>
+            <Input
+              type="number"
+              min="1"
+              max="100"
+              {...props}
+              bind:value={$dialogFormData.percentage}
+              placeholder="z.B. 50"
+              class={$dialogErrors.percentage ? 'border-destructive' : ''}
+            />
+          {/snippet}
+        </Form.Control>
+        <Form.Description>Prozentuale Gewichtung bei mehreren Prüfungsformen</Form.Description>
+        <Form.FieldErrors />
+      </Form.Field>
+
+      <!-- Precondition Selection -->
+      <MultiSelectCombobox
+        form={dialogForm}
+        name="precondition"
+        label="Voraussetzungen (optional)"
+        description="Prüfungsvoraussetzungen laut Prüfungsordnung. z.B. Praktikum."
+        options={preconditionOptions}
+        bind:value={$dialogFormData.precondition}
+        errors={$dialogErrors}
+      />
+    </div>
+
+    <Dialog.Footer class="gap-2">
+      <Button type="button" variant="outline" onclick={() => (dialogOpen = false)}>
+        Abbrechen
+      </Button>
+      <Button type="button" disabled={!isDialogFormValid} onclick={handleSubmit}>
+        {editingIndex !== null ? 'Änderungen speichern' : 'Hinzufügen'}
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

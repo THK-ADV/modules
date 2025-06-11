@@ -2,6 +2,9 @@
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Textarea } from '$lib/components/ui/textarea/index.js'
+  import type { ModificationStatus } from '$lib/types/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import ModificationIndicator from './modification-indicator.svelte'
   import { marked } from 'marked'
   import { Eye, Pencil, Bold, Italic, List, Link, ListOrdered } from '@lucide/svelte'
 
@@ -13,6 +16,7 @@
     placeholder?: string
     value: string
     errors?: any
+    modificationStatus?: ModificationStatus // optional modification tracking
   }
 
   let {
@@ -22,7 +26,8 @@
     description,
     placeholder = 'Markdown-Text eingeben…',
     value = $bindable(),
-    errors = {}
+    errors = {},
+    modificationStatus
   }: Props = $props()
 
   let showPreview = $state(false)
@@ -102,111 +107,229 @@
   }
 </script>
 
-<Form.Field {form} {name}>
-  <Form.Control>
-    {#snippet children({ props })}
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <Form.Label>{label}</Form.Label>
-          <div class="flex items-center gap-2">
-            {#if !showPreview}
-              <!-- Toolbar -->
-              <div class="flex items-center gap-1 rounded-md border p-1">
+{#if modificationStatus}
+  <!-- Enhanced version with modification tracking -->
+  <div class="space-y-3 {getFieldHighlightClasses(modificationStatus)}">
+    <Form.Field {form} {name}>
+      <Form.Control>
+        {#snippet children({ props })}
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-foreground">{label}</span>
+                <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
+              </div>
+              <div class="flex items-center gap-2">
+                {#if !showPreview}
+                  <!-- Toolbar -->
+                  <div class="flex items-center gap-1 rounded-md border p-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onclick={makeBold}
+                      class="h-7 w-7 p-0"
+                      title="Fett"
+                    >
+                      <Bold class="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onclick={makeItalic}
+                      class="h-7 w-7 p-0"
+                      title="Kursiv"
+                    >
+                      <Italic class="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onclick={insertBulletList}
+                      class="h-7 w-7 p-0"
+                      title="Aufzählungsliste"
+                    >
+                      <List class="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onclick={insertNumberedList}
+                      class="h-7 w-7 p-0"
+                      title="Nummerierte Liste"
+                    >
+                      <ListOrdered class="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onclick={insertLink}
+                      class="h-7 w-7 p-0"
+                      title="Link"
+                    >
+                      <Link class="h-3 w-3" />
+                    </Button>
+                  </div>
+                {/if}
+
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onclick={makeBold}
-                  class="h-7 w-7 p-0"
-                  title="Fett"
+                  onclick={() => (showPreview = !showPreview)}
+                  class="h-9 px-2"
                 >
-                  <Bold class="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onclick={makeItalic}
-                  class="h-7 w-7 p-0"
-                  title="Kursiv"
-                >
-                  <Italic class="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onclick={insertBulletList}
-                  class="h-7 w-7 p-0"
-                  title="Aufzählungsliste"
-                >
-                  <List class="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onclick={insertNumberedList}
-                  class="h-7 w-7 p-0"
-                  title="Nummerierte Liste"
-                >
-                  <ListOrdered class="h-3 w-3" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onclick={insertLink}
-                  class="h-7 w-7 p-0"
-                  title="Link"
-                >
-                  <Link class="h-3 w-3" />
+                  {#if showPreview}
+                    <Pencil class="mr-1 h-3 w-3" />
+                    Bearbeiten
+                  {:else}
+                    <Eye class="mr-1 h-3 w-3" />
+                    Vorschau
+                  {/if}
                 </Button>
               </div>
-            {/if}
+            </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onclick={() => (showPreview = !showPreview)}
-              class="h-9 px-2"
-            >
+            <div class="space-y-2">
               {#if showPreview}
-                <Pencil class="mr-1 h-3 w-3" />
-                Bearbeiten
+                <div
+                  class="min-h-[{calculatedRows *
+                    1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
+                >
+                  {@html renderedMarkdown()}
+                </div>
               {:else}
-                <Eye class="mr-1 h-3 w-3" />
-                Vorschau
+                <Textarea
+                  {...props}
+                  bind:ref={textareaElement}
+                  bind:value
+                  {placeholder}
+                  rows={calculatedRows}
+                  class={`resize-y font-mono text-sm ${errors[name] ? 'border-destructive' : ''}`}
+                />
               {/if}
-            </Button>
+            </div>
+          </div>
+        {/snippet}
+      </Form.Control>
+      {#if description}
+        <Form.Description>{description}</Form.Description>
+      {/if}
+      <Form.FieldErrors />
+    </Form.Field>
+  </div>
+{:else}
+  <!-- Standard version without modification tracking -->
+  <Form.Field {form} {name}>
+    <Form.Control>
+      {#snippet children({ props })}
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <Form.Label>{label}</Form.Label>
+            <div class="flex items-center gap-2">
+              {#if !showPreview}
+                <!-- Toolbar -->
+                <div class="flex items-center gap-1 rounded-md border p-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onclick={makeBold}
+                    class="h-7 w-7 p-0"
+                    title="Fett"
+                  >
+                    <Bold class="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onclick={makeItalic}
+                    class="h-7 w-7 p-0"
+                    title="Kursiv"
+                  >
+                    <Italic class="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onclick={insertBulletList}
+                    class="h-7 w-7 p-0"
+                    title="Aufzählungsliste"
+                  >
+                    <List class="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onclick={insertNumberedList}
+                    class="h-7 w-7 p-0"
+                    title="Nummerierte Liste"
+                  >
+                    <ListOrdered class="h-3 w-3" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onclick={insertLink}
+                    class="h-7 w-7 p-0"
+                    title="Link"
+                  >
+                    <Link class="h-3 w-3" />
+                  </Button>
+                </div>
+              {/if}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onclick={() => (showPreview = !showPreview)}
+                class="h-9 px-2"
+              >
+                {#if showPreview}
+                  <Pencil class="mr-1 h-3 w-3" />
+                  Bearbeiten
+                {:else}
+                  <Eye class="mr-1 h-3 w-3" />
+                  Vorschau
+                {/if}
+              </Button>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            {#if showPreview}
+              <div
+                class="min-h-[{calculatedRows *
+                  1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                {@html renderedMarkdown()}
+              </div>
+            {:else}
+              <Textarea
+                {...props}
+                bind:ref={textareaElement}
+                bind:value
+                {placeholder}
+                rows={calculatedRows}
+                class={`resize-y font-mono text-sm ${errors[name] ? 'border-destructive' : ''}`}
+              />
+            {/if}
           </div>
         </div>
-
-        <div class="space-y-2">
-          {#if showPreview}
-            <div
-              class="min-h-[{calculatedRows *
-                1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
-            >
-              {@html renderedMarkdown()}
-            </div>
-          {:else}
-            <Textarea
-              {...props}
-              bind:ref={textareaElement}
-              bind:value
-              {placeholder}
-              rows={calculatedRows}
-              class={`resize-y font-mono text-sm ${errors[name] ? 'border-destructive' : ''}`}
-            />
-          {/if}
-        </div>
-      </div>
-    {/snippet}
-  </Form.Control>
-  {#if description}
-    <Form.Description>{description}</Form.Description>
-  {/if}
-  <Form.FieldErrors />
-</Form.Field>
+      {/snippet}
+    </Form.Control>
+    {#if description}
+      <Form.Description>{description}</Form.Description>
+    {/if}
+    <Form.FieldErrors />
+  </Form.Field>
+{/if}

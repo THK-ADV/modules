@@ -3,6 +3,12 @@
   import MarkdownHelp from '$lib/components/markdown-help.svelte'
   import MarkdownHint from '$lib/components/markdown-hint.svelte'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  const { data }: PageProps = $props()
+
+  const deContentStatus = data.fieldStatuses?.['deContent.recommendedReading']
+  const enContentStatus = data.fieldStatuses?.['enContent.recommendedReading']
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -63,6 +69,7 @@
       placeholder="- Autor. Titel. Jahr. Verlag."
       bind:value={deContent.value}
       {errors}
+      modificationStatus={deContentStatus}
     />
 
     <MarkdownEditor
@@ -73,6 +80,7 @@
       placeholder="- Author. Title. Year. Publisher."
       bind:value={enContent.value}
       {errors}
+      modificationStatus={enContentStatus}
     />
   </div>
 </div>

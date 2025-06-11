@@ -3,6 +3,12 @@
   import MarkdownHelp from '$lib/components/markdown-help.svelte'
   import MarkdownHint from '$lib/components/markdown-hint.svelte'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  const { data }: PageProps = $props()
+
+  const deContentStatus = data.fieldStatuses?.['deContent.learningOutcome']
+  const enContentStatus = data.fieldStatuses?.['enContent.learningOutcome']
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -67,6 +73,7 @@
       placeholder="Die Studierenden sollen … (WAS) … (WOMIT) … (WOZU) …"
       bind:value={deContent.value}
       {errors}
+      modificationStatus={deContentStatus}
     />
 
     <MarkdownEditor
@@ -77,6 +84,7 @@
       placeholder="Students will be able to … (WHAT) … (WITH) … (WHY) …"
       bind:value={enContent.value}
       {errors}
+      modificationStatus={enContentStatus}
     />
   </div>
 </div>

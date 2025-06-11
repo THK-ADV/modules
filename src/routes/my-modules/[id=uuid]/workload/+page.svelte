@@ -1,7 +1,21 @@
 <script lang="ts">
+  import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
+  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
+
+  const { data }: PageProps = $props()
+
+  const workloadStatus =
+    data.fieldStatuses?.workload ||
+    data.fieldStatuses?.['workload.lecture'] ||
+    data.fieldStatuses?.['workload.seminar'] ||
+    data.fieldStatuses?.['workload.exercise'] ||
+    data.fieldStatuses?.['workload.practical'] ||
+    data.fieldStatuses?.['workload.projectSupervision'] ||
+    data.fieldStatuses?.['workload.projectWork']
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -73,20 +87,22 @@
     </div>
 
     {#if consideredScheduleEntries.length > 0}
-      <div class="rounded-md border border-blue-200 bg-blue-50 p-4">
-        <h4 class="mb-2 text-sm font-medium text-blue-900">
+      <div
+        class="rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+      >
+        <h4 class="mb-2 text-sm font-medium text-slate-900 dark:text-slate-100">
           Im Stundenplan berücksichtigte Einträge:
         </h4>
         <div class="flex flex-wrap gap-2">
           {#each consideredScheduleEntries as entry (entry)}
             <span
-              class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+              class="inline-flex items-center rounded-full bg-slate-600 px-2.5 py-0.5 text-xs font-medium text-white dark:bg-slate-300 dark:text-slate-900"
             >
               {entry}
             </span>
           {/each}
         </div>
-        <p class="mt-2 text-xs text-blue-700">
+        <p class="mt-2 text-xs text-slate-700 dark:text-slate-300">
           Einträge mit einem Workload größer als 0 werden automatisch im Stundenplan berücksichtigt.
         </p>
       </div>
@@ -99,9 +115,14 @@
     {/if}
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-4 {workloadStatus ? getFieldHighlightClasses(workloadStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Stunden pro Kategorie</h4>
+      <div class="flex items-center justify-between">
+        <h4 class="text-base font-medium text-foreground">Stunden pro Kategorie</h4>
+        {#if workloadStatus}
+          <ModificationIndicator status={workloadStatus} iconOnly={false} inline={true} />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">
         Angabe der Arbeitsstunden je Veranstaltungstyp für das gesamte Semester.
       </p>

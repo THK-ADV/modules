@@ -3,6 +3,12 @@
   import StudyProgramMandatoryRelationsForm from '$lib/components/forms/study-program-mandatory-relations-form.svelte'
   import { moduleUpdateState } from '$lib/store.svelte'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  const { data }: PageProps = $props()
+
+  const poMandatoryStatus = data.fieldStatuses?.['po.mandatory']
+  const poOptionalStatus = data.fieldStatuses?.['po.optional']
 
   const studyPrograms = moduleUpdateState.studyPrograms
 
@@ -29,6 +35,7 @@
       {studyPrograms}
       bind:value={$formData.po.mandatory}
       {errors}
+      modificationStatus={poMandatoryStatus}
     />
   </div>
 
@@ -39,6 +46,7 @@
       {studyPrograms}
       bind:value={$formData.po.optional}
       {errors}
+      modificationStatus={poOptionalStatus}
     />
   </div>
 </div>

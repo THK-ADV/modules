@@ -54,6 +54,8 @@ const workloadNumber = z
   .int('Muss eine ganze Zahl sein')
   .min(0, 'Muss mindestens 0 sein')
 
+// update fieldToSectionMap in /my-modules/[id=uuid]/+layout.svelte if this schema is changed
+
 export const moduleSchema = z
   .object({
     title: z

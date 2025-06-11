@@ -31,14 +31,26 @@ export const handle: Handle = async ({ event, resolve }) => {
     // proxy the request to the backend
     const backendUrl = BACKEND_URL_PREFIX + event.url.pathname + event.url.search
 
-    const proxyResponse = await fetch(backendUrl, {
+    const requestInit: RequestInit & { duplex?: string } = {
       method: event.request.method,
       headers: {
         ...Object.fromEntries(event.request.headers),
         Authorization: `Bearer ${accessToken}`
       },
       body: event.request.body
-    })
+    }
+
+    // only add duplex for requests with bodies since it seems to be required
+    if (
+      event.request.body &&
+      (event.request.method === 'POST' ||
+        event.request.method === 'PUT' ||
+        event.request.method === 'PATCH')
+    ) {
+      requestInit.duplex = 'half'
+    }
+
+    const proxyResponse = await fetch(backendUrl, requestInit)
 
     return new Response(proxyResponse.body, {
       status: proxyResponse.status,

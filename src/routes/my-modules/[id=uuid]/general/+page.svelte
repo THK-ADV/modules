@@ -1,9 +1,11 @@
 <script lang="ts">
   import ComboboxField from '$lib/components/combobox.svelte'
-  import * as Form from '$lib/components/ui/form/index.js'
-  import { Input } from '$lib/components/ui/input/index.js'
+  import InputField from '$lib/components/input-field.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
+  import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
+
+  let { data }: PageProps = $props()
 
   let moduleTypes = moduleUpdateState.moduleTypes
   let languages = moduleUpdateState.languages
@@ -13,6 +15,16 @@
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
+
+  const titleStatus = data.fieldStatuses?.title
+  const abbrevStatus = data.fieldStatuses?.abbrev
+  const ectsStatus = data.fieldStatuses?.ects
+  const moduleTypeStatus = data.fieldStatuses?.moduleType
+  const languageStatus = data.fieldStatuses?.language
+  const statusStatus = data.fieldStatuses?.status
+  const durationStatus = data.fieldStatuses?.duration
+  const seasonStatus = data.fieldStatuses?.season
+  const locationStatus = data.fieldStatuses?.location
 </script>
 
 <div class="space-y-8">
@@ -32,63 +44,40 @@
     </div>
 
     <div class="space-y-4">
-      <Form.Field {form} name="title">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label>Modulbezeichnung</Form.Label>
-            <Input
-              {...props}
-              bind:value={$formData.title}
-              placeholder="z.B. Grundlagen der Informatik"
-              class={$errors.title ? 'border-destructive' : ''}
-            />
-          {/snippet}
-        </Form.Control>
-        <Form.Description
-          >Die Modulbezeichnung wird an vielen Stellen als Bezeichner für das Modul verwendet, wie
-          z.B. im Inhaltsverzeichnis des Modulhandbuchs und in den Prüfungslisten.</Form.Description
-        >
-        <Form.FieldErrors />
-      </Form.Field>
+      <InputField
+        {form}
+        name="title"
+        label="Modulbezeichnung"
+        placeholder="z.B. Grundlagen der Informatik"
+        description="Die Modulbezeichnung wird an vielen Stellen als Bezeichner für das Modul verwendet, wie z.B. im Inhaltsverzeichnis des Modulhandbuchs und in den Prüfungslisten."
+        bind:value={$formData.title}
+        {errors}
+        modificationStatus={titleStatus}
+      />
 
-      <Form.Field {form} name="abbrev">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label>Modulabkürzung</Form.Label>
-            <Input
-              {...props}
-              bind:value={$formData.abbrev}
-              placeholder="z.B. GdI"
-              class={$errors.abbrev ? 'border-destructive' : ''}
-            />
-          {/snippet}
-        </Form.Control>
-        <Form.Description
-          >Die Modulabkürzung wird im Modulhandbuch und an einigen Stellen anstelle der
-          Modulbezeichnung verwendet.</Form.Description
-        >
-        <Form.FieldErrors />
-      </Form.Field>
+      <InputField
+        {form}
+        name="abbrev"
+        label="Modulabkürzung"
+        placeholder="z.B. GdI"
+        description="Die Modulabkürzung wird im Modulhandbuch und an einigen Stellen anstelle der Modulbezeichnung verwendet."
+        bind:value={$formData.abbrev}
+        {errors}
+        modificationStatus={abbrevStatus}
+      />
 
-      <Form.Field {form} name="ects">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label>Credits</Form.Label>
-            <Input
-              type="number"
-              step="any"
-              {...props}
-              bind:value={$formData.ects}
-              placeholder="z.B. 5.0"
-              class={$errors.ects ? 'border-destructive' : ''}
-            />
-          {/snippet}
-        </Form.Control>
-        <Form.Description
-          >ECTS-Punkte, die für das erfolgreiche Absolvieren des Moduls vergeben werden.</Form.Description
-        >
-        <Form.FieldErrors />
-      </Form.Field>
+      <InputField
+        {form}
+        name="ects"
+        label="Credits"
+        type="number"
+        step="any"
+        placeholder="z.B. 5.0"
+        description="ECTS-Punkte, die für das erfolgreiche Absolvieren des Moduls vergeben werden."
+        bind:value={$formData.ects}
+        {errors}
+        modificationStatus={ectsStatus}
+      />
     </div>
   </div>
 
@@ -110,6 +99,7 @@
         options={moduleTypes}
         bind:value={$formData.moduleType}
         {errors}
+        modificationStatus={moduleTypeStatus}
       />
 
       <ComboboxField
@@ -121,6 +111,7 @@
         options={languages}
         bind:value={$formData.language}
         {errors}
+        modificationStatus={languageStatus}
       />
 
       <ComboboxField
@@ -132,6 +123,7 @@
         options={status}
         bind:value={$formData.status}
         {errors}
+        modificationStatus={statusStatus}
       />
     </div>
   </div>
@@ -143,24 +135,17 @@
     </div>
 
     <div class="space-y-4">
-      <Form.Field {form} name="duration">
-        <Form.Control>
-          {#snippet children({ props })}
-            <Form.Label>Moduldauer</Form.Label>
-            <Input
-              type="number"
-              {...props}
-              bind:value={$formData.duration}
-              placeholder="z.B. 1"
-              class={$errors.duration ? 'border-destructive' : ''}
-            />
-          {/snippet}
-        </Form.Control>
-        <Form.Description
-          >Die Anzahl an Semestern, über die sich das Modul erstreckt.</Form.Description
-        >
-        <Form.FieldErrors />
-      </Form.Field>
+      <InputField
+        {form}
+        name="duration"
+        label="Moduldauer"
+        type="number"
+        placeholder="z.B. 1"
+        description="Die Anzahl an Semestern, über die sich das Modul erstreckt."
+        bind:value={$formData.duration}
+        {errors}
+        modificationStatus={durationStatus}
+      />
 
       <ComboboxField
         {form}
@@ -171,6 +156,7 @@
         options={seasons}
         bind:value={$formData.season}
         {errors}
+        modificationStatus={seasonStatus}
       />
 
       <ComboboxField
@@ -182,6 +168,7 @@
         options={locations}
         bind:value={$formData.location}
         {errors}
+        modificationStatus={locationStatus}
       />
     </div>
   </div>

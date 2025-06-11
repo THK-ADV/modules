@@ -1,4 +1,5 @@
-<script lang="ts" module>
+<script lang="ts">
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModuleDraftState } from '$lib/types/module-draft'
   import {
     CheckCircle,
@@ -11,6 +12,14 @@
     type IconProps
   } from '@lucide/svelte'
   import type { Component } from 'svelte'
+
+  let {
+    id,
+    deLabel
+  }: {
+    id: ModuleDraftState
+    deLabel: string
+  } = $props()
 
   function iconForState(state: ModuleDraftState): Component<IconProps, object, ''> {
     switch (state) {
@@ -49,18 +58,7 @@
         return 'Unbekannt'
     }
   }
-</script>
 
-<script lang="ts">
-  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-
-  let {
-    id,
-    deLabel
-  }: {
-    id: ModuleDraftState
-    deLabel: string
-  } = $props()
   const Icon = iconForState(id)
   const tooltip = tooltipForState(id)
 </script>
@@ -68,12 +66,12 @@
 <Tooltip.Provider>
   <Tooltip.Root>
     <Tooltip.Trigger>
-      <div class="flex w-[100px] items-center">
+      <div class="flex min-w-0 max-w-[180px] items-center">
         <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
         <Icon class="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
         <!-- TODO: revisit labels. 'Veröffentlicht' seems to bit confusing -->
         <!-- TODO: add ECTS info to distinguish modules with the same name -->
-        <span>{deLabel}</span>
+        <span class="truncate text-sm font-medium">{deLabel}</span>
       </div>
     </Tooltip.Trigger>
     <!-- long tooltips will wrap properly by word breaking if needed -->

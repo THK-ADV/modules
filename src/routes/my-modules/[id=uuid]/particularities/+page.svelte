@@ -3,6 +3,12 @@
   import MarkdownHelp from '$lib/components/markdown-help.svelte'
   import MarkdownHint from '$lib/components/markdown-hint.svelte'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  const { data }: PageProps = $props()
+
+  const deContentStatus = data.fieldStatuses?.['deContent.particularities']
+  const enContentStatus = data.fieldStatuses?.['enContent.particularities']
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -59,20 +65,22 @@
   <div class="space-y-4">
     <MarkdownEditor
       {form}
-      name="deContent.learningOutcome"
+      name="deContent.particularities"
       label="Deutsch"
       description="Die besonderen Hinweise und Informationen des Moduls in deutscher Sprache."
       bind:value={deContent.value}
       {errors}
+      modificationStatus={deContentStatus}
     />
 
     <MarkdownEditor
       {form}
-      name="enContent.learningOutcome"
+      name="enContent.particularities"
       label="English"
       description="The particularities of the module in English."
       bind:value={enContent.value}
       {errors}
+      modificationStatus={enContentStatus}
     />
   </div>
 </div>

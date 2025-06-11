@@ -1,14 +1,21 @@
 <script lang="ts">
   import Combobox from '$lib/components/combobox.svelte'
+  import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
+  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
 
   const { data }: PageProps = $props()
+
+  const participantsStatus = data.fieldStatuses?.participants
+  const taughtWithStatus = data.fieldStatuses?.taughtWith
+  const moduleRelationStatus = data.fieldStatuses?.moduleRelation
+
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
@@ -164,9 +171,14 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-4 {participantsStatus ? getFieldHighlightClasses(participantsStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Teilnehmerbegrenzung (optional)</h4>
+      <div class="flex items-center justify-between">
+        <h4 class="text-base font-medium text-foreground">Teilnehmerbegrenzung (optional)</h4>
+        {#if participantsStatus}
+          <ModificationIndicator status={participantsStatus} iconOnly={false} inline={true} />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">Wird häufig für Wahlmodule bzw. WPFs verwendet.</p>
     </div>
 
@@ -207,9 +219,14 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-4 {taughtWithStatus ? getFieldHighlightClasses(taughtWithStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Gemeinsame Veranstaltung (optional)</h4>
+      <div class="flex items-center justify-between">
+        <h4 class="text-base font-medium text-foreground">Gemeinsame Veranstaltung (optional)</h4>
+        {#if taughtWithStatus}
+          <ModificationIndicator status={taughtWithStatus} iconOnly={false} inline={true} />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">
         Das Modul wird mit einem anderen Modul gemeinsam gelehrt. Wird häufig für inhaltlich
         verwandte Module verwendet.
@@ -230,9 +247,16 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div
+    class="space-y-4 {moduleRelationStatus ? getFieldHighlightClasses(moduleRelationStatus) : ''}"
+  >
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Modulbeziehung (optional)</h4>
+      <div class="flex items-center justify-between">
+        <h4 class="text-base font-medium text-foreground">Modulbeziehung (optional)</h4>
+        {#if moduleRelationStatus}
+          <ModificationIndicator status={moduleRelationStatus} iconOnly={false} inline={true} />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">
         Ein Modul kann ein Ober- oder Kind-Modul sein. Wird häufig verwendet, um mehrere Module zu
         einem Ober-Modul zusammenzufassen. Das Ober-Modul taucht dabei nicht im Stundenplan auf.

@@ -3,6 +3,12 @@
   import MarkdownHelp from '$lib/components/markdown-help.svelte'
   import MarkdownHint from '$lib/components/markdown-hint.svelte'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from '../$types'
+
+  const { data }: PageProps = $props()
+
+  const deContentStatus = data.fieldStatuses?.['deContent.teachingAndLearningMethods']
+  const enContentStatus = data.fieldStatuses?.['enContent.teachingAndLearningMethods']
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -63,6 +69,7 @@
       placeholder="- Beamergestützte Vorlesung…"
       bind:value={deContent.value}
       {errors}
+      modificationStatus={deContentStatus}
     />
 
     <MarkdownEditor
@@ -73,6 +80,7 @@
       placeholder="- Lecture supported by slides…"
       bind:value={enContent.value}
       {errors}
+      modificationStatus={enContentStatus}
     />
   </div>
 </div>

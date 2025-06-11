@@ -1,9 +1,12 @@
 <script lang="ts">
   import AssessmentMethodsForm from '$lib/components/assessment-methods-form.svelte'
-  import Combobox from '$lib/components/combobox.svelte'
+  import ComboboxField from '$lib/components/combobox.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
-  import { moduleUpdateState } from '$lib/store.svelte'
+  import { moduleUpdateState } from '$lib/store.svelte.js'
+  import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
+
+  let { data }: PageProps = $props()
 
   const assessmentMethods = moduleUpdateState.assessmentMethods
   // TODO: get from backend
@@ -16,6 +19,11 @@
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
+
+  const firstExaminerStatus = data.fieldStatuses?.firstExaminer
+  const secondExaminerStatus = data.fieldStatuses?.secondExaminer
+  const examPhasesStatus = data.fieldStatuses?.examPhases
+  const assessmentMethodsStatus = data.fieldStatuses?.assessmentMethods
 </script>
 
 <div class="space-y-8">
@@ -37,6 +45,7 @@
       {preconditions}
       bind:value={$formData.assessmentMethods}
       {errors}
+      modificationStatus={assessmentMethodsStatus}
     />
   </div>
 
@@ -49,7 +58,7 @@
     </div>
 
     <div class="space-y-4">
-      <Combobox
+      <ComboboxField
         {form}
         name="firstExaminer"
         label="Erstprüfer*in"
@@ -58,9 +67,10 @@
         options={identityOptions}
         bind:value={$formData.firstExaminer}
         {errors}
+        modificationStatus={firstExaminerStatus}
       />
 
-      <Combobox
+      <ComboboxField
         {form}
         name="secondExaminer"
         label="Zweitprüfer*in"
@@ -69,6 +79,7 @@
         options={identityOptions}
         bind:value={$formData.secondExaminer}
         {errors}
+        modificationStatus={secondExaminerStatus}
       />
     </div>
   </div>
@@ -90,6 +101,7 @@
         options={moduleUpdateState.examPhases}
         bind:value={$formData.examPhases}
         {errors}
+        modificationStatus={examPhasesStatus}
       />
     </div>
   </div>

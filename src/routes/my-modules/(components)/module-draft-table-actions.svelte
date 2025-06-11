@@ -1,4 +1,14 @@
-<script lang="ts" module>
+<script lang="ts">
+  import { goto } from '$app/navigation'
+  import { page } from '$app/state'
+  import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
+  import * as Separator from '$lib/components/ui/separator/index'
+  import type { ModuleDraftState } from '$lib/types/module-draft'
+  import { cn } from '$lib/utils'
+  import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
+  import type { Component } from 'svelte'
+
   interface Props {
     moduleId: string
     state: ModuleDraftState
@@ -38,18 +48,6 @@
       state === 'waiting_for_changes'
     )
   }
-</script>
-
-<script lang="ts">
-  import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
-  import * as Separator from '$lib/components/ui/separator/index'
-  import type { ModuleDraftState } from '$lib/types/module-draft'
-  import { cn } from '$lib/utils'
-  import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
-  import type { Component } from 'svelte'
-  import { goto } from '$app/navigation'
-  import { page } from '$app/state'
 
   let { moduleId, state, isPrivilegedForModule }: Props = $props()
 
@@ -63,8 +61,7 @@
         Icon: Edit,
         onclick: () => goto(`${page.url.pathname}/${moduleId}`),
         variant: 'outline',
-        className:
-          'border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 hover:border-blue-300'
+        className: 'border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800'
       })
     }
 
@@ -75,7 +72,7 @@
         Icon: Upload,
         onclick: () => {},
         variant: 'default',
-        className: 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
+        className: 'bg-green-600 hover:bg-green-700'
       })
     }
 
@@ -86,8 +83,7 @@
         Icon: Eye,
         onclick: () => {},
         variant: 'outline',
-        className:
-          'border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300'
+        className: 'border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800'
       })
     }
 
@@ -98,8 +94,7 @@
         Icon: X,
         onclick: () => {},
         variant: 'outline',
-        className:
-          'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300'
+        className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800'
       })
     }
 
@@ -110,8 +105,7 @@
         Icon: Trash2,
         onclick: () => {},
         variant: 'outline',
-        className:
-          'border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 hover:border-red-300'
+        className: 'border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800'
       })
     }
 
@@ -128,8 +122,7 @@
         Icon: Shield,
         onclick: () => {},
         variant: 'outline',
-        className:
-          'border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 hover:border-purple-300'
+        className: 'border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800'
       })
     }
 
@@ -144,15 +137,11 @@
 {#snippet buttonRow({ className, variant, onclick, label, Icon }: Action)}
   <Button
     {variant}
-    size="default"
-    class={cn(
-      'h-7 px-2 font-medium shadow-sm transition-all duration-200',
-      'hover:shadow-md active:scale-95',
-      className
-    )}
+    size="sm"
+    class={cn('font-medium shadow-sm transition-colors', className)}
     {onclick}
   >
-    <Icon class="mr-1 h-3 w-3" />
+    <Icon class="mr-1.5 h-3.5 w-3.5" />
     {label}
   </Button>
 {/snippet}

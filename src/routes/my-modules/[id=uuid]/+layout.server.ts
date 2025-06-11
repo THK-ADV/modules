@@ -1,6 +1,8 @@
 import { moduleSchema } from '$lib/schemas/module.js'
 import { getValidAccessToken } from '$lib/server/auth.js'
+import type { ModuleDraftKeys } from '$lib/types/module-draft-keys.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
+import { getFieldModifications } from '$lib/types/module-draft-keys.js'
 import { error, redirect } from '@sveltejs/kit'
 import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
@@ -12,15 +14,35 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   if (!accessToken) {
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`)
   }
-  const res = await fetch(`/api/modules/${params.id}/latest`)
 
-  if (!res.ok) {
-    const err = await res.json()
-    const message = `Modul konnte nicht geladen werden: ${err.message}`
-    throw error(res.status, { message })
+  const [moduleRes, moduleDraftKeysRes] = await Promise.allSettled([
+    fetch(`/api/modules/${params.id}/latest`),
+    fetch(`/api/moduleDrafts/${params.id}/keys`)
+  ])
+
+  if (moduleRes.status === 'rejected') {
+    const err = moduleRes.reason
+    const message = `Modul konnte nicht geladen werden: ${err}`
+    throw error(500, { message })
   }
 
-  const module: ModuleProtocol = await res.json()
+  if (!moduleRes.value.ok) {
+    const err = await moduleRes.value.json()
+    const message = `Modul konnte nicht geladen werden: ${err.message}`
+    throw error(moduleRes.value.status, { message })
+  }
+
+  const module: ModuleProtocol = await moduleRes.value.json()
+  let moduleDraftKeys: ModuleDraftKeys | null = null
+
+  if (moduleDraftKeysRes.status === 'fulfilled' && moduleDraftKeysRes.value.ok) {
+    moduleDraftKeys = await moduleDraftKeysRes.value.json()
+  }
+
+  // the backend does not return the id of the module if a module draft exists
+  if (!module.id) {
+    module.id = params.id
+  }
 
   let recommendedPrerequisites = null
   if (module.metadata.prerequisites.recommended) {
@@ -55,10 +77,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       firstExaminer: module.metadata.examiner.first,
       secondExaminer: module.metadata.examiner.second,
       examPhases: module.metadata.examPhases,
-      assessmentMethods: [
-        ...module.metadata.assessmentMethods.mandatory,
-        { method: 'attendance', percentage: null, precondition: [] }
-      ],
+      assessmentMethods: module.metadata.assessmentMethods.mandatory,
       workload: {
         lecture: module.metadata.workload.lecture,
         seminar: module.metadata.workload.seminar,
@@ -81,5 +100,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     },
     zod(moduleSchema)
   )
-  return { module, accessToken, form }
+  const fieldStatuses = getFieldModifications(moduleDraftKeys)
+
+  return { module, moduleDraftKeys, fieldStatuses, accessToken, form }
 }

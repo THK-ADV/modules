@@ -1,10 +1,18 @@
 <script lang="ts">
+  import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
+  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
+
+  const { data }: PageProps = $props()
+
+  const recommendedPrerequisitesStatus = data.fieldStatuses?.recommendedPrerequisites
+  const requiredPrerequisitesStatus = data.fieldStatuses?.requiredPrerequisites
 
   const moduleOptions = moduleUpdateState.modules.map((m) => ({
     id: m.id,
@@ -93,9 +101,22 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div
+    class="space-y-4 {recommendedPrerequisitesStatus
+      ? getFieldHighlightClasses(recommendedPrerequisitesStatus)
+      : ''}"
+  >
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Empfohlene Voraussetzungen (optional)</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-medium text-foreground">Empfohlene Voraussetzungen (optional)</h3>
+        {#if recommendedPrerequisitesStatus}
+          <ModificationIndicator
+            status={recommendedPrerequisitesStatus}
+            iconOnly={false}
+            inline={true}
+          />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">
         Module oder Kenntnisse, die zur erfolgreichen Teilnahme empfohlen werden.
       </p>
@@ -133,9 +154,22 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div
+    class="space-y-4 {requiredPrerequisitesStatus
+      ? getFieldHighlightClasses(requiredPrerequisitesStatus)
+      : ''}"
+  >
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Zwingende Voraussetzungen (optional)</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-medium text-foreground">Zwingende Voraussetzungen (optional)</h3>
+        {#if requiredPrerequisitesStatus}
+          <ModificationIndicator
+            status={requiredPrerequisitesStatus}
+            iconOnly={false}
+            inline={true}
+          />
+        {/if}
+      </div>
       <p class="text-sm text-muted-foreground">
         Module oder Kenntnisse, die zwingend erforderlich sind. Nur erlaubt, wenn diese akkreditiert
         sind.

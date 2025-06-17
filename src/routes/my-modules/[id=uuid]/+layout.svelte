@@ -10,6 +10,8 @@
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import { moduleSchema } from '$lib/schemas/module'
   import { cn } from '$lib/utils'
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
+  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import SuperDebug, { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
   import {
@@ -321,22 +323,7 @@
     disabled={$submitting || !hasChangesToSubmit}
   >
     {#if $submitting}
-      <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-          fill="none"
-        />
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        />
-      </svg>
+      <Spinner size="md" class="mr-2" />
       Wird gespeichert...
     {:else if sectionsWithErrors?.length}
       {sectionsWithErrors.length} Fehler
@@ -436,31 +423,11 @@
     class={$submitting ? 'pointer-events-none opacity-75' : ''}
   >
     <!-- loading overlay during submission -->
-    {#if $submitting}
-      <div
-        class="fixed inset-0 z-40 flex items-center justify-center bg-background/20 backdrop-blur-[1px]"
-      >
-        <div class="flex items-center space-x-3 rounded-lg border bg-card p-4 shadow-lg">
-          <svg class="h-5 w-5 animate-spin text-primary" viewBox="0 0 24 24">
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-              fill="none"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <span class="text-sm font-medium">Moduländerungen werden gespeichert...</span>
-        </div>
-      </div>
-    {/if}
+    <LoadingOverlay
+      show={$submitting}
+      message="Moduländerungen werden gespeichert..."
+      zIndex={40}
+    />
 
     <!-- mobile section selector (shown on small screens) -->
     <div class="mb-6 space-y-2 lg:hidden">

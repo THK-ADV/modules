@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import SemesterCycleProgress from './(components)/semester-cycle-progress.svelte'
   import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import type { ColumnDef } from '@tanstack/table-core'
@@ -29,7 +30,8 @@
 
         return renderSnippet(snippet, `${title} (${abbrev})`)
       },
-      enableColumnFilter: false
+      enableColumnFilter: false,
+      size: 300
     },
     {
       accessorKey: 'status',
@@ -38,14 +40,14 @@
         return renderComponent(ModuleDraftStatusCell, row.original.moduleDraftState)
       },
       enableColumnFilter: false,
-      size: 200
+      size: 280
     },
     {
       id: 'actions',
       cell: ({ row }) => {
         return renderComponent(ModuleDraftTableActions, {
           moduleId: row.original.module.id,
-          state: row.original.moduleDraftState.id,
+          moduleDraftState: row.original.moduleDraftState.id,
           isPrivilegedForModule: row.original.privilegedForModule
         })
       }
@@ -62,6 +64,7 @@
   let { data }: PageProps = $props()
 
   let showSuccessMessage = $state(false)
+  let isPublishingPhase = $state(false)
 
   $effect(() => {
     if (browser && $page.url.searchParams.has('updated')) {
@@ -119,14 +122,22 @@
     <div class="space-y-2">
       <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
       <p class="break-words text-muted-foreground">
-        Sie können die folgenden Module bearbeiten und die Änderungen veröffentlichen oder zur
-        Genehmigung freigeben. Eine Genehmigung ist nur bei Änderungen bestimmer Attribute
+        Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
+        Genehmigung freigeben. Eine Genehmigung ist nur bei <a
+          class="text-primary underline hover:no-underline"
+          href="/help/approval">Änderungen bestimmter Attribute</a
+        >
         notwendig.
       </p>
     </div>
-    <div class="w-full">
-      <ModuleDraftTable moduleDrafts={data.moduleDrafts} {columns} />
-    </div>
+
+    <SemesterCycleProgress bind:isPublishingPhase />
+
+    {#if !isPublishingPhase}
+      <div class="w-full">
+        <ModuleDraftTable moduleDrafts={data.moduleDrafts} {columns} />
+      </div>
+    {/if}
   {:else}
     <div class="space-y-2">
       <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>

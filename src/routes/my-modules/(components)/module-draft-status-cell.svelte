@@ -8,10 +8,8 @@
     Eye,
     GitCommit,
     HelpCircle,
-    XCircle,
-    type IconProps
+    XCircle
   } from '@lucide/svelte'
-  import type { Component } from 'svelte'
 
   let {
     id,
@@ -21,8 +19,8 @@
     deLabel: string
   } = $props()
 
-  function iconForState(state: ModuleDraftState): Component<IconProps, object, ''> {
-    switch (state) {
+  const Icon = $derived.by(() => {
+    switch (id) {
       case 'published':
         return CheckCircle
       case 'valid_for_review':
@@ -38,40 +36,47 @@
       case 'unknown':
         return HelpCircle
     }
-  }
+  })
 
-  function tooltipForState(state: ModuleDraftState): string {
-    switch (state) {
+  const tooltip = $derived.by(() => {
+    switch (id) {
       case 'published':
-        return 'Das Modul ist veröffentlicht und taucht im Modulhandbuch und in der Modulsuche auf.'
+        return 'Die aktuelle Version des Moduls wird in der nächsten Ausgabe des Modulhandbuchs und in der Modulsuche aufgeführt.'
       case 'valid_for_review':
         return 'Das Modul kann zur Genehmigung freigegeben werden. Eine Genehmigung ist erforderlich, da genehmigungspflichtige Attribute geändert wurden.'
       case 'valid_for_publication':
-        return 'Das Modul kann veröffentlicht werden. Nach der Bearbeitungsphase taucht es im Modulhandbuch und in der Modulsuche auf.'
+        return 'Die Moduländerungen können final übernommen werden. Nach der Bearbeitungsphase werden die Änderungen im Modulhandbuch und in der Modulsuche aufgeführt.'
       case 'waiting_for_changes':
-        return 'Das Modul wurde im Genehmigungsprozess abgelehnt und benötigt Anpassungen.'
+        return 'Das Modul wurde im Genehmigungsprozess abgelehnt und benötigt Anpassungen. Konkrete Hinweise sehen Sie, wenn Sie das Modul bearbeiten.'
       case 'waiting_for_review':
-        return 'Das Modul ist im Genehmigungsprozess.'
+        return 'Das Modul ist im Genehmigungsprozess. Der Prüfungsauschluss oder die Studiengangsleitung prüft die Änderungen.'
       case 'waiting_for_publication':
         return 'TODO'
       case 'unknown':
         return 'Unbekannt'
     }
-  }
+  })
 
-  const Icon = iconForState(id)
-  const tooltip = tooltipForState(id)
+  let label = $derived.by(() => {
+    switch (id) {
+      case 'published':
+        return 'Aktuellste Version'
+      case 'valid_for_publication':
+        return 'Bereit zur Übernahme'
+      default:
+        return deLabel
+    }
+  })
 </script>
 
 <Tooltip.Provider>
   <Tooltip.Root>
     <Tooltip.Trigger>
-      <div class="flex min-w-0 max-w-[180px] items-center">
+      <div class="flex min-w-0 items-center">
         <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
         <Icon class="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-        <!-- TODO: revisit labels. 'Veröffentlicht' seems to bit confusing -->
         <!-- TODO: add ECTS info to distinguish modules with the same name -->
-        <span class="truncate text-sm font-medium">{deLabel}</span>
+        <span class="truncate text-sm font-medium">{label}</span>
       </div>
     </Tooltip.Trigger>
     <!-- long tooltips will wrap properly by word breaking if needed -->

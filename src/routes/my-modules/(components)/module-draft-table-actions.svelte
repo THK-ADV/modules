@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
+  import { goto, invalidateAll } from '$app/navigation'
   import { page } from '$app/state'
   import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
+  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Separator from '$lib/components/ui/separator/index'
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import type { ModuleDraftState } from '$lib/types/module-draft'
   import { cn } from '$lib/utils'
   import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
@@ -11,7 +13,7 @@
 
   interface Props {
     moduleId: string
-    state: ModuleDraftState
+    moduleDraftState: ModuleDraftState
     isPrivilegedForModule: boolean
   }
 
@@ -22,6 +24,41 @@
     onclick: () => void
     variant: ButtonVariant
     className: string
+    disabled?: boolean
+  }
+
+  let { moduleId, moduleDraftState, isPrivilegedForModule }: Props = $props()
+
+  let isDeleting = $state(false)
+  let isPublishing = $state(false)
+  let isRequestingReview = $state(false)
+  let isCancelingReview = $state(false)
+
+  let isPerformingAction = $derived(
+    isDeleting || isPublishing || isRequestingReview || isCancelingReview
+  )
+
+  let loadingOverlayMessage = $derived.by(() => {
+    if (isDeleting) {
+      return 'Änderungen werden verworfen...'
+    } else if (isPublishing) {
+      return 'Änderungen werden übernommen...'
+    } else if (isRequestingReview) {
+      return 'Review wird angefragt...'
+    } else if (isCancelingReview) {
+      return 'Review wird zurückgezogen...'
+    } else {
+      return ''
+    }
+  })
+
+  function isActionLoading(key: string): boolean {
+    return (
+      (key === 'publish' && isPublishing) ||
+      (key === 'requestReview' && isRequestingReview) ||
+      (key === 'cancelReview' && isCancelingReview) ||
+      (key === 'discardChanges' && isDeleting)
+    )
   }
 
   function canEdit(state: ModuleDraftState) {
@@ -32,15 +69,19 @@
       state === 'waiting_for_changes'
     )
   }
+
   function canPublish(state: ModuleDraftState) {
     return state === 'valid_for_publication'
   }
+
   function canRequestReview(state: ModuleDraftState) {
     return state === 'valid_for_review'
   }
+
   function canCancelReview(state: ModuleDraftState) {
     return state === 'waiting_for_review'
   }
+
   function canDiscardChanges(state: ModuleDraftState) {
     return (
       state === 'valid_for_review' ||
@@ -49,10 +90,59 @@
     )
   }
 
-  let { moduleId, state, isPrivilegedForModule }: Props = $props()
+  async function performAction(action: 'delete' | 'publish' | 'requestReview' | 'cancelReview') {
+    try {
+      if (action === 'delete') {
+        const response = await fetch(`/actions/module-actions/${moduleId}`, {
+          method: 'DELETE'
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.message || 'Delete failed')
+        }
+      } else {
+        const response = await fetch(`/actions/module-actions/${moduleId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ action })
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.message || `${action} failed`)
+        }
+      }
+
+      // refresh the page data
+      await invalidateAll()
+    } catch (error) {
+      console.error(`${action} failed:`, error)
+      alert(`Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
+    } finally {
+      // reset loading states
+      switch (action) {
+        case 'delete':
+          isDeleting = false
+          break
+        case 'publish':
+          isPublishing = false
+          break
+        case 'requestReview':
+          isRequestingReview = false
+          break
+        case 'cancelReview':
+          isCancelingReview = false
+          break
+      }
+    }
+  }
 
   let moduleActions = $derived.by(() => {
     const actions = new Array<Action>()
+    const state = moduleDraftState
 
     if (canEdit(state)) {
       actions.push({
@@ -61,7 +151,8 @@
         Icon: Edit,
         onclick: () => goto(`${page.url.pathname}/${moduleId}`),
         variant: 'outline',
-        className: 'border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800'
+        className: 'border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700',
+        disabled: isPerformingAction
       })
     }
 
@@ -70,9 +161,15 @@
         key: 'publish',
         label: 'Änderungen übernehmen',
         Icon: Upload,
-        onclick: () => {},
-        variant: 'default',
-        className: 'bg-green-600 hover:bg-green-700'
+        onclick: async () => {
+          if (!isPublishing) {
+            isPublishing = true
+            await performAction('publish')
+          }
+        },
+        variant: 'outline',
+        className: 'border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700',
+        disabled: isPerformingAction
       })
     }
 
@@ -81,9 +178,15 @@
         key: 'requestReview',
         label: 'Review anfragen',
         Icon: Eye,
-        onclick: () => {},
+        onclick: async () => {
+          if (!isRequestingReview) {
+            isRequestingReview = true
+            await performAction('requestReview')
+          }
+        },
         variant: 'outline',
-        className: 'border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800'
+        className: 'border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800',
+        disabled: isPerformingAction
       })
     }
 
@@ -92,9 +195,15 @@
         key: 'cancelReview',
         label: 'Review zurückziehen',
         Icon: X,
-        onclick: () => {},
+        onclick: async () => {
+          if (!isCancelingReview) {
+            isCancelingReview = true
+            await performAction('cancelReview')
+          }
+        },
         variant: 'outline',
-        className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800'
+        className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800',
+        disabled: isPerformingAction
       })
     }
 
@@ -103,9 +212,20 @@
         key: 'discardChanges',
         label: 'Änderungen verwerfen',
         Icon: Trash2,
-        onclick: () => {},
+        onclick: async () => {
+          if (
+            !isDeleting &&
+            confirm(
+              'Sind Sie sicher, dass Sie die Änderungen verwerfen möchten? Diese Aktion kann nicht rückgängig gemacht werden.'
+            )
+          ) {
+            isDeleting = true
+            await performAction('delete')
+          }
+        },
         variant: 'outline',
-        className: 'border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800'
+        className: 'border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800',
+        disabled: isPerformingAction
       })
     }
 
@@ -120,9 +240,13 @@
         key: 'managePermissions',
         label: 'Bearbeitungsrechte setzen',
         Icon: Shield,
-        onclick: () => {},
+        onclick: () => {
+          // TODO: Implement permissions management
+          console.log('Manage permissions for module:', moduleId)
+        },
         variant: 'outline',
-        className: 'border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800'
+        className: 'border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800',
+        disabled: isPerformingAction
       })
     }
 
@@ -134,19 +258,28 @@
   let hasAnyActions = $derived(hasModuleActions || hasAdminActions)
 </script>
 
-{#snippet buttonRow({ className, variant, onclick, label, Icon }: Action)}
+{#snippet buttonRow({ className, variant, onclick, label, Icon, disabled, key }: Action)}
   <Button
     {variant}
     size="sm"
-    class={cn('font-medium shadow-sm transition-colors', className)}
+    class={cn(
+      'font-medium shadow-sm transition-colors',
+      className,
+      disabled && 'pointer-events-none cursor-not-allowed opacity-50'
+    )}
     {onclick}
+    {disabled}
   >
-    <Icon class="mr-1.5 h-3.5 w-3.5" />
+    {#if isActionLoading(key)}
+      <Spinner size="sm" />
+    {:else}
+      <Icon class="h-4 w-4" />
+    {/if}
     {label}
   </Button>
 {/snippet}
 
-{#snippet buttonMenuItem({ key, onclick, label, Icon }: Action)}
+{#snippet buttonMenuItem({ key, onclick, label, Icon, disabled }: Action)}
   <DropdownMenu.Item
     class={cn(
       'flex cursor-pointer items-center gap-2 font-medium',
@@ -154,17 +287,30 @@
       key === 'publish' && 'text-green-600 focus:text-green-700',
       key === 'requestReview' && 'text-amber-600 focus:text-amber-700',
       key === 'edit' && 'text-blue-600 focus:text-blue-700',
-      key === 'managePermissions' && 'text-purple-600 focus:text-purple-700'
+      key === 'managePermissions' && 'text-purple-600 focus:text-purple-700',
+      disabled && 'pointer-events-none cursor-not-allowed opacity-50'
     )}
     {onclick}
+    {disabled}
   >
-    <Icon class="h-4 w-4" />
+    {#if isActionLoading(key)}
+      <Spinner size="sm" />
+    {:else}
+      <Icon class="h-4 w-4" />
+    {/if}
     {label}
   </DropdownMenu.Item>
 {/snippet}
 
+<!-- loading overlay -->
+<LoadingOverlay show={isPerformingAction} message={loadingOverlayMessage} />
+
 {#if hasAnyActions}
-  <div class="flex items-center gap-2">
+  <div
+    class="flex items-center gap-2"
+    class:pointer-events-none={isPerformingAction}
+    class:opacity-75={isPerformingAction}
+  >
     <!-- Desktop: Show all actions inline -->
     <div class="hidden items-center gap-1 lg:flex">
       {#if hasModuleActions}
@@ -199,6 +345,7 @@
               variant="outline"
               size="sm"
               class="h-7 w-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
+              disabled={isPerformingAction}
             >
               <span class="sr-only">Aktionen öffnen</span>
               <Ellipsis class="h-4 w-4" />

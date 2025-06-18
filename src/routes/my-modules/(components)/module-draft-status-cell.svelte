@@ -1,15 +1,7 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModuleDraftState } from '$lib/types/module-draft'
-  import {
-    CheckCircle,
-    CheckSquare,
-    Clock,
-    Eye,
-    GitCommit,
-    HelpCircle,
-    XCircle
-  } from '@lucide/svelte'
+  import { CheckCircle, CheckSquare, Clock, Eye, HelpCircle, Loader, XCircle } from '@lucide/svelte'
 
   let {
     id,
@@ -32,7 +24,7 @@
       case 'waiting_for_review':
         return Clock
       case 'waiting_for_publication':
-        return GitCommit
+        return Loader
       case 'unknown':
         return HelpCircle
     }
@@ -51,18 +43,23 @@
       case 'waiting_for_review':
         return 'Das Modul ist im Genehmigungsprozess. Der Prüfungsauschluss oder die Studiengangsleitung prüft die Änderungen.'
       case 'waiting_for_publication':
-        return 'TODO'
+        return 'Die Moduländerungen werden im Backend verarbeitet. Dies kann einige Minuten dauern.'
       case 'unknown':
         return 'Unbekannt'
     }
   })
 
+  // override a few labels for better UX
   let label = $derived.by(() => {
     switch (id) {
       case 'published':
         return 'Aktuellste Version'
       case 'valid_for_publication':
         return 'Bereit zur Übernahme'
+      case 'waiting_for_changes':
+        return 'Anpassungen notwendig'
+      case 'waiting_for_publication':
+        return 'Warte auf Backend'
       default:
         return deLabel
     }
@@ -74,7 +71,11 @@
     <Tooltip.Trigger>
       <div class="flex min-w-0 items-center">
         <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
-        <Icon class="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+        <Icon
+          class="mr-2 h-4 w-4 flex-shrink-0 {id === 'waiting_for_changes'
+            ? 'text-amber-500'
+            : 'text-muted-foreground'}"
+        />
         <!-- TODO: add ECTS info to distinguish modules with the same name -->
         <span class="truncate text-sm font-medium">{label}</span>
       </div>

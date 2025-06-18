@@ -1,8 +1,10 @@
 import { moduleSchema } from '$lib/schemas/module.js'
 import { getValidAccessToken } from '$lib/server/auth.js'
+import type { Approval } from '$lib/types/module-approval.js'
 import type { ModuleDraftKeys } from '$lib/types/module-draft-keys.js'
-import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { getFieldModifications } from '$lib/types/module-draft-keys.js'
+import { canEdit, type ModuleDraftState } from '$lib/types/module-draft.js'
+import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { error, redirect } from '@sveltejs/kit'
 import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
@@ -15,9 +17,24 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`)
   }
 
-  const [moduleRes, moduleDraftKeysRes] = await Promise.allSettled([
+  const moduleDraftStateRes = await fetch(`/api/moduleDrafts/${params.id}`)
+
+  if (!moduleDraftStateRes.ok) {
+    const err = await moduleDraftStateRes.json()
+    const message = `Module Draft konnte nicht geladen werden: ${err.message}`
+    throw error(moduleDraftStateRes.status, { message })
+  }
+
+  const state: { id: ModuleDraftState } = await moduleDraftStateRes.json()
+
+  if (!canEdit(state.id)) {
+    throw error(403, { message: 'Das Modul kann nicht bearbeitet werden.' })
+  }
+
+  const [moduleRes, moduleDraftKeysRes, approvalsRes] = await Promise.allSettled([
     fetch(`/api/modules/${params.id}/latest`),
-    fetch(`/api/moduleDrafts/${params.id}/keys`)
+    fetch(`/api/moduleDrafts/${params.id}/keys`),
+    fetch(`/api/moduleApprovals/${params.id}`)
   ])
 
   if (moduleRes.status === 'rejected') {
@@ -34,9 +51,14 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   const module: ModuleProtocol = await moduleRes.value.json()
   let moduleDraftKeys: ModuleDraftKeys | null = null
+  let approvals: Approval[] = []
 
   if (moduleDraftKeysRes.status === 'fulfilled' && moduleDraftKeysRes.value.ok) {
     moduleDraftKeys = await moduleDraftKeysRes.value.json()
+  }
+
+  if (approvalsRes.status === 'fulfilled' && approvalsRes.value.ok) {
+    approvals = await approvalsRes.value.json()
   }
 
   // the backend does not return the id of the module if a module draft exists
@@ -100,7 +122,8 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     },
     zod(moduleSchema)
   )
+
   const fieldStatuses = getFieldModifications(moduleDraftKeys)
 
-  return { module, moduleDraftKeys, fieldStatuses, accessToken, form }
+  return { module, moduleDraftKeys, approvals, fieldStatuses, accessToken, form }
 }

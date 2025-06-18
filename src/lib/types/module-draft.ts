@@ -32,3 +32,32 @@ export interface ModuleDraft {
   // true, if module manager
   privilegedForModule: boolean
 }
+
+export function canEdit(state: ModuleDraftState) {
+  return (
+    state === 'valid_for_review' ||
+    state === 'valid_for_publication' ||
+    state === 'published' ||
+    state === 'waiting_for_changes'
+  )
+}
+
+export function canPublish(state: ModuleDraftState) {
+  return state === 'valid_for_publication'
+}
+
+export function canRequestReview(state: ModuleDraftState) {
+  return state === 'valid_for_review'
+}
+
+export function canCancelReview(state: ModuleDraftState) {
+  return state === 'waiting_for_review'
+}
+
+export function canDiscardChanges(state: ModuleDraftState) {
+  return (
+    state === 'valid_for_review' ||
+    state === 'valid_for_publication' ||
+    state === 'waiting_for_changes'
+  )
+}

@@ -14,11 +14,15 @@ export const load: PageLoad = async ({ fetch, params, url: pageUrl }) => {
   }
 
   const res = await fetch(apiUrl)
-  if (!res.ok) {
+
+  if (res.ok) {
+    const module: ModuleDetail = await res.json()
+    routesMap.selectedModule = { id: module.id, title: module.title }
+    return { module, source }
+  } else if (res.status === 404) {
+    throw error(res.status, { message: `Das Modul konnte nicht gefunden werden` })
+  } else {
     const errorMsg = await res.text()
     throw error(res.status, { message: `Failed to fetch module. Reason: ${errorMsg}` })
   }
-  const module: ModuleDetail = await res.json()
-  routesMap.selectedModule = { id: module.id, title: module.title }
-  return { module, source }
 }

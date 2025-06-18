@@ -12,6 +12,7 @@
   import { cn } from '$lib/utils'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
+  import ModuleApprovalStatus from '$lib/components/module-approval-status.svelte'
   import SuperDebug, { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
   import {
@@ -370,6 +371,9 @@
   </div>
 
   <Separator />
+
+  <!-- Approval Status Display -->
+  <ModuleApprovalStatus approvals={data.approvals} />
 
   <!-- Error Message Display -->
   {#if page.form?.message && showError}

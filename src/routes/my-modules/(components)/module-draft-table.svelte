@@ -61,7 +61,12 @@
     </Table.Header>
     <Table.Body>
       {#each table.getRowModel().rows as row (row.id)}
-        <Table.Row data-state={row.getIsSelected() && 'selected'}>
+        <Table.Row
+          data-state={row.getIsSelected() && 'selected'}
+          class={row.original.moduleDraftState.id === 'waiting_for_changes'
+            ? 'border-l-4 border-l-amber-400 bg-amber-50/50 hover:bg-amber-50/70'
+            : ''}
+        >
           {#each row.getVisibleCells() as cell (cell.id)}
             <Table.Cell>
               <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />

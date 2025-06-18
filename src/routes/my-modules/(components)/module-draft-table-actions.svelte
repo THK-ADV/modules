@@ -6,10 +6,18 @@
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Separator from '$lib/components/ui/separator/index'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
-  import type { ModuleDraftState } from '$lib/types/module-draft'
+  import {
+    canCancelReview,
+    canDiscardChanges,
+    canEdit,
+    canPublish,
+    canRequestReview,
+    type ModuleDraftState
+  } from '$lib/types/module-draft'
   import { cn } from '$lib/utils'
   import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
+  import type { ModuleDraftTableAction } from '../../actions/module-actions/[moduleId]/+server'
 
   interface Props {
     moduleId: string
@@ -61,59 +69,19 @@
     )
   }
 
-  function canEdit(state: ModuleDraftState) {
-    return (
-      state === 'valid_for_review' ||
-      state === 'valid_for_publication' ||
-      state === 'published' ||
-      state === 'waiting_for_changes'
-    )
-  }
-
-  function canPublish(state: ModuleDraftState) {
-    return state === 'valid_for_publication'
-  }
-
-  function canRequestReview(state: ModuleDraftState) {
-    return state === 'valid_for_review'
-  }
-
-  function canCancelReview(state: ModuleDraftState) {
-    return state === 'waiting_for_review'
-  }
-
-  function canDiscardChanges(state: ModuleDraftState) {
-    return (
-      state === 'valid_for_review' ||
-      state === 'valid_for_publication' ||
-      state === 'waiting_for_changes'
-    )
-  }
-
-  async function performAction(action: 'delete' | 'publish' | 'requestReview' | 'cancelReview') {
+  async function performAction(action: ModuleDraftTableAction) {
     try {
-      if (action === 'delete') {
-        const response = await fetch(`/actions/module-actions/${moduleId}`, {
-          method: 'DELETE'
-        })
+      const response = await fetch(`/actions/module-actions/${moduleId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action })
+      })
 
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.message || 'Delete failed')
-        }
-      } else {
-        const response = await fetch(`/actions/module-actions/${moduleId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ action })
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.message || `${action} failed`)
-        }
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || `${action} failed`)
       }
 
       // refresh the page data

@@ -1,74 +1,71 @@
 import { error, json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 
-// TODO: check all functions
+export type ModuleDraftTableAction = 'delete' | 'publish' | 'requestReview' | 'cancelReview'
 
-export const DELETE: RequestHandler = async ({ params, fetch }) => {
-  const { moduleId } = params
-
-  console.log('🗑️ DELETE request for moduleId:', moduleId)
-
-  const backendUrl = `/api/moduleDrafts/${moduleId}`
-  console.log('🔗 Making request to backend:', backendUrl)
-
-  const response = await fetch(backendUrl, {
-    method: 'DELETE'
-  })
-
-  console.log('📤 Backend response status:', response.status)
-  console.log('📤 Backend response ok:', response.ok)
-  console.log('📤 Backend response statusText:', response.statusText)
+async function deleteModuleDraft(moduleId: string, fetch: typeof globalThis.fetch) {
+  const response = await fetch(`/api/moduleDrafts/${moduleId}`, { method: 'DELETE' })
 
   if (!response.ok) {
-    let errorData
-    try {
-      errorData = await response.json()
-      console.log('❌ Backend error data:', errorData)
-    } catch (e) {
-      console.log('❌ Could not parse error as JSON, raw response:', await response.text())
-      errorData = {}
-    }
-
+    const errorData = await response.json().catch(() => ({}))
     throw error(response.status, {
       message:
         errorData.message ||
-        `Failed to delete module draft: ${response.status} ${response.statusText}`
+        `Fehler beim Löschen des Module Drafts: ${response.status} ${response.statusText}`
     })
   }
 
-  console.log('✅ Delete successful')
+  return json({ success: true })
+}
+
+async function createReview(
+  moduleId: string,
+  needsApproval: boolean,
+  fetch: typeof globalThis.fetch
+) {
+  const response = await fetch(`/api/moduleReviews/${moduleId}`, { method: 'POST' })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw error(response.status, {
+      message:
+        errorData.message ||
+        (needsApproval
+          ? `Fehler bei der Anfrage des Reviews: ${response.status} ${response.statusText}`
+          : `Fehler beim Übernehmen der Änderungen: ${response.status} ${response.statusText}`)
+    })
+  }
+
+  return json({ success: true })
+}
+
+async function cancelReview(moduleId: string, fetch: typeof globalThis.fetch) {
+  const response = await fetch(`/api/moduleReviews/${moduleId}`, { method: 'DELETE' })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw error(response.status, {
+      message:
+        errorData.message ||
+        `Fehler beim Zurückziehen des Reviews: ${response.status} ${response.statusText}`
+    })
+  }
+
   return json({ success: true })
 }
 
 export const POST: RequestHandler = async ({ params, request, fetch }) => {
   const { moduleId } = params
-  const { action } = await request.json()
-
-  let endpoint: string
-  let method = 'POST'
+  const { action }: { action: ModuleDraftTableAction } = await request.json()
 
   switch (action) {
+    case 'delete':
+      return deleteModuleDraft(moduleId, fetch)
     case 'publish':
-      endpoint = `/api/moduleDrafts/${moduleId}/publish`
-      break
+      return createReview(moduleId, false, fetch)
     case 'requestReview':
-      endpoint = `/api/moduleDrafts/${moduleId}/request-review`
-      break
+      return createReview(moduleId, true, fetch)
     case 'cancelReview':
-      endpoint = `/api/moduleDrafts/${moduleId}/cancel-review`
-      break
-    default:
-      throw error(400, { message: 'Invalid action' })
+      return cancelReview(moduleId, fetch)
   }
-
-  const response = await fetch(endpoint, { method })
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw error(response.status, {
-      message: errorData.message || `Failed to ${action}`
-    })
-  }
-
-  return json({ success: true })
 }

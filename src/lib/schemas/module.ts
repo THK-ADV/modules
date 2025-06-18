@@ -86,19 +86,17 @@ export const moduleSchema = z
     firstExaminer: z.string().nonempty('Erstprüfer erforderlich'),
     secondExaminer: z.string().nonempty('Zweitprüfer erforderlich'),
     examPhases: z.array(z.string()).min(1, 'Prüfungsphase erforderlich'),
-    assessmentMethods: z
-      .array(
-        z.object({
-          method: z.string().nonempty('Prüfungsform erforderlich'),
-          percentage: z
-            .number()
-            .min(1, { message: 'Prozentsatz muss größer als 0 sein' })
-            .max(100, { message: 'Prozentsatz muss kleiner als 100 sein' })
-            .nullable(),
-          precondition: z.array(z.string())
-        })
-      )
-      .min(1, 'Keine Prüfungsform angegeben'),
+    assessmentMethods: z.array(
+      z.object({
+        method: z.string().nonempty('Prüfungsform erforderlich'),
+        percentage: z
+          .number()
+          .min(1, { message: 'Prozentsatz muss größer als 0 sein' })
+          .max(100, { message: 'Prozentsatz muss kleiner als 100 sein' })
+          .nullable(),
+        precondition: z.array(z.string())
+      })
+    ),
     workload: z.object({
       lecture: workloadNumber,
       seminar: workloadNumber,

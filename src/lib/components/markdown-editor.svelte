@@ -4,9 +4,9 @@
   import { Textarea } from '$lib/components/ui/textarea/index.js'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import ModificationIndicator from './modification-indicator.svelte'
+  import { Bold, Eye, Italic, Link, List, ListOrdered, Pencil } from '@lucide/svelte'
   import { marked } from 'marked'
-  import { Eye, Pencil, Bold, Italic, List, Link, ListOrdered } from '@lucide/svelte'
+  import ModificationIndicator from './modification-indicator.svelte'
 
   interface Props {
     form: any
@@ -200,6 +200,7 @@
                   class="min-h-[{calculatedRows *
                     1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
                 >
+                  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                   {@html renderedMarkdown()}
                 </div>
               {:else}
@@ -311,6 +312,7 @@
                 class="min-h-[{calculatedRows *
                   1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
               >
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html renderedMarkdown()}
               </div>
             {:else}

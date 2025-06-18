@@ -10,6 +10,7 @@
 {#snippet markdownContent(title: string, body: string)}
   <h2>{title}</h2>
   {#if body}
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     <div>{@html marked.parse(body)}</div>
   {:else}
     <p>Keine Angabe</p>

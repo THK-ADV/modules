@@ -53,6 +53,7 @@
         {/snippet}
       </Form.Control>
       {#if description}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         <Form.Description>{@html description}</Form.Description>
       {/if}
       <Form.FieldErrors />
@@ -75,6 +76,7 @@
       {/snippet}
     </Form.Control>
     {#if description}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       <Form.Description>{@html description}</Form.Description>
     {/if}
     <Form.FieldErrors />

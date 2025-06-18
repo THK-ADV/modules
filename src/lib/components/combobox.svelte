@@ -93,6 +93,7 @@
           </Command.Root>
         </Popover.Content>
       </Popover.Root>
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
       <Form.Description>{@html description}</Form.Description>
       <Form.FieldErrors />
     </Form.Field>
@@ -137,6 +138,7 @@
         </Command.Root>
       </Popover.Content>
     </Popover.Root>
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     <Form.Description>{@html description}</Form.Description>
     <Form.FieldErrors />
   </Form.Field>

@@ -157,22 +157,19 @@
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Studierende</h3>
           <p class="leading-relaxed text-muted-foreground">
-            Finden Sie detaillierte Informationen zu allen Modulen Ihres Studiengangs und laden Sie
-            aktuelle Modulhandbücher herunter.
+            TODO
           </p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Lehrende</h3>
           <p class="leading-relaxed text-muted-foreground">
-            Bearbeiten Sie Ihre Modulbeschreibungen direkt online und halten Sie alle Informationen
-            aktuell.
+            TODO
           </p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Verwaltung</h3>
           <p class="leading-relaxed text-muted-foreground">
-            Zentrale Verwaltung aller Modulinformationen mit Genehmigungs- und
-            Veröffentlichungsworkflows.
+            TODO
           </p>
         </div>
       </div>

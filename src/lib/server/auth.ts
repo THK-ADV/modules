@@ -22,6 +22,7 @@ function parserJwt(token: string): any | undefined {
   }
 }
 
+// TODO: the access token expires in 23 hours. make it so that the token is refreshed when the home page is loaded
 function shouldRefreshToken(cookies: Cookies): boolean {
   const exp = cookies.get(AccessTokenExpiresAtKey)
   if (!exp) {

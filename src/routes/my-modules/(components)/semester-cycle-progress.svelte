@@ -69,7 +69,7 @@
       icon: '⚡',
       title: 'Aktuelle Phase: Finalisierung',
       description:
-        'Die Bearbeitungsphase neigt sich dem Ende zu. Stellen Sie sicher, dass alle Änderungen abgeschlossen und bereit zur Veröffentlichung sind. Moduländerungen, die nicht übernommen oder zur Genehmigung freigegeben wurden, werden nicht in der nächsten Ausgabe des Modulhandbuchs und der Modulsuche aufgeführt.',
+        'Die Bearbeitungsphase neigt sich dem Ende zu. Stellen Sie sicher, dass alle Änderungen abgeschlossen und übernommen wurden. Moduländerungen, die nicht übernommen oder zur Genehmigung freigegeben wurden, werden nicht in der nächsten Ausgabe des Modulhandbuchs und der Modulsuche aufgeführt.',
       actionTitle: '⚠️ Dringende Aktionen',
       actions: [
         'Letzte Änderungen vornehmen',
@@ -272,16 +272,16 @@
       <h5 class="mb-3 font-medium text-gray-900">So funktioniert der Bearbeitungszyklus</h5>
       <div class="space-y-2 text-sm text-gray-700">
         <p>
-          <strong>Bearbeitungsphase ({EDITING_PHASE_END}% des Semesters):</strong> Sie können Ihre Module
+          <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können Ihre Module
           bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
         </p>
         <p>
           <strong
-            >Finalisierungsphase ({FINALIZING_PHASE_END - EDITING_PHASE_END}% des Semesters):</strong
+            >Finalisierungsphase (bis {FINALIZING_PHASE_END } % des Semesters):</strong
           > Letzte Gelegenheit für Änderungen. Bereiten Sie Module für die Veröffentlichung vor.
         </p>
         <p>
-          <strong>Veröffentlichung (nach {FINALIZING_PHASE_END}%):</strong> Alle finalisierten Änderungen
+          <strong>Veröffentlichung (die letzten {100 - FINALIZING_PHASE_END} %):</strong> Alle finalisierten Änderungen
           werden automatisch im Modulhandbuch und der Modulsuche veröffentlicht.
         </p>
       </div>

@@ -2,52 +2,68 @@ import { z } from 'zod'
 
 // TODO update to zod v4 (https://zod.dev/v4/changelog)
 
-const yamlSafeText = z
-  .string()
-  .refine(
-    (text) => {
-      if (text === '') return true // empty strings are allowed
+const createYamlSafeText = (
+  minLength?: number,
+  maxLength?: number,
+  minMessage?: string,
+  maxMessage?: string
+) => {
+  let schema = z.string()
 
-      // check for YAML special characters that are forbidden in scalar values
-      const forbiddenChars = [
-        "'", // single quotes
-        '"', // double quotes
-        ':', // colons (key-value separator)
-        '\n', // newlines
-        '\r', // carriage returns
-        '\t', // tab characters
-        '#', // hash/pound (comments)
-        '&', // ampersand (anchors)
-        '*', // asterisk (aliases)
-        '[',
-        ']', // square brackets (flow sequences)
-        '{',
-        '}', // curly braces (flow mappings)
-        '|', // pipe (literal block scalars)
-        '>', // greater than (folded block scalars)
-        '!', // exclamation mark (tags)
-        '%', // percent (directives)
-        '@', // at symbol (reserved)
-        '`' // backtick (reserved)
-      ]
+  if (minLength !== undefined) {
+    schema = schema.min(minLength, minMessage)
+  }
 
-      return !forbiddenChars.some((char) => text.includes(char))
-    },
-    {
-      message:
-        'Text enthält nicht erlaubte Zeichen: Anführungszeichen (\' "), Doppelpunkte (:), Zeilenumbrüche, Tabs, Raute (#), Und-Zeichen (&), Sterne (*), eckige Klammern ([]), geschweifte Klammern ({}), senkrechte Striche (|), Größer-Zeichen (>), Ausrufezeichen (!), Prozentzeichen (%), At-Zeichen (@) und Backticks (`)'
-    }
-  )
-  .refine(
-    (text) => {
-      if (text === '') return true
-      // check for leading/trailing spaces which can be problematic in YAML
-      return text === text.trim()
-    },
-    {
-      message: 'Text darf nicht mit Leerzeichen beginnen oder enden'
-    }
-  )
+  if (maxLength !== undefined) {
+    schema = schema.max(maxLength, maxMessage)
+  }
+
+  return schema
+    .refine(
+      (text) => {
+        if (text === '') return minLength === undefined || minLength === 0 // empty strings are allowed only if no min length or min length is 0
+
+        // check for YAML special characters that are forbidden in scalar values
+        const forbiddenChars = [
+          "'", // single quotes
+          '"', // double quotes
+          ':', // colons (key-value separator)
+          '\n', // newlines
+          '\r', // carriage returns
+          '\t', // tab characters
+          '#', // hash/pound (comments)
+          '&', // ampersand (anchors)
+          '*', // asterisk (aliases)
+          '[',
+          ']', // square brackets (flow sequences)
+          '{',
+          '}', // curly braces (flow mappings)
+          '|', // pipe (literal block scalars)
+          '>', // greater than (folded block scalars)
+          '!', // exclamation mark (tags)
+          '%', // percent (directives)
+          '@', // at symbol (reserved)
+          '`' // backtick (reserved)
+        ]
+
+        return !forbiddenChars.some((char) => text.includes(char))
+      },
+      {
+        message:
+          'Text enthält nicht erlaubte Zeichen: Anführungszeichen (\' "), Doppelpunkte (:), Zeilenumbrüche, Tabs, Raute (#), Und-Zeichen (&), Sterne (*), eckige Klammern ([]), geschweifte Klammern ({}), senkrechte Striche (|), Größer-Zeichen (>), Ausrufezeichen (!), Prozentzeichen (%), At-Zeichen (@) und Backticks (`)'
+      }
+    )
+    .refine(
+      (text) => {
+        if (text === '') return minLength === undefined || minLength === 0
+        // check for leading/trailing spaces which can be problematic in YAML
+        return text === text.trim()
+      },
+      {
+        message: 'Text darf nicht mit Leerzeichen beginnen oder enden'
+      }
+    )
+}
 
 const workloadNumber = z
   .number({ message: 'Eintrag erforderlich' })
@@ -58,14 +74,18 @@ const workloadNumber = z
 
 export const moduleSchema = z
   .object({
-    title: z
-      .string()
-      .nonempty('Modulbezeichnung erforderlich')
-      .max(100, 'Modulbezeichnung muss weniger als 100 Zeichen lang sein'),
-    abbrev: z
-      .string()
-      .nonempty('Modulabkürzung erforderlich')
-      .max(20, 'Modulabkürzung muss weniger als 20 Zeichen lang sein'),
+    title: createYamlSafeText(
+      1,
+      100,
+      'Modulbezeichnung erforderlich',
+      'Modulbezeichnung muss weniger als 100 Zeichen lang sein'
+    ),
+    abbrev: createYamlSafeText(
+      1,
+      20,
+      'Modulabkürzung erforderlich',
+      'Modulabkürzung muss weniger als 20 Zeichen lang sein'
+    ),
     moduleType: z.string().nonempty('Modulart erforderlich'),
     ects: z
       .number({ message: 'ECTS credits erforderlich' })
@@ -107,13 +127,13 @@ export const moduleSchema = z
     }),
     recommendedPrerequisites: z
       .object({
-        text: yamlSafeText,
+        text: createYamlSafeText(),
         modules: z.array(z.string())
       })
       .nullable(),
     requiredPrerequisites: z
       .object({
-        text: yamlSafeText,
+        text: createYamlSafeText(),
         modules: z.array(z.string())
       })
       .nullable(),
@@ -182,7 +202,7 @@ export const moduleSchema = z
         data.workload.practical +
         data.workload.projectSupervision +
         data.workload.projectWork
-      const allowedHours = data.ects * 30
+      const allowedHours = data.ects * 30 // TODO: ects factor
       return totalWorkload <= allowedHours
     },
     {

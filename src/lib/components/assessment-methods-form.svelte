@@ -30,7 +30,7 @@
     modificationStatus?: ModificationStatus // optional modification tracking
   }
 
-  const assessmentEntrySchema = moduleSchema.innerType().shape.assessmentMethods.element
+  const assessmentEntrySchema = moduleSchema.shape.assessmentMethods.element
 
   let {
     form,

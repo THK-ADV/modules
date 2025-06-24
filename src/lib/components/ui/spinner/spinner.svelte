@@ -8,6 +8,7 @@
   }: {
     size?: 'sm' | 'md' | 'lg'
     class?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } & Record<string, any> = $props()
 
   const sizeClasses = {

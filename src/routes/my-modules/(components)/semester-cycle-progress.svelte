@@ -272,17 +272,16 @@
       <h5 class="mb-3 font-medium text-gray-900">So funktioniert der Bearbeitungszyklus</h5>
       <div class="space-y-2 text-sm text-gray-700">
         <p>
-          <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können Ihre Module
-          bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
+          <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können Ihre
+          Module bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
         </p>
         <p>
-          <strong
-            >Finalisierungsphase (bis {FINALIZING_PHASE_END } % des Semesters):</strong
-          > Letzte Gelegenheit für Änderungen. Bereiten Sie Module für die Veröffentlichung vor.
+          <strong>Finalisierungsphase (bis {FINALIZING_PHASE_END} % des Semesters):</strong> Letzte Gelegenheit
+          für Änderungen. Bereiten Sie Module für die Veröffentlichung vor.
         </p>
         <p>
-          <strong>Veröffentlichung (die letzten {100 - FINALIZING_PHASE_END} %):</strong> Alle finalisierten Änderungen
-          werden automatisch im Modulhandbuch und der Modulsuche veröffentlicht.
+          <strong>Veröffentlichung (die letzten {100 - FINALIZING_PHASE_END} %):</strong> Alle finalisierten
+          Änderungen werden automatisch im Modulhandbuch und der Modulsuche veröffentlicht.
         </p>
       </div>
     </div>

@@ -156,21 +156,15 @@
       <div class="grid gap-8 md:grid-cols-3">
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Studierende</h3>
-          <p class="leading-relaxed text-muted-foreground">
-            TODO
-          </p>
+          <p class="leading-relaxed text-muted-foreground">TODO</p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Lehrende</h3>
-          <p class="leading-relaxed text-muted-foreground">
-            TODO
-          </p>
+          <p class="leading-relaxed text-muted-foreground">TODO</p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Verwaltung</h3>
-          <p class="leading-relaxed text-muted-foreground">
-            TODO
-          </p>
+          <p class="leading-relaxed text-muted-foreground">TODO</p>
         </div>
       </div>
     </div>

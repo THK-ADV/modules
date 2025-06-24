@@ -2,7 +2,9 @@
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
+  import { getPOsWithIds } from '$lib/http'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import { onMount } from 'svelte'
   import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
 
@@ -20,6 +22,25 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  let ectsFactors: number[] = $state([])
+
+  // fetch all ECTS factors from the POs that are linked to the module
+  onMount(async () => {
+    const factors = new Set<number>()
+    const pos = new Set<string>()
+    for (const { po } of $formData.po.mandatory) {
+      pos.add(po)
+    }
+    for (const { po } of $formData.po.optional) {
+      pos.add(po)
+    }
+    const posWithECTSFactor = await getPOsWithIds(Array.from(pos))
+    for (const { ectsFactor } of posWithECTSFactor) {
+      factors.add(ectsFactor)
+    }
+    ectsFactors = factors.size > 0 ? Array.from(factors) : [30] // fallback to 30 if no POs are linked to the module
+  })
+
   const total = $derived(
     $formData.workload.lecture +
       $formData.workload.seminar +
@@ -28,10 +49,37 @@
       $formData.workload.projectSupervision +
       $formData.workload.projectWork
   )
-  const allowedHours = $derived($formData.ects * 30)
-  const selfStudy = $derived(allowedHours - total)
+
+  // calculate allowed hours and self study for each ECTS factor
+  const allowedHoursCalculations = $derived.by(() => {
+    const ects = $formData.ects
+    return ectsFactors.map((factor) => {
+      const allowedHours = ects * factor
+      const selfStudy = allowedHours - total
+      return { factor, allowedHours, selfStudy }
+    })
+  })
+
+  // local validation - check if total exceeds ANY of the ECTS factor calculations
+  const hasCustomWorkloadError = $derived.by(() => {
+    return allowedHoursCalculations.some(({ selfStudy }) => selfStudy < 0)
+  })
+
+  const customWorkloadErrorMessage = $derived.by(() => {
+    if (!hasCustomWorkloadError) return null
+
+    if (allowedHoursCalculations.length <= 1) {
+      return 'Der gesamte Workload darf die ECTS-Credits nicht überschreiten'
+    } else {
+      const minAllowedHours = Math.min(
+        ...allowedHoursCalculations.map(({ allowedHours }) => allowedHours)
+      )
+      return `Der gesamte Workload (${total}h) überschreitet die minimal erlaubten Stunden (${minAllowedHours}h) für die zugeordneten Prüfungsordnungen`
+    }
+  })
+
   const hasWorkloadError = $derived(
-    $errors.workload?._errors && $errors.workload._errors.length > 0
+    ($errors.workload?._errors && $errors.workload._errors.length > 0) || hasCustomWorkloadError
   )
   const consideredScheduleEntries = $derived.by(() => {
     const wl = $formData.workload
@@ -61,26 +109,69 @@
         : 'border-gray-200'}"
     >
       <div class="space-y-2 text-sm">
-        <div class="space-x-0.5">
-          <span class="font-medium">Stunden laut ECTS:</span>
-          <span>{allowedHours} Stunden ({$formData.ects} ECTS × 30)</span>
-        </div>
-        <div class="space-x-0.5">
+        {#if allowedHoursCalculations.length > 1}
+          <div class="space-y-4">
+            <div class="space-y-1">
+              <div class="font-medium text-foreground">
+                Stunden laut ECTS (je nach Prüfungsordnung)
+              </div>
+              <div class="text-xs text-muted-foreground">
+                Dieses Modul ist verschiedenen Prüfungsordnungen mit unterschiedlichen ECTS-Faktoren
+                zugeordnet
+              </div>
+            </div>
+            {#each allowedHoursCalculations as calc (calc.factor)}
+              <div class="space-y-1">
+                <div class="space-x-0.5">
+                  <span class="font-medium">ECTS-Faktor {calc.factor}:</span>
+                  <span>{calc.allowedHours} Stunden ({$formData.ects} ECTS × {calc.factor})</span>
+                </div>
+                <div class="space-x-0.5">
+                  <span class="font-medium">Selbststudium:</span>
+                  <span
+                    class={calc.selfStudy < 0 ? 'font-semibold text-destructive' : 'text-green-600'}
+                    >{calc.selfStudy} Stunden</span
+                  >
+                </div>
+              </div>
+            {/each}
+          </div>
+        {:else if allowedHoursCalculations.length === 1}
+          <div class="space-x-0.5">
+            <span class="font-medium">Stunden laut ECTS:</span>
+            <span
+              >{allowedHoursCalculations[0].allowedHours} Stunden ({$formData.ects} ECTS × {allowedHoursCalculations[0]
+                .factor})</span
+            >
+          </div>
+          <div class="space-x-0.5">
+            <span class="font-medium">Selbststudium:</span>
+            <span
+              class={allowedHoursCalculations[0].selfStudy < 0
+                ? 'font-semibold text-destructive'
+                : 'text-green-600'}>{allowedHoursCalculations[0].selfStudy} Stunden</span
+            >
+          </div>
+        {:else}
+          <div class="space-x-0.5 text-muted-foreground">
+            <span>Lade ECTS-Faktoren...</span>
+          </div>
+        {/if}
+
+        <div class="space-x-0.5 border-t border-gray-200 pt-2">
           <span class="font-medium">Gesamter Workload:</span>
           <span>{total} Stunden</span>
-        </div>
-        <div class="space-x-0.5">
-          <span class="font-medium">Selbststudium:</span>
-          <span class={selfStudy < 0 ? 'font-semibold text-destructive' : 'text-green-600'}
-            >{selfStudy} Stunden</span
-          >
         </div>
       </div>
 
       {#if hasWorkloadError}
         <div class="mt-3 rounded-md border border-destructive bg-destructive/10 p-3">
           <p class="text-sm text-destructive">
-            {$errors.workload?._errors?.[0]}
+            {#if $errors.workload?._errors?.[0]}
+              {$errors.workload._errors[0]}
+            {:else if customWorkloadErrorMessage}
+              {customWorkloadErrorMessage}
+            {/if}
           </p>
         </div>
       {/if}

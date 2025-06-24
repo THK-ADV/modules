@@ -56,8 +56,6 @@ export interface Workload {
   exercise: number
   projectSupervision: number
   projectWork: number
-  selfStudy: number
-  total: number
 }
 
 export interface ModuleType {
@@ -123,4 +121,9 @@ export interface GenericModule {
   title: string
   abbrev: string
   pos: string[]
+}
+
+export interface PO {
+  id: string
+  ectsFactor: number
 }

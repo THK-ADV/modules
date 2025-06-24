@@ -10,6 +10,20 @@ import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
 import type { Actions } from './$types.js'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function errorMessage(err: any): string {
+  switch (err.tag) {
+    case 'parsing-error':
+      return `Parsing error: expected ${err.expected}, found ${err.found}`
+    case 'printing-error':
+      return `Printing error: expected ${err.expected}, found ${err.found}`
+    case 'validation-error':
+      return `Validation error: ${err.error.errs.join(', ')}`
+    default:
+      return JSON.stringify(err)
+  }
+}
+
 // TODO: remove unnecessary fields if the backend is updated
 
 interface MetadataProtocolUpdate
@@ -49,7 +63,7 @@ export const actions: Actions = {
         language: form.data.language,
         duration: form.data.duration,
         season: form.data.season,
-        workload: { ...form.data.workload, selfStudy: 0, total: 0 }, // selfStudy and total are calculated
+        workload: form.data.workload,
         status: form.data.status,
         location: form.data.location,
         participants: form.data.participants,
@@ -89,11 +103,19 @@ export const actions: Actions = {
     })
 
     if (!resp.ok) {
-      const err = await resp.json()
-      return fail(resp.status, {
-        form,
-        message: err.message || 'Failed to update module'
-      })
+      try {
+        const err = await resp.json()
+        return fail(resp.status, {
+          form,
+          message: errorMessage(err)
+        })
+      } catch (err) {
+        console.error(err)
+        return fail(resp.status, {
+          form,
+          message: 'Failed to update module'
+        })
+      }
     }
 
     return { form }

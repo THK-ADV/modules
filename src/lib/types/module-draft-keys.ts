@@ -10,7 +10,8 @@ type Paths<T> = T extends object
   ? {
       [K in keyof T]: K extends string
         ? T[K] extends object
-          ? T[K] extends any[]
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            T[K] extends any[]
             ? K
             : K | `${K}.${Paths<T[K]>}`
           : K

@@ -100,8 +100,8 @@
       console.error('Form submission failed:', result)
     },
     onUpdated: ({ form }) => {
-      // redirect, if form submission was successful
-      if (form.valid && Object.keys(form.errors).length === 0) {
+      // redirect, if form submission was successful and no server error occurred
+      if (form.valid && Object.keys(form.errors).length === 0 && !page.form?.message) {
         goto('/my-modules?updated=true')
       }
     }
@@ -237,6 +237,7 @@
   const originalFormData = structuredClone(data.form.data)
 
   // deep comparison function to check for actual changes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function hasActualChanges(current: any, original: any): boolean {
     if (current === original) return false
 

@@ -3,16 +3,10 @@
   import type { ModuleDraftState } from '$lib/types/module-draft'
   import { CheckCircle, CheckSquare, Clock, Eye, HelpCircle, Loader, XCircle } from '@lucide/svelte'
 
-  let {
-    id,
-    deLabel
-  }: {
-    id: ModuleDraftState
-    deLabel: string
-  } = $props()
+  let { state }: { state: ModuleDraftState } = $props()
 
   const Icon = $derived.by(() => {
-    switch (id) {
+    switch (state) {
       case 'published':
         return CheckCircle
       case 'valid_for_review':
@@ -31,7 +25,7 @@
   })
 
   const tooltip = $derived.by(() => {
-    switch (id) {
+    switch (state) {
       case 'published':
         return 'Die aktuelle Version des Moduls wird in der nächsten Ausgabe des Modulhandbuchs und in der Modulsuche aufgeführt.'
       case 'valid_for_review':
@@ -49,9 +43,8 @@
     }
   })
 
-  // override a few labels for better UX
   let label = $derived.by(() => {
-    switch (id) {
+    switch (state) {
       case 'published':
         return 'Aktuellste Version'
       case 'valid_for_publication':
@@ -60,8 +53,12 @@
         return 'Anpassungen notwendig'
       case 'waiting_for_publication':
         return 'Warte auf Backend'
-      default:
-        return deLabel
+      case 'valid_for_review':
+        return 'Bereit zum Review'
+      case 'waiting_for_review':
+        return 'Warte auf Review'
+      case 'unknown':
+        return 'Unbekannt'
     }
   })
 </script>
@@ -72,11 +69,10 @@
       <div class="flex min-w-0 items-center">
         <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
         <Icon
-          class="mr-2 h-4 w-4 flex-shrink-0 {id === 'waiting_for_changes'
+          class="mr-2 h-4 w-4 flex-shrink-0 {state === 'waiting_for_changes'
             ? 'text-amber-500'
             : 'text-muted-foreground'}"
         />
-        <!-- TODO: add ECTS info to distinguish modules with the same name -->
         <span class="truncate text-sm font-medium">{label}</span>
       </div>
     </Tooltip.Trigger>

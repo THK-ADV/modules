@@ -1,34 +1,18 @@
 <script lang="ts" module>
-  import SemesterCycleProgress from './(components)/semester-cycle-progress.svelte'
-  import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import { renderComponent } from '$lib/components/ui/data-table/index.js'
+  import type { FeaturedModuleDraft } from '$lib/types/module-draft'
   import type { ColumnDef } from '@tanstack/table-core'
-  import { createRawSnippet } from 'svelte'
   import ModuleDraftStatusCell from './(components)/module-draft-status-cell.svelte'
   import ModuleDraftTableActions from './(components)/module-draft-table-actions.svelte'
   import ModuleDraftTable from './(components)/module-draft-table.svelte'
+  import SemesterCycleProgress from './(components)/semester-cycle-progress.svelte'
 
-  const columns: ColumnDef<ModuleDraft>[] = [
+  const columns: ColumnDef<FeaturedModuleDraft>[] = [
     {
       accessorKey: 'title',
       header: 'Modulbezeichnung',
       cell: ({ row }) => {
-        const snippet = createRawSnippet<[string]>((getTitle) => {
-          const title = getTitle()
-          return {
-            render: () => `<a href="/modules/${row.original.module.id}?source=latest">${title}</a>`
-          }
-        })
-
-        let title = row.original.module.title
-        let abbrev = row.original.module.abbrev
-
-        if (row.original.moduleDraft) {
-          title = row.original.moduleDraft.data.metadata.title
-          abbrev = row.original.moduleDraft.data.metadata.abbrev
-        }
-
-        return renderSnippet(snippet, `${title} (${abbrev})`)
+        return renderComponent(ModuleDraftTitleCell, { moduleDraft: row.original })
       },
       enableColumnFilter: false,
       size: 300
@@ -37,7 +21,7 @@
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => {
-        return renderComponent(ModuleDraftStatusCell, row.original.moduleDraftState)
+        return renderComponent(ModuleDraftStatusCell, { state: row.original.moduleDraftState })
       },
       enableColumnFilter: false,
       size: 280
@@ -47,8 +31,8 @@
       cell: ({ row }) => {
         return renderComponent(ModuleDraftTableActions, {
           moduleId: row.original.module.id,
-          moduleDraftState: row.original.moduleDraftState.id,
-          isPrivilegedForModule: row.original.privilegedForModule
+          moduleDraftState: row.original.moduleDraftState,
+          isPrivilegedForModule: row.original.isPrivilegedForModule
         })
       }
     }
@@ -58,8 +42,9 @@
 <script lang="ts">
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
+  import { page } from '$app/state'
   import type { PageProps } from './$types'
+  import ModuleDraftTitleCell from './(components)/module-draft-title-cell.svelte'
 
   let { data }: PageProps = $props()
 
@@ -67,11 +52,11 @@
   let isPublishingPhase = $state(false)
 
   $effect(() => {
-    if (browser && $page.url.searchParams.has('updated')) {
+    if (browser && page.url.searchParams.has('updated')) {
       showSuccessMessage = true
 
       // clean up URL after showing message
-      const url = new URL($page.url)
+      const url = new URL(page.url)
       url.searchParams.delete('updated')
       goto(url.toString(), { replaceState: true, noScroll: true })
 

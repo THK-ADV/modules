@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import type { FeaturedModuleDraft } from '$lib/types/module-draft'
   import {
     type ColumnDef,
     getCoreRowModel,
@@ -12,7 +12,7 @@
   let {
     moduleDrafts,
     columns
-  }: { moduleDrafts: ModuleDraft[]; columns: ColumnDef<ModuleDraft>[] } = $props()
+  }: { moduleDrafts: FeaturedModuleDraft[]; columns: ColumnDef<FeaturedModuleDraft>[] } = $props()
 
   let sorting = $state<SortingState>([])
 
@@ -63,7 +63,7 @@
       {#each table.getRowModel().rows as row (row.id)}
         <Table.Row
           data-state={row.getIsSelected() && 'selected'}
-          class={row.original.moduleDraftState.id === 'waiting_for_changes'
+          class={row.original.moduleDraftState === 'waiting_for_changes'
             ? 'border-l-4 border-l-amber-400 bg-amber-50/50 hover:bg-amber-50/70'
             : ''}
         >

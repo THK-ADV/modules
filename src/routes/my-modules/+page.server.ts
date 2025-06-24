@@ -1,4 +1,4 @@
-import type { ModuleDraft, ModuleDraftState } from '$lib/types/module-draft'
+import type { FeaturedModuleDraft, ModuleDraft, ModuleDraftState } from '$lib/types/module-draft'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
@@ -21,8 +21,24 @@ function moduleDraftStateOrd(state: ModuleDraftState): number {
   }
 }
 
+function orderByState(lhs: ModuleDraft, rhs: ModuleDraft) {
+  const lhsState = moduleDraftStateOrd(lhs.moduleDraftState)
+  const rhsState = moduleDraftStateOrd(rhs.moduleDraftState)
+  return lhsState - rhsState
+}
+
+function orderByTitle(lhs: ModuleDraft, rhs: ModuleDraft) {
+  return lhs.module.title.localeCompare(rhs.module.title)
+}
+
+function orderByFeaturedPO(lhs: FeaturedModuleDraft, rhs: FeaturedModuleDraft) {
+  const lhsFeatured = lhs.isFeatured
+  const rhsFeatured = rhs.isFeatured
+  return lhsFeatured === rhsFeatured ? 0 : lhsFeatured ? -1 : 1
+}
+
 export const load: PageServerLoad = async ({ fetch }) => {
-  const res = await fetch(`/api/moduleDrafts/own`)
+  const res = await fetch(`/api/moduleDrafts/own?newApi=true`)
 
   if (!res.ok) {
     const err = await res.json()
@@ -30,12 +46,22 @@ export const load: PageServerLoad = async ({ fetch }) => {
     throw error(res.status, { message })
   }
   const moduleDrafts: ModuleDraft[] = await res.json()
-  moduleDrafts.sort((a, b) => {
-    const lhsState = moduleDraftStateOrd(a.moduleDraftState.id)
-    const rhsState = moduleDraftStateOrd(b.moduleDraftState.id)
-    return lhsState === rhsState
-      ? a.module.title.localeCompare(b.module.title)
-      : lhsState - rhsState
+  const featuredPOs = ['ing_een5', 'ing_gme5', 'ing_wiw5']
+
+  const featuredDrafts: FeaturedModuleDraft[] = moduleDrafts.map((draft) => {
+    if (draft.isNewModule && draft.mandatoryPOs.some((po) => featuredPOs.includes(po))) {
+      return { ...draft, isFeatured: true }
+    }
+    return { ...draft, isFeatured: false }
   })
-  return { moduleDrafts }
+
+  featuredDrafts.sort((a, b) => {
+    const byFeaturedPO = orderByFeaturedPO(a, b)
+    if (byFeaturedPO !== 0) return byFeaturedPO
+    const byState = orderByState(a, b)
+    if (byState !== 0) return byState
+    return orderByTitle(a, b)
+  })
+
+  return { moduleDrafts: featuredDrafts }
 }

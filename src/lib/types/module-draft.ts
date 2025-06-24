@@ -1,3 +1,5 @@
+import type { ModuleShort } from './module-details'
+
 export type ModuleDraftState =
   | 'published'
   | 'valid_for_review'
@@ -8,29 +10,25 @@ export type ModuleDraftState =
   | 'unknown'
 
 export interface ModuleDraft {
-  module: {
+  module: ModuleShort
+  isNewModule: boolean
+  // true, if module manager
+  isPrivilegedForModule: boolean
+  ects: number
+  mandatoryPOs: string[]
+  moduleDraftState: ModuleDraftState
+  moduleDraft: {
     id: string
     title: string
-    abbrev: string
-  }
-  moduleDraft: {
-    module: string
-    author: string
-    // added or modified
-    status: string
-    data: Record<string, unknown> & {
-      metadata: {
-        title: string
-        abbrev: string
-      }
-    }
+    abbreviation: string
+    // modifiedKeys and keysToBeReviewed are comma separated list of keys that were modified
+    modifiedKeys: string
+    keysToBeReviewed: string
   } | null
-  moduleDraftState: {
-    id: ModuleDraftState
-    deLabel: string
-  }
-  // true, if module manager
-  privilegedForModule: boolean
+}
+
+export interface FeaturedModuleDraft extends ModuleDraft {
+  isFeatured: boolean
 }
 
 export function canEdit(state: ModuleDraftState) {

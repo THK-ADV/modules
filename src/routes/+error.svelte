@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dev } from '$app/environment'
   import { page } from '$app/state'
 
   // throw Error() is used for unexpected errors. Its error message is always 'Internal Error', since it does not expose sensitive informations to the users
@@ -14,11 +15,13 @@
   {#if message}
     <p>Fehlernachricht: {message}</p>
   {/if}
-  <div class="h-px w-full bg-border"></div>
-  <pre
-    class="overflow-x-auto rounded-md border border-border bg-muted p-4 font-mono text-sm text-muted-foreground">{JSON.stringify(
-      page,
-      null,
-      2
-    )}</pre>
+  {#if dev}
+    <div class="h-px w-full bg-border"></div>
+    <pre
+      class="overflow-x-auto rounded-md border border-border bg-muted p-4 font-mono text-sm text-muted-foreground">{JSON.stringify(
+        page,
+        null,
+        2
+      )}</pre>
+  {/if}
 </div>

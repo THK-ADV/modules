@@ -43,6 +43,8 @@
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
+  import { Button } from '$lib/components/ui/button'
+  import { ChartLine, ChevronDown, ChevronUp } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ModuleDraftTitleCell from './(components)/module-draft-title-cell.svelte'
 
@@ -50,6 +52,7 @@
 
   let showSuccessMessage = $state(false)
   let isPublishingPhase = $state(false)
+  let showSemesterProgress = $state(false)
 
   $effect(() => {
     if (browser && page.url.searchParams.has('updated')) {
@@ -104,19 +107,42 @@
   {/if}
 
   {#if data.moduleDrafts.length > 0}
-    <div class="space-y-2">
-      <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
-      <p class="break-words text-muted-foreground">
-        Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
-        Genehmigung freigeben. Eine Genehmigung ist nur bei <a
-          class="text-primary underline hover:no-underline"
-          href="/help/approval">Änderungen bestimmter Attribute</a
-        >
-        notwendig.
-      </p>
+    <div class="space-y-8">
+      <div class="space-y-2">
+        <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
+        <p class="break-words text-muted-foreground">
+          Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
+          Genehmigung freigeben. Eine Genehmigung ist nur bei <a
+            class="text-primary underline hover:no-underline"
+            href="/help/approval">Änderungen bestimmter Attribute</a
+          >
+          notwendig.
+        </p>
+        {#if !isPublishingPhase}
+          <Button
+            variant="ghost"
+            size="sm"
+            onclick={() => (showSemesterProgress = !showSemesterProgress)}
+            class="h-auto p-2 text-sm"
+          >
+            <ChartLine class="mr-1 h-4 w-4" />
+            {showSemesterProgress
+              ? 'Erklärung zum Bearbeitungszyklus ausblenden'
+              : 'Erklärung zum Bearbeitungszyklus anzeigen'}
+            {#if showSemesterProgress}
+              <ChevronUp class="ml-1 h-4 w-4" />
+            {:else}
+              <ChevronDown class="ml-1 h-4 w-4" />
+            {/if}
+          </Button>
+        {/if}
+      </div>
     </div>
 
-    <SemesterCycleProgress bind:isPublishingPhase />
+    <SemesterCycleProgress
+      bind:isPublishingPhase
+      showComponent={showSemesterProgress || isPublishingPhase}
+    />
 
     {#if !isPublishingPhase}
       <div class="w-full">

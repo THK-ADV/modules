@@ -133,12 +133,6 @@
         )
       }
     }
-    // {
-    // 	id: 'actions',
-    // 	cell: ({ row }) => {
-    // 		return renderComponent(DataTableActions, { id: row.original.id })
-    // 	}
-    // }
   ]
 </script>
 

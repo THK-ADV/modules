@@ -52,8 +52,6 @@ export const actions: Actions = {
       return fail(400, { form })
     }
 
-    // TODO: use form.data.updatePermissions
-
     const protocol: ModuleProtocolUpdate = {
       metadata: {
         title: form.data.title,
@@ -93,7 +91,7 @@ export const actions: Actions = {
       enContent: form.data.enContent
     }
 
-    const resp = await fetch(`/api/moduleDrafts/${params.id}`, {
+    const moduleUpdateReq = await fetch(`/api/moduleDrafts/${params.id}`, {
       method: 'PUT',
       body: JSON.stringify(protocol),
       headers: {
@@ -102,16 +100,37 @@ export const actions: Actions = {
       }
     })
 
-    if (!resp.ok) {
+    const moduleUpdatePermissionsReq = await fetch(
+      `/api/moduleUpdatePermissions/${params.id}?newApi=true`,
+      {
+        method: 'POST',
+        body: JSON.stringify(form.data.updatePermissions),
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
+
+    const [moduleUpdateResp, moduleUpdatePermissionsResp] = await Promise.all([
+      moduleUpdateReq,
+      moduleUpdatePermissionsReq
+    ])
+
+    if (!moduleUpdateResp.ok || !moduleUpdatePermissionsResp.ok) {
       try {
-        const err = await resp.json()
-        return fail(resp.status, {
+        const err1 = await moduleUpdateResp
+          .json()
+          .then((json) => errorMessage(json))
+          .catch(() => null)
+        const err2 = await moduleUpdatePermissionsResp
+          .json()
+          .then((json) => errorMessage(json))
+          .catch(() => null)
+        return fail(400, {
           form,
-          message: errorMessage(err)
+          message: err1 || err2 || 'Failed to update module'
         })
       } catch (err) {
         console.error(err)
-        return fail(resp.status, {
+        return fail(400, {
           form,
           message: 'Failed to update module'
         })

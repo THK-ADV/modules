@@ -90,7 +90,7 @@
         {form}
         name="updatePermissions"
         label="Bearbeitungsrechte"
-        description="Personen, die <span class='text-primary underline'>neben den Modulverantwortlichen</span> das Modul bearbeiten können."
+        description="Personen, die <span class='underline'>neben den Modulverantwortlichen</span> das Modul bearbeiten können."
         options={nonManagementOptions}
         bind:value={$formData.updatePermissions}
         {errors}

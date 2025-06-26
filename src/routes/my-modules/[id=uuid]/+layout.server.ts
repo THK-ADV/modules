@@ -31,11 +31,13 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw error(403, { message: 'Das Modul kann nicht bearbeitet werden.' })
   }
 
-  const [moduleRes, moduleDraftKeysRes, approvalsRes] = await Promise.allSettled([
-    fetch(`/api/modules/${params.id}/latest`),
-    fetch(`/api/moduleDrafts/${params.id}/keys`),
-    fetch(`/api/moduleApprovals/${params.id}`)
-  ])
+  const [moduleRes, moduleDraftKeysRes, approvalsRes, userWithUpdatePermissionsRes] =
+    await Promise.allSettled([
+      fetch(`/api/modules/${params.id}/latest`),
+      fetch(`/api/moduleDrafts/${params.id}/keys`),
+      fetch(`/api/moduleApprovals/${params.id}`),
+      fetch(`/api/moduleUpdatePermissions/${params.id}?newApi=true`)
+    ])
 
   if (moduleRes.status === 'rejected') {
     const err = moduleRes.reason
@@ -52,6 +54,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   const module: ModuleProtocol = await moduleRes.value.json()
   let moduleDraftKeys: ModuleDraftKeys | null = null
   let approvals: Approval[] = []
+  let userWithUpdatePermissions: string[] = []
 
   if (moduleDraftKeysRes.status === 'fulfilled' && moduleDraftKeysRes.value.ok) {
     moduleDraftKeys = await moduleDraftKeysRes.value.json()
@@ -59,6 +62,13 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   if (approvalsRes.status === 'fulfilled' && approvalsRes.value.ok) {
     approvals = await approvalsRes.value.json()
+  }
+
+  if (
+    userWithUpdatePermissionsRes.status === 'fulfilled' &&
+    userWithUpdatePermissionsRes.value.ok
+  ) {
+    userWithUpdatePermissions = await userWithUpdatePermissionsRes.value.json()
   }
 
   // the backend does not return the id of the module if a module draft exists
@@ -95,7 +105,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       status: module.metadata.status,
       management: module.metadata.moduleManagement,
       lecturers: module.metadata.lecturers,
-      updatePermissions: [], // TODO: add update permissions
+      updatePermissions: userWithUpdatePermissions,
       firstExaminer: module.metadata.examiner.first,
       secondExaminer: module.metadata.examiner.second,
       examPhases: module.metadata.examPhases,

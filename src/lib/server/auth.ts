@@ -1,6 +1,6 @@
 import { dev } from '$app/environment'
 import { KEYCLOAK_CLIENT_ID, KEYCLOAK_REALM, KEYCLOAK_URL } from '$env/static/private'
-import type { User } from '$lib/auth'
+import type { User, UserInfo } from '$lib/auth'
 import { error, type Cookies } from '@sveltejs/kit'
 
 // caution: all functions should only be called within a server context
@@ -10,6 +10,8 @@ const AccessTokenKey = 'kc-access'
 const AccessTokenExpiresAtKey = 'kc-access-exp'
 
 const RefreshTokenKey = 'kc-refresh'
+
+const tokenEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parserJwt(token: string): any | undefined {
@@ -51,8 +53,6 @@ async function refreshAccessToken(
   if (!refreshToken) {
     return undefined
   }
-
-  const tokenEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
 
   const formData = new URLSearchParams()
   formData.append('grant_type', 'refresh_token')
@@ -98,7 +98,7 @@ export async function getValidAccessToken(
   return accessToken
 }
 
-export function getUserInfo(accessToken: string): User | undefined {
+export function getUser(accessToken: string): User | undefined {
   const token = parserJwt(accessToken)
   if (!token) {
     return undefined
@@ -106,7 +106,21 @@ export function getUserInfo(accessToken: string): User | undefined {
   return {
     firstname: token.firstname,
     lastname: token.lastname,
-    roles: token.realm_access.roles
+    roles: token.realm_access.roles,
+    userInfo: undefined
+  }
+}
+
+export async function getUserInfo(fetch: typeof globalThis.fetch): Promise<UserInfo | undefined> {
+  const res = await fetch('/api/me?newApi=true')
+  if (!res.ok) {
+    return undefined
+  }
+  try {
+    return await res.json()
+  } catch (err) {
+    console.error(err)
+    return undefined
   }
 }
 

@@ -1,14 +1,22 @@
 <script lang="ts">
-  import { page } from '$app/state'
+  import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-  import { isEmployee, type User } from '$lib/auth'
   import { routesMap } from '$lib/routes.svelte'
+
+  let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
   const { defaultRoutes, managerRoutes, pavRoutes } = routesMap
 
-  let user: User | undefined = page.data.user
+  const showMyModules = $derived.by(() => {
+    if (!user) return false
+    return isProfessor(user) || userInfo?.hasModulesToEdit
+  })
 
-  let isEmp = $derived(user ? isEmployee(user) : false)
+  const showPAVSection = $derived(userInfo?.hasUniversityRole)
+
+  const rejectedReviews = $derived(userInfo?.rejectedReviews)
+
+  const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 </script>
 
 <Sidebar.Group>
@@ -23,18 +31,15 @@
             </a>
           {/snippet}
         </Sidebar.MenuButton>
-        <!-- <Sidebar.MenuBadge>1</Sidebar.MenuBadge> -->
       </Sidebar.MenuItem>
     {/each}
   </Sidebar.Menu>
 </Sidebar.Group>
 
-<!-- TODO: isEmp is not sufficient enough. It should if the user has permissions to edit modules -->
-
-{#if isEmp}
+{#if showMyModules}
   <Sidebar.Separator />
   <Sidebar.Group>
-    <Sidebar.GroupLabel>Dozent</Sidebar.GroupLabel>
+    <Sidebar.GroupLabel>Dozent:in</Sidebar.GroupLabel>
     <Sidebar.Menu>
       {#each Object.entries(managerRoutes) as [path, route] (path)}
         <Sidebar.MenuItem>
@@ -46,20 +51,19 @@
               </a>
             {/snippet}
           </Sidebar.MenuButton>
-          <!-- <Sidebar.MenuBadge>1</Sidebar.MenuBadge> -->
+          {#if rejectedReviews}
+            <Sidebar.MenuBadge>{rejectedReviews}</Sidebar.MenuBadge>
+          {/if}
         </Sidebar.MenuItem>
       {/each}
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
 
-<!-- TODO: real check for PAVs or SGLs -->
-<!-- TODO: use badge to indicate actions -->
-
-{#if isEmp}
+{#if showPAVSection}
   <Sidebar.Separator />
   <Sidebar.Group>
-    <Sidebar.GroupLabel>PAV</Sidebar.GroupLabel>
+    <Sidebar.GroupLabel>PAV oder SGL</Sidebar.GroupLabel>
     <Sidebar.Menu>
       {#each Object.entries(pavRoutes) as [path, route] (path)}
         <Sidebar.MenuItem>
@@ -71,7 +75,9 @@
               </a>
             {/snippet}
           </Sidebar.MenuButton>
-          <!-- <Sidebar.MenuBadge>1</Sidebar.MenuBadge> -->
+          {#if path === '/module-approvals' && reviewsToApprove}
+            <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
+          {/if}
         </Sidebar.MenuItem>
       {/each}
     </Sidebar.Menu>

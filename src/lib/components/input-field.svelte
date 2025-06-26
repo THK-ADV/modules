@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import ModificationIndicator from './modification-indicator.svelte'
@@ -16,6 +17,7 @@
     type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url'
     step?: string
     modificationStatus?: ModificationStatus // optional modification tracking
+    disabled?: boolean
   }
 
   let {
@@ -28,7 +30,8 @@
     errors = {},
     type = 'text',
     step,
-    modificationStatus
+    modificationStatus,
+    disabled = false
   }: Props = $props()
 </script>
 
@@ -64,13 +67,26 @@
   <Form.Field {form} {name}>
     <Form.Control>
       {#snippet children({ props })}
-        <Form.Label>{label}</Form.Label>
+        {#if disabled}
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger><Form.Label>{label}*</Form.Label></Tooltip.Trigger>
+              <Tooltip.Content class="max-w-md break-words">
+                Dieses Attribut kann nicht verändert werden. Falls eine Änderung dennoch
+                erforderlich sein sollte, wenden Sie sich an den PAV.
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
+        {:else}
+          <Form.Label>{label}</Form.Label>
+        {/if}
         <Input
           {...props}
           {type}
           {step}
           bind:value
           {placeholder}
+          {disabled}
           class={errors[name] ? 'border-destructive' : ''}
         />
       {/snippet}

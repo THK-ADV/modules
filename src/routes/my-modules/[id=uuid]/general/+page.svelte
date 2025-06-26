@@ -53,6 +53,7 @@
         bind:value={$formData.title}
         {errors}
         modificationStatus={titleStatus}
+        disabled={true}
       />
 
       <InputField

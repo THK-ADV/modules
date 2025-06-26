@@ -19,3 +19,11 @@ export async function getPOsWithIds(ids: string[]) {
     return []
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function parseErrorMessage(err: any) {
+  if (err.message) {
+    return err.message
+  }
+  return JSON.stringify(err)
+}

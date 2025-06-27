@@ -1,6 +1,6 @@
-# Multi-stage build for SvelteKit Node.js app
+# Multi-stage build for mocogi Node.js app
 # Stage 1: Build dependencies and application
-FROM node:20-alpine AS builder
+FROM node:24-alpine3.22 AS builder
 
 # Build arguments for metadata
 ARG BUILD_DATE
@@ -22,6 +22,14 @@ COPY . .
 # Set production environment for build
 ENV NODE_ENV=production
 
+# Set Keycloak environment variables for build
+ENV KEYCLOAK_URL=${KEYCLOAK_URL}
+ENV KEYCLOAK_REALM=${KEYCLOAK_REALM}
+ENV KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+
+# Set Backend environment variables for build
+ENV BACKEND_URL_PREFIX=${BACKEND_URL_PREFIX}
+
 # Build the application
 RUN npm run build
 
@@ -29,16 +37,15 @@ RUN npm run build
 RUN npm prune --production
 
 # Stage 2: Production runtime
-FROM node:20-alpine AS runtime
+FROM node:24-alpine3.22 AS runtime
 
 # Add metadata labels
-LABEL maintainer="your-email@domain.com"
-LABEL org.opencontainers.image.title="SvelteKit App"
-LABEL org.opencontainers.image.description="SvelteKit application with Node.js adapter"
+LABEL maintainer="alexander.dobrynin@th-koeln.de"
+LABEL org.opencontainers.image.title="mocogi-frontend"
 LABEL org.opencontainers.image.version=${VERSION}
 LABEL org.opencontainers.image.created=${BUILD_DATE}
 LABEL org.opencontainers.image.revision=${VCS_REF}
-LABEL org.opencontainers.image.source="https://github.com/your-username/your-repo"
+LABEL org.opencontainers.image.source="https://github.com/THK-ADV/modules"
 
 # Install dumb-init for proper signal handling and security updates
 RUN apk add --no-cache dumb-init && \
@@ -47,21 +54,21 @@ RUN apk add --no-cache dumb-init && \
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S sveltekit -u 1001
+    adduser -S mocogi -u 1001
 
 # Set working directory
 WORKDIR /app
 
 # Copy built application from builder stage
-COPY --from=builder --chown=sveltekit:nodejs /app/build build/
-COPY --from=builder --chown=sveltekit:nodejs /app/node_modules node_modules/
-COPY --from=builder --chown=sveltekit:nodejs /app/package.json package.json
+COPY --from=builder --chown=mocogi:nodejs /app/build build/
+COPY --from=builder --chown=mocogi:nodejs /app/node_modules node_modules/
+COPY --from=builder --chown=mocogi:nodejs /app/package.json package.json
 
 # Copy static files for nginx to serve (optional - nginx can serve these directly)
-COPY --from=builder --chown=sveltekit:nodejs /app/static static/
+COPY --from=builder --chown=mocogi:nodejs /app/static static/
 
 # Switch to non-root user
-USER sveltekit
+USER mocogi
 
 # Expose port
 EXPOSE 3000

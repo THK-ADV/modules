@@ -1,5 +1,5 @@
 import { dev } from '$app/environment'
-import { KEYCLOAK_CLIENT_ID, KEYCLOAK_REALM, KEYCLOAK_URL } from '$env/static/private'
+import { env } from '$env/dynamic/private'
 import type { User, UserInfo } from '$lib/auth'
 import { error, type Cookies } from '@sveltejs/kit'
 
@@ -11,7 +11,7 @@ const AccessTokenExpiresAtKey = 'kc-access-exp'
 
 const RefreshTokenKey = 'kc-refresh'
 
-const tokenEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
+const tokenEndpoint = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/token`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parserJwt(token: string): any | undefined {
@@ -56,7 +56,7 @@ async function refreshAccessToken(
 
   const formData = new URLSearchParams()
   formData.append('grant_type', 'refresh_token')
-  formData.append('client_id', KEYCLOAK_CLIENT_ID)
+  formData.append('client_id', env.KEYCLOAK_CLIENT_ID)
   formData.append('refresh_token', refreshToken)
 
   const res = await fetch(tokenEndpoint, {
@@ -166,12 +166,12 @@ export function deleteCookies(cookies: Cookies) {
 }
 
 export function loginUrl(baseUrl: string, redirectTo: string = '/'): string {
-  const realmUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth`
+  const realmUrl = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/auth`
   const params = new URLSearchParams()
   params.append('response_type', 'code')
   params.append('scope', 'openid profile email')
   params.append('redirect_uri', `${baseUrl}/auth?redirectTo=${encodeURIComponent(redirectTo)}`)
-  params.append('client_id', KEYCLOAK_CLIENT_ID)
+  params.append('client_id', env.KEYCLOAK_CLIENT_ID)
   return `${realmUrl}?${params.toString()}`
 }
 
@@ -184,7 +184,7 @@ export async function exchangeToken(
   redirectUri: string | null
 ): Promise<void> {
   try {
-    const endpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
+    const endpoint = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/token`
     let finalRedirectUri = `${baseUrl}/auth`
     if (redirectUri) {
       finalRedirectUri += `?redirectTo=${encodeURIComponent(redirectUri)}`
@@ -192,7 +192,7 @@ export async function exchangeToken(
 
     const params = new URLSearchParams()
     params.append('grant_type', 'authorization_code')
-    params.append('client_id', KEYCLOAK_CLIENT_ID)
+    params.append('client_id', env.KEYCLOAK_CLIENT_ID)
     params.append('code', authCode)
     params.append('redirect_uri', finalRedirectUri)
 

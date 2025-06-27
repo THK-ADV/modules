@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  sveltekit-app:
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,7 +7,11 @@ services:
         BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
         VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
         VERSION: ${VERSION:-latest}
-    container_name: sveltekit-app
+        KEYCLOAK_URL: ${KEYCLOAK_URL}
+        KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+        KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+        BACKEND_URL_PREFIX: ${BACKEND_URL_PREFIX}
+    container_name: mocogi-frontend
     ports:
       - '3000:3000'
     env_file: .env

@@ -1,4 +1,4 @@
-import { BACKEND_URL_PREFIX } from '$env/static/private'
+import { env } from '$env/dynamic/private'
 import { routesMap } from '$lib/routes.svelte'
 import { getValidAccessToken } from '$lib/server/auth'
 import { redirect, type Handle } from '@sveltejs/kit'
@@ -29,7 +29,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     )
 
     // proxy the request to the backend
-    const backendUrl = BACKEND_URL_PREFIX + event.url.pathname + event.url.search
+    const backendUrl = env.BACKEND_URL_PREFIX + event.url.pathname + event.url.search
 
     const requestInit: RequestInit & { duplex?: string } = {
       method: event.request.method,

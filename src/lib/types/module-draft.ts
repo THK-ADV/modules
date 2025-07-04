@@ -25,10 +25,12 @@ export interface ModuleDraft {
     modifiedKeys: string
     keysToBeReviewed: string
   } | null
+  isFeatured?: boolean
 }
 
-export interface FeaturedModuleDraft extends ModuleDraft {
-  isFeatured: boolean
+export interface ModuleDrafts {
+  default: ModuleDraft[]
+  accreditation?: ModuleDraft[]
 }
 
 export function canEdit(state: ModuleDraftState) {

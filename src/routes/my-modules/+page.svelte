@@ -1,13 +1,12 @@
 <script lang="ts" module>
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import type { FeaturedModuleDraft } from '$lib/types/module-draft'
   import type { ColumnDef } from '@tanstack/table-core'
   import ModuleDraftStatusCell from './(components)/module-draft-status-cell.svelte'
   import ModuleDraftTableActions from './(components)/module-draft-table-actions.svelte'
   import ModuleDraftTable from './(components)/module-draft-table.svelte'
   import SemesterCycleProgress from './(components)/semester-cycle-progress.svelte'
 
-  const columns: ColumnDef<FeaturedModuleDraft>[] = [
+  const columns: ColumnDef<ModuleDraft>[] = [
     {
       accessorKey: 'title',
       header: 'Modulbezeichnung',
@@ -44,11 +43,25 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { Button } from '$lib/components/ui/button'
+  import * as Tabs from '$lib/components/ui/tabs/index.js'
+  import type { ModuleDraft } from '$lib/types/module-draft'
   import { ChartLine, ChevronDown, ChevronUp } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ModuleDraftTitleCell from './(components)/module-draft-title-cell.svelte'
 
   let { data }: PageProps = $props()
+
+  const hasAccreditationModules =
+    data.moduleDrafts.accreditation && data.moduleDrafts.accreditation.length > 0
+
+  let selectedTab = $state('default')
+  let moduleDrafts = $derived.by(() => {
+    const tab = selectedTab
+    if (tab === 'default') {
+      return data.moduleDrafts.default
+    }
+    return data.moduleDrafts.accreditation || []
+  })
 
   let showSuccessMessage = $state(false)
   let isPublishingPhase = $state(false)
@@ -106,7 +119,7 @@
     </div>
   {/if}
 
-  {#if data.moduleDrafts.length > 0}
+  {#if moduleDrafts.length > 0}
     <div class="space-y-8">
       <div class="space-y-2">
         <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
@@ -145,8 +158,21 @@
     />
 
     {#if !isPublishingPhase}
-      <div class="w-full">
-        <ModuleDraftTable moduleDrafts={data.moduleDrafts} {columns} />
+      <div class="w-full space-y-4">
+        {#if hasAccreditationModules}
+          <Tabs.Root bind:value={selectedTab}>
+            <Tabs.List>
+              <Tabs.Trigger value="default">Zugewiesene Module</Tabs.Trigger>
+              <Tabs.Trigger value="accreditation">Module aus Reakkreditierung</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="accreditation" class="ml-1">
+              <p class="break-words text-sm text-muted-foreground">
+                Im Rahmen der Reakkreditierung können Sie alle Module bearbeiten
+              </p>
+            </Tabs.Content>
+          </Tabs.Root>
+        {/if}
+        <ModuleDraftTable {moduleDrafts} {columns} />
       </div>
     {/if}
   {:else}

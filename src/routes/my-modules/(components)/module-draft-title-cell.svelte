@@ -1,10 +1,10 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { FeaturedModuleDraft } from '$lib/types/module-draft'
+  import type { ModuleDraft } from '$lib/types/module-draft'
   import { Star } from '@lucide/svelte'
 
-  let { moduleDraft }: { moduleDraft: FeaturedModuleDraft } = $props()
+  let { moduleDraft }: { moduleDraft: ModuleDraft } = $props()
 
   let rowTitle = $derived.by(() => {
     let title = moduleDraft.module.title

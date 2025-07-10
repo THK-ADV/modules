@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/private'
 import { routesMap } from '$lib/routes.svelte'
 import { getValidAccessToken } from '$lib/server/auth'
 import { redirect, type Handle } from '@sveltejs/kit'
@@ -28,9 +27,6 @@ export const handle: Handle = async ({ event, resolve }) => {
       'access token should be defined, since the current route is protected'
     )
 
-    // proxy the request to the backend
-    const backendUrl = env.BACKEND_URL_PREFIX + event.url.pathname + event.url.search
-
     const requestInit: RequestInit & { duplex?: string } = {
       method: event.request.method,
       headers: {
@@ -50,7 +46,7 @@ export const handle: Handle = async ({ event, resolve }) => {
       requestInit.duplex = 'half'
     }
 
-    const proxyResponse = await fetch(backendUrl, requestInit)
+    const proxyResponse = await fetch(event.url, requestInit)
 
     return new Response(proxyResponse.body, {
       status: proxyResponse.status,

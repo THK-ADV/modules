@@ -14,10 +14,12 @@ const RefreshTokenKey = 'kc-refresh'
 const tokenEndpoint = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/token`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parserJwt(token: string): any | undefined {
+function parseJwt(token: string): any | undefined {
   try {
     const [, payloadB64] = token.split('.')
-    const json = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'))
+    const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+    const json = new TextDecoder().decode(Uint8Array.from(atob(padded), (c) => c.charCodeAt(0)))
     return JSON.parse(json)
   } catch {
     return undefined
@@ -99,7 +101,7 @@ export async function getValidAccessToken(
 }
 
 export function getUser(accessToken: string): User | undefined {
-  const token = parserJwt(accessToken)
+  const token = parseJwt(accessToken)
   if (!token) {
     return undefined
   }

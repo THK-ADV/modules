@@ -123,7 +123,7 @@
     <div class="space-y-8">
       <div class="space-y-2">
         <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
-        <p class="break-words text-muted-foreground">
+        <p class="break-words text-sm text-muted-foreground">
           Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
           Genehmigung freigeben. Eine Genehmigung ist nur bei <a
             class="text-primary underline hover:no-underline"
@@ -178,7 +178,7 @@
   {:else}
     <div class="space-y-2">
       <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
-      <p class="break-words text-muted-foreground">
+      <p class="break-words text-sm text-muted-foreground">
         Sie werden in keinem Modul als Modulverantwortliche*r geführt oder haben keine zugeteiliten
         Module.
       </p>

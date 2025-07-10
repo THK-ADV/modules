@@ -22,9 +22,11 @@
 
   let { data, columns }: DataTableProps = $props()
 
+  const pages = ['15', '30', '45', 'Alle']
+
   let sorting = $state<SortingState>([])
   let columnFilters = $state<ColumnFiltersState>([])
-  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 })
+  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
 
   const table = createSvelteTable({
     // data
@@ -77,7 +79,6 @@
 </script>
 
 <div class="space-y-4">
-  <p class="text-muted-foreground">Anzahl der Einträge: {table.getRowCount()}</p>
   <DataTableFilter {table} />
   <div class="rounded-md border">
     <Table.Root>
@@ -116,5 +117,5 @@
       </Table.Body>
     </Table.Root>
   </div>
-  <DataTablePagination {table} />
+  <DataTablePagination {table} {pages} />
 </div>

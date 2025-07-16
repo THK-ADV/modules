@@ -158,8 +158,8 @@
           </div>
         {/if}
 
-        <div class="space-x-0.5 border-t border-gray-200 pt-2">
-          <span class="font-medium">Gesamter Workload:</span>
+        <div class="space-x-0.5">
+          <span class="font-medium">Kontaktzeit:</span>
           <span>{total} Stunden</span>
         </div>
       </div>

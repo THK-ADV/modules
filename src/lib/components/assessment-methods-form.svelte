@@ -9,13 +9,13 @@
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { moduleSchema } from '$lib/schemas/module'
   import type { AssessmentMethod, Precondition } from '$lib/types/core'
-  import type { AssessmentEntry } from '$lib/types/module-protocol'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import ModificationIndicator from './modification-indicator.svelte'
+  import type { AssessmentEntry } from '$lib/types/module-protocol'
   import { Edit, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
+  import ModificationIndicator from './modification-indicator.svelte'
 
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale gewichtung hat, soll die der zweiten auf die differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
 
@@ -137,7 +137,7 @@
     }
 
     if (editingIndex !== null) {
-      value[editingIndex] = newEntry
+      value = value.map((item, i) => (i === editingIndex ? newEntry : item))
     } else {
       value = [...value, newEntry]
     }
@@ -295,7 +295,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-lg font-medium text-foreground">{label}</span>
+      <span class="text-base font-medium text-foreground">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <p class="text-sm text-muted-foreground">
@@ -327,7 +327,7 @@
       {#snippet children({ props })}
         <div class="space-y-4">
           <div class="border-b pb-2">
-            <Form.Label class="text-lg font-medium text-foreground">{label}</Form.Label>
+            <Form.Label class="text-base font-medium text-foreground">{label}</Form.Label>
             <Form.Description class="mt-1 text-sm text-muted-foreground">
               Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
             </Form.Description>
@@ -393,15 +393,17 @@
       </Form.Field>
 
       <!-- Precondition Selection -->
-      <MultiSelectCombobox
-        form={dialogForm}
-        name="precondition"
-        label="Voraussetzungen (optional)"
-        description="Prüfungsvoraussetzungen laut Prüfungsordnung. z.B. Praktikum."
-        options={preconditionOptions}
-        bind:value={$dialogFormData.precondition}
-        errors={$dialogErrors}
-      />
+      {#if editingIndex !== null}
+        <MultiSelectCombobox
+          form={dialogForm}
+          name="precondition"
+          label="Voraussetzungen (optional)"
+          description="Prüfungsvoraussetzungen laut Prüfungsordnung. z.B. Praktikum."
+          options={preconditionOptions}
+          bind:value={$dialogFormData.precondition}
+          errors={$dialogErrors}
+        />
+      {/if}
     </div>
 
     <Dialog.Footer class="gap-2">

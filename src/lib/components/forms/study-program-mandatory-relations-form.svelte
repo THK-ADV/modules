@@ -150,7 +150,7 @@
     }
 
     if (editingIndex !== null) {
-      value[editingIndex] = newEntry
+      value = value.map((item, i) => (i === editingIndex ? newEntry : item))
     } else {
       value = [...value, newEntry]
     }
@@ -274,7 +274,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-lg font-medium text-foreground"
+      <span class="text-base font-medium text-foreground"
         >Verwendung in Studiengängen als Pflichtmodul (optional)</span
       >
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
@@ -304,7 +304,7 @@
       {#snippet children({ props })}
         <div class="space-y-4">
           <div class="border-b pb-2">
-            <Form.Label class="text-lg font-medium text-foreground"
+            <Form.Label class="text-base font-medium text-foreground"
               >Verwendung in Studiengängen als Pflichtmodul (optional)</Form.Label
             >
             <Form.Description class="mt-1 text-sm text-muted-foreground">

@@ -70,7 +70,10 @@ const workloadNumber = z
   .int('Muss eine ganze Zahl sein')
   .min(0, 'Muss mindestens 0 sein')
 
-// update fieldToSectionMap in /my-modules/[id=uuid]/+layout.svelte if this schema is changed
+// update the following parts if this schema changes:
+// - fieldToSectionMap in /my-modules/[id=uuid]/+layout.svelte
+// - SERVER_KEY_TO_FORM_FIELD_MAP in /lib/types/module-draft-keys.ts
+// - SECTION_FIELD_MAP in /lib/types/module-draft-keys.ts
 
 export const moduleSchema = z.object({
   title: createYamlSafeText(
@@ -190,7 +193,20 @@ export const moduleSchema = z.object({
     teachingAndLearningMethods: z.string(),
     recommendedReading: z.string(),
     particularities: z.string()
-  })
+  }),
+  attendanceRequirement: z
+    .object({
+      min: createYamlSafeText(1, undefined, 'Mindestpräsenzzeit erforderlich'),
+      reason: createYamlSafeText(1, undefined, 'Begründung für Mindestpräsenzzeit erforderlich'),
+      absence: createYamlSafeText(1, undefined, 'Umgang mit Fehlzeiten erforderlich')
+    })
+    .nullable(),
+  assessmentPrerequisite: z
+    .object({
+      modules: createYamlSafeText(1, undefined, 'Betroffene Module erforderlich'),
+      reason: createYamlSafeText(1, undefined, 'Begründung für Prüfungsvorleistung erforderlich')
+    })
+    .nullable()
 })
 
 export type ModuleForm = z.infer<typeof moduleSchema>

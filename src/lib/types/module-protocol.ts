@@ -34,6 +34,17 @@ export interface POOptional extends POMandatory {
   partOfCatalog: boolean
 }
 
+export interface AttendanceRequirement {
+  min: string
+  reason: string
+  absence: string
+}
+
+export interface AssessmentPrerequisite {
+  modules: string
+  reason: string
+}
+
 export interface MetadataProtocol {
   title: string
   abbrev: string
@@ -66,6 +77,8 @@ export interface MetadataProtocol {
     optional: POOptional[]
   }
   taughtWith: string[]
+  attendanceRequirement: AttendanceRequirement | null
+  assessmentPrerequisite: AssessmentPrerequisite | null
 }
 
 export interface Content {

@@ -128,7 +128,9 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       moduleRelation: module.metadata.moduleRelation,
       taughtWith: module.metadata.taughtWith,
       deContent: module.deContent,
-      enContent: module.enContent
+      enContent: module.enContent,
+      attendanceRequirement: module.metadata.attendanceRequirement,
+      assessmentPrerequisite: module.metadata.assessmentPrerequisite
     },
     zod(moduleSchema)
   )

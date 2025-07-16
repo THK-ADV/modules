@@ -85,7 +85,9 @@ export const actions: Actions = {
             : null
         },
         po: form.data.po,
-        taughtWith: form.data.taughtWith || []
+        taughtWith: form.data.taughtWith || [],
+        attendanceRequirement: form.data.attendanceRequirement,
+        assessmentPrerequisite: form.data.assessmentPrerequisite
       },
       deContent: form.data.deContent,
       enContent: form.data.enContent

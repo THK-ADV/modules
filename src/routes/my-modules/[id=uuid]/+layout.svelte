@@ -177,6 +177,8 @@
     // Prerequisites section
     recommendedPrerequisites: 'prerequisites',
     requiredPrerequisites: 'prerequisites',
+    attendanceRequirement: 'prerequisites',
+    assessmentPrerequisite: 'prerequisites',
 
     // Misc section
     participants: 'misc',

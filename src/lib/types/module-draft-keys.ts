@@ -73,6 +73,8 @@ const SERVER_KEY_TO_FORM_FIELD_MAP: Record<string, FormFieldPath> = {
   // Prerequisites mappings
   'metadata.prerequisites.recommended': 'recommendedPrerequisites',
   'metadata.prerequisites.required': 'requiredPrerequisites',
+  'metadata.attendanceRequirement': 'attendanceRequirement',
+  'metadata.assessmentPrerequisite': 'assessmentPrerequisite',
 
   // Misc mappings
   'metadata.participants': 'participants',
@@ -190,7 +192,12 @@ const SECTION_FIELD_MAP: Record<SectionId, FormFieldPath[]> = {
   ],
   literature: ['deContent.recommendedReading', 'enContent.recommendedReading'],
   particularities: ['deContent.particularities', 'enContent.particularities'],
-  prerequisites: ['recommendedPrerequisites', 'requiredPrerequisites'],
+  prerequisites: [
+    'recommendedPrerequisites',
+    'requiredPrerequisites',
+    'attendanceRequirement',
+    'assessmentPrerequisite'
+  ],
   misc: ['participants', 'moduleRelation', 'taughtWith']
 } as const
 

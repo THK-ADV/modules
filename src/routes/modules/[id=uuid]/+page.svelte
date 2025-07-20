@@ -25,8 +25,10 @@
   let { data }: PageProps = $props()
   const module: ModuleDetail = data.module
 
-  // Ensure compatibility with existing code: prefer legacy 'lecturer' if present, fallback to 'lecturers'
-  module.lecturers = ((module as any)?.lecturer ?? module.lecturers) || []
+  // Prefer 'lecturers' if present and non-empty, otherwise fallback to legacy 'lecturer'
+  module.lecturers = (module.lecturers && module.lecturers.length > 0)
+    ? module.lecturers
+    : ((module as any)?.lecturer ?? [])
 </script>
 
 <div class="container mx-auto space-y-6 p-6">
@@ -242,47 +244,49 @@
   </div>
 
   <!-- Voraussetzungen -->
-  {#if module.requiredPrerequisites || module.recommendedPrerequisites}
-    <Card>
-      <CardHeader class="pb-3">
-        <CardTitle class="flex items-center gap-2 text-lg">
-          <AlertCircle class="h-5 w-5" />
-          Voraussetzungen
-        </CardTitle>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        {#if module.recommendedPrerequisites}
-          <div>
-            <div class="mb-2 flex items-center gap-2">
-              <Lightbulb class="h-4 w-4 text-yellow-500" />
-              <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
-            </div>
-            <div class="pl-6 flex flex-wrap gap-2 mb-2">
-              {#each module.recommendedPrerequisites.modules as recommendedModule}
-                <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
-              {/each}
-            </div>
-            <p class="pl-6 text-sm text-muted-foreground">{module.recommendedPrerequisites.text}</p>
-          </div>
-        {/if}
-
+  <Card>
+    <CardHeader class="pb-3">
+      <CardTitle class="flex items-center gap-2 text-lg">
+        <AlertCircle class="h-5 w-5" />
+        Voraussetzungen
+      </CardTitle>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <div>
+        <div class="mb-2 flex items-center gap-2">
+          <AlertCircle class="h-4 w-4 text-red-500" />
+          <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
+        </div>
         {#if module.requiredPrerequisites}
-          <div>
-            <div class="mb-2 flex items-center gap-2">
-              <AlertCircle class="h-4 w-4 text-red-500" />
-              <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
-            </div>
-            <div class="pl-6 flex flex-wrap gap-2 mb-2">
-              {#each module.requiredPrerequisites.modules as requiredModule}
-                <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
-              {/each}
-            </div>
-            <p class="pl-6 text-sm text-muted-foreground">{module.requiredPrerequisites.text}</p>
+          <div class="pl-6 flex flex-wrap gap-2 mb-2">
+            {#each module.requiredPrerequisites.modules as requiredModule}
+              <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
+            {/each}
           </div>
+          <p class="pl-6 text-sm text-muted-foreground">{module.requiredPrerequisites.text}</p>
+        {:else}
+          <p class="pl-6 text-sm text-muted-foreground">Keine</p>
         {/if}
-      </CardContent>
-    </Card>
-  {/if}
+      </div>
+
+      <div>
+        <div class="mb-2 flex items-center gap-2">
+          <Lightbulb class="h-4 w-4 text-yellow-500" />
+          <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
+        </div>
+        {#if module.recommendedPrerequisites}
+          <div class="pl-6 flex flex-wrap gap-2 mb-2">
+            {#each module.recommendedPrerequisites.modules as recommendedModule}
+              <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
+            {/each}
+          </div>
+          <p class="pl-6 text-sm text-muted-foreground">{module.recommendedPrerequisites.text}</p>
+        {:else}
+          <p class="pl-6 text-sm text-muted-foreground">Keine</p>
+        {/if}
+      </div>
+    </CardContent>
+  </Card>
 
   <!-- Verwendung -->
   {#if module.poMandatory.length > 0}
@@ -296,7 +300,7 @@
       <CardContent>
         <div class="space-y-2">
           {#each module.poMandatory as po}
-            <div class="flex items-center justify-between rounded-lg bg-muted/50 p-2">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-2 gap-2">
               <div>
                 <span class="font-medium">{po.degree}: {po.studyProgramLabel}</span>
                 <Badge variant="secondary" class="ml-2 text-xs">PO {po.poVersion}</Badge>
@@ -317,19 +321,21 @@
   {/if}
 
   <!-- Lernergebnisse -->
-  <Card>
-    <CardHeader class="pb-3">
-      <CardTitle class="flex items-center gap-2 text-lg">
-        <Target class="h-5 w-5" />
-        Angestrebte Lernergebnisse
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div class="whitespace-pre-wrap">
-        {@html module.content.learningOutcome}
-      </div>
-    </CardContent>
-  </Card>
+  {#if module.content.learningOutcome}
+    <Card>
+      <CardHeader class="pb-3">
+        <CardTitle class="flex items-center gap-2 text-lg">
+          <Target class="h-5 w-5" />
+          Angestrebte Lernergebnisse
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="whitespace-pre-wrap">
+          {@html module.content.learningOutcome}
+        </div>
+      </CardContent>
+    </Card>
+  {/if}
 
   <!-- Modulinhalte -->
   <Card>

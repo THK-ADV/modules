@@ -92,8 +92,8 @@
         <div class="flex items-center justify-between">
           <span class="text-sm text-muted-foreground">Häufigkeit</span>
           <div class="flex items-center gap-1">
-            <Calendar class="h-4 w-4" />
-            <span class="font-medium">{module.season}</span>
+            <!-- <Calendar class="h-4 w-4" /> -->
+            <span class="font-medium text-right">{module.season}</span>
           </div>
         </div>
       </CardContent>
@@ -243,82 +243,86 @@
     </Card>
   </div>
 
-  <!-- Voraussetzungen -->
-  <Card>
-    <CardHeader class="pb-3">
-      <CardTitle class="flex items-center gap-2 text-lg">
-        <AlertCircle class="h-5 w-5" />
-        Voraussetzungen
-      </CardTitle>
-    </CardHeader>
-    <CardContent class="space-y-4">
-      <div>
-        <div class="mb-2 flex items-center gap-2">
-          <AlertCircle class="h-4 w-4 text-red-500" />
-          <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
-        </div>
-        {#if module.requiredPrerequisites}
-          <div class="pl-6 flex flex-wrap gap-2 mb-2">
-            {#each module.requiredPrerequisites.modules as requiredModule}
-              <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
-            {/each}
-          </div>
-          <p class="pl-6 text-sm text-muted-foreground">{module.requiredPrerequisites.text}</p>
-        {:else}
-          <p class="pl-6 text-sm text-muted-foreground">Keine</p>
-        {/if}
-      </div>
-
-      <div>
-        <div class="mb-2 flex items-center gap-2">
-          <Lightbulb class="h-4 w-4 text-yellow-500" />
-          <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
-        </div>
-        {#if module.recommendedPrerequisites}
-          <div class="pl-6 flex flex-wrap gap-2 mb-2">
-            {#each module.recommendedPrerequisites.modules as recommendedModule}
-              <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
-            {/each}
-          </div>
-          <p class="pl-6 text-sm text-muted-foreground">{module.recommendedPrerequisites.text}</p>
-        {:else}
-          <p class="pl-6 text-sm text-muted-foreground">Keine</p>
-        {/if}
-      </div>
-    </CardContent>
-  </Card>
-
-  <!-- Verwendung -->
-  {#if module.poMandatory.length > 0}
+  <div class="grid grid-cols-1 gap-6 {module.poMandatory.length > 0 ? 'md:grid-cols-2' : ''}">
+    <!-- Voraussetzungen -->
     <Card>
       <CardHeader class="pb-3">
         <CardTitle class="flex items-center gap-2 text-lg">
-          <Building class="h-5 w-5" />
-          Verwendung des Moduls
+          <AlertCircle class="h-5 w-5" />
+          Voraussetzungen
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div class="space-y-2">
-          {#each module.poMandatory as po}
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-2 gap-2">
-              <div>
-                <span class="font-medium">{po.degree}: {po.studyProgramLabel}</span>
-                <Badge variant="secondary" class="ml-2 text-xs">PO {po.poVersion}</Badge>
-                {#if po.specialization}
-                  <Badge variant="outline" class="ml-2 text-xs">{po.specialization}</Badge>
-                {/if}
-              </div>
-              {#if po.recommendedSemester.length > 0}
-                <div class="text-sm text-muted-foreground">
-                  Semester {po.recommendedSemester.join(', ')}
-                </div>
-              {/if}
+      <CardContent class="space-y-4">
+        <div>
+          <div class="mb-2 flex items-center gap-2">
+            <AlertCircle class="h-4 w-4 text-red-500" />
+            <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
+          </div>
+          {#if module.requiredPrerequisites}
+            <div class="pl-6 flex flex-wrap gap-2 mb-2">
+              {#each module.requiredPrerequisites.modules as requiredModule}
+                <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
+              {/each}
             </div>
-          {/each}
+            <p class="pl-6 text-sm text-muted-foreground">{module.requiredPrerequisites.text}</p>
+          {:else}
+            <p class="pl-6 text-sm text-muted-foreground">Keine</p>
+          {/if}
+        </div>
+
+        <div>
+          <div class="mb-2 flex items-center gap-2">
+            <Lightbulb class="h-4 w-4 text-yellow-500" />
+            <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
+          </div>
+          {#if module.recommendedPrerequisites}
+            <div class="pl-6 flex flex-wrap gap-2 mb-2">
+              {#each module.recommendedPrerequisites.modules as recommendedModule}
+                <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
+              {/each}
+            </div>
+            <p class="pl-6 text-sm text-muted-foreground">{module.recommendedPrerequisites.text}</p>
+          {:else}
+            <p class="pl-6 text-sm text-muted-foreground">Keine</p>
+          {/if}
         </div>
       </CardContent>
     </Card>
-  {/if}
+
+    <!-- Verwendung -->
+    {#if module.poMandatory.length > 0}
+      <Card>
+        <CardHeader class="pb-3">
+          <CardTitle class="flex items-center gap-2 text-lg">
+            <Building class="h-5 w-5" />
+            Verwendung des Moduls
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="space-y-2">
+            {#each module.poMandatory as po}
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-2 gap-2">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium">{po.degree}: {po.studyProgramLabel}</span>
+                    <Badge variant="secondary" class="text-xs">PO {po.poVersion}</Badge>
+                    {#if po.specialization}
+                      <Badge variant="outline" class="text-xs">{po.specialization}</Badge>
+                    {/if}
+                  </div>
+                </div>
+                {#if po.recommendedSemester.length > 0}
+                  <div class="text-sm text-muted-foreground">
+                    Semester {po.recommendedSemester.join(', ')}
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </CardContent>
+      </Card>
+    {/if}
+  </div>
 
   <!-- Lernergebnisse -->
   {#if module.content.learningOutcome}

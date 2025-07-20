@@ -325,7 +325,7 @@
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <div class="pl-6 text-md text-muted-foreground">
+      <div class="whitespace-pre-wrap">
         {@html module.content.learningOutcome}
       </div>
     </CardContent>
@@ -340,7 +340,7 @@
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <div class="pl-6 text-md text-muted-foreground">
+      <div class="whitespace-pre-wrap">
         {@html module.content.moduleContent}
       </div>
     </CardContent>
@@ -355,7 +355,7 @@
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <div class="pl-6 text-md text-muted-foreground">
+      <div class="whitespace-pre-wrap">
         {@html module.content.learningMethods}
       </div>
     </CardContent>
@@ -371,7 +371,7 @@
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ul class="pl-6 text-sm text-muted-foreground space-y-0 list-disc list-inside">
+        <ul class="text-sm space-y-0 list-disc list-inside">
           {#each module.content.literature.split('\n').filter(line => line.trim()) as line}
             <li>{@html line.replace(/^\*\s*/, '')}</li>
           {/each}
@@ -401,7 +401,7 @@
   <Card class="border-dashed">
     <CardContent class="pt-6">
       <div class="flex items-start justify-start text-xs text-muted-foreground">
-        <span>Letzte Aktualisierung: {new Date(module.lastModified).toLocaleDateString('de-DE')}</span>
+        <span>Letzte Aktualisierung: {new Date(module.lastModified).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
       </div>
     </CardContent>
   </Card>

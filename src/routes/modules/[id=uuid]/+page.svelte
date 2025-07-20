@@ -58,16 +58,16 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-bold tracking-tight">{module.title}</h1>
-        <div class="mt-2 flex items-center gap-2">
-          <Badge variant="secondary" class="text-sm">
+        <div class="mt-2 flex flex-wrap gap-2">
+          <Badge variant="secondary" class="text-sm flex items-center">
             <BookOpen class="mr-1 h-4 w-4" />
             {module.abbreviation}
           </Badge>
-          <Badge variant="outline" class="text-sm">
+          <Badge variant="outline" class="text-sm flex items-center">
             <Award class="mr-1 h-4 w-4" />
             {module.ects} ECTS
           </Badge>
-          <Badge variant="outline" class="text-sm">
+          <Badge variant="outline" class="text-sm flex items-center">
             <Globe class="mr-1 h-4 w-4" />
             {module.language}
           </Badge>
@@ -78,7 +78,7 @@
 
   <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 
-    <!-- Grunddaten -->
+    <!-- Basic Information -->
     <Card>
       <CardHeader class="pb-3">
         <CardTitle class="flex items-center gap-2 text-lg">
@@ -106,21 +106,21 @@
         <div class="flex items-center justify-between">
           <span class="text-sm text-muted-foreground">Dauer des Moduls</span>
           <div class="flex items-center gap-1">
-            <Clock class="h-4 w-4" />
+            <Clock class="h-4 w-4 flex-shrink-0" />
             <span class="font-medium">{module.duration} Semester</span>
           </div>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-sm text-muted-foreground">Häufigkeit</span>
-          <div class="flex items-center gap-1">
-            <!-- <Calendar class="h-4 w-4" /> -->
-            <span class="font-medium text-right">{module.season}</span>
+          <div class="flex items-center gap-1 h-min">
+            <Calendar class="h-4 w-4 flex-shrink-0" />
+            <span class="font-medium text-right w-min 2xl:w-auto">{module.season}</span>
           </div>
         </div>
       </CardContent>
     </Card>
 
-    <!-- Verantwortliche -->
+    <!-- Responsible Persons -->
     <Card>
       <CardHeader class="pb-3">
         <CardTitle class="flex items-center gap-2 text-lg">
@@ -133,7 +133,7 @@
           <div class="mb-1 text-sm text-muted-foreground">Modulverantwortliche*r</div>
           {#each module.moduleManagement as manager}
             <div class="flex items-center gap-2">
-              <User class="h-4 w-4" />
+              <User class="h-4 w-4 flex-shrink-0" />
               <span class="font-medium">
                 {#if manager.kind === 'person'}
                   {manager.title} {manager.firstname} {manager.lastname}
@@ -156,9 +156,7 @@
           <div class="mb-1 text-sm text-muted-foreground">Dozierende</div>
           {#each lecturers as lecturer}
             <div class="mb-1 flex items-center gap-2">
-              <span class="flex-shrink-0">
-                <GraduationCap class="h-4 w-4" />
-              </span>
+              <GraduationCap class="h-4 w-4 flex-shrink-0" />
               <span class="font-medium">
                 {#if lecturer.kind === 'person'}
                   {lecturer.title} {lecturer.firstname} {lecturer.lastname}
@@ -177,7 +175,7 @@
       </CardContent>
     </Card>
 
-    <!-- Prüfung & Workload -->
+    <!-- Assessment & Workload -->
     <Card>
       <CardHeader class="pb-3">
         <CardTitle class="flex items-center gap-2 text-lg">
@@ -222,7 +220,7 @@
   </div>
 
   <div class="grid grid-cols-1 gap-6 {module.poMandatory.length > 0 ? 'md:grid-cols-2' : ''}">
-    <!-- Voraussetzungen -->
+    <!-- Prerequisites -->
     <Card>
       <CardHeader class="pb-3">
         <CardTitle class="flex items-center gap-2 text-lg">
@@ -267,7 +265,7 @@
       </CardContent>
     </Card>
 
-    <!-- Verwendung -->
+    <!-- Module Usage -->
     {#if module.poMandatory.length > 0}
       <Card>
         <CardHeader class="pb-3">
@@ -302,7 +300,7 @@
     {/if}
   </div>
 
-  <!-- Lernergebnisse -->
+  <!-- Learning Outcomes -->
   {#if module.content.learningOutcome}
     <Card>
       <CardHeader class="pb-3">
@@ -319,7 +317,7 @@
     </Card>
   {/if}
 
-  <!-- Modulinhalte -->
+  <!-- Module Content -->
   {#if module.content.moduleContent}
     <Card>
       <CardHeader class="pb-3">
@@ -336,7 +334,7 @@
     </Card>
   {/if}
 
-  <!-- Lehr- und Lernmethoden -->
+  <!-- Teaching and Learning Methods -->
   {#if module.content.learningMethods}
     <Card>
       <CardHeader class="pb-3">
@@ -353,7 +351,7 @@
     </Card>
   {/if}
 
-  <!-- Besonderheiten -->
+  <!-- Special Features -->
   {#if module.content.particularities}
     <Card>
       <CardHeader class="pb-3">
@@ -370,7 +368,7 @@
     </Card>
   {/if}
 
-  <!-- Literatur -->
+  <!-- Literature -->
   {#if module.content.literature}
     <Card>
       <CardHeader class="pb-3">

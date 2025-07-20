@@ -25,10 +25,31 @@
   let { data }: PageProps = $props()
   const module: ModuleDetail = data.module
 
-  // Prefer 'lecturers' if present and non-empty, otherwise fallback to legacy 'lecturer'
-  module.lecturers = (module.lecturers && module.lecturers.length > 0)
+  const HOURS_PER_ECTS = 30
+
+  const lecturers = (module.lecturers && module.lecturers.length > 0)
     ? module.lecturers
     : ((module as any)?.lecturer ?? [])
+
+  const totalWorkloadHours = module.ects * HOURS_PER_ECTS
+  
+  const presenceHours = module.workload.lecture + 
+    module.workload.seminar + 
+    module.workload.practical + 
+    module.workload.exercise + 
+    module.workload.projectSupervision + 
+    module.workload.projectWork
+
+  const selfStudyHours = totalWorkloadHours - presenceHours
+
+  const workloadItems = [
+    { key: 'lecture', label: 'Vorlesung', hours: module.workload.lecture },
+    { key: 'exercise', label: 'Übung', hours: module.workload.exercise },
+    { key: 'seminar', label: 'Seminar', hours: module.workload.seminar },
+    { key: 'practical', label: 'Praktikum', hours: module.workload.practical },
+    { key: 'projectSupervision', label: 'Projektbetreuung', hours: module.workload.projectSupervision },
+    { key: 'projectWork', label: 'Projektarbeit', hours: module.workload.projectWork }
+  ].filter(item => item.hours > 0)
 </script>
 
 <div class="container mx-auto space-y-6 p-6">
@@ -133,9 +154,11 @@
 
         <div>
           <div class="mb-1 text-sm text-muted-foreground">Dozierende</div>
-          {#each module.lecturers as lecturer}
+          {#each lecturers as lecturer}
             <div class="mb-1 flex items-center gap-2">
-              <GraduationCap class="h-4 w-4" />
+              <span class="flex-shrink-0">
+                <GraduationCap class="h-4 w-4" />
+              </span>
               <span class="font-medium">
                 {#if lecturer.kind === 'person'}
                   {lecturer.title} {lecturer.firstname} {lecturer.lastname}
@@ -177,66 +200,21 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-sm text-muted-foreground">Workload</span>
-            <span class="font-medium">{module.ects * 30} h</span>
+            <span class="font-medium">{totalWorkloadHours} h</span>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-muted-foreground">Präsenzzeit</span>
-            <span class="font-medium"
-              >{module.workload.lecture +
-                module.workload.seminar +
-                module.workload.practical +
-                module.workload.exercise +
-                module.workload.projectSupervision +
-                module.workload.projectWork} h</span
-            >
+            <span class="font-medium">{presenceHours} h</span>
           </div>
-          {#if module.workload.lecture > 0}
+          {#each workloadItems as item}
             <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Vorlesung</span>
-              <span>{module.workload.lecture} h</span>
+              <span class="ml-4 text-muted-foreground">{item.label}</span>
+              <span>{item.hours} h</span>
             </div>
-          {/if}
-          {#if module.workload.exercise > 0}
-            <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Übung</span>
-              <span>{module.workload.exercise} h</span>
-            </div>
-          {/if}
-          {#if module.workload.seminar > 0}
-            <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Seminar</span>
-              <span>{module.workload.seminar} h</span>
-            </div>
-          {/if}
-          {#if module.workload.practical > 0}
-            <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Praktikum</span>
-              <span>{module.workload.practical} h</span>
-            </div>
-          {/if}
-          {#if module.workload.projectSupervision > 0}
-            <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Projektbetreuung</span>
-              <span>{module.workload.projectSupervision} h</span>
-            </div>
-          {/if}
-          {#if module.workload.projectWork > 0}
-            <div class="flex items-center justify-between text-xs">
-              <span class="ml-4 text-muted-foreground">Projektarbeit</span>
-              <span>{module.workload.projectWork} h</span>
-            </div>
-          {/if}
+          {/each}
           <div class="flex items-center justify-between">
             <span class="text-sm text-muted-foreground">Selbststudium</span>
-            <span class="font-medium">
-              {module.ects * 30 -
-                (module.workload.lecture +
-                  module.workload.seminar +
-                  module.workload.practical +
-                  module.workload.exercise +
-                  module.workload.projectSupervision +
-                  module.workload.projectWork)} h
-            </span>
+            <span class="font-medium">{selfStudyHours} h</span>
           </div>
         </div>
       </CardContent>
@@ -259,7 +237,7 @@
             <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
           </div>
           {#if module.requiredPrerequisites}
-            <div class="pl-6 flex flex-wrap gap-2 mb-2">
+            <div class="pl-6 flex flex-wrap gap-1 mb-0">
               {#each module.requiredPrerequisites.modules as requiredModule}
                 <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
               {/each}
@@ -276,7 +254,7 @@
             <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
           </div>
           {#if module.recommendedPrerequisites}
-            <div class="pl-6 flex flex-wrap gap-2 mb-2">
+            <div class="pl-6 flex flex-wrap gap-1 mb-2">
               {#each module.recommendedPrerequisites.modules as recommendedModule}
                 <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
               {/each}
@@ -375,6 +353,23 @@
     </Card>
   {/if}
 
+  <!-- Besonderheiten -->
+  {#if module.content.particularities}
+    <Card>
+      <CardHeader class="pb-3">
+        <CardTitle class="flex items-center gap-2 text-lg">
+          <Info class="h-5 w-5" />
+          Besonderheiten
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="whitespace-pre-wrap">
+          {@html module.content.particularities}
+        </div>
+      </CardContent>
+    </Card>
+  {/if}
+
   <!-- Literatur -->
   {#if module.content.literature}
     <Card>
@@ -390,23 +385,6 @@
             <li>{@html line.replace(/^\*\s*/, '')}</li>
           {/each}
         </ul>
-      </CardContent>
-    </Card>
-  {/if}
-
-  <!-- Besonderheiten -->
-  {#if module.content.particularities}
-    <Card>
-      <CardHeader class="pb-3">
-        <CardTitle class="flex items-center gap-2 text-lg">
-          <Info class="h-5 w-5" />
-          Besonderheiten
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div class="prose prose-sm max-w-none">
-          {@html module.content.particularities}
-        </div>
       </CardContent>
     </Card>
   {/if}

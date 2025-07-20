@@ -338,34 +338,38 @@
   {/if}
 
   <!-- Modulinhalte -->
-  <Card>
-    <CardHeader class="pb-3">
-      <CardTitle class="flex items-center gap-2 text-lg">
-        <BookText class="h-5 w-5" />
-        Modulinhalte
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div class="whitespace-pre-wrap">
-        {@html module.content.moduleContent}
-      </div>
-    </CardContent>
-  </Card>
+  {#if module.content.moduleContent}
+    <Card>
+      <CardHeader class="pb-3">
+        <CardTitle class="flex items-center gap-2 text-lg">
+          <BookText class="h-5 w-5" />
+          Modulinhalte
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="whitespace-pre-wrap">
+          {@html module.content.moduleContent}
+        </div>
+      </CardContent>
+    </Card>
+  {/if}
 
   <!-- Lehr- und Lernmethoden -->
-  <Card>
-    <CardHeader class="pb-3">
-      <CardTitle class="flex items-center gap-2 text-lg">
-        <Lightbulb class="h-5 w-5" />
-        Lehr- und Lernmethoden
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div class="whitespace-pre-wrap">
-        {@html module.content.learningMethods}
-      </div>
-    </CardContent>
-  </Card>
+  {#if module.content.learningMethods}
+    <Card>
+      <CardHeader class="pb-3">
+        <CardTitle class="flex items-center gap-2 text-lg">
+          <Lightbulb class="h-5 w-5" />
+          Lehr- und Lernmethoden
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="whitespace-pre-wrap">
+          {@html module.content.learningMethods}
+        </div>
+      </CardContent>
+    </Card>
+  {/if}
 
   <!-- Literatur -->
   {#if module.content.literature}

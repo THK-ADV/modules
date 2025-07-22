@@ -27,17 +27,19 @@
 
   const HOURS_PER_ECTS = 30
 
-  const lecturers = (module.lecturers && module.lecturers.length > 0)
-    ? module.lecturers
-    : ((module as any)?.lecturer ?? [])
+  const lecturers =
+    module.lecturers && module.lecturers.length > 0
+      ? module.lecturers
+      : ((module as any)?.lecturer ?? [])
 
   const totalWorkloadHours = module.ects * HOURS_PER_ECTS
-  
-  const presenceHours = module.workload.lecture + 
-    module.workload.seminar + 
-    module.workload.practical + 
-    module.workload.exercise + 
-    module.workload.projectSupervision + 
+
+  const presenceHours =
+    module.workload.lecture +
+    module.workload.seminar +
+    module.workload.practical +
+    module.workload.exercise +
+    module.workload.projectSupervision +
     module.workload.projectWork
 
   const selfStudyHours = totalWorkloadHours - presenceHours
@@ -47,9 +49,13 @@
     { key: 'exercise', label: 'Übung', hours: module.workload.exercise },
     { key: 'seminar', label: 'Seminar', hours: module.workload.seminar },
     { key: 'practical', label: 'Praktikum', hours: module.workload.practical },
-    { key: 'projectSupervision', label: 'Projektbetreuung', hours: module.workload.projectSupervision },
+    {
+      key: 'projectSupervision',
+      label: 'Projektbetreuung',
+      hours: module.workload.projectSupervision
+    },
     { key: 'projectWork', label: 'Projektarbeit', hours: module.workload.projectWork }
-  ].filter(item => item.hours > 0)
+  ].filter((item) => item.hours > 0)
 </script>
 
 <div class="container mx-auto space-y-6 p-6">
@@ -59,15 +65,15 @@
       <div>
         <h1 class="text-3xl font-bold tracking-tight">{module.title}</h1>
         <div class="mt-2 flex flex-wrap gap-2">
-          <Badge variant="secondary" class="text-sm flex items-center">
+          <Badge variant="secondary" class="flex items-center text-sm">
             <BookOpen class="mr-1 h-4 w-4" />
             {module.abbreviation}
           </Badge>
-          <Badge variant="outline" class="text-sm flex items-center">
+          <Badge variant="outline" class="flex items-center text-sm">
             <Award class="mr-1 h-4 w-4" />
             {module.ects} ECTS
           </Badge>
-          <Badge variant="outline" class="text-sm flex items-center">
+          <Badge variant="outline" class="flex items-center text-sm">
             <Globe class="mr-1 h-4 w-4" />
             {module.language}
           </Badge>
@@ -77,7 +83,6 @@
   </div>
 
   <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-
     <!-- Basic Information -->
     <Card>
       <CardHeader class="pb-3">
@@ -112,9 +117,9 @@
         </div>
         <div class="flex items-center justify-between">
           <span class="text-sm text-muted-foreground">Häufigkeit</span>
-          <div class="flex items-center gap-1 h-min">
+          <div class="flex h-min items-center gap-1">
             <Calendar class="h-4 w-4 flex-shrink-0" />
-            <span class="font-medium text-right w-min 2xl:w-auto">{module.season}</span>
+            <span class="w-min text-right font-medium 2xl:w-auto">{module.season}</span>
           </div>
         </div>
       </CardContent>
@@ -235,7 +240,7 @@
             <span class="text-sm font-medium">Zwingende Voraussetzungen</span>
           </div>
           {#if module.requiredPrerequisites}
-            <div class="pl-6 flex flex-wrap gap-1 mb-0">
+            <div class="mb-0 flex flex-wrap gap-1 pl-6">
               {#each module.requiredPrerequisites.modules as requiredModule}
                 <Badge variant="outline" class="text-xs">{requiredModule.title}</Badge>
               {/each}
@@ -252,7 +257,7 @@
             <span class="text-sm font-medium">Empfohlene Voraussetzungen</span>
           </div>
           {#if module.recommendedPrerequisites}
-            <div class="pl-6 flex flex-wrap gap-1 mb-2">
+            <div class="mb-2 flex flex-wrap gap-1 pl-6">
               {#each module.recommendedPrerequisites.modules as recommendedModule}
                 <Badge variant="outline" class="text-xs">{recommendedModule.title}</Badge>
               {/each}
@@ -277,7 +282,9 @@
         <CardContent>
           <div class="space-y-2">
             {#each module.poMandatory as po}
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-2 gap-2">
+              <div
+                class="flex flex-col gap-2 rounded-lg bg-muted/50 p-2 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div>
                   <div class="flex flex-wrap items-center gap-2">
                     <span class="font-medium">{po.degree}: {po.studyProgramLabel}</span>
@@ -378,8 +385,8 @@
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ul class="text-sm space-y-0 list-disc list-inside">
-          {#each module.content.literature.split('\n').filter(line => line.trim()) as line}
+        <ul class="list-inside list-disc space-y-0 text-sm">
+          {#each module.content.literature.split('\n').filter((line) => line.trim()) as line}
             <li>{@html line.replace(/^\*\s*/, '')}</li>
           {/each}
         </ul>
@@ -391,7 +398,13 @@
   <Card class="border-dashed">
     <CardContent class="pt-6">
       <div class="flex items-start justify-start text-xs text-muted-foreground">
-        <span>Letzte Aktualisierung: {new Date(module.lastModified).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+        <span
+          >Letzte Aktualisierung: {new Date(module.lastModified).toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })}</span
+        >
       </div>
     </CardContent>
   </Card>

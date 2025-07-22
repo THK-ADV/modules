@@ -35,7 +35,7 @@
       case 'waiting_for_changes':
         return 'Das Modul wurde im Genehmigungsprozess abgelehnt und benötigt Anpassungen. Konkrete Hinweise sehen Sie, wenn Sie das Modul bearbeiten.'
       case 'waiting_for_review':
-        return 'Das Modul ist im Genehmigungsprozess. Der Prüfungsauschluss oder die Studiengangsleitung prüft die Änderungen.'
+        return 'Das Modul ist im Genehmigungsprozess. Der Prüfungsausschuss oder die Studiengangsleitung prüft die Änderungen.'
       case 'waiting_for_publication':
         return 'Die Moduländerungen werden im Backend verarbeitet. Dies kann einige Minuten dauern.'
       case 'unknown':

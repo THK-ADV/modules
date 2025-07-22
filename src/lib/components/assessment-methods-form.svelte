@@ -17,7 +17,7 @@
   import { zodClient } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from './modification-indicator.svelte'
 
-  // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale gewichtung hat, soll die der zweiten auf die differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
+  // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale Gewichtung hat, soll die der zweiten auf die Differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
 
   interface Props {
     form: any

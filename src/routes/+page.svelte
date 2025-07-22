@@ -59,7 +59,7 @@
               variant="outline"
               size="sm"
               href="/modules"
-              class="w-full group-hover:bg-blue-50"
+              class="w-full hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
             >
               Zur {defaultRoutes['/modules'].name}
             </Button>
@@ -86,7 +86,7 @@
               variant="outline"
               size="sm"
               href="/module-catalogs"
-              class="w-full group-hover:bg-green-50"
+              class="w-full hover:border-green-200 hover:bg-green-50 hover:text-green-700"
             >
               Zu den {defaultRoutes['/module-catalogs'].name}
             </Button>
@@ -113,7 +113,7 @@
               variant="outline"
               size="sm"
               href="/examination"
-              class="w-full group-hover:bg-purple-50"
+              class="w-full hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
             >
               Zu den Prüfungslisten
             </Button>
@@ -140,7 +140,7 @@
               variant="outline"
               size="sm"
               href="/my-modules"
-              class="w-full group-hover:bg-orange-50"
+              class="w-full hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
             >
               Zu meinen Modulen
             </Button>

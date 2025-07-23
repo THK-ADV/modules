@@ -1,9 +1,5 @@
 import type { Person } from './core'
-
-export interface Role {
-  id: 'pav' | 'sgl'
-  deLabel: string
-}
+import type { Role } from './role'
 
 export interface ApprovalStatus {
   id: 'approved' | 'rejected' | 'pending'

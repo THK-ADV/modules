@@ -177,6 +177,54 @@ export function loginUrl(baseUrl: string, redirectTo: string = '/'): string {
   return `${realmUrl}?${params.toString()}`
 }
 
+export function logoutUrl(baseUrl: string, redirectTo: string = '/'): string {
+  const realmUrl = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/logout`
+  const params = new URLSearchParams()
+  params.append('client_id', env.KEYCLOAK_CLIENT_ID)
+  params.append('post_logout_redirect_uri', `${baseUrl}${redirectTo}`)
+  return `${realmUrl}?${params.toString()}`
+}
+
+// revoke the refresh token on the Keycloak server (optional but recommended)
+async function revokeRefreshToken(cookies: Cookies, fetch: typeof globalThis.fetch): Promise<void> {
+  const refreshToken = cookies.get(RefreshTokenKey)
+
+  if (!refreshToken) {
+    return
+  }
+
+  try {
+    const endpoint = `${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/revoke`
+    const params = new URLSearchParams()
+    params.append('client_id', env.KEYCLOAK_CLIENT_ID)
+    params.append('token', refreshToken)
+    params.append('token_type_hint', 'refresh_token')
+
+    await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    })
+  } catch (err) {
+    // log the error but don't throw - logout should still proceed
+    console.error('Failed to revoke refresh token:', err)
+  }
+}
+
+// perform a complete logout: revoke tokens, clear cookies, and return logout URL
+export async function performLogout(
+  cookies: Cookies,
+  fetch: typeof globalThis.fetch,
+  baseUrl: string,
+  redirectTo: string = '/'
+): Promise<string> {
+  await revokeRefreshToken(cookies, fetch)
+  deleteCookies(cookies)
+  return logoutUrl(baseUrl, redirectTo)
+}
+
 // exchanges the auth code for access token
 export async function exchangeToken(
   baseUrl: string,

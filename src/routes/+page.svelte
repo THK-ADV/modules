@@ -59,7 +59,7 @@
               variant="outline"
               size="sm"
               href="/modules"
-              class="w-full group-hover:bg-blue-50"
+              class="w-full hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
             >
               Zur {defaultRoutes['/modules'].name}
             </Button>
@@ -86,7 +86,7 @@
               variant="outline"
               size="sm"
               href="/module-catalogs"
-              class="w-full group-hover:bg-green-50"
+              class="w-full hover:border-green-200 hover:bg-green-50 hover:text-green-700"
             >
               Zu den {defaultRoutes['/module-catalogs'].name}
             </Button>
@@ -113,7 +113,7 @@
               variant="outline"
               size="sm"
               href="/examination"
-              class="w-full group-hover:bg-purple-50"
+              class="w-full hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
             >
               Zu den Prüfungslisten
             </Button>
@@ -140,7 +140,7 @@
               variant="outline"
               size="sm"
               href="/my-modules"
-              class="w-full group-hover:bg-orange-50"
+              class="w-full hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
             >
               Zu meinen Modulen
             </Button>
@@ -151,20 +151,37 @@
   </section>
 
   <section class="bg-muted/30 py-12">
-    <div class="mx-auto max-w-4xl px-4 text-center">
+    <div class="mx-auto max-w-6xl px-4 text-center">
       <h2 class="mb-6 text-3xl font-bold">Für wen ist diese Anwendung?</h2>
-      <div class="grid gap-8 md:grid-cols-3">
+      <div class="grid gap-12 md:grid-cols-3">
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Studierende</h3>
-          <p class="leading-relaxed text-muted-foreground">TODO</p>
+          <p class="leading-relaxed text-muted-foreground">
+            Studierende erhalten mit diesem Tool jederzeit und überall Zugriff auf alle relevanten
+            Informationen zu den angebotenen Modulen. Von Modulnamen und -verantwortlichen bis hin
+            zu Semesterangebot und Arbeitsaufwand finden Sie alle Details, die Sie für Ihre
+            Studienplanung benötigen. So können Sie fundierte Entscheidungen treffen und Ihren
+            Studienverlauf optimal gestalten.
+          </p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Lehrende</h3>
-          <p class="leading-relaxed text-muted-foreground">TODO</p>
+          <p class="leading-relaxed text-muted-foreground">
+            Lehrenden bietet das System eine Plattform zur Pflege und Aktualisierung ihrer
+            Modulbeschreibungen. Sie können die Inhalte ihrer Module eigenverantwortlich verwalten
+            und sicherstellen, dass Studierende stets mit den aktuellsten Informationen versorgt
+            werden. Dies reduziert administrativen Aufwand und fördert eine hohe Qualität der Lehre.
+          </p>
         </div>
         <div class="space-y-2">
           <h3 class="text-xl font-semibold">Verwaltung</h3>
-          <p class="leading-relaxed text-muted-foreground">TODO</p>
+          <p class="leading-relaxed text-muted-foreground">
+            Die Hochschulverwaltung profitiert von einer umfassenden Übersicht über alle an der
+            Fakultät angebotenen Module. Das Tool ermöglicht eine einfache Identifizierung der im
+            aktuellen Semester angebotenen Pflicht- sowie Wahlmodule und unterstützt somit eine
+            effiziente Ressourcenplanung. So wird die Organisation des Lehrangebots vereinfacht und
+            optimiert.
+          </p>
         </div>
       </div>
     </div>

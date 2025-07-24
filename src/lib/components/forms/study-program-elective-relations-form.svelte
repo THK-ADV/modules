@@ -257,7 +257,7 @@
             <Table.Header>
               <Table.Row>
                 <Table.Head>Studiengang und PO</Table.Head>
-                <Table.Head>Empfohlendes Studiensemester</Table.Head>
+                <Table.Head>Empfohlenes Studiensemester</Table.Head>
                 <Table.Head>Gehört zu</Table.Head>
                 <Table.Head class="w-24">Aktionen</Table.Head>
               </Table.Row>
@@ -439,8 +439,8 @@
       <MultiSelectCombobox
         form={dialogForm}
         name="recommendedSemester"
-        label="Empfohlendes Studiensemester (optional)"
-        description="Die empfohlenden Studiensemester, in denen das Modul in dem Studiengang belegt werden soll."
+        label="Empfohlenes Studiensemester (optional)"
+        description="Die empfohlenen Studiensemester, in denen das Modul in dem Studiengang belegt werden soll."
         options={semesterOptions}
         bind:value={recommendedSemester.value}
         errors={$dialogErrors}

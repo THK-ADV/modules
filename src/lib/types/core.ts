@@ -9,6 +9,10 @@ export interface Person {
   title: string
   abbreviation: string
   kind: 'person'
+  employmentType: string
+  imageUrl: string | null
+  faculties: string[]
+  websiteUrl: string | null
 }
 
 export interface UnknownIdentity {

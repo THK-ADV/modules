@@ -1,4 +1,5 @@
-import type { Participants, Workload } from './core'
+import type { Workload as CoreWorkload, Participants } from './core'
+import type { AssessmentPrerequisite, AttendanceRequirement } from './module-protocol'
 
 export interface Content {
   learningOutcome: string
@@ -14,6 +15,10 @@ export interface ModuleShort {
   abbreviation: string
 }
 
+export interface GenericModuleOption extends ModuleShort {
+  status: string
+}
+
 export interface Prerequisite {
   text: string
   modules: ModuleShort[]
@@ -22,10 +27,13 @@ export interface Prerequisite {
 export interface POMandatory {
   poId: string
   poVersion: number
+  poECTSFactor: number
+  studyProgramId: string
   studyProgramLabel: string
   studyProgramAbbreviation: string
   degree: string
-  specialization: string | null
+  specializationLabel: string | null
+  specializationAbbrev: string | null
   recommendedSemester: number[]
 }
 
@@ -76,6 +84,11 @@ export interface Child {
 
 export type ModuleRelation = Parent | Child
 
+export interface Workload extends CoreWorkload {
+  total: number
+  selfStudy: number
+}
+
 export interface ModuleDetail {
   id: string
   lastModified: string
@@ -94,7 +107,7 @@ export interface ModuleDetail {
   workload: Workload
   participants: Participants | null
   moduleManagement: Identity[]
-  lecturers: Identity[]
+  lecturer: Identity[]
   assessments: Assessment[]
   poMandatory: POMandatory[]
   poOptional: POOptional[]
@@ -103,4 +116,6 @@ export interface ModuleDetail {
   recommendedPrerequisites: Prerequisite | null
   content: Content
   moduleRelation?: ModuleRelation
+  assessmentPrerequisite: AssessmentPrerequisite | null
+  attendanceRequirement: AttendanceRequirement | null
 }

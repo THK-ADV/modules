@@ -343,7 +343,7 @@
   <!-- Header -->
   <div class="flex items-start justify-between gap-4">
     <div class="min-w-0 flex-1 space-y-2">
-      <h1 class="text-2xl font-bold tracking-tight">Modul bearbeiten</h1>
+      <h1 class="text-3xl font-bold tracking-tight">Modul bearbeiten</h1>
       <p class="break-words text-muted-foreground">
         Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.
       </p>

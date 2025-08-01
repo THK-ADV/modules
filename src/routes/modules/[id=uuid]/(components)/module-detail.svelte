@@ -198,7 +198,10 @@
   function formatEmploymentType({ employmentType, title }: Person) {
     switch (employmentType) {
       case 'unknown':
-        return 'Unbekannt'
+        if (title && (title.startsWith('Dr') || title.startsWith('Prof'))) {
+          return title
+        }
+        return ''
       case 'prof':
         return title || 'Prof.'
       case 'wma':
@@ -252,7 +255,6 @@
   import { cn } from '$lib/utils'
   import {
     Award,
-    CheckCircle,
     ChevronDown,
     ChevronUp,
     ClipboardCheck,
@@ -269,8 +271,13 @@
 
   const {
     module,
-    genericModuleOptions
-  }: { module: ModuleDetail; genericModuleOptions: GenericModuleOption[] } = $props()
+    genericModuleOptions,
+    isGenericModule
+  }: {
+    module: ModuleDetail
+    genericModuleOptions: GenericModuleOption[]
+    isGenericModule: boolean
+  } = $props()
 
   $effect(() => {
     routesMap.selectedModule = { id: module.id, title: module.title }
@@ -297,6 +304,19 @@
     })
   )
   let isGenericModuleExpanded = $state(false)
+  let selectedLanguage = $derived.by(() => {
+    const lang = module.language.id
+    switch (lang) {
+      case 'de':
+      case 'de_en':
+      case 'de_or_en':
+        return 'de'
+      case 'en':
+        return 'en'
+      default:
+        return 'de'
+    }
+  })
 </script>
 
 {#snippet markdown(title: string, body: string)}
@@ -304,15 +324,21 @@
   {#if body}
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
     <div>{@html marked.parse(body)}</div>
+  {:else if selectedLanguage === 'en'}
+    <p>No information</p>
   {:else}
     <p>Keine Angabe</p>
   {/if}
 {/snippet}
 
 {#snippet rawAvatar(person: Person)}
-  <Avatar.Root>
+  <Avatar.Root class="h-12 w-12 bg-muted">
     {#if person.imageUrl}
-      <Avatar.Image src={person.imageUrl} alt={person.firstname + ' ' + person.lastname} />
+      <Avatar.Image
+        src={person.imageUrl}
+        alt={person.firstname + ' ' + person.lastname}
+        class="object-cover"
+      />
       <Avatar.Fallback>{person.abbreviation}</Avatar.Fallback>
     {:else}
       <Avatar.Fallback>{person.abbreviation}</Avatar.Fallback>
@@ -343,7 +369,7 @@
 
 {#snippet group(other: Other)}
   <div class="flex items-center gap-2">
-    <Avatar.Root>
+    <Avatar.Root class="h-12 w-12 bg-muted">
       <Avatar.Fallback><Users class="h-4 w-4" /></Avatar.Fallback>
     </Avatar.Root>
     <div class="font-medium">{other.title}</div>
@@ -363,7 +389,10 @@
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger>
-                  <Badge variant="outline" class="border-blue-200 bg-blue-100 text-blue-800">
+                  <Badge
+                    variant="outline"
+                    class="cursor-help border-blue-200 bg-blue-100 text-blue-800"
+                  >
                     {specialization.abbrev}
                   </Badge>
                 </Tooltip.Trigger>
@@ -501,20 +530,22 @@
   <div class="space-y-4">
     <h1 class="text-3xl font-bold tracking-tight">{module.title}</h1>
     <div class="flex flex-wrap items-center gap-2">
-      {#if module.status === 'Aktiv'}
-        <Badge
-          class="flex items-center border-green-200 bg-green-100 px-4 py-1 text-green-800 hover:bg-green-100"
-        >
-          <CheckCircle class="mr-1.5 h-4 w-4 flex-shrink-0" />
-          <span class="text-sm">{module.status}</span>
-        </Badge>
-      {:else}
-        <Badge
-          class="flex items-center border-red-200 bg-red-100 px-4 py-1 text-red-800 hover:bg-red-100"
-        >
-          <XCircle class="mr-1.5 h-4 w-4 flex-shrink-0 " />
-          <span class="text-sm">{module.status}</span>
-        </Badge>
+      {#if module.status.id === 'inactive'}
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Badge
+                class="flex cursor-help items-center border-red-200 bg-red-100 px-4 py-1 text-red-800 hover:bg-red-100"
+              >
+                <XCircle class="mr-1.5 h-4 w-4 flex-shrink-0 " />
+                <span class="text-sm">{module.status.label}</span>
+              </Badge>
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p>Das Modul wird aktuell nicht angeboten.</p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
       {/if}
       <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
         <Award class="mr-1.5 h-4 w-4 flex-shrink-0" />
@@ -522,7 +553,7 @@
       </Badge>
       <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
         <Globe class="mr-1.5 h-4 w-4 flex-shrink-0" />
-        <span class="text-sm">{module.language}</span>
+        <span class="text-sm">{module.language.label}</span>
       </Badge>
       {#each degrees as degree (degree)}
         <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
@@ -575,7 +606,7 @@
             {/if}
           </div>
         {/if}
-        {#if genericModuleOptions.length > 0}
+        {#if isGenericModule && genericModuleOptions.length > 0}
           <button
             type="button"
             class="flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
@@ -654,163 +685,167 @@
     </Card.Root>
 
     <!-- examination -->
-    <Card.Root>
-      <Card.Header>
-        <Card.Title class="flex items-center gap-2">
-          <ClipboardCheck class="h-5 w-5" />
-          Prüfung
-        </Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        <div class="space-y-1">
-          <div class="text-sm text-muted-foreground">Prüfungsformen</div>
-          {#each module.assessments as assessment, index (index)}
-            <p class="font-medium">
-              {assessment.label}
-              {#if assessment.percentage}
-                <span class="font-normal text-muted-foreground">({assessment.percentage} %)</span>
-              {/if}
-            </p>
-          {:else}
-            <p class="font-medium">Keine Angabe</p>
-          {/each}
-        </div>
-
-        <div class="space-y-1">
-          <div class="text-sm text-muted-foreground">Prüfungsphasen</div>
-          {#each examPhases as phase (phase)}
-            <p class="font-medium">{examPhaseLabel(phase)}</p>
-          {:else}
-            <p class="font-medium">Keine Angabe</p>
-          {/each}
-        </div>
-
-        <div class="space-y-1">
-          <div class="text-sm text-muted-foreground">Prüfende</div>
-          <div class="flex items-center gap-2 font-medium">
-            <span class="w-4">1.</span>
-            <span>{formatIdentity(module.firstExaminer)}</span>
+    {#if !isGenericModule}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2">
+            <ClipboardCheck class="h-5 w-5" />
+            Prüfung
+          </Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          <div class="space-y-1">
+            <div class="text-sm text-muted-foreground">Prüfungsformen</div>
+            {#each module.assessments as assessment, index (index)}
+              <p class="font-medium">
+                {assessment.label}
+                {#if assessment.percentage}
+                  <span class="font-normal text-muted-foreground">({assessment.percentage} %)</span>
+                {/if}
+              </p>
+            {:else}
+              <p class="font-medium">Keine Angabe</p>
+            {/each}
           </div>
-          <div class="flex items-center gap-2 font-medium">
-            <span class="w-4">2.</span>
-            <span>{formatIdentity(module.secondExaminer)}</span>
+
+          <div class="space-y-1">
+            <div class="text-sm text-muted-foreground">Prüfungsphasen</div>
+            {#each examPhases as phase (phase)}
+              <p class="font-medium">{examPhaseLabel(phase)}</p>
+            {:else}
+              <p class="font-medium">Keine Angabe</p>
+            {/each}
           </div>
-        </div>
-      </Card.Content>
-    </Card.Root>
+
+          <div class="space-y-1">
+            <div class="text-sm text-muted-foreground">Prüfende</div>
+            <div class="flex items-center gap-2 font-medium">
+              <span class="w-4">1.</span>
+              <span>{formatIdentity(module.firstExaminer)}</span>
+            </div>
+            <div class="flex items-center gap-2 font-medium">
+              <span class="w-4">2.</span>
+              <span>{formatIdentity(module.secondExaminer)}</span>
+            </div>
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
 
     <!-- workload -->
-    <Card.Root>
-      <Card.Header>
-        <div class="flex items-center justify-between">
-          <Card.Title class="flex items-center gap-2">
-            <Clock class="h-5 w-5" />
-            Workload
-          </Card.Title>
-          {#if hasMultipleECTSFactors}
-            <div class="flex items-center gap-1">
-              <ToggleGroup.Root
-                type="single"
-                value={selectedEctsFactor}
-                variant="outline"
-                onValueChange={(value) => {
-                  // prevent deselection at business logic level
-                  if (value) {
-                    selectedEctsFactor = value
-                  }
-                }}
-              >
-                {#each ectsFactors as factor (factor)}
-                  <ToggleGroup.Item
-                    value={factor.toString()}
-                    onclick={(e) => {
-                      // prevent deselection at UI level
-                      if (selectedEctsFactor === factor.toString()) {
-                        e.preventDefault()
-                      }
-                    }}
-                  >
-                    {factor}
-                  </ToggleGroup.Item>
-                {/each}
-              </ToggleGroup.Root>
-              <sup>*</sup>
-            </div>
-          {/if}
-        </div>
-      </Card.Header>
-      <Card.Content class="space-y-2">
-        <button
-          type="button"
-          class="flex w-full cursor-pointer items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
-          onclick={() => (isWorkloadDetailsExpanded = !isWorkloadDetailsExpanded)}
-          onkeydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              isWorkloadDetailsExpanded = !isWorkloadDetailsExpanded
-            }
-          }}
-          aria-expanded={isWorkloadDetailsExpanded}
-          aria-controls="workload-details"
-        >
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-muted-foreground">Präsenzzeit</span>
-            {#if isWorkloadDetailsExpanded}
-              <ChevronUp class="h-4 w-4 text-muted-foreground" />
-            {:else}
-              <ChevronDown class="h-4 w-4 text-muted-foreground" />
+    {#if !isGenericModule}
+      <Card.Root>
+        <Card.Header>
+          <div class="flex items-center justify-between">
+            <Card.Title class="flex items-center gap-2">
+              <Clock class="h-5 w-5" />
+              Workload
+            </Card.Title>
+            {#if hasMultipleECTSFactors}
+              <div class="flex items-center gap-1">
+                <ToggleGroup.Root
+                  type="single"
+                  value={selectedEctsFactor}
+                  variant="outline"
+                  onValueChange={(value) => {
+                    // prevent deselection at business logic level
+                    if (value) {
+                      selectedEctsFactor = value
+                    }
+                  }}
+                >
+                  {#each ectsFactors as factor (factor)}
+                    <ToggleGroup.Item
+                      value={factor.toString()}
+                      onclick={(e) => {
+                        // prevent deselection at UI level
+                        if (selectedEctsFactor === factor.toString()) {
+                          e.preventDefault()
+                        }
+                      }}
+                    >
+                      {factor}
+                    </ToggleGroup.Item>
+                  {/each}
+                </ToggleGroup.Root>
+                <sup>*</sup>
+              </div>
             {/if}
           </div>
-          <span class="font-medium">{contact} h</span>
-        </button>
-        {#if isWorkloadDetailsExpanded}
-          <div id="workload-details" class="space-y-1 pl-4">
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Vorlesung</span>
-              <span class="font-medium">{module.workload.lecture} h</span>
+        </Card.Header>
+        <Card.Content class="space-y-2">
+          <button
+            type="button"
+            class="flex w-full cursor-pointer items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
+            onclick={() => (isWorkloadDetailsExpanded = !isWorkloadDetailsExpanded)}
+            onkeydown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                isWorkloadDetailsExpanded = !isWorkloadDetailsExpanded
+              }
+            }}
+            aria-expanded={isWorkloadDetailsExpanded}
+            aria-controls="workload-details"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground">Präsenzzeit</span>
+              {#if isWorkloadDetailsExpanded}
+                <ChevronUp class="h-4 w-4 text-muted-foreground" />
+              {:else}
+                <ChevronDown class="h-4 w-4 text-muted-foreground" />
+              {/if}
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Übung</span>
-              <span class="font-medium">{module.workload.exercise} h</span>
+            <span class="font-medium">{contact} h</span>
+          </button>
+          {#if isWorkloadDetailsExpanded}
+            <div id="workload-details" class="space-y-1 pl-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Vorlesung</span>
+                <span class="font-medium">{module.workload.lecture} h</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Übung</span>
+                <span class="font-medium">{module.workload.exercise} h</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Seminar</span>
+                <span class="font-medium">{module.workload.seminar} h</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Praktikum</span>
+                <span class="font-medium">{module.workload.practical} h</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Projektbetreuung</span>
+                <span class="font-medium">{module.workload.projectSupervision} h</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-muted-foreground">Projektarbeit</span>
+                <span class="font-medium">{module.workload.projectWork} h</span>
+              </div>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Seminar</span>
-              <span class="font-medium">{module.workload.seminar} h</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Praktikum</span>
-              <span class="font-medium">{module.workload.practical} h</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Projektbetreuung</span>
-              <span class="font-medium">{module.workload.projectSupervision} h</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-muted-foreground">Projektarbeit</span>
-              <span class="font-medium">{module.workload.projectWork} h</span>
-            </div>
+          {/if}
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Selbststudium</span>
+            <span class="font-medium">{selfStudy} h</span>
           </div>
+          <Separator />
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Gesamt</span>
+            <span class="font-medium">{total} h</span>
+          </div>
+        </Card.Content>
+        {#if hasMultipleECTSFactors}
+          <Card.Footer>
+            <div class="text-sm text-muted-foreground">
+              <sup>*</sup>Dieses Modul ist Studiengängen zugeordnet, die unterschiedliche
+              ECTS-Faktoren haben. Für eine korrekte Darstellung des Workloads ist die Auswahl eines
+              ECTS-Faktors notwendig.
+            </div>
+          </Card.Footer>
         {/if}
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Selbststudium</span>
-          <span class="font-medium">{selfStudy} h</span>
-        </div>
-        <Separator />
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Gesamt</span>
-          <span class="font-medium">{total} h</span>
-        </div>
-      </Card.Content>
-      {#if hasMultipleECTSFactors}
-        <Card.Footer>
-          <div class="text-sm text-muted-foreground">
-            <sup>*</sup>Dieses Modul ist Studiengängen zugeordnet, die unterschiedliche
-            ECTS-Faktoren haben. Für eine korrekte Darstellung des Workloads ist die Auswahl eines
-            ECTS-Faktors notwendig.
-          </div>
-        </Card.Footer>
-      {/if}
-    </Card.Root>
+      </Card.Root>
+    {/if}
 
     <!-- study programs (po and elective) -->
     <Card.Root class="col-span-1">
@@ -860,11 +895,57 @@
 
   <!-- Module Content -->
 
+  <div class="flex items-center gap-1">
+    <ToggleGroup.Root
+      type="single"
+      value={selectedLanguage}
+      variant="outline"
+      onValueChange={(value) => {
+        if (value) {
+          selectedLanguage = value
+        }
+      }}
+    >
+      <ToggleGroup.Item
+        value="de"
+        onclick={(e) => {
+          if (selectedLanguage === 'de') {
+            e.preventDefault()
+          }
+        }}
+        class="flex items-center gap-2"
+      >
+        <img src="/flags/de-flag-circle.svg" alt="German flag" class="h-5 w-5" />
+        Deutsch
+      </ToggleGroup.Item>
+      <ToggleGroup.Item
+        value="en"
+        onclick={(e) => {
+          if (selectedLanguage === 'en') {
+            e.preventDefault()
+          }
+        }}
+        class="flex items-center gap-2"
+      >
+        <img src="/flags/us-flag-circle.svg" alt="US flag" class="h-5 w-5" />
+        English
+      </ToggleGroup.Item>
+    </ToggleGroup.Root>
+  </div>
+
   <div class="prose max-w-none">
-    {@render markdown('Angestrebte Lernergebnisse', module.content.learningOutcome)}
-    {@render markdown('Modulinhalte', module.content.moduleContent)}
-    {@render markdown('Lehr- und Lernmethoden (Medienformen)', module.content.learningMethods)}
-    {@render markdown('Empfohlene Literatur', module.content.literature)}
-    {@render markdown('Besonderheiten', module.content.particularities)}
+    {#if selectedLanguage === 'en'}
+      {@render markdown('Learning Outcome', module.enContent.learningOutcome)}
+      {@render markdown('Module Content', module.enContent.moduleContent)}
+      {@render markdown('Teaching and Learning Methods', module.enContent.learningMethods)}
+      {@render markdown('Recommended Reading', module.enContent.literature)}
+      {@render markdown('Particularities', module.enContent.particularities)}
+    {:else}
+      {@render markdown('Angestrebte Lernergebnisse', module.deContent.learningOutcome)}
+      {@render markdown('Modulinhalte', module.deContent.moduleContent)}
+      {@render markdown('Lehr- und Lernmethoden (Medienformen)', module.deContent.learningMethods)}
+      {@render markdown('Empfohlene Literatur', module.deContent.literature)}
+      {@render markdown('Besonderheiten', module.deContent.particularities)}
+    {/if}
   </div>
 </div>

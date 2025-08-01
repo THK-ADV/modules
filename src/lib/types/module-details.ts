@@ -95,11 +95,20 @@ export interface ModuleDetail {
   title: string
   abbreviation: string
   ects: number
-  moduleType: string
-  language: string
+  moduleType: {
+    id: string
+    label: string
+  }
+  language: {
+    id: string
+    label: string
+  }
   duration: number
   season: string
-  status: string
+  status: {
+    id: string
+    label: string
+  }
   location: string
   examPhases: string[]
   firstExaminer: Identity
@@ -114,7 +123,8 @@ export interface ModuleDetail {
   taughtWith: ModuleShort[]
   requiredPrerequisites: Prerequisite | null
   recommendedPrerequisites: Prerequisite | null
-  content: Content
+  deContent: Content
+  enContent: Content
   moduleRelation?: ModuleRelation
   assessmentPrerequisite: AssessmentPrerequisite | null
   attendanceRequirement: AttendanceRequirement | null

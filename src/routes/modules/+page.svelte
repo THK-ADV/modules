@@ -145,7 +145,7 @@
 
 <div class="flex h-full flex-1 flex-col space-y-8">
   <div class="space-y-2">
-    <h2 class="text-2xl font-bold tracking-tight">Modulbeschreibungen</h2>
+    <h2 class="text-3xl font-bold tracking-tight">Modulbeschreibungen</h2>
     <p class="text-sm text-muted-foreground">
       Veröffentlichte Modulbeschreibungen aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>

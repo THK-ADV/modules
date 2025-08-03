@@ -262,8 +262,21 @@
         >
           Impressum
         </a>
-        <a href="/privacy" class="text-muted-foreground transition-colors hover:text-foreground">
-          Datenschutzerklärung
+        <a
+          href="https://www.th-koeln.de/hochschule/haftungshinweis_8277.php"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Haftungshinweis
+        </a>
+        <a
+          href="https://www.th-koeln.de/hochschule/datenschutzhinweis_8279.php"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Datenschutzhinweise
         </a>
         <a href="/help" class="text-muted-foreground transition-colors hover:text-foreground">
           Hilfe

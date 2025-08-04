@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
+  import { browser, dev } from '$app/environment'
   import { beforeNavigate, goto } from '$app/navigation'
   import { page } from '$app/state'
+  import ModificationIndicator from '$lib/components/modification-indicator.svelte'
+  import ModuleApprovalStatus from '$lib/components/module-approval-status.svelte'
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
+  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import Separator from '$lib/components/ui/separator/separator.svelte'
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { routesMap } from '$lib/routes.svelte'
-  import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import { moduleSchema } from '$lib/schemas/module'
-  import { cn } from '$lib/utils'
-  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
-  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
-  import ModuleApprovalStatus from '$lib/components/module-approval-status.svelte'
-  import SuperDebug, { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
   import {
     getSectionStatus,
+    type FormFieldPath,
     type Section,
-    type SectionId,
-    type FormFieldPath
+    type SectionId
   } from '$lib/types/module-draft-keys'
+  import { cn } from '$lib/utils'
+  import SuperDebug, { superForm } from 'sveltekit-superforms'
+  import { zodClient } from 'sveltekit-superforms/adapters'
   import type { LayoutProps } from './$types'
   import { setModuleFormContext } from './context'
 
@@ -349,7 +349,7 @@
       </p>
     </div>
 
-    {#if browser}
+    {#if browser && dev}
       <div class="flex-shrink-0">
         <Dialog.Root>
           <Dialog.Trigger

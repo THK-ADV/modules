@@ -1,5 +1,7 @@
+# usage: ./scripts/build.sh
 services:
   frontend:
+    env_file: .env.production
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,7 +16,6 @@ services:
     container_name: mocogi-frontend
     ports:
       - '3000:3000'
-    env_file: .env
     restart: unless-stopped
     healthcheck:
       test:

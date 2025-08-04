@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types'
 export type ModuleDraftTableAction = 'delete' | 'publish' | 'requestReview' | 'cancelReview'
 
 async function deleteModuleDraft(moduleId: string, fetch: typeof globalThis.fetch) {
-  const response = await fetch(`/api/moduleDrafts/${moduleId}`, { method: 'DELETE' })
+  const response = await fetch(`/auth-api/moduleDrafts/${moduleId}`, { method: 'DELETE' })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -23,7 +23,7 @@ async function createReview(
   needsApproval: boolean,
   fetch: typeof globalThis.fetch
 ) {
-  const response = await fetch(`/api/moduleReviews/${moduleId}`, { method: 'POST' })
+  const response = await fetch(`/auth-api/moduleReviews/${moduleId}`, { method: 'POST' })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -40,7 +40,7 @@ async function createReview(
 }
 
 async function cancelReview(moduleId: string, fetch: typeof globalThis.fetch) {
-  const response = await fetch(`/api/moduleReviews/${moduleId}`, { method: 'DELETE' })
+  const response = await fetch(`/auth-api/moduleReviews/${moduleId}`, { method: 'DELETE' })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))

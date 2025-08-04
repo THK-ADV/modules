@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ params, url, fetch }) => {
   }
 
   const previewType = document === 'moduleCatalog' ? 'moduleCatalogs' : 'examLists'
-  const response = await fetch(`/api/${previewType}/preview/${sp}/${po}`, {
+  const response = await fetch(`/auth-api/${previewType}/preview/${sp}/${po}`, {
     headers: {
       Accept: 'application/pdf'
     }

@@ -17,7 +17,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`)
   }
 
-  const moduleDraftStateRes = await fetch(`/api/moduleDrafts/${params.id}`)
+  const moduleDraftStateRes = await fetch(`/auth-api/moduleDrafts/${params.id}`)
 
   if (!moduleDraftStateRes.ok) {
     const err = await moduleDraftStateRes.json()
@@ -33,10 +33,10 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   const [moduleRes, moduleDraftKeysRes, approvalsRes, userWithUpdatePermissionsRes] =
     await Promise.allSettled([
-      fetch(`/api/modules/${params.id}/latest`),
-      fetch(`/api/moduleDrafts/${params.id}/keys`),
-      fetch(`/api/moduleApprovals/${params.id}`),
-      fetch(`/api/moduleUpdatePermissions/${params.id}?newApi=true`)
+      fetch(`/auth-api/modules/${params.id}/latest`),
+      fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
+      fetch(`/auth-api/moduleApprovals/${params.id}`),
+      fetch(`/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`)
     ])
 
   if (moduleRes.status === 'rejected') {

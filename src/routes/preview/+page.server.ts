@@ -15,7 +15,7 @@ function orderByPO(lhs: StudyProgramPrivileges, rhs: StudyProgramPrivileges): nu
 }
 
 export const load: PageServerLoad = async ({ fetch }) => {
-  const res = await fetch(`/api/me?newApi=false`)
+  const res = await fetch(`/auth-api/me?newApi=false`)
 
   if (!res.ok) {
     const err = await res.json()

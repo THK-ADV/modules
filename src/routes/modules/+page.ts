@@ -1,4 +1,3 @@
-import { url } from '$lib/http'
 import { moduleFilter } from '$lib/store.svelte'
 import type { ModuleView } from '$lib/types/module'
 import { error } from '@sveltejs/kit'
@@ -6,7 +5,7 @@ import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ fetch, params }) => {
   await moduleFilter.init(fetch)
-  const res = await fetch(url + '/modules?extend=true')
+  const res = await fetch('/api/modules?extend=true')
   if (!res.ok) {
     throw error(res.status, `Failed to load ${params}`)
   }

@@ -93,7 +93,7 @@ export const actions: Actions = {
       enContent: form.data.enContent
     }
 
-    const moduleUpdateReq = await fetch(`/api/moduleDrafts/${params.id}`, {
+    const moduleUpdateReq = await fetch(`/auth-api/moduleDrafts/${params.id}`, {
       method: 'PUT',
       body: JSON.stringify(protocol),
       headers: {
@@ -103,7 +103,7 @@ export const actions: Actions = {
     })
 
     const moduleUpdatePermissionsReq = await fetch(
-      `/api/moduleUpdatePermissions/${params.id}?newApi=true`,
+      `/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`,
       {
         method: 'POST',
         body: JSON.stringify(form.data.updatePermissions),

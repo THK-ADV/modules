@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
   const source = url.searchParams.get('source')
   const uri =
     source === 'latest'
-      ? `/api/modules/${params.id}/latest/file`
+      ? `/auth-api/modules/${params.id}/latest/file`
       : `/api/modules/${params.id}?extend=true`
 
   const res = await fetch(uri)

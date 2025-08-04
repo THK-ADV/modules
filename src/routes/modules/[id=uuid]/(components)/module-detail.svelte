@@ -933,7 +933,7 @@
     </ToggleGroup.Root>
   </div>
 
-  <div class="prose dark:prose-invert max-w-none">
+  <div class="prose max-w-none dark:prose-invert">
     {#if selectedLanguage === 'en'}
       {@render markdown('Learning Outcome', module.enContent.learningOutcome)}
       {@render markdown('Module Content', module.enContent.moduleContent)}

@@ -7,6 +7,12 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION=latest
 
+# Build arguments for environment variables
+ARG KEYCLOAK_URL
+ARG KEYCLOAK_REALM
+ARG KEYCLOAK_CLIENT_ID
+ARG BACKEND_URL_PREFIX
+
 # Set working directory
 WORKDIR /app
 
@@ -22,12 +28,10 @@ COPY . .
 # Set production environment for build
 ENV NODE_ENV=production
 
-# Set Keycloak environment variables for build
+# Set environment variables from build arguments for SvelteKit static env
 ENV KEYCLOAK_URL=${KEYCLOAK_URL}
 ENV KEYCLOAK_REALM=${KEYCLOAK_REALM}
 ENV KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
-
-# Set Backend environment variables for build
 ENV BACKEND_URL_PREFIX=${BACKEND_URL_PREFIX}
 
 # Build the application

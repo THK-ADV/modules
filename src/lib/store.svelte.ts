@@ -1,4 +1,3 @@
-import { authHeader, url } from '$lib/http'
 import type {
   AssessmentMethod,
   DisplayIdentity,
@@ -84,7 +83,7 @@ function createModuleFilter() {
       selectedIdentities = []
       selectedSemester = []
     },
-    async init(fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>) {
+    async init(fetch: typeof globalThis.fetch) {
       if (semester.length === 0) {
         semester = [
           { id: '1', label: '1', badge: '1' },
@@ -98,8 +97,8 @@ function createModuleFilter() {
       }
       if (studyPrograms.length === 0 || identities.length === 0) {
         const [sp, id] = await Promise.allSettled([
-          fetch(url + '/studyPrograms?extend=true'),
-          fetch(url + '/identities')
+          fetch('/api/studyPrograms?extend=true'),
+          fetch('/api/identities')
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()
@@ -170,7 +169,7 @@ function createModuleUpdateState() {
     get genericModules() {
       return genericModules
     },
-    async fetchGenerationInformationState(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchGenerationInformationState(fetch: typeof globalThis.fetch) {
       if (
         moduleTypes.length === 0 ||
         languages.length === 0 ||
@@ -178,15 +177,12 @@ function createModuleUpdateState() {
         locations.length === 0 ||
         status.length === 0
       ) {
-        console.log('fetching general information…')
-        const auth = authHeader(accessToken)
-
         const [mt, ls, se, lo, st] = await Promise.allSettled([
-          fetch(`${url}/moduleTypes`, auth),
-          fetch(`${url}/languages`, auth),
-          fetch(`${url}/seasons`, auth),
-          fetch(`${url}/locations`, auth),
-          fetch(`${url}/status`, auth)
+          fetch(`/api/moduleTypes`),
+          fetch(`/api/languages`),
+          fetch(`/api/seasons`),
+          fetch(`/api/locations`),
+          fetch(`/api/status`)
         ])
         if (mt.status === 'fulfilled' && mt.value.ok) {
           moduleTypes = await mt.value.json()
@@ -205,11 +201,9 @@ function createModuleUpdateState() {
         }
       }
     },
-    async fetchManagementInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchManagementInfo(fetch: typeof globalThis.fetch) {
       if (identities.length === 0) {
-        console.log('fetching management info...')
-        const auth = authHeader(accessToken)
-        const res = await fetch(`${url}/identities`, auth)
+        const res = await fetch(`/api/identities`)
         if (res.ok) {
           const xs: Identity[] = await res.json()
           xs.sort(peopleOrdering)
@@ -217,15 +211,13 @@ function createModuleUpdateState() {
         }
       }
     },
-    async fetchExaminationInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchExaminationInfo(fetch: typeof globalThis.fetch) {
       if (assessmentMethods.length === 0 || examPhases.length === 0 || identities.length === 0) {
-        console.log('fetching examination info...')
-        const auth = authHeader(accessToken)
         const [all, rpo, phases, ids] = await Promise.allSettled([
-          fetch(`${url}/assessmentMethods`, auth),
-          fetch(`${url}/assessmentMethods?source=rpo`, auth),
-          fetch(`${url}/examPhases`, auth),
-          fetch(`${url}/identities`, auth)
+          fetch(`/api/assessmentMethods`),
+          fetch(`/api/assessmentMethods?source=rpo`),
+          fetch(`/api/examPhases`),
+          fetch(`/api/identities`)
         ])
         if (
           all.status === 'fulfilled' &&
@@ -255,11 +247,9 @@ function createModuleUpdateState() {
         }
       }
     },
-    async fetchPrerequisitesInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchPrerequisitesInfo(fetch: typeof globalThis.fetch) {
       if (modules.length === 0) {
-        console.log('fetching prerequisites info...')
-        const auth = authHeader(accessToken)
-        const res = await fetch(`${url}/modules?source=all`, auth)
+        const res = await fetch(`/api/modules?source=all`)
         if (res.ok) {
           const xs: ModuleCore[] = await res.json()
           xs.sort((a, b) => a.title.localeCompare(b.title))
@@ -267,13 +257,11 @@ function createModuleUpdateState() {
         }
       }
     },
-    async fetchStudyProgramsInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchStudyProgramsInfo(fetch: typeof globalThis.fetch) {
       if (studyPrograms.length === 0 || genericModules.length === 0) {
-        console.log('fetching study programs info...')
-        const auth = authHeader(accessToken)
         const [sp, gm] = await Promise.allSettled([
-          fetch(`${url}/studyPrograms?extend=true`, auth),
-          fetch(`${url}/modules?type=generic&source=all`, auth)
+          fetch(`/api/studyPrograms?extend=true`),
+          fetch(`/api/modules?type=generic&source=all`)
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()
@@ -297,11 +285,9 @@ function createModuleUpdateState() {
         }
       }
     },
-    async fetchMiscInfo(accessToken: string, fetch: typeof globalThis.fetch) {
+    async fetchMiscInfo(fetch: typeof globalThis.fetch) {
       if (modules.length === 0) {
-        console.log('fetching misc info...')
-        const auth = authHeader(accessToken)
-        const res = await fetch(`${url}/modules?source=all`, auth)
+        const res = await fetch(`/api/modules?source=all`)
         if (res.ok) {
           const xs: ModuleCore[] = await res.json()
           xs.sort((a, b) => a.title.localeCompare(b.title))

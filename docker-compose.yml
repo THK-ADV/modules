@@ -14,6 +14,7 @@ services:
         KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
         BACKEND_URL_PREFIX: ${BACKEND_URL_PREFIX}
     container_name: mocogi-frontend
+    image: mocogi-frontend
     ports:
       - '3000:3000'
     restart: unless-stopped

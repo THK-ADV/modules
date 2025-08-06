@@ -26,12 +26,12 @@
     <!-- Expanded view: tabs with text -->
     <div class="group-data-[collapsible=icon]:hidden">
       <Tabs.Root value={$mode} onValueChange={(value) => setMode(value)}>
-        <Tabs.List class="grid w-full grid-cols-2 rounded-lg">
-          <Tabs.Trigger value="light" class="flex items-center gap-2 rounded-lg">
+        <Tabs.List class="grid w-full grid-cols-2">
+          <Tabs.Trigger value="light" class="flex items-center gap-2">
             <SunIcon class="h-4 w-4" />
             <span>Light</span>
           </Tabs.Trigger>
-          <Tabs.Trigger value="dark" class="flex items-center gap-2 rounded-lg">
+          <Tabs.Trigger value="dark" class="flex items-center gap-2">
             <MoonIcon class="h-4 w-4" />
             <span>Dark</span>
           </Tabs.Trigger>

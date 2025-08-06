@@ -17,6 +17,7 @@
       moduleFilter.selectedStudyPrograms.length > 0 ||
       moduleFilter.selectedIdentities.length > 0 ||
       moduleFilter.selectedSemester.length > 0 ||
+      moduleFilter.selectedModuleTypes.length > 0 ||
       tableFilter
     )
   })
@@ -40,6 +41,11 @@
     table.getColumn('studyProgram')?.setFilterValue(moduleFilter.selectedStudyPrograms)
   }
 
+  function selectModuleType(id: string) {
+    moduleFilter.selectModuleType(id)
+    table.getColumn('moduleType')?.setFilterValue(moduleFilter.selectedModuleTypes)
+  }
+
   function clearSemester() {
     moduleFilter.clearSelectedSemester()
     table.getColumn('semester')?.setFilterValue(undefined)
@@ -55,11 +61,17 @@
     table.getColumn('studyProgram')?.setFilterValue(undefined)
   }
 
+  function clearModuleType() {
+    moduleFilter.clearSelectedModuleTypes()
+    table.getColumn('moduleType')?.setFilterValue(undefined)
+  }
+
   function reset() {
     setFilterValue('')
     clearSemester()
     clearModuleManagement()
     clearStudyProgram()
+    clearModuleType()
   }
 </script>
 
@@ -110,6 +122,13 @@
         title="Modulverantwortliche"
         options={moduleFilter.identities}
         clearFilters={clearModuleManagement}
+      />
+      <DataTableFilterOption
+        filterValues={moduleFilter.selectedModuleTypes}
+        handleSelect={selectModuleType}
+        title="Modulart"
+        options={moduleFilter.moduleTypes}
+        clearFilters={clearModuleType}
       />
     </div>
   </div>

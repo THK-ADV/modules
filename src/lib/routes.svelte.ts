@@ -6,6 +6,7 @@ import {
   Search,
   Signature,
   Megaphone,
+  LifeBuoy,
   type IconProps
 } from '@lucide/svelte'
 import type { Component } from 'svelte'
@@ -32,10 +33,6 @@ function createRoutes() {
     '/module-catalogs': {
       name: 'Modulhandbücher',
       icon: Book
-    },
-    '/release-notes': {
-      name: 'Release Notes',
-      icon: Megaphone
     }
   }
 
@@ -57,6 +54,17 @@ function createRoutes() {
     }
   }
 
+  const secondaryRoutes: RoutesMap = {
+    '/help': {
+      name: 'Hilfe',
+      icon: LifeBuoy
+    },
+    '/release-notes': {
+      name: 'Release Notes',
+      icon: Megaphone
+    }
+  }
+
   const protectedRoutes = [...Object.keys(managerRoutes), ...Object.keys(pavRoutes)]
 
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
@@ -65,6 +73,9 @@ function createRoutes() {
     get defaultRoutes() {
       return defaultRoutes
     },
+    get secondaryRoutes() {
+      return secondaryRoutes
+    },
     get managerRoutes() {
       return managerRoutes
     },
@@ -72,7 +83,7 @@ function createRoutes() {
       return pavRoutes
     },
     get allRoutes() {
-      return { ...defaultRoutes, ...managerRoutes, ...pavRoutes }
+      return { ...defaultRoutes, ...managerRoutes, ...pavRoutes, ...secondaryRoutes }
     },
     get protectedRoutes() {
       return protectedRoutes

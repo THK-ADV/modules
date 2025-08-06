@@ -20,7 +20,7 @@
   }
 </script>
 
-<div class="mx-auto flex h-full max-w-4xl flex-1 flex-col space-y-8 px-4">
+<div class="mx-auto flex h-full max-w-4xl flex-1 flex-col space-y-8 px-2 sm:px-4">
   <div class="space-y-2 text-center">
     <h2 class="text-3xl font-bold tracking-tight">Release Notes</h2>
     <p class="text-sm text-muted-foreground">
@@ -36,14 +36,16 @@
     {:else}
       {#each releases as release (release.id)}
         {#if !release.draft}
-          <div class="flex gap-8 rounded-xl border border-muted bg-background/80 p-6 shadow-sm">
+          <div
+            class="flex flex-col gap-4 rounded-xl border border-muted bg-background/80 p-4 shadow-sm sm:flex-row sm:gap-8 sm:p-6"
+          >
             <!-- Date -->
-            <div class="flex-shrink-0 pt-2 text-sm font-semibold">
+            <div class="mb-2 flex-shrink-0 text-sm font-semibold sm:mb-0 sm:pt-2">
               {formatReleaseDate(release.published_at)}
             </div>
 
             <!-- Release content -->
-            <div class="flex-1">
+            <div class="min-w-0 flex-1">
               <a
                 href={release.html_url}
                 target="_blank"

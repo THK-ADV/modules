@@ -9,13 +9,13 @@
 
 <Sidebar.Menu>
   <Sidebar.MenuItem>
-    <Tabs.Root value={$mode} onValueChange={(value) => setMode(value)} class="w-full">
-      <Tabs.List class="grid w-full grid-cols-2">
-        <Tabs.Trigger value="light" class="flex items-center gap-2">
+    <Tabs.Root value={$mode} onValueChange={(value) => setMode(value)}>
+      <Tabs.List class="grid h-9 w-full grid-cols-2 rounded-lg">
+        <Tabs.Trigger value="light" class="flex h-7 items-center gap-2 rounded-lg">
           <SunIcon class="h-4 w-4" />
           <span>Light</span>
         </Tabs.Trigger>
-        <Tabs.Trigger value="dark" class="flex items-center gap-2">
+        <Tabs.Trigger value="dark" class="flex h-7 items-center gap-2 rounded-lg">
           <MoonIcon class="h-4 w-4" />
           <span>Dark</span>
         </Tabs.Trigger>

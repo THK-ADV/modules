@@ -36,9 +36,9 @@
     {:else}
       {#each releases as release (release.id)}
         {#if !release.draft}
-          <div class="flex gap-8">
+          <div class="flex gap-8 rounded-xl border border-muted bg-background/80 p-6 shadow-sm">
             <!-- Date -->
-            <div class="flex-shrink-0 pt-2 text-sm">
+            <div class="flex-shrink-0 pt-2 text-sm font-semibold">
               {formatReleaseDate(release.published_at)}
             </div>
 
@@ -56,7 +56,7 @@
               <div class="mb-2 mt-2">
                 <Badge
                   variant="outline"
-                  class="inline-flex w-fit items-center px-1.5 py-0.5 text-muted-foreground"
+                  class="inline-flex w-fit items-center px-2.5 py-0.5 text-muted-foreground"
                 >
                   <Tag class="mr-1 h-3 w-3 flex-shrink-0" />
                   <span class="text-xs">{release.tag_name}</span>

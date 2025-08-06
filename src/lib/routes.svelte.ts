@@ -1,4 +1,13 @@
-import { Book, Eye, Home, Pencil, Search, Signature, type IconProps } from '@lucide/svelte'
+import {
+  Book,
+  Eye,
+  Home,
+  Pencil,
+  Search,
+  Signature,
+  Megaphone,
+  type IconProps
+} from '@lucide/svelte'
 import type { Component } from 'svelte'
 
 export type RouteInfo = {
@@ -23,6 +32,10 @@ function createRoutes() {
     '/module-catalogs': {
       name: 'Modulhandbücher',
       icon: Book
+    },
+    '/release-notes': {
+      name: 'Release Notes',
+      icon: Megaphone
     }
   }
 

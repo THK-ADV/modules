@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types'
 import { GITHUB_OWNER, GITHUB_REPO } from '$env/static/private'
 import type { GitHubRelease } from '$lib/types/github'
+import { error } from '@sveltejs/kit'
 
 export const load: PageServerLoad = async ({ fetch }) => {
   try {
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     )
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`)
+      throw error(response.status, { message: `GitHub API error: ${response.status}` })
     }
 
     const releases: GitHubRelease[] = await response.json()

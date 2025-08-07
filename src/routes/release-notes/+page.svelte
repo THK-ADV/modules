@@ -1,38 +1,32 @@
 <script lang="ts">
-  import type { PageData } from './$types'
   import { Badge } from '$lib/components/ui/badge'
-  import { Tag, GitBranch } from '@lucide/svelte'
+  import { Tag } from '@lucide/svelte'
   import { marked } from 'marked'
 
-  export let data: PageData
-
-  $: releases = data.releases
+  import type { PageProps } from './$types'
+  let { data }: PageProps = $props()
+  const releases = data.releases
 
   function formatReleaseDate(dateString: string): string {
-    return new Date(dateString)
-      .toLocaleDateString('de-DE', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      })
-      .replace(/(\d+)\.\s*(\w+)\.\s*(\d+)/, '$1 $2. $3')
-      .toUpperCase()
+    return new Date(dateString).toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
   }
 </script>
 
-<div class="mx-auto flex h-full max-w-4xl flex-1 flex-col space-y-8 px-2 sm:px-4">
-  <div class="space-y-2 text-center">
+<div class="flex h-full max-w-5xl flex-1 flex-col space-y-8">
+  <div class="space-y-2">
     <h2 class="text-3xl font-bold tracking-tight">Release Notes</h2>
     <p class="text-sm text-muted-foreground">
       Aktuelle Release Notes zum Modulverwaltungssystem am Campus Gummersbach der TH Köln.
     </p>
   </div>
 
-  <div class="space-y-10">
-    {#if releases === undefined}
-      <div class="py-8 text-center text-muted-foreground">Lade Releases ...</div>
-    {:else if releases.filter((r) => !r.draft).length === 0}
-      <div class="py-8 text-center text-muted-foreground">Noch keine Releases vorhanden :(</div>
+  <div class="space-y-6">
+    {#if releases.filter((r) => !r.draft).length === 0}
+      <div class="text-sm text-muted-foreground">Es sind noch keine Release Notes vorhanden.</div>
     {:else}
       {#each releases as release (release.id)}
         {#if !release.draft}
@@ -62,14 +56,6 @@
                 >
                   <Tag class="mr-1 h-3 w-3 flex-shrink-0" />
                   <span class="text-xs">{release.tag_name}</span>
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  class="inline-flex w-fit items-center px-1.5 py-0.5 text-muted-foreground"
-                >
-                  <GitBranch class="mr-1 h-3 w-3 flex-shrink-0" />
-                  <span class="text-xs">{release.target_commitish}</span>
                 </Badge>
 
                 {#if release.prerelease}

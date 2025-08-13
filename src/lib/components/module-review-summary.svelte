@@ -59,8 +59,6 @@
   }
 </script>
 
-<!-- TODO: align UI with keys explanation and error / update component -->
-
 <div class="rounded-md border-l-4 border-l-amber-400 bg-amber-50/50 p-4">
   <div class="ml-3 flex-1 space-y-4">
     <h3 class="text-lg font-semibold text-foreground">Prüfprozess</h3>

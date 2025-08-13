@@ -11,7 +11,6 @@
   import type { PageProps } from '../$types'
   import { getModuleFormContext } from '../context'
 
-  // TODO: add assessment and attendance prerequisites
   const { data }: PageProps = $props()
 
   const recommendedPrerequisitesStatus = data.fieldStatuses?.recommendedPrerequisites

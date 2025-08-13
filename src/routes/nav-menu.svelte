@@ -88,7 +88,7 @@
   <Sidebar.Menu>
     {#each Object.entries(secondaryRoutes) as [path, route] (path)}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton size="sm">
+        <Sidebar.MenuButton>
           {#snippet child({ props })}
             <a href={path} {...props}>
               <route.icon />

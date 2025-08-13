@@ -2,9 +2,9 @@
   import { Badge } from '$lib/components/ui/badge'
   import { Tag } from '@lucide/svelte'
   import { marked } from 'marked'
-
   import type { PageProps } from './$types'
-  let { data }: PageProps = $props()
+
+  const { data }: PageProps = $props()
   const releases = data.releases
 
   function formatReleaseDate(dateString: string): string {
@@ -54,7 +54,7 @@
                   variant="outline"
                   class="inline-flex w-fit items-center px-2.5 py-0.5 text-muted-foreground"
                 >
-                  <Tag class="mr-1 h-3 w-3 flex-shrink-0" />
+                  <Tag class="mr-1.5 h-3 w-3 flex-shrink-0" />
                   <span class="text-xs">{release.tag_name}</span>
                 </Badge>
 

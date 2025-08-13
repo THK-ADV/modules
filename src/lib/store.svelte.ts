@@ -123,7 +123,7 @@ function createModuleFilter() {
       }
       if (studyPrograms.length === 0 || identities.length === 0) {
         const [sp, id] = await Promise.allSettled([
-          fetch('/api/studyPrograms?extend=true'),
+          fetch('/api/studyPrograms?filter=currently-active'),
           fetch('/api/identities')
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
@@ -286,7 +286,7 @@ function createModuleUpdateState() {
     async fetchStudyProgramsInfo(fetch: typeof globalThis.fetch) {
       if (studyPrograms.length === 0 || genericModules.length === 0) {
         const [sp, gm] = await Promise.allSettled([
-          fetch(`/api/studyPrograms?extend=true`),
+          fetch(`/api/studyPrograms?filter=not-expired`),
           fetch(`/api/modules?type=generic&source=all`)
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {

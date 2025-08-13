@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
+  import { moduleFilter } from '$lib/store.svelte'
   import type { ModuleView } from '$lib/types/module'
   import {
     type ColumnDef,
@@ -15,6 +16,28 @@
   import DataTableFilter from './modules-table-filter.svelte'
   import DataTablePagination from './modules-table-pagination.svelte'
 
+  function getInitialColumnFilters(): ColumnFiltersState {
+    const filters: ColumnFiltersState = []
+
+    if (moduleFilter.selectedStudyPrograms.length > 0) {
+      filters.push({ id: 'studyProgram', value: moduleFilter.selectedStudyPrograms })
+    }
+    if (moduleFilter.selectedIdentities.length > 0) {
+      filters.push({ id: 'moduleManagement', value: moduleFilter.selectedIdentities })
+    }
+    if (moduleFilter.selectedSemester.length > 0) {
+      filters.push({ id: 'semester', value: moduleFilter.selectedSemester })
+    }
+    if (moduleFilter.selectedModuleTypes.length > 0) {
+      filters.push({ id: 'moduleType', value: moduleFilter.selectedModuleTypes })
+    }
+    if (moduleFilter.title.length > 0) {
+      filters.push({ id: 'title', value: moduleFilter.title })
+    }
+
+    return filters
+  }
+
   type DataTableProps = {
     columns: ColumnDef<ModuleView>[]
     data: ModuleView[]
@@ -25,7 +48,7 @@
   const pages = ['15', '30', '45', 'Alle']
 
   let sorting = $state<SortingState>([])
-  let columnFilters = $state<ColumnFiltersState>([])
+  let columnFilters = $state<ColumnFiltersState>(getInitialColumnFilters())
   let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
 
   const table = createSvelteTable({

@@ -12,17 +12,25 @@
   let { table }: { table: Table<ModuleView> } = $props()
 
   let showReset = $derived.by(() => {
-    const tableFilter = table.getColumn('title')?.getFilterValue() as string
+    const {
+      selectedStudyPrograms,
+      selectedIdentities,
+      selectedSemester,
+      selectedModuleTypes,
+      title
+    } = moduleFilter
+
     return (
-      moduleFilter.selectedStudyPrograms.length > 0 ||
-      moduleFilter.selectedIdentities.length > 0 ||
-      moduleFilter.selectedSemester.length > 0 ||
-      moduleFilter.selectedModuleTypes.length > 0 ||
-      tableFilter
+      selectedStudyPrograms.length > 0 ||
+      selectedIdentities.length > 0 ||
+      selectedSemester.length > 0 ||
+      selectedModuleTypes.length > 0 ||
+      title.length > 0
     )
   })
 
   function setFilterValue(value: string) {
+    moduleFilter.title = value
     table.getColumn('title')?.setFilterValue(value)
   }
 
@@ -85,7 +93,7 @@
     <div class="flex-1">
       <Input
         placeholder="Suche nach Modulbezeichnung..."
-        class="h-9 w-full max-w-md text-sm"
+        class="h-10 w-full max-w-md border-2 border-muted-foreground/20 text-sm transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         type="search"
         value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}
         onchange={(e) => setFilterValue(e.currentTarget.value)}

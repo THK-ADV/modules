@@ -31,8 +31,12 @@ function createModuleFilter() {
   let selectedIdentities = $state(new Array<string>())
   let selectedSemester = $state(new Array<string>())
   let selectedModuleTypes = $state(new Array<string>())
+  let title = $state('')
 
   return {
+    get title() {
+      return title
+    },
     get studyPrograms() {
       return studyPrograms
     },
@@ -56,6 +60,9 @@ function createModuleFilter() {
     },
     get selectedModuleTypes() {
       return selectedModuleTypes
+    },
+    set title(value: string) {
+      title = value
     },
     selectStudyProgram(id: string) {
       if (selectedStudyPrograms.includes(id)) {
@@ -102,6 +109,7 @@ function createModuleFilter() {
       selectedIdentities = []
       selectedSemester = []
       selectedModuleTypes = []
+      title = ''
     },
     async init(fetch: typeof globalThis.fetch) {
       if (semester.length === 0) {

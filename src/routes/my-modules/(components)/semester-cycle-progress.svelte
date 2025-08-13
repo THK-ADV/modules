@@ -175,23 +175,23 @@
 {#if showComponent}
   <div class="rounded-lg border bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
     <div class="mb-4">
-      <h3 class="text-lg font-semibold text-gray-900">
+      <h3 class="text-lg font-semibold text-foreground">
         Bearbeitungszyklus {semesterInfo.type}
         {semesterInfo.period}
       </h3>
-      <p class="mt-1 text-sm text-gray-600">
+      <p class="mt-1 text-sm text-muted-foreground">
         {semesterInfo.displayStart} - {semesterInfo.displayEnd}
       </p>
     </div>
 
     <!-- Progress Bar -->
     <div class="relative mb-6">
-      <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
+      <div class="mb-2 flex items-center justify-between text-xs text-muted-foreground">
         <span>Bearbeitungsphase</span>
         <span>Veröffentlichung</span>
       </div>
 
-      <div class="relative h-3 w-full overflow-hidden rounded-full bg-gray-200">
+      <div class="relative h-3 w-full overflow-hidden rounded-full bg-muted">
         <!-- Background phases -->
         <div class="absolute inset-0 flex">
           <div style="width: {EDITING_PHASE_END}%" class={PHASE_THEMES.editing.bgLight}></div>
@@ -213,16 +213,16 @@
 
         <!-- Phase markers -->
         <div
-          class="absolute top-0 h-full w-0.5 bg-gray-400 opacity-50"
+          class="absolute top-0 h-full w-0.5 bg-muted-foreground opacity-50"
           style="left: {EDITING_PHASE_END}%"
         ></div>
         <div
-          class="absolute top-0 h-full w-0.5 bg-gray-400 opacity-50"
+          class="absolute top-0 h-full w-0.5 bg-muted-foreground opacity-50"
           style="left: {FINALIZING_PHASE_END}%"
         ></div>
       </div>
 
-      <div class="mt-1 flex items-center justify-between text-xs text-gray-600">
+      <div class="mt-1 flex items-center justify-between text-xs text-muted-foreground">
         <span>{semesterInfo.displayStart}</span>
         <span class="font-medium">{cycleProgress}% abgeschlossen</span>
         <span>{semesterInfo.displayEnd}</span>
@@ -259,8 +259,8 @@
         </p>
       </div>
       <div class="rounded-lg border bg-white p-4">
-        <h5 class="mb-2 font-medium text-gray-900">{phaseContent.actionTitle}</h5>
-        <ul class="space-y-1 text-sm text-gray-700">
+        <h5 class="mb-2 font-medium text-foreground">{phaseContent.actionTitle}</h5>
+        <ul class="space-y-1 text-sm text-muted-foreground">
           {#each phaseContent.actions as action, index (index)}
             <li>• {action}</li>
           {/each}

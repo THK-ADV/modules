@@ -4,6 +4,7 @@
   import { page } from '$app/state'
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import ModuleApprovalStatus from '$lib/components/module-approval-status.svelte'
+  import ModuleReviewSummary from '$lib/components/module-review-summary.svelte'
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
@@ -29,6 +30,10 @@
   routesMap.selectedModule = { id: data.module.id, title: data.module.metadata.title }
 
   const id = page.params.id
+
+  const isReviewMode = $derived.by(() => page.url.searchParams.get('mode') === 'review')
+
+  let reviewInProgress = $state(false)
 
   const sections: Section[] = [
     {
@@ -102,7 +107,13 @@
     onUpdated: ({ form }) => {
       // redirect, if form submission was successful and no server error occurred
       if (form.valid && Object.keys(form.errors).length === 0 && !page.form?.message) {
-        goto('/my-modules?updated=true')
+        if (isReviewMode) {
+          if (browser) {
+            location.reload()
+          }
+        } else {
+          goto('/my-modules?updated=true')
+        }
       }
     }
   })
@@ -270,25 +281,12 @@
   const hasUnsavedChanges = $derived($tainted)
   const hasChangesToSubmit = $derived(hasActualChanges($formData, originalFormData))
 
-  $effect(() => {
-    if (!browser) return
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges || $submitting) {
-        event.preventDefault()
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  })
-
   beforeNavigate(({ to, cancel }) => {
     // prevent navigation during submission
     if ($submitting) {
+      if (isReviewMode) {
+        return
+      }
       cancel()
       return
     }
@@ -340,12 +338,25 @@
 {/snippet}
 
 <div class="w-full max-w-none space-y-8">
+  <!-- loading overlay during submission -->
+  <LoadingOverlay
+    show={$submitting || reviewInProgress}
+    message={reviewInProgress
+      ? 'Modulprüfung wird verarbeitet…'
+      : 'Moduländerungen werden gespeichert…'}
+    zIndex={40}
+  />
+
   <!-- Header -->
   <div class="flex items-start justify-between gap-4">
     <div class="min-w-0 flex-1 space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Modul bearbeiten</h1>
+      <h1 class="text-3xl font-bold tracking-tight">
+        {isReviewMode ? 'Modul prüfen' : 'Modul bearbeiten'}
+      </h1>
       <p class="break-words text-muted-foreground">
-        Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.
+        {isReviewMode
+          ? 'Prüfen Sie die Modulinformationen. Änderungen können gespeichert werden; die Seite lädt danach neu.'
+          : 'Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.'}
       </p>
     </div>
 
@@ -373,10 +384,16 @@
     {/if}
   </div>
 
-  <Separator />
+  <!-- Approval Status or Review Summary -->
+  <div class="min-w-0 flex-1 lg:max-w-6xl">
+    {#if isReviewMode}
+      <ModuleReviewSummary reviews={data.reviews} bind:reviewInProgress />
+    {:else}
+      <ModuleApprovalStatus approvals={data.approvals} />
+    {/if}
+  </div>
 
-  <!-- Approval Status Display -->
-  <ModuleApprovalStatus approvals={data.approvals} />
+  <Separator />
 
   <!-- Error Message Display -->
   {#if page.form?.message && showError}
@@ -429,13 +446,6 @@
     use:enhance
     class={$submitting ? 'pointer-events-none opacity-75' : ''}
   >
-    <!-- loading overlay during submission -->
-    <LoadingOverlay
-      show={$submitting}
-      message="Moduländerungen werden gespeichert..."
-      zIndex={40}
-    />
-
     <!-- mobile section selector (shown on small screens) -->
     <div class="mb-6 space-y-2 lg:hidden">
       <label for="section-select" class="block text-sm font-medium text-foreground">
@@ -444,7 +454,7 @@
       <select
         id="section-select"
         class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        value={currentSection.id}
+        value={`${currentSection.href}${page.url.search}`}
         onchange={handleSectionChange}
       >
         {#each sections as section (section.id)}
@@ -453,7 +463,9 @@
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger>
-                  <option value={section.id} class="text-destructive">⚠️ {section.label}</option>
+                  <option value={`${section.href}${page.url.search}`} class="text-destructive"
+                    >⚠️ {section.label}</option
+                  >
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
                   <Tooltip.Content class="z-[100] max-w-xs break-words"
@@ -463,7 +475,7 @@
               </Tooltip.Root>
             </Tooltip.Provider>
           {:else}
-            <option value={section.id}>
+            <option value={`${section.href}${page.url.search}`}>
               {section.label}{sectionStatus === 'needs-review'
                 ? ' 👁️'
                 : sectionStatus === 'modified'
@@ -484,7 +496,7 @@
             {#each sections as section (section.id)}
               {@const sectionStatus = getSectionStatus(section.id, data.fieldStatuses)}
               <a
-                href={section.href}
+                href={`${section.href}${page.url.search}`}
                 class={cn(
                   'block h-auto justify-start rounded-md px-3 py-2 font-normal transition-colors',
                   page.url.pathname === section.href

@@ -15,14 +15,14 @@
   }
 
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string
     label: string
     placeholder: string
     description: string
     options: Option[]
     value: string
-    errors?: any
+    errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
   }

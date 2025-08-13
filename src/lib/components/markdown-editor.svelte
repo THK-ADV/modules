@@ -9,13 +9,13 @@
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string
     label: string
     description?: string
     placeholder?: string
     value: string
-    errors?: any
+    errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     modificationStatus?: ModificationStatus // optional modification tracking
   }
 

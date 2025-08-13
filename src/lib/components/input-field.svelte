@@ -7,13 +7,13 @@
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string
     label: string
     placeholder?: string
     description?: string
     value: string | number
-    errors?: any
+    errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url'
     step?: string
     modificationStatus?: ModificationStatus // optional modification tracking

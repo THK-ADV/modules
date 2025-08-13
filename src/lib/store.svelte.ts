@@ -25,9 +25,12 @@ function createModuleFilter() {
   let studyPrograms = $state.raw(new Array<FilterData>())
   let identities = $state.raw(new Array<FilterData>())
   let semester = $state.raw(new Array<FilterData>())
+  let moduleTypes = $state.raw(new Array<FilterData>())
+
   let selectedStudyPrograms = $state(new Array<string>())
   let selectedIdentities = $state(new Array<string>())
   let selectedSemester = $state(new Array<string>())
+  let selectedModuleTypes = $state(new Array<string>())
 
   return {
     get studyPrograms() {
@@ -39,6 +42,9 @@ function createModuleFilter() {
     get semester() {
       return semester
     },
+    get moduleTypes() {
+      return moduleTypes
+    },
     get selectedStudyPrograms() {
       return selectedStudyPrograms
     },
@@ -47,6 +53,9 @@ function createModuleFilter() {
     },
     get selectedSemester() {
       return selectedSemester
+    },
+    get selectedModuleTypes() {
+      return selectedModuleTypes
     },
     selectStudyProgram(id: string) {
       if (selectedStudyPrograms.includes(id)) {
@@ -69,6 +78,13 @@ function createModuleFilter() {
         selectedIdentities.push(id)
       }
     },
+    selectModuleType(id: string) {
+      if (selectedModuleTypes.includes(id)) {
+        selectedModuleTypes = selectedModuleTypes.filter((x) => x !== id)
+      } else {
+        selectedModuleTypes.push(id)
+      }
+    },
     clearSelectedStudyPrograms() {
       selectedStudyPrograms = []
     },
@@ -78,10 +94,14 @@ function createModuleFilter() {
     clearSelectedSemester() {
       selectedSemester = []
     },
+    clearSelectedModuleTypes() {
+      selectedModuleTypes = []
+    },
     clearSelections() {
       selectedStudyPrograms = []
       selectedIdentities = []
       selectedSemester = []
+      selectedModuleTypes = []
     },
     async init(fetch: typeof globalThis.fetch) {
       if (semester.length === 0) {
@@ -95,9 +115,15 @@ function createModuleFilter() {
           { id: '7', label: '7', badge: '7' }
         ]
       }
+      if (moduleTypes.length === 0) {
+        moduleTypes = [
+          { id: 'pm', label: 'Pflichtmodul', badge: 'PM' },
+          { id: 'wm', label: 'Wahlmodul', badge: 'WM' }
+        ]
+      }
       if (studyPrograms.length === 0 || identities.length === 0) {
         const [sp, id] = await Promise.allSettled([
-          fetch('/api/studyPrograms?extend=true'),
+          fetch('/api/studyPrograms?filter=currently-active'),
           fetch('/api/identities')
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
@@ -260,7 +286,7 @@ function createModuleUpdateState() {
     async fetchStudyProgramsInfo(fetch: typeof globalThis.fetch) {
       if (studyPrograms.length === 0 || genericModules.length === 0) {
         const [sp, gm] = await Promise.allSettled([
-          fetch(`/api/studyPrograms?extend=true`),
+          fetch(`/api/studyPrograms?filter=not-expired`),
           fetch(`/api/modules?type=generic&source=all`)
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {

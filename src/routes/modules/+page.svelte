@@ -1,9 +1,13 @@
 <script lang="ts" module>
   import DataTableTitleButton from '$lib/components/modules-table-title-button.svelte'
-  import { renderComponent, renderSnippet } from '$lib/components/ui/data-table/index.js'
-  import type { ModuleView, PersonShort, StudyProgramModuleAssociation } from '$lib/types/module'
+  import { renderComponent } from '$lib/components/ui/data-table/index.js'
+  import type {
+    ModuleType,
+    ModuleView,
+    PersonShort,
+    StudyProgramModuleAssociation
+  } from '$lib/types/module'
   import type { ColumnDef } from '@tanstack/table-core'
-  import { createRawSnippet } from 'svelte'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
   const fmtCredits = new Intl.NumberFormat('de-DE', {
@@ -70,13 +74,11 @@
         })
       },
       cell: ({ row }) => {
-        const snippet = createRawSnippet<[string]>((getTitle) => {
-          const title = getTitle()
-          return {
-            render: () => `<a href="/modules/${row.original.id}">${title}</a>`
-          }
+        return renderComponent(ModuleTableTitleCell, {
+          id: row.original.id,
+          title: row.original.title,
+          status: row.original.status
         })
-        return renderSnippet(snippet, row.original.title)
       },
       filterFn: 'includesString'
     },
@@ -109,10 +111,22 @@
       header: 'Modulart',
       cell: ({ row }) => {
         return renderComponent(DataTableModuleTypeCell, {
-          studyPrograms: row.original.studyProgram
+          moduleType: row.original.moduleType
         })
       },
-      enableColumnFilter: false
+      filterFn: (row, _, filterValue) => {
+        const ids = filterValue as ModuleType['id'][]
+        // if no or both PM and WM are selected, return true, since every module is either PM, WM or both PM and WM (PWM)
+        if (ids.length === 0 || ids.length === 2) {
+          return true
+        }
+        const moduleType = row.original.moduleType
+        if (moduleType === undefined) {
+          return false
+        }
+        // also select PWM since it is a subset of both PW and WM
+        return moduleType.id === ids[0] || moduleType.id === 'pwm'
+      }
     },
     {
       accessorKey: 'credits',
@@ -138,6 +152,7 @@
 
 <script lang="ts">
   import type { PageProps } from './$types'
+  import ModuleTableTitleCell from './(components)/module-table-title-cell.svelte'
   import ModulesTable from './(components)/modules-table.svelte'
 
   let { data }: PageProps = $props()

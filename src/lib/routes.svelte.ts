@@ -1,4 +1,14 @@
-import { Book, Eye, Home, Pencil, Search, Signature, type IconProps } from '@lucide/svelte'
+import {
+  Book,
+  Eye,
+  Home,
+  Pencil,
+  Search,
+  Signature,
+  Megaphone,
+  LifeBuoy,
+  type IconProps
+} from '@lucide/svelte'
 import type { Component } from 'svelte'
 
 export type RouteInfo = {
@@ -8,7 +18,7 @@ export type RouteInfo = {
 
 export type RoutesMap = Record<string, RouteInfo>
 
-// TODO a few routes should not appear on the side bar, but should be resolved in the breadcrumb
+// TODO: a few routes should not appear on the side bar, but should be resolved in the breadcrumb
 
 function createRoutes() {
   const defaultRoutes: RoutesMap = {
@@ -44,6 +54,17 @@ function createRoutes() {
     }
   }
 
+  const secondaryRoutes: RoutesMap = {
+    '/help': {
+      name: 'Hilfe',
+      icon: LifeBuoy
+    },
+    '/release-notes': {
+      name: 'Release Notes',
+      icon: Megaphone
+    }
+  }
+
   const protectedRoutes = [...Object.keys(managerRoutes), ...Object.keys(pavRoutes)]
 
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
@@ -52,6 +73,9 @@ function createRoutes() {
     get defaultRoutes() {
       return defaultRoutes
     },
+    get secondaryRoutes() {
+      return secondaryRoutes
+    },
     get managerRoutes() {
       return managerRoutes
     },
@@ -59,7 +83,7 @@ function createRoutes() {
       return pavRoutes
     },
     get allRoutes() {
-      return { ...defaultRoutes, ...managerRoutes, ...pavRoutes }
+      return { ...defaultRoutes, ...managerRoutes, ...pavRoutes, ...secondaryRoutes }
     },
     get protectedRoutes() {
       return protectedRoutes

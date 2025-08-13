@@ -18,13 +18,13 @@
   }
 
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     label: string
     description: string
     options: Option[]
     value: string[]
-    errors?: any
+    errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     maxVisibleBadges?: number
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
@@ -84,7 +84,7 @@
   })
 </script>
 
-{#snippet popoverContent(props: any)}
+{#snippet popoverContent(props: { name: string })}
   <Popover.Trigger
     role="combobox"
     class={cn(

@@ -44,7 +44,6 @@
       {assessmentMethods}
       {preconditions}
       bind:value={$formData.assessmentMethods}
-      {errors}
       modificationStatus={assessmentMethodsStatus}
     />
   </div>

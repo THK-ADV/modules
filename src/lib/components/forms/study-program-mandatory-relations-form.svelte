@@ -1,10 +1,9 @@
 <script lang="ts" module>
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     studyPrograms: StudyProgram[]
     value: POMandatory[]
-    errors?: any
     modificationStatus?: ModificationStatus // optional modification tracking
   }
 </script>
@@ -33,14 +32,7 @@
     recommendedSemester: z.array(z.number()).optional().default([])
   })
 
-  let {
-    form,
-    name,
-    studyPrograms,
-    value = $bindable(),
-    errors = {},
-    modificationStatus
-  }: Props = $props()
+  let { form, name, studyPrograms, value = $bindable(), modificationStatus }: Props = $props()
 
   let dialogOpen = $state(false)
   let editingIndex = $state<number | null>(null)
@@ -175,7 +167,7 @@
   }
 </script>
 
-{#snippet mandatoryRelationsContent(props: any)}
+{#snippet mandatoryRelationsContent(props: { name: string })}
   <div class="space-y-6">
     {#if value.length > 0}
       <div class="space-y-4">

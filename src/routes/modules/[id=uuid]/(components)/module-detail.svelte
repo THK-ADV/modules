@@ -204,18 +204,20 @@
         return ''
       case 'prof':
         return title || 'Prof.'
-      case 'wma':
-        const wmaLabel = 'Wiss. Mitarbeiter*in'
+      case 'wma': {
+        const label = 'Wiss. Mitarbeiter*in'
         if (title && title.startsWith('Dr')) {
-          return `${title} - ${wmaLabel}`
+          return `${title} - ${label}`
         }
-        return wmaLabel
-      case 'adjunct_lecturer':
+        return label
+      }
+      case 'adjunct_lecturer': {
         const label = 'Lehrauftrag'
         if (title && (title.startsWith('Dr') || title.startsWith('Prof'))) {
           return `${title} - ${label}`
         }
         return label
+      }
     }
   }
 

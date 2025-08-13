@@ -17,11 +17,22 @@ export interface StudyProgramModuleAssociation {
   recommendedSemester: number[]
 }
 
-export interface ModuleView {
+export interface ModuleViewJson {
   id: string
   title: string
   abbrev: string
   ects: number
+  status: string
   moduleManagement: PersonShort[]
   studyProgram: StudyProgramModuleAssociation[]
+}
+
+export interface ModuleType {
+  id: 'pm' | 'wm' | 'pwm'
+  label: string
+  abbrev: string
+}
+
+export interface ModuleView extends ModuleViewJson {
+  moduleType: ModuleType | undefined
 }

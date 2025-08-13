@@ -1,20 +1,20 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModuleDraftState } from '$lib/types/module-draft'
-  import { CheckCircle, CheckSquare, Clock, Eye, HelpCircle, Loader, XCircle } from '@lucide/svelte'
+  import { BookCheck, Clock, Eye, HelpCircle, Loader, TriangleAlert, Upload } from '@lucide/svelte'
 
   let { state }: { state: ModuleDraftState } = $props()
 
   const Icon = $derived.by(() => {
     switch (state) {
       case 'published':
-        return CheckCircle
+        return BookCheck
       case 'valid_for_review':
         return Eye
       case 'valid_for_publication':
-        return CheckSquare
+        return Upload
       case 'waiting_for_changes':
-        return XCircle
+        return TriangleAlert
       case 'waiting_for_review':
         return Clock
       case 'waiting_for_publication':

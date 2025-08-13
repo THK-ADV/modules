@@ -5,6 +5,7 @@ import type { ModuleDraftKeys } from '$lib/types/module-draft-keys.js'
 import { getFieldModifications } from '$lib/types/module-draft-keys.js'
 import { canEdit, type ModuleDraftState } from '$lib/types/module-draft.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
+import type { ReviewRequestJson } from '$lib/types/review-request.js'
 import { error, redirect } from '@sveltejs/kit'
 import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
@@ -17,6 +18,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw redirect(303, `/login?redirectTo=${encodeURIComponent(url.pathname)}`)
   }
 
+  const reviewMode = url.searchParams.get('mode') === 'review'
   const moduleDraftStateRes = await fetch(`/auth-api/moduleDrafts/${params.id}`)
 
   if (!moduleDraftStateRes.ok) {
@@ -27,16 +29,17 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   const state: { id: ModuleDraftState } = await moduleDraftStateRes.json()
 
-  if (!canEdit(state.id)) {
+  if (!reviewMode && !canEdit(state.id)) {
     throw error(403, { message: 'Das Modul kann nicht bearbeitet werden.' })
   }
 
-  const [moduleRes, moduleDraftKeysRes, approvalsRes, userWithUpdatePermissionsRes] =
+  const [moduleRes, moduleDraftKeysRes, approvalsRes, userWithUpdatePermissionsRes, reviewsRes] =
     await Promise.allSettled([
       fetch(`/auth-api/modules/${params.id}/latest`),
       fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
       fetch(`/auth-api/moduleApprovals/${params.id}`),
-      fetch(`/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`)
+      fetch(`/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`),
+      reviewMode ? fetch(`/auth-api/moduleApprovals/own`) : null
     ])
 
   if (moduleRes.status === 'rejected') {
@@ -55,6 +58,20 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   let moduleDraftKeys: ModuleDraftKeys | null = null
   let approvals: Approval[] = []
   let userWithUpdatePermissions: string[] = []
+  let reviews: { reviewId: string; role: string; studyProgram: string }[] = []
+
+  if (reviewsRes.status === 'fulfilled' && reviewsRes.value?.ok) {
+    const json: ReviewRequestJson[] = await reviewsRes.value.json()
+    reviews = json
+      .filter((a) => a.moduleId === params.id && a.canReview)
+      .map((a) => {
+        return {
+          reviewId: a.reviewId,
+          role: a.role.deLabel,
+          studyProgram: a.studyProgram.deLabel
+        }
+      })
+  }
 
   if (moduleDraftKeysRes.status === 'fulfilled' && moduleDraftKeysRes.value.ok) {
     moduleDraftKeys = await moduleDraftKeysRes.value.json()
@@ -137,5 +154,5 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   const fieldStatuses = getFieldModifications(moduleDraftKeys)
 
-  return { module, moduleDraftKeys, approvals, fieldStatuses, accessToken, form }
+  return { module, moduleDraftKeys, approvals, fieldStatuses, accessToken, form, reviews }
 }

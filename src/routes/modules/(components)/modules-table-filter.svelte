@@ -93,7 +93,7 @@
     <div class="flex-1">
       <Input
         placeholder="Suche nach Modulbezeichnung..."
-        class="h-9 w-full max-w-md text-sm"
+        class="h-10 w-full max-w-md border-2 border-muted-foreground/20 text-sm transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
         type="search"
         value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}
         onchange={(e) => setFilterValue(e.currentTarget.value)}

@@ -1,10 +1,9 @@
 <script lang="ts" module>
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     studyPrograms: StudyProgram[]
     value: POOptional[]
-    errors?: any
     modificationStatus?: ModificationStatus // optional modification tracking
   }
 </script>
@@ -31,14 +30,7 @@
 
   // TODO: INF2 can only have one generic module, but it may have multiple generic modules (WASP1 and WASP2)
 
-  let {
-    form,
-    name,
-    studyPrograms,
-    value = $bindable(),
-    errors = {},
-    modificationStatus
-  }: Props = $props()
+  let { form, name, studyPrograms, value = $bindable(), modificationStatus }: Props = $props()
 
   const genericModules = moduleUpdateState.genericModules
 
@@ -241,7 +233,7 @@
   }
 </script>
 
-{#snippet electiveRelationsContent(props: any)}
+{#snippet electiveRelationsContent(props: { name: string })}
   <div class="space-y-6">
     {#if value.length > 0}
       <div class="space-y-4">

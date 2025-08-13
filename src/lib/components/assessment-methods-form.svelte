@@ -20,13 +20,12 @@
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale Gewichtung hat, soll die der zweiten auf die Differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
 
   interface Props {
-    form: any
+    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     label: string
     assessmentMethods: AssessmentMethod[]
     preconditions: Precondition[]
     value: AssessmentEntry[]
-    errors?: any
     modificationStatus?: ModificationStatus // optional modification tracking
   }
 
@@ -39,7 +38,6 @@
     assessmentMethods,
     preconditions,
     value = $bindable(),
-    errors = {},
     modificationStatus
   }: Props = $props()
 
@@ -177,7 +175,7 @@
   }
 </script>
 
-{#snippet assessmentContent(props: any)}
+{#snippet assessmentContent(props: { name: string })}
   <div class="space-y-6">
     {#if value.length > 0}
       <div class="space-y-4">

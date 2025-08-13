@@ -1,25 +1,7 @@
-import type { Degree, Person } from '$lib/types/core'
 import type { ModuleReviewKey } from '$lib/types/module-review-keys'
-import type { ReviewRequest, ReviewStatus } from '$lib/types/review-request'
-import type { Role } from '$lib/types/role'
+import type { ReviewRequest, ReviewRequestJson } from '$lib/types/review-request'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
-
-interface ReviewRequestJson {
-  reviewId: string
-  moduleId: string
-  moduleTitle: string
-  moduleAbbrev: string
-  author: Person
-  role: Role
-  status: ReviewStatus
-  studyProgram: {
-    id: string
-    deLabel: string
-  }
-  degree: Degree
-  canReview: boolean
-}
 
 function groupReviewRequestsByModule(reviewRequests: ReviewRequestJson[]): ReviewRequest[] {
   const grouped = new Map<string, ReviewRequest>()

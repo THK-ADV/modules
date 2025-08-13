@@ -1,6 +1,22 @@
 import type { Degree, Person } from './core'
 import type { Role } from './role'
 
+export interface ReviewRequestJson {
+  reviewId: string
+  moduleId: string
+  moduleTitle: string
+  moduleAbbrev: string
+  author: Person
+  role: Role
+  status: ReviewStatus
+  studyProgram: {
+    id: string
+    deLabel: string
+  }
+  degree: Degree
+  canReview: boolean
+}
+
 export interface ReviewStatus {
   id: 'waiting_for_changes' | 'waiting_for_review'
   deLabel: string

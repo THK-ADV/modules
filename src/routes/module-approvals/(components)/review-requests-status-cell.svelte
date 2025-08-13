@@ -37,7 +37,7 @@
         <p class="font-medium">{heading}</p>
         {#if pending.length > 0}
           <div class="flex flex-wrap gap-1.5">
-            {#each visiblePrograms as p}
+            {#each visiblePrograms as p (p.reviewId)}
               <span
                 class="rounded-full bg-muted px-2 py-0.5 text-xs text-foreground/90 ring-1 ring-border"
               >

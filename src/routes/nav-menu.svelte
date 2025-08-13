@@ -2,6 +2,7 @@
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import { routesMap } from '$lib/routes.svelte'
+  import ToggleTheme from './nav-toggle-theme.svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
@@ -98,5 +99,6 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
+    <ToggleTheme />
   </Sidebar.Menu>
 </Sidebar.Group>

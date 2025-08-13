@@ -5,7 +5,6 @@
   import type { ComponentProps } from 'svelte'
   import NavMenu from './nav-menu.svelte'
   import NavUserLogin from './nav-user-login.svelte'
-  import ToggleTheme from './nav-toggle-theme.svelte'
 
   let {
     ref = $bindable(null),
@@ -25,7 +24,6 @@
   </Sidebar.Content>
   <Sidebar.Footer>
     <NavUserLogin {user} {userInfo} />
-    <ToggleTheme />
   </Sidebar.Footer>
   <Sidebar.Rail />
 </Sidebar.Root>

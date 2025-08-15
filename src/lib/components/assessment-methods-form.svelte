@@ -313,7 +313,7 @@
           rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">PAV geprüft</a
         >
-        werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+        werden. Zudem dürfen nur valide Prüfungsformen gemäß der
         <a
           href="/help#assessment-methods"
           target="_blank"

@@ -120,7 +120,7 @@
             </p>
             <p>
               Die während der Bearbeitungsphase geänderten Module sind <strong>nicht</strong> für andere
-              Personen Studierende über die Modulsuche sichtbar. Diese werden erst am Ende der Bearbeitungsphase
+              Personen oder Studierende über die Modulsuche sichtbar. Diese werden erst am Ende der Bearbeitungsphase
               veröffentlicht.
             </p>
           </div>

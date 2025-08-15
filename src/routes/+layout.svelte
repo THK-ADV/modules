@@ -4,8 +4,8 @@
   import { ModeWatcher } from 'mode-watcher'
   import '../app.css'
   import type { LayoutProps } from './$types'
-  import AppSidebar from './app-sidebar.svelte'
-  import NavBreadcrumb from './nav-breadcrumb.svelte'
+  import AppSidebar from './(components)/app-sidebar.svelte'
+  import NavBreadcrumb from './(components)/nav-breadcrumb.svelte'
 
   let { children, data }: LayoutProps = $props()
 </script>

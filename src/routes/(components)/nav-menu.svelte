@@ -20,6 +20,7 @@
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 </script>
 
+<!-- main navigation -->
 <Sidebar.Group>
   <Sidebar.Menu>
     {#each Object.entries(defaultRoutes) as [path, route] (path)}
@@ -37,6 +38,7 @@
   </Sidebar.Menu>
 </Sidebar.Group>
 
+<!-- module management section -->
 {#if showMyModules}
   <Sidebar.Separator />
   <Sidebar.Group>
@@ -61,6 +63,7 @@
   </Sidebar.Group>
 {/if}
 
+<!-- PAV or SGL section -->
 {#if showPAVSection}
   <Sidebar.Separator />
   <Sidebar.Group>
@@ -85,7 +88,9 @@
   </Sidebar.Group>
 {/if}
 
+<!-- information section -->
 <Sidebar.Group class="mt-auto">
+  <Sidebar.GroupLabel>Information</Sidebar.GroupLabel>
   <Sidebar.Menu>
     {#each Object.entries(secondaryRoutes) as [path, route] (path)}
       <Sidebar.MenuItem>
@@ -99,6 +104,13 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
+  </Sidebar.Menu>
+</Sidebar.Group>
+
+<!-- settings section -->
+<Sidebar.Group>
+  <Sidebar.GroupLabel>Einstellungen</Sidebar.GroupLabel>
+  <Sidebar.Menu>
     <ToggleTheme />
   </Sidebar.Menu>
 </Sidebar.Group>

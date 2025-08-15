@@ -96,7 +96,7 @@
         name="moduleType"
         label="Modulart"
         placeholder="Modulart auswählen…"
-        description="Ein normales Modul kann von Studierenden belegt werden und taucht im Studienverlaufs- und Stundenplan auf. Ein generisches Modul ist ein Platzhalter, worauf andere Module einzahlen bzw. welches von anderen konkreten Modulen instanziert wird. <a href='/help/module-types' class='text-primary underline hover:no-underline'>Mehr Infos.</a>"
+        description="Ein normales Modul kann von Studierenden belegt werden und taucht im Studienverlaufs- und Stundenplan auf. Ein generisches Modul ist ein Platzhalter, worauf andere Module einzahlen bzw. welches von anderen konkreten Modulen instanziert wird. <a href='/help#module-types' class='text-primary underline hover:no-underline' target='_blank' rel='noopener noreferrer'>Mehr Infos.</a>"
         options={moduleTypes}
         bind:value={$formData.moduleType}
         {errors}

@@ -127,7 +127,9 @@
           Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
           Genehmigung freigeben. Eine Genehmigung ist nur bei <a
             class="text-primary underline hover:no-underline"
-            href="/help/approval">Änderungen bestimmter Attribute</a
+            href="/help#review-process"
+            target="_blank"
+            rel="noopener noreferrer">Änderungen bestimmter Attribute</a
           >
           notwendig.
         </p>

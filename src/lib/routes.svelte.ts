@@ -56,7 +56,7 @@ function createRoutes() {
 
   const secondaryRoutes: RoutesMap = {
     '/help': {
-      name: 'Hilfe',
+      name: 'Hilfe und Dokumentation',
       icon: LifeBuoy
     },
     '/release-notes': {

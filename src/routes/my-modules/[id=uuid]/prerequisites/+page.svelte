@@ -316,7 +316,9 @@
       </div>
       <p class="text-sm text-muted-foreground">
         Die Festlegung von Anwesenheitspflichten stellt eine Ausnahme dar. <a
-          href="/help/attendance-requirement"
+          href="/help#attendance-requirement"
+          target="_blank"
+          rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">Mehr Infos.</a
         >
       </p>
@@ -401,7 +403,9 @@
       <p class="text-sm text-muted-foreground">
         Die Festlegung von Prüfungsvorleistungen stellt eine Ausnahme dar und kann nur in engen
         Grenzen zur Voraussetzung für die Zulassung zur Modulprüfung gemacht werden. <a
-          href="/help/assessment-prerequisite"
+          href="/help#assessment-prerequisite"
+          target="_blank"
+          rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">Mehr Infos.</a
         >
       </p>

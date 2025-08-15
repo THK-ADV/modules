@@ -308,12 +308,17 @@
       <Form.FieldErrors />
       <Form.Description class="mt-4">
         Änderungen an den Prüfungsformen müssen vom <a
-          href="/help/approval"
+          href="/help#review-process"
+          target="_blank"
+          rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">PAV geprüft</a
         >
-        werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
-        <a href="/help/assessment-methods" class="text-primary underline hover:no-underline"
-          >Rahmenprüfungsordnung (RPO)</a
+        werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+        <a
+          href="/help#assessment-methods"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a
         > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
       </Form.Description>
     </Form.Field>
@@ -337,12 +342,17 @@
     <Form.FieldErrors />
     <Form.Description class="mt-4">
       Änderungen an den Prüfungsformen müssen vom <a
-        href="/help/approval"
+        href="/help#review-process"
+        target="_blank"
+        rel="noopener noreferrer"
         class="text-primary underline hover:no-underline">PAV geprüft</a
       >
-      werden. werden. Zudem dürfen nur valide Prüfungsformen gemäß der
-      <a href="/help/assessment-methods" class="text-primary underline hover:no-underline"
-        >Rahmenprüfungsordnung (RPO)</a
+      werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+      <a
+        href="/help#assessment-methods"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a
       > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
     </Form.Description>
   </Form.Field>

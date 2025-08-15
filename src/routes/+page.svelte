@@ -279,7 +279,7 @@
           Datenschutzhinweise
         </a>
         <a href="/help" class="text-muted-foreground transition-colors hover:text-foreground">
-          Hilfe
+          Hilfe und Dokumentation
         </a>
       </div>
     </div>

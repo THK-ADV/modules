@@ -283,7 +283,9 @@
       <Form.FieldErrors />
       <Form.Description class="mt-4">
         Änderungen an den Studiengangs- und PO-Beziehungen müssen von dem jeweils zuständigen <a
-          href="/help/approval"
+          href="/help#review-process"
+          target="_blank"
+          rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">PAV geprüft</a
         > werden. Die Eingaben müssen dem Studienverlaufsplan entsprechen.
       </Form.Description>
@@ -311,7 +313,9 @@
     <Form.FieldErrors />
     <Form.Description class="mt-4">
       Änderungen an den Studiengangs- und PO-Beziehungen müssen von dem jeweils zuständigen <a
-        href="/help/approval"
+        href="/help#review-process"
+        target="_blank"
+        rel="noopener noreferrer"
         class="text-primary underline hover:no-underline">PAV geprüft</a
       > werden. Die Eingaben müssen dem Studienverlaufsplan entsprechen.
     </Form.Description>

@@ -98,7 +98,7 @@
         <div class="space-y-2">
           <h2 class="text-2xl font-bold tracking-tight">Systemabläufe</h2>
           <p>
-            Die Modulverwaltung besteht im wesentlichen aus zwei wichtigen Abläufen: Dem
+            Die Modulverwaltung besteht im wesentlichen aus zwei wichtigen Abläufen: Der
             Bearbeitungsphase und dem Prüfprozess.
           </p>
         </div>

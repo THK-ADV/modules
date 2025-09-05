@@ -31,14 +31,27 @@ function getModuleType(studyPrograms: StudyProgramModuleAssociation[]): ModuleTy
 
 export const load: PageLoad = async ({ fetch, params }) => {
   await moduleFilter.init(fetch)
-  const res = await fetch('/api/modules?extend=true')
-  if (!res.ok) {
-    throw error(res.status, `Failed to load ${params}`)
+  const [moduleRes, latestModuleUpdateRes] = await Promise.allSettled([
+    fetch('/api/modules?extend=true'),
+    fetch('/api/git/latestModuleUpdate')
+  ])
+  if (moduleRes.status === 'rejected') {
+    throw error(500, { message: `Module konnten nicht geladen werden: ${moduleRes.reason}` })
   }
-  const json: ModuleViewJson[] = await res.json()
+
+  const json: ModuleViewJson[] = await moduleRes.value.json()
   const modules: ModuleView[] = json.map((m) => ({
     ...m,
     moduleType: getModuleType(m.studyProgram)
   }))
-  return { modules }
+
+  let latestModuleUpdate: Date | null = null
+  if (latestModuleUpdateRes.status === 'fulfilled' && latestModuleUpdateRes.value.ok) {
+    const latestModuleUpdate_: string | null = await latestModuleUpdateRes.value.json()
+    if (latestModuleUpdate_) {
+      latestModuleUpdate = new Date(latestModuleUpdate_)
+    }
+  }
+
+  return { modules, latestModuleUpdate }
 }

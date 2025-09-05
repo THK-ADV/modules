@@ -151,11 +151,20 @@
 </script>
 
 <script lang="ts">
+  import { Calendar } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ModuleTableTitleCell from './(components)/module-table-title-cell.svelte'
   import ModulesTable from './(components)/modules-table.svelte'
 
   let { data }: PageProps = $props()
+
+  const latestModuleUpdate = $derived(
+    data.latestModuleUpdate?.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  )
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
@@ -164,6 +173,12 @@
     <p class="text-sm text-muted-foreground">
       Veröffentlichte Modulbeschreibungen aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>
+    {#if latestModuleUpdate}
+      <div class="flex items-center gap-2 text-sm text-muted-foreground">
+        <Calendar class="h-4 w-4" />
+        <span class="text-sm">Letzte Aktualisierung: {latestModuleUpdate}</span>
+      </div>
+    {/if}
   </div>
   <ModulesTable data={data.modules} {columns} />
 </div>

@@ -36,6 +36,9 @@
       }
     }
   ]
+
+  export const SELECTED_TAB_COOKIE_NAME = 'my-modules:selected-tab'
+  export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 </script>
 
 <script lang="ts">
@@ -54,7 +57,17 @@
   const hasAccreditationModules =
     data.moduleDrafts.accreditation && data.moduleDrafts.accreditation.length > 0
 
-  let selectedTab = $state('default')
+  let selectedTab = $derived.by(() => {
+    if (!browser) {
+      return 'default'
+    }
+    const cookieValue = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${SELECTED_TAB_COOKIE_NAME}=`))
+    const tab = cookieValue ? cookieValue.split('=')[1] : 'default'
+    return tab
+  })
+
   let moduleDrafts = $derived.by(() => {
     const tab = selectedTab
     if (tab === 'default') {
@@ -82,6 +95,10 @@
       }, 5000)
     }
   })
+
+  function updateSelectedTab(value: string) {
+    document.cookie = `${SELECTED_TAB_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_TAB_COOKIE_MAX_AGE}`
+  }
 </script>
 
 <div class="w-full max-w-none space-y-8">
@@ -162,7 +179,7 @@
     {#if !isPublishingPhase}
       <div class="w-full space-y-4">
         {#if hasAccreditationModules}
-          <Tabs.Root bind:value={selectedTab}>
+          <Tabs.Root bind:value={selectedTab} onValueChange={updateSelectedTab}>
             <Tabs.List>
               <Tabs.Trigger value="default">Zugewiesene Module</Tabs.Trigger>
               <Tabs.Trigger value="accreditation">Module aus Reakkreditierung</Tabs.Trigger>

@@ -29,7 +29,7 @@ function getModuleType(studyPrograms: StudyProgramModuleAssociation[]): ModuleTy
   }
 }
 
-export const load: PageLoad = async ({ fetch, params }) => {
+export const load: PageLoad = async ({ fetch }) => {
   await moduleFilter.init(fetch)
   const [moduleRes, latestModuleUpdateRes] = await Promise.allSettled([
     fetch('/api/modules?extend=true'),

@@ -72,10 +72,10 @@
 </script>
 
 {#snippet TLDR(content: string)}
-  <div class="rounded border-l-2 border-l-gray-300 bg-gray-50/50 py-2 pl-3 pr-2 italic">
-    <div class="text-sm text-gray-600">
-      <span class="font-medium text-gray-700">TLDR:</span>
-      <span class="text-gray-500">{content}</span>
+  <div class="rounded border-l-2 border-l-muted-foreground/30 bg-muted/50 py-2 pl-3 pr-2 italic">
+    <div class="text-sm text-muted-foreground">
+      <span class="font-medium text-foreground">TLDR:</span>
+      <span class="text-muted-foreground">{content}</span>
     </div>
   </div>
 {/snippet}

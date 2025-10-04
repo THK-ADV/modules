@@ -197,7 +197,7 @@
     </main>
 
     <!-- Navigation Sidebar -->
-    <aside class="sticky hidden w-64 flex-shrink-0 self-start lg:block">
+    <aside class="sticky top-6 hidden w-64 flex-shrink-0 self-start lg:block">
       <div class="max-h-[calc(100vh-4rem)] overflow-y-auto rounded-lg border bg-card p-4 shadow-sm">
         <nav class="space-y-1">
           <div class="mb-6 border-b border-border pb-3">

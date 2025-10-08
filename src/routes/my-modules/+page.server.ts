@@ -49,7 +49,7 @@ function orderByAccreditation(
 }
 
 export const load: PageServerLoad = async ({ fetch }) => {
-  const res = await fetch(`/auth-api/moduleDrafts/own?newApi=true`)
+  const res = await fetch(`/auth-api/moduleDrafts/own`)
 
   if (!res.ok) {
     const err = await res.json()

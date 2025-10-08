@@ -38,7 +38,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       fetch(`/auth-api/modules/${params.id}/latest`),
       fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
       fetch(`/auth-api/moduleApprovals/${params.id}`),
-      fetch(`/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`),
+      fetch(`/auth-api/moduleUpdatePermissions/${params.id}`),
       reviewMode ? fetch(`/auth-api/moduleApprovals/own`) : null
     ])
 

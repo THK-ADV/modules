@@ -1,10 +1,5 @@
 import { moduleSchema } from '$lib/schemas/module.js'
-import type {
-  AssessmentEntry,
-  MetadataProtocol,
-  ModuleProtocol,
-  PrerequisiteEntry
-} from '$lib/types/module-protocol.js'
+import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { fail } from '@sveltejs/kit'
 import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
@@ -24,25 +19,7 @@ function errorMessage(err: any): string {
   }
 }
 
-// TODO: remove unnecessary fields if the backend is updated
-
-interface MetadataProtocolUpdate
-  extends Omit<MetadataProtocol, 'assessmentMethods' | 'prerequisites'> {
-  assessmentMethods: {
-    mandatory: AssessmentEntry[]
-    optional: []
-  }
-  globalCriteria: []
-  competences: []
-  prerequisites: {
-    recommended: (PrerequisiteEntry & { pos: [] }) | null
-    required: (PrerequisiteEntry & { pos: [] }) | null
-  }
-}
-
-interface ModuleProtocolUpdate extends Omit<ModuleProtocol, 'id' | 'metadata'> {
-  metadata: MetadataProtocolUpdate
-}
+type ModuleProtocolUpdate = Omit<ModuleProtocol, 'id'>
 
 export const actions: Actions = {
   default: async ({ request, params, fetch }) => {
@@ -69,20 +46,13 @@ export const actions: Actions = {
         moduleManagement: form.data.management,
         lecturers: form.data.lecturers,
         assessmentMethods: {
-          mandatory: form.data.assessmentMethods,
-          optional: []
+          mandatory: form.data.assessmentMethods
         },
         examiner: { first: form.data.firstExaminer, second: form.data.secondExaminer },
         examPhases: form.data.examPhases,
-        globalCriteria: [],
-        competences: [],
         prerequisites: {
-          recommended: form.data.recommendedPrerequisites
-            ? { ...form.data.recommendedPrerequisites, pos: [] }
-            : null,
+          recommended: form.data.recommendedPrerequisites,
           required: form.data.requiredPrerequisites
-            ? { ...form.data.requiredPrerequisites, pos: [] }
-            : null
         },
         po: form.data.po,
         taughtWith: form.data.taughtWith || [],
@@ -103,7 +73,7 @@ export const actions: Actions = {
     })
 
     const moduleUpdatePermissionsReq = await fetch(
-      `/auth-api/moduleUpdatePermissions/${params.id}?newApi=true`,
+      `/auth-api/moduleUpdatePermissions/${params.id}`,
       {
         method: 'POST',
         body: JSON.stringify(form.data.updatePermissions),

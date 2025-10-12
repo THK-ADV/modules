@@ -146,14 +146,6 @@
     } finally {
       setTimeout(() => {
         currentPreviewAction = undefined
-        // switch (action) {
-        //   case 'moduleCatalog':
-        //     isPreviewingModuleCatalog = false
-        //     break
-        //   case 'examList':
-        //     isPreviewingExamList = false
-        //     break
-        // }
       }, 1000)
     }
   }

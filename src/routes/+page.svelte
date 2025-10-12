@@ -112,10 +112,10 @@
             <Button
               variant="outline"
               size="sm"
-              href="/examination"
+              href="/exam-lists"
               class="w-full hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
             >
-              Zu den Prüfungslisten
+              Zu den {defaultRoutes['/exam-lists'].name}
             </Button>
           </Card.Content>
         </Card.Root>

@@ -1,12 +1,13 @@
 import {
   Book,
-  Eye,
+  FileText,
+  GraduationCap,
   Home,
+  LifeBuoy,
+  Megaphone,
   Pencil,
   Search,
   Signature,
-  Megaphone,
-  LifeBuoy,
   type IconProps
 } from '@lucide/svelte'
 import type { Component } from 'svelte'
@@ -33,6 +34,10 @@ function createRoutes() {
     '/module-catalogs': {
       name: 'Modulhandbücher',
       icon: Book
+    },
+    '/exam-lists': {
+      name: 'Prüfungslisten',
+      icon: FileText
     }
   }
 
@@ -48,9 +53,9 @@ function createRoutes() {
       name: 'Änderungsfreigaben',
       icon: Signature
     },
-    '/preview': {
-      name: 'Vorschau',
-      icon: Eye
+    '/studyprogram': {
+      name: 'Studiengang',
+      icon: GraduationCap
     }
   }
 

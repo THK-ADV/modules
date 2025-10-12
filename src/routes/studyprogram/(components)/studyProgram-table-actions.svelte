@@ -44,18 +44,9 @@
           </html>
         `
   }
-</script>
 
-<script lang="ts">
-  import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
-  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
-  import type { StudyProgramPrivileges } from '$lib/types/study-program-privileges'
-  import { cn } from '$lib/utils'
-  import { Book, Ellipsis, FileText, type IconProps } from '@lucide/svelte'
-  import type { Component } from 'svelte'
-
-  type ActionKey = 'previewModuleCatalog' | 'previewExamList'
+  type PreviewActionKey = 'previewModuleCatalog' | 'previewExamList'
+  type ActionKey = PreviewActionKey | 'releaseExamList'
 
   interface Action {
     key: ActionKey
@@ -66,20 +57,37 @@
     className: string
     disabled?: boolean
   }
+</script>
 
-  let { studyProgramPrivileges }: { studyProgramPrivileges: StudyProgramPrivileges } = $props()
+<script lang="ts">
+  import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
+  import type { Role } from '$lib/types/role'
+  import type { StudyProgram } from '$lib/types/study-program'
+  import { cn } from '$lib/utils'
+  import { Ellipsis, Eye, FileCheck, type IconProps } from '@lucide/svelte'
+  import type { Component } from 'svelte'
 
-  let isPreviewingModuleCatalog = $state(false)
-  let isPreviewingExamList = $state(false)
+  let {
+    studyProgram,
+    roles,
+    category,
+    onClickRelease
+  }: {
+    studyProgram: StudyProgram
+    roles: Role[]
+    category: 'module-catalog' | 'exam-list'
+    onClickRelease?: (sp: StudyProgram) => void
+  } = $props()
+
+  let currentPreviewAction: PreviewActionKey | undefined = $state(undefined)
 
   function isActionLoading(key: ActionKey): boolean {
-    return (
-      (key === 'previewModuleCatalog' && isPreviewingModuleCatalog) ||
-      (key === 'previewExamList' && isPreviewingExamList)
-    )
+    return currentPreviewAction === key
   }
 
-  async function performAction(key: ActionKey) {
+  async function performPreviewAction(key: PreviewActionKey) {
     let action: string
     let actionLabel: string
     switch (key) {
@@ -94,14 +102,14 @@
     }
 
     const newTab = window.open()
-    const studyProgramLabel = studyProgramPrivileges.studyProgram.deLabel
+    const studyProgramLabel = studyProgram.deLabel
 
     newTab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
     newTab?.document.close()
 
     try {
-      const po = studyProgramPrivileges.studyProgram.po.id
-      const sp = studyProgramPrivileges.studyProgram.id
+      const po = studyProgram.po.id
+      const sp = studyProgram.id
       const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}&studyProgram=${encodeURIComponent(sp)}`
 
       // Use a longer timeout for large programs
@@ -137,63 +145,63 @@
       }
     } finally {
       setTimeout(() => {
-        switch (action) {
-          case 'moduleCatalog':
-            isPreviewingModuleCatalog = false
-            break
-          case 'examList':
-            isPreviewingExamList = false
-            break
-        }
+        currentPreviewAction = undefined
+        // switch (action) {
+        //   case 'moduleCatalog':
+        //     isPreviewingModuleCatalog = false
+        //     break
+        //   case 'examList':
+        //     isPreviewingExamList = false
+        //     break
+        // }
       }, 1000)
     }
   }
 
-  function moduleCatalogAction(): Action {
-    const key = 'previewModuleCatalog'
+  function previewAction(key: PreviewActionKey): Action {
     return {
       key,
-      label: 'Modulhandbuch',
-      Icon: Book,
+      label: 'Vorschau',
+      Icon: Eye,
       onclick: async () => {
-        if (!isPreviewingModuleCatalog) {
-          isPreviewingModuleCatalog = true
-          performAction(key)
-        }
+        currentPreviewAction = key
+        performPreviewAction(key)
       },
       variant: 'outline',
-      className: 'border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700',
-      disabled: isPreviewingModuleCatalog
+      className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800',
+      disabled: currentPreviewAction === key
     }
   }
 
-  function examListAction(): Action {
-    const key = 'previewExamList'
+  function releaseExamListAction(): Action {
     return {
-      key,
-      label: 'Prüfungsliste',
-      Icon: FileText,
-      onclick: async () => {
-        if (!isPreviewingExamList) {
-          isPreviewingExamList = true
-          performAction(key)
-        }
+      key: 'releaseExamList',
+      label: 'Freigabe',
+      Icon: FileCheck,
+      onclick: () => {
+        onClickRelease?.(studyProgram)
       },
       variant: 'outline',
-      className: 'border-purple-500 text-purple-600 hover:bg-purple-50 hover:text-purple-700',
-      disabled: isPreviewingExamList
+      className: 'border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700',
+      disabled: false
     }
   }
 
   let actions: Action[] = $derived.by(() => {
-    const { roles } = studyProgramPrivileges
-    if (roles.some(({ id }) => id === 'pav')) {
-      return [moduleCatalogAction(), examListAction()]
-    } else if (roles.some(({ id }) => id === 'sgl')) {
-      return [moduleCatalogAction()]
-    } else {
-      return []
+    const actions = new Array<Action>()
+
+    switch (category) {
+      case 'module-catalog':
+        actions.push(previewAction('previewModuleCatalog'))
+        break
+      case 'exam-list':
+        actions.push(previewAction('previewExamList'))
+        if (roles.some(({ id }) => id === 'pav')) {
+          actions.push(releaseExamListAction())
+        }
+        break
     }
+    return actions
   })
 </script>
 
@@ -222,8 +230,9 @@
   <DropdownMenu.Item
     class={cn(
       'flex cursor-pointer items-center gap-2 font-medium',
-      key === 'previewModuleCatalog' && 'text-green-600 focus:text-green-700',
-      key === 'previewExamList' && 'text-purple-600 focus:text-purple-700',
+      key === 'previewModuleCatalog' && 'text-gray-600 focus:text-gray-700',
+      key === 'previewExamList' && 'text-gray-600 focus:text-gray-700',
+      key === 'releaseExamList' && 'text-green-600 focus:text-green-700',
       disabled && 'pointer-events-none cursor-not-allowed opacity-50'
     )}
     {onclick}
@@ -238,40 +247,38 @@
   </DropdownMenu.Item>
 {/snippet}
 
-<div class="flex items-center gap-2">
-  <!-- Desktop: Show all actions inline -->
-  <div class="hidden items-center gap-1 lg:flex">
-    <div class="flex items-center gap-1">
-      {#each actions as action (action.key)}
-        {@render buttonRow(action)}
-      {/each}
-    </div>
+<!-- Desktop: Show all actions inline -->
+<div class="hidden items-center gap-1 lg:flex">
+  <div class="flex items-center gap-1">
+    {#each actions as action (action.key)}
+      {@render buttonRow(action)}
+    {/each}
   </div>
+</div>
 
-  <!-- Mobile: Dropdown menu -->
-  <div class="lg:hidden">
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        {#snippet child({ props })}
-          <Button
-            {...props}
-            variant="outline"
-            size="sm"
-            class="h-7 w-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
-          >
-            <span class="sr-only">Aktionen öffnen</span>
-            <Ellipsis class="h-4 w-4" />
-          </Button>
-        {/snippet}
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content align="end" class="w-56">
-        <DropdownMenu.Group>
-          <DropdownMenu.GroupHeading>Aktionen</DropdownMenu.GroupHeading>
-          {#each actions as action (action.key)}
-            {@render buttonMenuItem(action)}
-          {/each}
-        </DropdownMenu.Group>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  </div>
+<!-- Mobile: Dropdown menu -->
+<div class="lg:hidden">
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger>
+      {#snippet child({ props })}
+        <Button
+          {...props}
+          variant="outline"
+          size="sm"
+          class="h-7 w-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
+        >
+          <span class="sr-only">Aktionen öffnen</span>
+          <Ellipsis class="h-4 w-4" />
+        </Button>
+      {/snippet}
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content align="end" class="w-56">
+      <DropdownMenu.Group>
+        <DropdownMenu.GroupHeading>Aktionen</DropdownMenu.GroupHeading>
+        {#each actions as action (action.key)}
+          {@render buttonMenuItem(action)}
+        {/each}
+      </DropdownMenu.Group>
+    </DropdownMenu.Content>
+  </DropdownMenu.Root>
 </div>

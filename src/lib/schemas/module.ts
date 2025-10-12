@@ -76,12 +76,10 @@ const workloadNumber = z
 // - SECTION_FIELD_MAP in /lib/types/module-draft-keys.ts
 
 export const moduleSchema = z.object({
-  title: createYamlSafeText(
-    1,
-    100,
-    'Modulbezeichnung erforderlich',
-    'Modulbezeichnung muss weniger als 100 Zeichen lang sein'
-  ),
+  title: z
+    .string()
+    .min(1, 'Modulbezeichnung erforderlich')
+    .max(100, 'Modulbezeichnung muss weniger als 100 Zeichen lang sein'),
   abbrev: createYamlSafeText(
     1,
     20,

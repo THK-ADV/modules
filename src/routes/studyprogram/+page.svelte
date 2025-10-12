@@ -257,7 +257,7 @@
           </Popover.Content>
         </Popover.Root>
         <Form.Description
-          >Das Datum, dass auf der PDF als Freigabedatum angezeigt wird.</Form.Description
+          >Das Datum, das auf der PDF als Freigabedatum angezeigt wird.</Form.Description
         >
         <Form.FieldErrors />
       </Form.Field>

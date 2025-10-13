@@ -21,34 +21,65 @@ export const GET: RequestHandler = async ({ params, url, fetch }) => {
       throw error(400, { message: 'Studiengang, PO und Art der Vorschau sind erforderlich' })
     }
 
-    if (document !== 'moduleCatalog' && document !== 'examList') {
+    if (
+      document !== 'moduleCatalog' &&
+      document !== 'examList' &&
+      document !== 'moduleCatalog_creation'
+    ) {
       throw error(400, {
-        message: "Vorschau muss entweder 'moduleCatalog' oder 'examList' sein"
-      })
-    }
-
-    const previewType = document === 'moduleCatalog' ? 'moduleCatalogs' : 'examLists'
-    const response = await fetch(`/auth-api/${previewType}/preview/${sp}/${po}`, {
-      headers: {
-        Accept: 'application/pdf'
-      }
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw error(response.status, {
         message:
-          errorData.message ||
-          `Fehler beim Erzeugen der Vorschau: ${response.status} ${response.statusText}`
+          "Vorschau muss entweder 'moduleCatalog' oder 'examList' oder 'moduleCatalog_creation' sein"
       })
     }
 
-    const blob = await response.blob()
-    return new Response(blob, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
+    // TODO: this is a temporary solution to preview the module catalog creation
+    if (document === 'moduleCatalog_creation') {
+      const response = await fetch(`/auth-api/moduleCatalogs/${sp}/${po}`, {
+        headers: {
+          Accept: 'application/pdf'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw error(response.status, {
+          message:
+            errorData.message ||
+            `Fehler beim Erzeugen des Modulhandbuchs: ${response.status} ${response.statusText}`
+        })
       }
-    })
+
+      const blob = await response.blob()
+      return new Response(blob, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
+        }
+      })
+    } else {
+      const previewType = document === 'moduleCatalog' ? 'moduleCatalogs' : 'examLists'
+      const response = await fetch(`/auth-api/${previewType}/preview/${sp}/${po}`, {
+        headers: {
+          Accept: 'application/pdf'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw error(response.status, {
+          message:
+            errorData.message ||
+            `Fehler beim Erzeugen der Vorschau: ${response.status} ${response.statusText}`
+        })
+      }
+
+      const blob = await response.blob()
+      return new Response(blob, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
+        }
+      })
+    }
   }
 }

@@ -1,4 +1,6 @@
 <script lang="ts" module>
+  const FEATURE_FLAG_CREATE_MODULE_CATALOG_PO = ['ing_een5', 'ing_gme5', 'ing_wiw5']
+
   function htmlPlaceholder(actionLabel: string, studyProgramLabel: string) {
     return `
       <html>
@@ -45,7 +47,7 @@
         `
   }
 
-  type PreviewActionKey = 'previewModuleCatalog' | 'previewExamList'
+  type PreviewActionKey = 'previewModuleCatalog' | 'previewExamList' | 'createModuleCatalog'
   type ActionKey = PreviewActionKey | 'releaseExamList'
 
   interface Action {
@@ -66,7 +68,7 @@
   import type { Role } from '$lib/types/role'
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
-  import { Ellipsis, Eye, FileCheck, type IconProps } from '@lucide/svelte'
+  import { Book, Ellipsis, Eye, FileCheck, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
 
   let {
@@ -98,6 +100,11 @@
       case 'previewExamList':
         action = 'examList'
         actionLabel = 'Prüfungsliste'
+        break
+      case 'createModuleCatalog':
+        // TODO: this is a temporary solution to preview the module catalog creation
+        action = 'moduleCatalog_creation'
+        actionLabel = 'Modulhandbuch'
         break
     }
 
@@ -183,9 +190,27 @@
     const actions = new Array<Action>()
 
     switch (category) {
-      case 'module-catalog':
+      case 'module-catalog': {
         actions.push(previewAction('previewModuleCatalog'))
+
+        // TODO: this is a temporary solution to preview the module catalog creation
+        const key = 'createModuleCatalog'
+        if (FEATURE_FLAG_CREATE_MODULE_CATALOG_PO.includes(studyProgram.po.id)) {
+          actions.push({
+            key,
+            label: 'Erstellen',
+            Icon: Book,
+            onclick: async () => {
+              currentPreviewAction = key
+              performPreviewAction(key)
+            },
+            variant: 'outline',
+            className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800',
+            disabled: currentPreviewAction === key
+          })
+        }
         break
+      }
       case 'exam-list':
         actions.push(previewAction('previewExamList'))
         if (roles.some(({ id }) => id === 'pav')) {

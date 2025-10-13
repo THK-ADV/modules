@@ -24,7 +24,7 @@
         <NavBreadcrumb />
       </div>
     </header>
-    <main class="flex-1 overflow-auto px-4 py-6">
+    <main class="flex-1 px-4 py-6">
       {@render children?.()}
     </main>
   </Sidebar.Inset>

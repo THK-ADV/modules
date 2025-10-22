@@ -17,18 +17,16 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import { fmtStudyProgram } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
-  import type { POOptional } from '$lib/types/module-protocol'
-  import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import ModificationIndicator from '../modification-indicator.svelte'
+  import type { POOptional } from '$lib/types/module-protocol'
+  import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
   import { Edit, Plus, Trash2 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
+  import ModificationIndicator from '../modification-indicator.svelte'
   import { createSemesterOptions, showPO, showRecommendedSemester } from './forms'
-
-  // TODO: INF2 can only have one generic module, but it may have multiple generic modules (WASP1 and WASP2)
 
   let { form, name, studyPrograms, value = $bindable(), modificationStatus }: Props = $props()
 
@@ -134,38 +132,38 @@
 
   const semesterOptions = createSemesterOptions()
 
-  const studyProgramOptions = $derived.by(() => {
-    const current = value
-    const selectedFullPOId = $dialogFormData.fullPOId
-
-    return studyProgramsWithGenericModules
-      .filter((sp) => {
-        const fullPOId = getFullPOId(sp)
-        const isAlreadyUsed = current.some(
-          ({ specialization, po }) => (specialization ?? po) === fullPOId
-        )
-        // allow if not used, or if editing and this is the current PO
-        return !isAlreadyUsed || fullPOId === selectedFullPOId
-      })
-      .map((sp) => ({
-        id: getFullPOId(sp),
-        deLabel: fmtStudyProgram(sp)
-      }))
-  })
+  const studyProgramOptions = studyProgramsWithGenericModules.map((sp) => ({
+    id: getFullPOId(sp),
+    deLabel: fmtStudyProgram(sp)
+  }))
 
   const instanceOfOptions = $derived.by(() => {
+    const currentSelectedPOs = value
     const selectedFullPOId = $dialogFormData.fullPOId
+    const selectedInstanceOf = $dialogFormData.instanceOf
     if (selectedFullPOId === '') {
       return []
     }
     return genericModules
-      .filter(({ pos }) => pos.includes(selectedFullPOId))
-      .map(({ id, title, abbrev, pos }) => {
-        const po = pos.find((po) => selectedFullPOId === po)
-        console.assert(
-          po !== undefined,
-          `po ${selectedFullPOId} must be defined since generic modules are only shown if a po is selected`
+      .filter(({ pos, id }) => {
+        const isAlreadyUsed = currentSelectedPOs.some(
+          ({ po, specialization, instanceOf }) =>
+            (specialization ?? po) === selectedFullPOId && instanceOf === id
         )
+        const isCurrentInstanceOfEdit = id === selectedInstanceOf
+
+        if (isAlreadyUsed) {
+          if (isCurrentInstanceOfEdit) {
+            // always show current instance of edit
+            return true
+          }
+          // remove if already used
+          return false
+        } else {
+          return pos.includes(selectedFullPOId)
+        }
+      })
+      .map(({ id, title, abbrev }) => {
         return { id, deLabel: `${title} (${abbrev})` }
       })
   })
@@ -255,7 +253,7 @@
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {#each value as entry, index (entry.specialization ?? entry.po)}
+              {#each value as entry, index (index)}
                 <Table.Row>
                   <Table.Cell class="font-medium">
                     {showPOOptional(entry)}

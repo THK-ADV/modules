@@ -111,7 +111,7 @@ export const moduleSchema = z.object({
       method: z.string().nonempty('Prüfungsform erforderlich'),
       percentage: z
         .number()
-        .min(1, { message: 'Prozentsatz muss größer als 0 sein' })
+        .min(0, { message: 'Prozentsatz muss mindestens 0 sein' }) // 0 represents an ungraded assessment
         .max(100, { message: 'Prozentsatz muss kleiner als 100 sein' })
         .nullable(),
       precondition: z.array(z.string())

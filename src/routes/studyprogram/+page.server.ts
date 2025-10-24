@@ -4,6 +4,7 @@ import type { Semester } from '$lib/types/semester'
 import type { StudyProgram } from '$lib/types/study-program'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
+import { SELECTED_TAB_COOKIE_NAME } from './+page.svelte'
 
 export interface StudyProgramMangerInfo {
   studyProgram: StudyProgram
@@ -23,7 +24,7 @@ function orderByPO(lhs: StudyProgramMangerInfo, rhs: StudyProgramMangerInfo): nu
   return lhs.studyProgram.po.version - rhs.studyProgram.po.version
 }
 
-export const load: PageServerLoad = async ({ fetch, depends }) => {
+export const load: PageServerLoad = async ({ fetch, depends, cookies }) => {
   depends('preview:studyProgram') // pass this key to the validate function inside a client component to re-run the load function
 
   const [privilegesRes, semesterRes, examListsRes] = await Promise.allSettled([
@@ -73,5 +74,7 @@ export const load: PageServerLoad = async ({ fetch, depends }) => {
     return orderByPO(lhs, rhs)
   })
 
-  return { studyProgramMangerInfo, semesters }
+  const selectedTab = cookies.get(SELECTED_TAB_COOKIE_NAME)
+
+  return { studyProgramMangerInfo, semesters, selectedTab }
 }

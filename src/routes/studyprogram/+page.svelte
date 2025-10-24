@@ -3,29 +3,6 @@
 
   export const SELECTED_TAB_COOKIE_NAME = 'studyprogram:selected-tab'
   export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-</script>
-
-<script lang="ts">
-  import { browser } from '$app/environment'
-
-  import ErrorMessage from '$lib/components/error-message.svelte'
-  import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
-  import * as Tabs from '$lib/components/ui/tabs/index.js'
-  import type { StudyProgram } from '$lib/types/study-program'
-  import type { ColumnDef } from '@tanstack/table-core'
-  import type { PageProps } from './$types'
-  import ExamListReleaseDialog from './(components)/exam-list-release-dialog.svelte'
-  import StudyProgramTableActions from './(components)/studyProgram-table-actions.svelte'
-  import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
-  import StudyProgramTable from './(components)/studyProgram-table.svelte'
-  import type { StudyProgramMangerInfo } from './+page.server'
-
-  let { data }: PageProps = $props()
-
-  let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
-  let showErrorMessage: string | undefined = $state(undefined)
-  let isPublishing = $state(false)
 
   function fmtStudyProgram(studyProgram: StudyProgram) {
     if (studyProgram.specialization) {
@@ -33,19 +10,36 @@
     }
     return `${studyProgram.deLabel} (${studyProgram.degree.deLabel})`
   }
+</script>
+
+<script lang="ts">
+  import ErrorMessage from '$lib/components/error-message.svelte'
+  import { renderComponent } from '$lib/components/ui/data-table/index.js'
+  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
+  import * as Tabs from '$lib/components/ui/tabs/index.js'
+  import { previewExamList } from '$lib/preview-action'
+  import type { StudyProgram } from '$lib/types/study-program'
+  import type { ColumnDef } from '@tanstack/table-core'
+  import type { PageProps } from './$types'
+  import ExamListReleaseDialog from './(components)/exam-list-release-dialog.svelte'
+  import ExamListTableActions from './(components)/exam-list-table-actions.svelte'
+  import ModuleCatalogCreateDialog from './(components)/module-catalog-create-dialog.svelte'
+  import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
+  import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
+  import StudyProgramTable from './(components)/studyProgram-table.svelte'
+  import type { StudyProgramMangerInfo } from './+page.server'
+
+  let { data }: PageProps = $props()
+
+  let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
+  let showModuleCatalogCreateDialog: StudyProgram | undefined = $state(undefined)
+  let showErrorMessage: string | undefined = $state(undefined)
+  let isPublishing = $state(false)
+  let isPreviewing = $state(false)
 
   // Tab handling
 
-  let selectedTab: Tab = $derived.by(() => {
-    if (!browser) {
-      return 'module-catalog'
-    }
-    const cookieValue = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith(`${SELECTED_TAB_COOKIE_NAME}=`))
-    const tab = cookieValue ? (cookieValue.split('=')[1] as string as Tab) : 'module-catalog'
-    return tab
-  })
+  let selectedTab: Tab = $derived((data.selectedTab || 'module-catalog') as Tab)
 
   function updateSelectedTab(value: string) {
     document.cookie = `${SELECTED_TAB_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_TAB_COOKIE_MAX_AGE}`
@@ -72,10 +66,16 @@
           {
             id: 'module-catalog-actions',
             cell: ({ row }) => {
-              return renderComponent(StudyProgramTableActions, {
+              return renderComponent(ModuleCatalogTableActions, {
                 studyProgram: row.original.studyProgram,
-                roles: row.original.roles,
-                category: 'module-catalog'
+                onClickModuleCreate: (sp: StudyProgram) => {
+                  showModuleCatalogCreateDialog = sp
+                  isPreviewing = false
+                },
+                onClickModulePreview: (sp: StudyProgram) => {
+                  showModuleCatalogCreateDialog = sp
+                  isPreviewing = true
+                }
               })
             }
           }
@@ -93,12 +93,16 @@
           {
             id: 'exam-list-actions',
             cell: ({ row }) => {
-              return renderComponent(StudyProgramTableActions, {
+              return renderComponent(ExamListTableActions, {
                 studyProgram: row.original.studyProgram,
                 roles: row.original.roles,
-                category: 'exam-list',
-                onClickRelease: (sp: StudyProgram) => {
+                onClickExamListRelease: (sp: StudyProgram) => {
                   showExamListReleaseDialog = sp
+                  isPreviewing = false
+                },
+                onClickExamListPreview: async (sp: StudyProgram) => {
+                  isPreviewing = true
+                  await previewExamList(sp)
                 }
               })
             }
@@ -111,6 +115,15 @@
 <LoadingOverlay show={isPublishing} message="Prüfungsliste wird freigegeben…" />
 
 <ErrorMessage bind:message={showErrorMessage} title="Fehler beim Freigeben der Prüfungsliste" />
+
+<ExamListReleaseDialog
+  semesters={data.semesters}
+  bind:showExamListReleaseDialog
+  bind:isPublishing
+  bind:showErrorMessage
+/>
+
+<ModuleCatalogCreateDialog bind:showModuleCatalogCreateDialog isPreview={isPreviewing} />
 
 <div class="flex h-full flex-1 flex-col space-y-8">
   <div class="space-y-2">
@@ -139,14 +152,13 @@
           Freigaben überschreiben die vorherige Prüfungsliste.
         </p>
       </Tabs.Content>
+      <Tabs.Content value="module-catalog" class="ml-1">
+        <p class="text-sm text-muted-foreground">
+          Für die Vorschau und Erstellung von Modulhandbüchern können bestimmte Module
+          <span class="font-bold">ausgeschlossen</span> werden.
+        </p>
+      </Tabs.Content>
     </Tabs.Root>
     <StudyProgramTable data={data.studyProgramMangerInfo} {columns} />
   </div>
 </div>
-
-<ExamListReleaseDialog
-  semesters={data.semesters}
-  bind:showExamListReleaseDialog
-  bind:isPublishing
-  bind:showErrorMessage
-/>

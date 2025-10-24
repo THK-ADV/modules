@@ -1,6 +1,7 @@
 import type { ModuleDraft, ModuleDrafts, ModuleDraftState } from '$lib/types/module-draft'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
+import { SELECTED_TAB_COOKIE_NAME } from './+page.svelte'
 
 function moduleDraftStateOrd(state: ModuleDraftState): number {
   switch (state) {
@@ -48,7 +49,7 @@ function orderByAccreditation(
   }
 }
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch, cookies }) => {
   const res = await fetch(`/auth-api/moduleDrafts/own`)
 
   if (!res.ok) {
@@ -82,5 +83,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     return orderByTitle(a, b)
   })
 
-  return { moduleDrafts }
+  const selectedTab = cookies.get(SELECTED_TAB_COOKIE_NAME)
+
+  return { moduleDrafts, selectedTab }
 }

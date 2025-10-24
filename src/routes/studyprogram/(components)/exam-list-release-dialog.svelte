@@ -15,21 +15,21 @@
 </script>
 
 <script lang="ts">
+  import { invalidate } from '$app/navigation'
   import Combobox from '$lib/components/combobox.svelte'
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
   import { Calendar } from '$lib/components/ui/calendar/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
+  import type { Semester } from '$lib/types/semester'
+  import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
-  import CalendarIcon from '@lucide/svelte/icons/calendar'
   import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
+  import CalendarIcon from '@lucide/svelte/icons/calendar'
   import { superForm } from 'sveltekit-superforms'
   import { zodClient } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
-  import type { Semester } from '$lib/types/semester'
-  import type { StudyProgram } from '$lib/types/study-program'
-  import { invalidate } from '$app/navigation'
 
   let {
     semesters,
@@ -120,7 +120,7 @@
 >
   <Dialog.Content class="max-w-lg">
     <Dialog.Header>
-      <Dialog.Title
+      <Dialog.Title class="text-lg font-semibold"
         >Prüfungsliste freigeben für {showExamListReleaseDialog &&
           fmtStudyProgram(showExamListReleaseDialog)}</Dialog.Title
       >

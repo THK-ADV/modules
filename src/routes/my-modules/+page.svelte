@@ -57,16 +57,7 @@
   const hasAccreditationModules =
     data.moduleDrafts.accreditation && data.moduleDrafts.accreditation.length > 0
 
-  let selectedTab = $derived.by(() => {
-    if (!browser) {
-      return 'default'
-    }
-    const cookieValue = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith(`${SELECTED_TAB_COOKIE_NAME}=`))
-    const tab = cookieValue ? cookieValue.split('=')[1] : 'default'
-    return tab
-  })
+  let selectedTab = $derived(data.selectedTab || 'default')
 
   let moduleDrafts = $derived.by(() => {
     const tab = selectedTab

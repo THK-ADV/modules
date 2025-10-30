@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  type Tab = 'module-catalog' | 'exam-list'
+  type Tab = 'module-catalog' | 'exam-list' | 'exam-load'
 
   export const SELECTED_TAB_COOKIE_NAME = 'studyprogram:selected-tab'
   export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -17,12 +17,15 @@
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
-  import { previewExamList } from '$lib/preview-action'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { previewExamList, previewExamLoad } from '$lib/preview-action'
   import type { StudyProgram } from '$lib/types/study-program'
+  import { FlaskConical } from '@lucide/svelte'
   import type { ColumnDef } from '@tanstack/table-core'
   import type { PageProps } from './$types'
   import ExamListReleaseDialog from './(components)/exam-list-release-dialog.svelte'
   import ExamListTableActions from './(components)/exam-list-table-actions.svelte'
+  import ExamLoadTableActions from './(components)/exam-load-table-actions.svelte'
   import ModuleCatalogCreateDialog from './(components)/module-catalog-create-dialog.svelte'
   import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
@@ -108,6 +111,22 @@
             }
           }
         ]
+      case 'exam-load':
+        return [
+          ...cols,
+          {
+            id: 'exam-load-actions',
+            cell: ({ row }) => {
+              return renderComponent(ExamLoadTableActions, {
+                studyProgram: row.original.studyProgram,
+                onClickExamLoadPreview: async (sp: StudyProgram) => {
+                  isPreviewing = true
+                  await previewExamLoad(sp)
+                }
+              })
+            }
+          }
+        ]
     }
   })
 </script>
@@ -140,6 +159,21 @@
       <Tabs.List>
         <Tabs.Trigger value="module-catalog">Modulhandbücher</Tabs.Trigger>
         <Tabs.Trigger value="exam-list">Prüfungslisten</Tabs.Trigger>
+        <Tabs.Trigger value="exam-load">
+          <span class="flex items-center gap-1.5">
+            Prüfungslast
+            <Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger>
+                  <FlaskConical class="h-4 w-4 text-muted-foreground" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p class="text-sm">Experimentell</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Tooltip.Provider>
+          </span>
+        </Tabs.Trigger>
       </Tabs.List>
       <Tabs.Content value="exam-list" class="ml-1">
         <p class="text-sm text-muted-foreground">
@@ -156,6 +190,12 @@
         <p class="text-sm text-muted-foreground">
           Für die Vorschau und Erstellung von Modulhandbüchern können bestimmte Module
           <span class="font-bold">ausgeschlossen</span> werden.
+        </p>
+      </Tabs.Content>
+      <Tabs.Content value="exam-load" class="ml-1">
+        <p class="text-sm text-muted-foreground">
+          Erzeugt die Prüfungslast als CSV. Achtung: Diese Funktion ist experimentell. Feedback ist
+          sehr erwünscht!
         </p>
       </Tabs.Content>
     </Tabs.Root>

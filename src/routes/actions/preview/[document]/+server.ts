@@ -1,7 +1,7 @@
 import { error, type RequestHandler } from '@sveltejs/kit'
 
 async function performRequest(
-  kind: 'moduleCatalog' | 'moduleCatalog_creation' | 'examList',
+  kind: 'moduleCatalog' | 'moduleCatalog_creation' | 'examList' | 'examLoad',
   sp: string,
   po: string,
   request: Request,
@@ -37,6 +37,8 @@ async function performRequest(
           Accept: 'application/pdf'
         }
       })
+    case 'examLoad':
+      return fetch(`/auth-api/examLoad/${sp}/${po}?preview=true`)
   }
 }
 
@@ -64,11 +66,12 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
     if (
       document !== 'moduleCatalog' &&
       document !== 'examList' &&
-      document !== 'moduleCatalog_creation'
+      document !== 'moduleCatalog_creation' &&
+      document !== 'examLoad'
     ) {
       throw error(400, {
         message:
-          "Vorschau muss entweder 'moduleCatalog' oder 'examList' oder 'moduleCatalog_creation' sein"
+          "Vorschau muss entweder 'moduleCatalog' oder 'examList' oder 'moduleCatalog_creation' oder 'examLoad' sein"
       })
     }
 
@@ -81,12 +84,17 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       throw error(response.status, { message })
     }
 
-    const blob = await response.blob()
-    return new Response(blob, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
-      }
-    })
+    if (document === 'examLoad') {
+      const csv = await response.text()
+      return new Response(csv, { headers: response.headers })
+    } else {
+      const blob = await response.blob()
+      return new Response(blob, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
+        }
+      })
+    }
   }
 }

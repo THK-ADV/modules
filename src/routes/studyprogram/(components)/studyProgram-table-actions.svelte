@@ -1,5 +1,9 @@
 <script lang="ts" module>
-  export type PreviewActionKey = 'previewModuleCatalog' | 'previewExamList' | 'createModuleCatalog'
+  export type PreviewActionKey =
+    | 'previewModuleCatalog'
+    | 'previewExamList'
+    | 'createModuleCatalog'
+    | 'previewExamLoad'
   export type ActionKey = PreviewActionKey | 'releaseExamList'
 
   export interface Action {
@@ -41,6 +45,7 @@
       key === 'previewModuleCatalog' && 'text-gray-600 focus:text-gray-700',
       key === 'createModuleCatalog' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamList' && 'text-gray-600 focus:text-gray-700',
+      key === 'previewExamLoad' && 'text-gray-600 focus:text-gray-700',
       key === 'releaseExamList' && 'text-green-600 focus:text-green-700'
     )}
     {onclick}

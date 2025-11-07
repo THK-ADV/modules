@@ -35,6 +35,9 @@ function createModuleFilter() {
   let selectedModuleTypes = $state(new Array<string>())
   let title = $state('')
 
+  const pages = ['15', '30', '45', 'Alle']
+  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
+
   return {
     get title() {
       return title
@@ -62,6 +65,15 @@ function createModuleFilter() {
     },
     get selectedModuleTypes() {
       return selectedModuleTypes
+    },
+    get pagination() {
+      return pagination
+    },
+    get pages() {
+      return pages
+    },
+    set pagination(value: PaginationState) {
+      pagination = value
     },
     set title(value: string) {
       title = value

@@ -79,3 +79,10 @@ export function fmtManagement(m: ModuleManagement): string {
 export function fmtModule(m: ModuleCore): string {
   return `${m.title}; ${fmtManagement(m.moduleManagement[0])}; ${m.ects} ECTS`
 }
+
+export function creditsFormatter() {
+  return new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1
+  })
+}

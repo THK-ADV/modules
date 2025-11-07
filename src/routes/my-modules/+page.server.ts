@@ -1,7 +1,13 @@
-import type { ModuleDraft, ModuleDrafts, ModuleDraftState } from '$lib/types/module-draft'
+import type { ModuleDraft, ModuleDraftState } from '$lib/types/module-draft'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
-import { SELECTED_TAB_COOKIE_NAME } from './+page.svelte'
+
+interface ParsedModuleDrafts {
+  direct: ModuleDraft[] // modules directly assigned to the user
+  indirect?: ModuleDraft[] // modules assigned through permissions granted to the user (e.g. admin, PAV, …)
+  pos?: string[] // resolved POs if indirect is set
+  accreditationPOs?: string[] // POs which are currently in accreditation
+}
 
 function moduleDraftStateOrd(state: ModuleDraftState): number {
   switch (state) {
@@ -32,58 +38,63 @@ function orderByTitle(lhs: ModuleDraft, rhs: ModuleDraft) {
   return lhs.module.title.localeCompare(rhs.module.title)
 }
 
-function orderByAccreditation(
-  newModules: string[]
-): (lhs: ModuleDraft, rhs: ModuleDraft) => number {
-  return (lhs, rhs) => {
-    const lhsFeatured = newModules.some((id) => lhs.module.id === id)
-    const rhsFeatured = newModules.some((id) => rhs.module.id === id)
-    // this is a hack to get the featured modules in the table
-    if (lhsFeatured) {
-      lhs.isFeatured = true
-    }
-    if (rhsFeatured) {
-      rhs.isFeatured = true
-    }
-    return lhsFeatured === rhsFeatured ? 0 : lhsFeatured ? -1 : 1
-  }
-}
-
-export const load: PageServerLoad = async ({ fetch, cookies }) => {
-  const res = await fetch(`/auth-api/moduleDrafts/own`)
+export const load: PageServerLoad = async ({ fetch }) => {
+  const res = await fetch(`/auth-api/moduleDrafts`)
 
   if (!res.ok) {
     const err = await res.json()
     const message = `Module konnten nicht geladen werden: ${err.message}`
     throw error(res.status, { message })
   }
-  const moduleDrafts: ModuleDrafts = await res.json()
-  const byAccreditationOrder = moduleDrafts.accreditation
-    ? orderByAccreditation(moduleDrafts.accreditation.map((m) => m.module.id))
-    : undefined
 
-  moduleDrafts.default.sort((a, b) => {
-    let byFeaturedAccreditation = 0
-    if (byAccreditationOrder !== undefined) {
-      byFeaturedAccreditation = byAccreditationOrder(a, b)
+  const parsed: ParsedModuleDrafts = await res.json()
+  const moduleDrafts: ModuleDraft[] = []
+  let i = 0
+  const directlyAssigned: Record<string, number> = {}
+
+  for (const m of parsed.direct) {
+    m.isDirectlyAssigned = true
+    m.isDerivedFromRole = false
+    m.isPartOfAccreditation = false
+    moduleDrafts.push(m)
+    directlyAssigned[m.module.id] = i
+    i++
+  }
+
+  if (parsed.indirect) {
+    for (const m of parsed.indirect) {
+      if (m.module.id in directlyAssigned) {
+        // update the module if it's directly assigned
+        const mod = moduleDrafts[directlyAssigned[m.module.id]]
+        mod.isDerivedFromRole = true
+
+        if (parsed.accreditationPOs != null && mod.mandatoryPOs != null) {
+          const accreditationPOs = parsed.accreditationPOs
+          mod.isPartOfAccreditation = mod.mandatoryPOs.some((po) => accreditationPOs.includes(po))
+        }
+      } else {
+        // insert the new module
+        m.isDirectlyAssigned = false
+        m.isDerivedFromRole = true
+        m.isPartOfAccreditation = false
+
+        if (parsed.accreditationPOs != null && m.mandatoryPOs != null) {
+          const accreditationPOs = parsed.accreditationPOs
+          m.isPartOfAccreditation = m.mandatoryPOs.some((po) => accreditationPOs.includes(po))
+        }
+
+        moduleDrafts.push(m)
+      }
     }
-    if (byFeaturedAccreditation !== 0) return byFeaturedAccreditation
+  }
+
+  moduleDrafts.sort((a, b) => {
     const byState = orderByState(a, b)
     if (byState !== 0) return byState
     return orderByTitle(a, b)
   })
 
-  moduleDrafts.accreditation?.sort((a, b) => {
-    // this is a hack to get the featured modules in the table
-    a.isFeatured = true
-    b.isFeatured = true
+  const hasAdditionalModules = parsed.indirect != null
 
-    const byState = orderByState(a, b)
-    if (byState !== 0) return byState
-    return orderByTitle(a, b)
-  })
-
-  const selectedTab = cookies.get(SELECTED_TAB_COOKIE_NAME)
-
-  return { moduleDrafts, selectedTab }
+  return { moduleDrafts, hasAdditionalModules }
 }

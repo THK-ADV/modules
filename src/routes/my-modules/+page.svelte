@@ -13,7 +13,14 @@
       cell: ({ row }) => {
         return renderComponent(ModuleDraftTitleCell, { moduleDraft: row.original })
       },
-      enableColumnFilter: false,
+      filterFn: (row, _, filterValue) => {
+        if (!filterValue) {
+          return true
+        }
+        const filter = filterValue.toString().toLowerCase()
+        const title = (row.original.moduleDraft?.title ?? row.original.module.title).toLowerCase()
+        return title.includes(filter)
+      },
       size: 300
     },
     {
@@ -31,14 +38,11 @@
         return renderComponent(ModuleDraftTableActions, {
           moduleId: row.original.module.id,
           moduleDraftState: row.original.moduleDraftState,
-          isPrivilegedForModule: row.original.isPrivilegedForModule
+          isModuleManager: row.original.isModuleManager
         })
       }
     }
   ]
-
-  export const SELECTED_TAB_COOKIE_NAME = 'my-modules:selected-tab'
-  export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 </script>
 
 <script lang="ts">
@@ -46,7 +50,6 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { Button } from '$lib/components/ui/button'
-  import * as Tabs from '$lib/components/ui/tabs/index.js'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { ChartLine, ChevronDown, ChevronUp } from '@lucide/svelte'
   import type { PageProps } from './$types'
@@ -54,18 +57,8 @@
 
   let { data }: PageProps = $props()
 
-  const hasAccreditationModules =
-    data.moduleDrafts.accreditation && data.moduleDrafts.accreditation.length > 0
-
-  let selectedTab = $derived(data.selectedTab || 'default')
-
-  let moduleDrafts = $derived.by(() => {
-    const tab = selectedTab
-    if (tab === 'default') {
-      return data.moduleDrafts.default
-    }
-    return data.moduleDrafts.accreditation || []
-  })
+  let moduleDrafts = $derived(data.moduleDrafts)
+  let hasAdditionalModules = $derived(data.hasAdditionalModules)
 
   let showSuccessMessage = $state(false)
   let isPublishingPhase = $state(false)
@@ -86,10 +79,6 @@
       }, 5000)
     }
   })
-
-  function updateSelectedTab(value: string) {
-    document.cookie = `${SELECTED_TAB_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_TAB_COOKIE_MAX_AGE}`
-  }
 </script>
 
 <div class="w-full max-w-none space-y-8">
@@ -169,7 +158,7 @@
 
     {#if !isPublishingPhase}
       <div class="w-full space-y-4">
-        {#if hasAccreditationModules}
+        <!-- {#if hasAccreditationModules}
           <Tabs.Root bind:value={selectedTab} onValueChange={updateSelectedTab}>
             <Tabs.List>
               <Tabs.Trigger value="default">Zugewiesene Module</Tabs.Trigger>
@@ -181,15 +170,15 @@
               </p>
             </Tabs.Content>
           </Tabs.Root>
-        {/if}
-        <ModuleDraftTable {moduleDrafts} {columns} />
+        {/if} -->
+        <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} />
       </div>
     {/if}
   {:else}
     <div class="space-y-2">
       <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
       <p class="break-words text-sm text-muted-foreground">
-        Sie werden in keinem Modul als Modulverantwortliche*r geführt oder haben keine zugeteiliten
+        Sie werden in keinem Modul als Modulverantwortliche*r geführt oder haben keine zugeteilten
         Module.
       </p>
     </div>

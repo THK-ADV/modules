@@ -1,11 +1,11 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Select from '$lib/components/ui/select/index'
-  import type { ModuleView } from '$lib/types/module'
   import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'
 
-  let { table, pages }: { table: Table<ModuleView>; pages: string[] } = $props()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let { table, pages }: { table: Table<any>; pages: string[] } = $props()
 </script>
 
 <div class="flex items-center justify-between">

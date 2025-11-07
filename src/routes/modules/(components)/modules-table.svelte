@@ -14,7 +14,7 @@
     type SortingState
   } from '@tanstack/table-core'
   import DataTableFilter from './modules-table-filter.svelte'
-  import DataTablePagination from './modules-table-pagination.svelte'
+  import TablePagination from '$lib/components/table-pagination.svelte'
 
   function getInitialColumnFilters(): ColumnFiltersState {
     const filters: ColumnFiltersState = []
@@ -140,5 +140,5 @@
       </Table.Body>
     </Table.Root>
   </div>
-  <DataTablePagination {table} {pages} />
+  <TablePagination {table} {pages} />
 </div>

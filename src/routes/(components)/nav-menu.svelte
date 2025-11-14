@@ -9,11 +9,18 @@
   const { defaultRoutes, managerRoutes, pavRoutes, secondaryRoutes } = routesMap
 
   const showMyModules = $derived.by(() => {
+    if (userInfo) {
+      // most direct check
+      return userInfo.hasModulesToEdit
+    }
+    // fallback to user role
     if (!user) return false
-    return isProfessor(user) || userInfo?.hasModulesToEdit
+    return isProfessor(user)
   })
 
-  const showPAVSection = $derived(userInfo?.hasUniversityRole)
+  const showPAVSection = $derived(userInfo?.hasDirectorPrivileges)
+
+  const showModuleReview = $derived(userInfo?.hasModuleReviewPrivileges)
 
   const rejectedReviews = $derived(userInfo?.rejectedReviews)
 
@@ -70,19 +77,22 @@
     <Sidebar.GroupLabel>PAV oder SGL</Sidebar.GroupLabel>
     <Sidebar.Menu>
       {#each Object.entries(pavRoutes) as [path, route] (path)}
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton>
-            {#snippet child({ props })}
-              <a href={path} {...props}>
-                <route.icon />
-                <span>{route.name}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-          {#if path === '/module-approvals' && reviewsToApprove}
-            <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
-          {/if}
-        </Sidebar.MenuItem>
+        <!-- show module-approvals if user has module review privileges. always show study program -->
+        {#if path === '/module-approvals' ? showModuleReview : true}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton>
+              {#snippet child({ props })}
+                <a href={path} {...props}>
+                  <route.icon />
+                  <span>{route.name}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+            {#if path === '/module-approvals' && reviewsToApprove}
+              <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
+            {/if}
+          </Sidebar.MenuItem>
+        {/if}
       {/each}
     </Sidebar.Menu>
   </Sidebar.Group>

@@ -114,7 +114,7 @@ export function getUser(accessToken: string): User | undefined {
 }
 
 export async function getUserInfo(fetch: typeof globalThis.fetch): Promise<UserInfo | undefined> {
-  const res = await fetch('/auth-api/me?newApi=true')
+  const res = await fetch('/auth-api/user')
   if (!res.ok) {
     return undefined
   }

@@ -2,10 +2,11 @@ import type { Person } from './types/core'
 
 export type UserInfo = {
   person: Person
-  rejectedReviews: number
+  hasDirectorPrivileges: boolean
+  hasModuleReviewPrivileges: boolean
   hasModulesToEdit: boolean
+  rejectedReviews: number
   reviewsToApprove: number
-  hasUniversityRole: boolean
 }
 
 export interface User {

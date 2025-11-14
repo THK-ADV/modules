@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import type { ColumnDef } from '@tanstack/table-core'
 
-  const columns: ColumnDef<ReviewRequest>[] = [
+  const columns: ColumnDef<ModuleReview>[] = [
     {
       accessorKey: 'title',
       header: 'Modulbezeichnung',
@@ -56,7 +56,7 @@
   import { page } from '$app/state'
   import Button from '$lib/components/ui/button/button.svelte'
   import { renderComponent, renderSnippet } from '$lib/components/ui/data-table'
-  import type { ReviewRequest } from '$lib/types/review-request'
+  import type { ModuleReview } from '$lib/types/review-request'
   import { ChevronDown, ChevronUp, Info } from '@lucide/svelte'
   import { createRawSnippet } from 'svelte'
   import type { PageProps } from './$types'
@@ -152,5 +152,5 @@
     showComponent={showReviewKeysExplanation}
   />
 
-  <ModuleApprovalsTable reviewRequests={data.reviewRequests} {columns} />
+  <ModuleApprovalsTable moduleReviews={data.moduleReviews} {columns} />
 </div>

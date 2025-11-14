@@ -1,18 +1,18 @@
 <script lang="ts">
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import type { ReviewRequest } from '$lib/types/review-request'
+  import type { ModuleReview } from '$lib/types/review-request'
   import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core'
 
   let {
-    reviewRequests,
+    moduleReviews,
     columns
-  }: { reviewRequests: ReviewRequest[]; columns: ColumnDef<ReviewRequest>[] } = $props()
+  }: { moduleReviews: ModuleReview[]; columns: ColumnDef<ModuleReview>[] } = $props()
 
   const table = createSvelteTable({
     // data
     get data() {
-      return reviewRequests
+      return moduleReviews
     },
     columns,
     getCoreRowModel: getCoreRowModel()

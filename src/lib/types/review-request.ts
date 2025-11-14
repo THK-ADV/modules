@@ -1,14 +1,14 @@
 import type { Degree, Person } from './core'
 import type { Role } from './role'
 
-export interface ReviewRequestJson {
+export interface ModuleReviewJson {
   reviewId: string
   moduleId: string
   moduleTitle: string
   moduleAbbrev: string
   author: Person
   role: Role
-  status: ReviewStatus
+  status: ModuleReviewStatus
   studyProgram: {
     id: string
     deLabel: string
@@ -17,14 +17,14 @@ export interface ReviewRequestJson {
   canReview: boolean
 }
 
-export interface ReviewStatus {
+export interface ModuleReviewStatus {
   id: 'waiting_for_changes' | 'waiting_for_review'
   deLabel: string
   approved?: number
   needed?: number
 }
 
-export interface ReviewRequestItem {
+export interface ModuleReviewItem {
   reviewId: string
   role: Role
   studyProgram: {
@@ -35,11 +35,11 @@ export interface ReviewRequestItem {
   canReview: boolean
 }
 
-export interface ReviewRequest {
+export interface ModuleReview {
   moduleId: string
   moduleTitle: string
   moduleAbbrev: string
   author: Person
-  status: ReviewStatus
-  items: ReviewRequestItem[]
+  status: ModuleReviewStatus
+  items: ModuleReviewItem[]
 }

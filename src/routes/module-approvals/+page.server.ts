@@ -1,29 +1,29 @@
 import type { ModuleReviewKey } from '$lib/types/module-review-keys'
-import type { ReviewRequest, ReviewRequestJson } from '$lib/types/review-request'
+import type { ModuleReview, ModuleReviewJson } from '$lib/types/review-request'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-function groupReviewRequestsByModule(reviewRequests: ReviewRequestJson[]): ReviewRequest[] {
-  const grouped = new Map<string, ReviewRequest>()
+function groupModuleReviewsByModule(moduleReviews: ModuleReviewJson[]): ModuleReview[] {
+  const grouped = new Map<string, ModuleReview>()
 
-  for (const request of reviewRequests) {
-    if (!grouped.has(request.moduleId)) {
-      grouped.set(request.moduleId, {
-        moduleId: request.moduleId,
-        moduleTitle: request.moduleTitle,
-        moduleAbbrev: request.moduleAbbrev,
-        author: request.author,
-        status: request.status,
+  for (const review of moduleReviews) {
+    if (!grouped.has(review.moduleId)) {
+      grouped.set(review.moduleId, {
+        moduleId: review.moduleId,
+        moduleTitle: review.moduleTitle,
+        moduleAbbrev: review.moduleAbbrev,
+        author: review.author,
+        status: review.status,
         items: []
       })
     }
-    const group = grouped.get(request.moduleId)!
+    const group = grouped.get(review.moduleId)!
     group.items.push({
-      reviewId: request.reviewId,
-      role: request.role,
-      studyProgram: request.studyProgram,
-      degree: request.degree,
-      canReview: request.canReview
+      reviewId: review.reviewId,
+      role: review.role,
+      studyProgram: review.studyProgram,
+      degree: review.degree,
+      canReview: review.canReview
     })
   }
 
@@ -38,7 +38,7 @@ function groupReviewRequestsByModule(reviewRequests: ReviewRequestJson[]): Revie
 
 export const load: PageServerLoad = async ({ fetch }) => {
   const [approvalsRes, reviewKeysRes] = await Promise.allSettled([
-    fetch(`/auth-api/moduleApprovals/own`),
+    fetch(`/auth-api/moduleReviews`),
     fetch('/api/moduleReviewKeys')
   ])
 
@@ -53,8 +53,8 @@ export const load: PageServerLoad = async ({ fetch }) => {
     moduleReviewKeys = await reviewKeysRes.value.json()
   }
 
-  const json: ReviewRequestJson[] = await approvalsRes.value.json()
-  const reviewRequests = groupReviewRequestsByModule(json)
+  const json: ModuleReviewJson[] = await approvalsRes.value.json()
+  const moduleReviews = groupModuleReviewsByModule(json)
 
-  return { reviewRequests, moduleReviewKeys }
+  return { moduleReviews, moduleReviewKeys }
 }

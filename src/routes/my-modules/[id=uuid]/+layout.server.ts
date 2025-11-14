@@ -5,7 +5,7 @@ import type { ModuleDraftKeys } from '$lib/types/module-draft-keys.js'
 import { getFieldModifications } from '$lib/types/module-draft-keys.js'
 import { canEdit, type ModuleDraftState } from '$lib/types/module-draft.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
-import type { ReviewRequestJson } from '$lib/types/review-request.js'
+import type { ModuleReviewJson } from '$lib/types/review-request.js'
 import { error, redirect } from '@sveltejs/kit'
 import { zod } from 'sveltekit-superforms/adapters'
 import { superValidate } from 'sveltekit-superforms/server'
@@ -23,7 +23,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
 
   if (!moduleDraftStateRes.ok) {
     const err = await moduleDraftStateRes.json()
-    const message = `Module Draft konnte nicht geladen werden: ${err.message}`
+    const message = `Das Modul kann nicht bearbeitet werden: ${err.message}`
     throw error(moduleDraftStateRes.status, { message })
   }
 
@@ -37,9 +37,9 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     await Promise.allSettled([
       fetch(`/auth-api/modules/${params.id}/latest`),
       fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
-      fetch(`/auth-api/moduleApprovals/${params.id}`),
+      fetch(`/auth-api/moduleReviews/${params.id}`),
       fetch(`/auth-api/moduleUpdatePermissions/${params.id}`),
-      reviewMode ? fetch(`/auth-api/moduleApprovals/own`) : null
+      reviewMode ? fetch(`/auth-api/moduleReviews`) : null
     ])
 
   if (moduleRes.status === 'rejected') {
@@ -61,7 +61,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   let reviews: { reviewId: string; role: string; studyProgram: string }[] = []
 
   if (reviewsRes.status === 'fulfilled' && reviewsRes.value?.ok) {
-    const json: ReviewRequestJson[] = await reviewsRes.value.json()
+    const json: ModuleReviewJson[] = await reviewsRes.value.json()
     reviews = json
       .filter((a) => a.moduleId === params.id && a.canReview)
       .map((a) => {

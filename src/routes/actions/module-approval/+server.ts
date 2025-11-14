@@ -11,7 +11,7 @@ export const PUT: RequestHandler = async ({ request, fetch }) => {
     reviews: { reviewId: string; role: string; studyProgram: string }[]
   } = await request.json()
 
-  const res = await fetch('/auth-api/moduleApprovals', {
+  const res = await fetch('/auth-api/moduleReviews', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'

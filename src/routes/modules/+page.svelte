@@ -10,10 +10,7 @@
   import type { ColumnDef } from '@tanstack/table-core'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
-  const fmtCredits = new Intl.NumberFormat('de-DE', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1
-  })
+  const fmtCredits = creditsFormatter()
 
   function fmtModuleManagement(xs: ReadonlyArray<PersonShort>) {
     let res = ''
@@ -155,6 +152,7 @@
   import type { PageProps } from './$types'
   import ModuleTableTitleCell from './(components)/module-table-title-cell.svelte'
   import ModulesTable from './(components)/modules-table.svelte'
+  import { creditsFormatter } from '$lib/formats'
 
   let { data }: PageProps = $props()
 

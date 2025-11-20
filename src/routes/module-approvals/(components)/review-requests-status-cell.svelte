@@ -1,8 +1,8 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { ReviewRequestItem, ReviewStatus } from '$lib/types/review-request'
+  import type { ModuleReviewItem, ModuleReviewStatus } from '$lib/types/review-request'
 
-  let { status, items }: { status: ReviewStatus; items: ReviewRequestItem[] } = $props()
+  let { status, items }: { status: ModuleReviewStatus; items: ModuleReviewItem[] } = $props()
 
   const MAX_VISIBLE = 4
   const pending = $derived(items.filter((a) => a.canReview))

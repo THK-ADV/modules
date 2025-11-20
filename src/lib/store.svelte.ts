@@ -12,6 +12,8 @@ import type {
   Status
 } from '$lib/types/core'
 import type { StudyProgram } from '$lib/types/study-program'
+import type { PaginationState } from '@tanstack/table-core'
+import { type Selection } from '../routes/my-modules/(components)/types'
 import {
   fmtPerson,
   fmtPersonShort,
@@ -32,6 +34,9 @@ function createModuleFilter() {
   let selectedSemester = $state(new Array<string>())
   let selectedModuleTypes = $state(new Array<string>())
   let title = $state('')
+
+  const pages = ['15', '30', '45', 'Alle']
+  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
 
   return {
     get title() {
@@ -60,6 +65,15 @@ function createModuleFilter() {
     },
     get selectedModuleTypes() {
       return selectedModuleTypes
+    },
+    get pagination() {
+      return pagination
+    },
+    get pages() {
+      return pages
+    },
+    set pagination(value: PaginationState) {
+      pagination = value
     },
     set title(value: string) {
       title = value
@@ -332,6 +346,43 @@ function createModuleUpdateState() {
   }
 }
 
+function createMyModuleFilter() {
+  let currentSelection = $state<Selection>('my')
+  let searchString = $state('')
+  const pages = ['10', '25', '40', 'Alle']
+  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
+
+  return {
+    get searchString() {
+      return searchString
+    },
+    get currentSelection() {
+      return currentSelection
+    },
+    get pagination() {
+      return pagination
+    },
+    get pages() {
+      return pages
+    },
+    set searchString(value: string) {
+      searchString = value
+    },
+    set currentSelection(value: Selection) {
+      currentSelection = value
+    },
+    clearSelections() {
+      searchString = ''
+      currentSelection = 'my'
+    },
+    set pagination(value: PaginationState) {
+      pagination = value
+    }
+  }
+}
+
 export const moduleFilter = createModuleFilter()
 
 export const moduleUpdateState = createModuleUpdateState()
+
+export const myModuleFilter = createMyModuleFilter()

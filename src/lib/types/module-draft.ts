@@ -11,11 +11,13 @@ export type ModuleDraftState =
 
 export interface ModuleDraft {
   module: ModuleShort
-  isNewModule: boolean
-  // true, if module manager
-  isPrivilegedForModule: boolean
+  isNewModule: boolean // true, if module is not merged into main yet (Neu Badge)
+  isModuleManager: boolean
+  isDirectlyAssigned: boolean // true if inherited or granted permission (Zugewiesenes Modul => default)
+  isPartOfAccreditation: boolean // true if this module is associated to a new PO (Akkreditierungs Badge)
+  isDerivedFromRole: boolean // true if this module is only associated via a permission or role (Gesonderte Rolle Badge)
   ects: number
-  mandatoryPOs: string[]
+  mandatoryPOs: string[] | null // TODO: extend to optional PO
   moduleDraftState: ModuleDraftState
   moduleDraft: {
     id: string
@@ -25,12 +27,13 @@ export interface ModuleDraft {
     modifiedKeys: string
     keysToBeReviewed: string
   } | null
-  isFeatured?: boolean
 }
 
 export interface ModuleDrafts {
-  default: ModuleDraft[]
-  accreditation?: ModuleDraft[]
+  direct: ModuleDraft[] // modules directly assigned to the user
+  indirect?: ModuleDraft[] // modules assigned through permissions granted to the user (e.g. admin, PAV, …)
+  pos?: string[] // resolved POs if indirect is set
+  accreditationPOs?: string[] // POs which are currently in accreditation
 }
 
 export function canEdit(state: ModuleDraftState) {

@@ -2,10 +2,10 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { Button } from '$lib/components/ui/button'
-  import type { ReviewRequestItem } from '$lib/types/review-request'
+  import type { ModuleReviewItem } from '$lib/types/review-request'
   import { Eye } from '@lucide/svelte'
 
-  let { items, moduleId }: { items: ReviewRequestItem[]; moduleId: string } = $props()
+  let { items, moduleId }: { items: ModuleReviewItem[]; moduleId: string } = $props()
   const canReview = $derived(items.some((item) => item.canReview))
 </script>
 

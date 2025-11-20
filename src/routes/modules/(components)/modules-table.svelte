@@ -1,4 +1,5 @@
 <script lang="ts">
+  import TablePagination from '$lib/components/table-pagination.svelte'
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { moduleFilter } from '$lib/store.svelte'
@@ -10,11 +11,9 @@
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    type PaginationState,
     type SortingState
   } from '@tanstack/table-core'
   import DataTableFilter from './modules-table-filter.svelte'
-  import DataTablePagination from './modules-table-pagination.svelte'
 
   function getInitialColumnFilters(): ColumnFiltersState {
     const filters: ColumnFiltersState = []
@@ -45,11 +44,16 @@
 
   let { data, columns }: DataTableProps = $props()
 
-  const pages = ['15', '30', '45', 'Alle']
+  const pages = moduleFilter.pages
 
   let sorting = $state<SortingState>([])
   let columnFilters = $state<ColumnFiltersState>(getInitialColumnFilters())
-  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
+  let pagination = $derived(moduleFilter.pagination)
+
+  $effect(() => {
+    // keep pagination in sync with store to allow state persistence through navigation
+    moduleFilter.pagination = pagination
+  })
 
   const table = createSvelteTable({
     // data
@@ -140,5 +144,5 @@
       </Table.Body>
     </Table.Root>
   </div>
-  <DataTablePagination {table} {pages} />
+  <TablePagination {table} {pages} />
 </div>

@@ -71,6 +71,7 @@
             cell: ({ row }) => {
               return renderComponent(ModuleCatalogTableActions, {
                 studyProgram: row.original.studyProgram,
+                canCreate: row.original.canCreate,
                 onClickModuleCreate: (sp: StudyProgram) => {
                   showModuleCatalogCreateDialog = sp
                   isPreviewing = false
@@ -98,7 +99,7 @@
             cell: ({ row }) => {
               return renderComponent(ExamListTableActions, {
                 studyProgram: row.original.studyProgram,
-                roles: row.original.roles,
+                canCreate: row.original.canCreate,
                 onClickExamListRelease: (sp: StudyProgram) => {
                   showExamListReleaseDialog = sp
                   isPreviewing = false

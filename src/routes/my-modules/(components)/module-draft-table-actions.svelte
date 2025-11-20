@@ -22,7 +22,7 @@
   interface Props {
     moduleId: string
     moduleDraftState: ModuleDraftState
-    isPrivilegedForModule: boolean
+    isModuleManager: boolean
   }
 
   interface Action {
@@ -35,7 +35,7 @@
     disabled?: boolean
   }
 
-  let { moduleId, moduleDraftState, isPrivilegedForModule }: Props = $props()
+  let { moduleId, moduleDraftState, isModuleManager }: Props = $props()
 
   let isDeleting = $state(false)
   let isPublishing = $state(false)
@@ -203,7 +203,7 @@
   let adminActions = $derived.by(() => {
     const actions = new Array<Action>()
 
-    if (isPrivilegedForModule) {
+    if (isModuleManager) {
       actions.push({
         key: 'managePermissions',
         label: 'Bearbeitungsrechte setzen',

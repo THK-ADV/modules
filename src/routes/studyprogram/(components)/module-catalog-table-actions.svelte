@@ -4,14 +4,14 @@
   import type { Action } from './studyProgram-table-actions.svelte'
   import StudyProgramTableActions from './studyProgram-table-actions.svelte'
 
-  const FEATURE_FLAG_CREATE_MODULE_CATALOG_PO = ['ing_een5', 'ing_gme5', 'ing_wiw5']
-
   let {
     studyProgram,
+    canCreate,
     onClickModuleCreate,
     onClickModulePreview
   }: {
     studyProgram: StudyProgram
+    canCreate: boolean
     onClickModuleCreate: (sp: StudyProgram) => void
     onClickModulePreview: (sp: StudyProgram) => void
   } = $props()
@@ -28,8 +28,7 @@
       className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800'
     })
 
-    // TODO: this is a temporary solution to preview the module catalog creation
-    if (FEATURE_FLAG_CREATE_MODULE_CATALOG_PO.includes(studyProgram.po.id)) {
+    if (canCreate) {
       actions.push({
         key: 'createModuleCatalog',
         label: 'Erstellen',

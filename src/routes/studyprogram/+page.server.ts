@@ -1,5 +1,4 @@
 import type { ExamList } from '$lib/types/exam-list'
-import type { Role } from '$lib/types/role'
 import type { Semester } from '$lib/types/semester'
 import type { StudyProgram } from '$lib/types/study-program'
 import { error } from '@sveltejs/kit'
@@ -8,7 +7,8 @@ import { SELECTED_TAB_COOKIE_NAME } from './+page.svelte'
 
 export interface StudyProgramMangerInfo {
   studyProgram: StudyProgram
-  roles: Role[]
+  canPreview: boolean
+  canCreate: boolean
   examList: ExamList | undefined
 }
 
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ fetch, depends, cookies }) => {
   depends('preview:studyProgram') // pass this key to the validate function inside a client component to re-run the load function
 
   const [privilegesRes, semesterRes, examListsRes] = await Promise.allSettled([
-    fetch(`/auth-api/me?newApi=false`),
+    fetch(`/auth-api/user-privileges`),
     fetch(`/api/examLists/semesters`),
     fetch(`/api/examLists`)
   ])
@@ -55,16 +55,12 @@ export const load: PageServerLoad = async ({ fetch, depends, cookies }) => {
 
   const examLists: ExamList[] = await examListsRes.value.json()
 
-  const json: { privileges: { studyProgram: StudyProgram; roles: Role[] }[] } =
-    await privilegesRes.value.json()
+  const studyProgramMangerInfo: StudyProgramMangerInfo[] = await privilegesRes.value.json()
 
-  const studyProgramMangerInfo: StudyProgramMangerInfo[] = json.privileges
-    .filter((p) => !p.studyProgram.specialization)
-    .map(({ studyProgram, roles }) => ({
-      studyProgram,
-      roles,
-      examList: examLists.find((e) => e.studyProgram.po.id === studyProgram.po.id) // we ensure that exam lists contain only the latest version of the po
-    }))
+  for (const info of studyProgramMangerInfo) {
+    // we ensure that exam lists contain only the latest version of the po
+    info.examList = examLists.find((e) => e.studyProgram.po.id === info.studyProgram.po.id)
+  }
 
   studyProgramMangerInfo.sort((lhs, rhs) => {
     const byStudyProgram = orderByStudyProgram(lhs, rhs)

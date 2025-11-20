@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Role } from '$lib/types/role'
   import type { StudyProgram } from '$lib/types/study-program'
   import { Eye, FileCheck } from '@lucide/svelte'
   import type { Action } from './studyProgram-table-actions.svelte'
@@ -7,12 +6,12 @@
 
   let {
     studyProgram,
-    roles,
+    canCreate,
     onClickExamListRelease,
     onClickExamListPreview
   }: {
     studyProgram: StudyProgram
-    roles: Role[]
+    canCreate: boolean
     onClickExamListRelease: (sp: StudyProgram) => void
     onClickExamListPreview: (sp: StudyProgram) => void
   } = $props()
@@ -29,7 +28,7 @@
       className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800'
     })
 
-    if (roles.some(({ id }) => id === 'pav')) {
+    if (canCreate) {
       actions.push({
         key: 'releaseExamList',
         label: 'Freigabe',

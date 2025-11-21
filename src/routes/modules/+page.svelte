@@ -67,7 +67,8 @@
       accessorKey: 'title',
       header: ({ column }) => {
         return renderComponent(DataTableTitleButton, {
-          onclick: column.getToggleSortingHandler()
+          column: column,
+          title: 'Modulbezeichnung'
         })
       },
       cell: ({ row }) => {
@@ -80,8 +81,14 @@
       filterFn: 'includesString'
     },
     {
-      accessorKey: 'moduleManagement',
-      header: 'Modulverantwortliche',
+      id: 'moduleManagement',
+      accessorFn: (row) => fmtModuleManagement(row.moduleManagement),
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          column: column,
+          title: 'Modulverantwortliche'
+        })
+      },
       cell: ({ row }) => fmtModuleManagement(row.original.moduleManagement),
       filterFn: (row, _, filterValue) => {
         const ids = filterValue as string[]
@@ -92,8 +99,14 @@
       }
     },
     {
-      accessorKey: 'studyProgram',
-      header: 'Studiengänge',
+      id: 'studyProgram',
+      accessorFn: (row) => fmtStudyPrograms(row.studyProgram),
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          column: column,
+          title: 'Studiengänge'
+        })
+      },
       cell: ({ row }) => fmtStudyPrograms(row.original.studyProgram),
       filterFn: (row, _, filterValue) => {
         const pos = filterValue as string[]
@@ -104,8 +117,14 @@
       }
     },
     {
-      accessorKey: 'moduleType',
-      header: 'Modulart',
+      id: 'moduleType',
+      accessorFn: (row) => row.moduleType?.id,
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          column: column,
+          title: 'Modulart'
+        })
+      },
       cell: ({ row }) => {
         return renderComponent(DataTableModuleTypeCell, {
           moduleType: row.original.moduleType
@@ -126,13 +145,24 @@
       }
     },
     {
-      accessorKey: 'credits',
-      header: 'ECTS',
+      accessorKey: 'ects',
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          column: column,
+          title: 'ECTS'
+        })
+      },
       cell: ({ row }) => fmtCredits.format(row.original.ects)
     },
     {
-      accessorKey: 'semester',
-      header: 'Semester',
+      id: 'semester',
+      accessorFn: (row) => fmtSemester(row.studyProgram),
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          column: column,
+          title: 'Semester'
+        })
+      },
       cell: ({ row }) => fmtSemester(row.original.studyProgram),
       filterFn: (row, _, filterValue) => {
         const ids = filterValue as string[]

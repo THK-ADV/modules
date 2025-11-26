@@ -1,27 +1,36 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { error } from '@sveltejs/kit'
+  import { CheckCircle2, Edit, Eye, Gitlab, XCircle } from '@lucide/svelte'
+  import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
+  import Spinner from './ui/spinner/spinner.svelte'
   import { Textarea } from './ui/textarea'
 
   let {
     reviews,
-    reviewInProgress = $bindable()
+    reviewInProgress = $bindable(),
+    moduleId
   }: {
     reviews: { reviewId: string; role: string; studyProgram: string }[]
     reviewInProgress: boolean
+    moduleId: string
   } = $props()
 
-  let reviewedStudyPrograms = $state(new Array(reviews.length).fill(false) as boolean[])
-  let comment = $state('')
-
   const minRejectCommentLength = 10
-  const canApprove = $derived.by(() => reviewedStudyPrograms.some((r) => r))
-  const canReject = $derived.by(
-    () => reviewedStudyPrograms.some((r) => r) && comment.trim().length >= minRejectCommentLength
-  )
 
-  async function handleAction(action: 'approve' | 'reject'): Promise<void> {
+  let errorMessage = $state(undefined)
+  let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
+  let comment = $state('')
+  let mrURLisLoading = $state(false)
+
+  const commentLength = $derived(comment.trim().length)
+  const canApprove = $derived(reviewedStudyPrograms.some((r) => r))
+  const canReject = $derived(
+    reviewedStudyPrograms.some((r) => r) && commentLength >= minRejectCommentLength
+  )
+  const hasSelectedReviews = $derived(reviewedStudyPrograms.some((r) => r))
+
+  async function performAction(action: 'approve' | 'reject'): Promise<void> {
     reviewInProgress = true
     const response = await fetch('/actions/module-approval', {
       method: 'PUT',
@@ -44,84 +53,184 @@
       }
     } else {
       const err = await response.json()
-      throw error(response.status, err.message)
+      errorMessage = err.message
     }
   }
 
-  async function handleApprove(): Promise<void> {
+  async function approve(): Promise<void> {
     if (!canApprove) return
-    await handleAction('approve')
+    await performAction('approve')
   }
 
-  async function handleReject(): Promise<void> {
+  async function reject(): Promise<void> {
     if (!canReject) return
-    await handleAction('reject')
+    await performAction('reject')
+  }
+
+  async function openGitLabMR() {
+    errorMessage = undefined
+    mrURLisLoading = true
+    const response = await fetch(`/actions/module-approval?moduleId=${moduleId}`)
+    if (response.ok) {
+      const url = await response.text()
+      mrURLisLoading = false
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else {
+      mrURLisLoading = false
+      const err = await response.json()
+      errorMessage = err.message
+    }
   }
 </script>
 
+<ErrorMessage bind:message={errorMessage} />
+
 <div class="rounded-md border-l-4 border-l-amber-400 bg-amber-50/50 p-4">
-  <div class="ml-3 flex-1 space-y-4">
-    <h3 class="text-lg font-semibold text-foreground">Prüfprozess</h3>
-    <div class="space-y-2 text-sm">
-      <p>Prüfen Sie alle hervorgehobenen Änderungen auf dieser Seite.</p>
-      <ul class="list-disc space-y-1 pl-5">
-        <li>Gelb: Änderungen, die im Review geprüft werden müssen.</li>
-        <li>Blau: allgemeine Änderungen.</li>
-      </ul>
+  <div class="ml-3 flex-1 space-y-5">
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="text-lg font-semibold text-foreground">Prüfprozess</h3>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={openGitLabMR}
+        disabled={mrURLisLoading}
+        class="flex-shrink-0"
+      >
+        {#if mrURLisLoading}
+          <Spinner size="sm" class="mr-1" />
+          Lädt…
+        {:else}
+          <Gitlab class="mr-1 h-4 w-4" />
+          Änderungen auf GitLab anzeigen
+        {/if}
+      </Button>
     </div>
 
-    <div class="space-y-2">
-      <label for="review-comment" class="text-base font-medium">Kommentar</label>
+    <!-- Review Summary -->
+    <div class="space-y-3 text-sm">
+      <p class="text-foreground">
+        Prüfen Sie alle hervorgehobenen Moduländerungen und geben Sie diese frei oder lehnen Sie
+        diese mit einer Begründung ab.
+      </p>
+      <div class="flex flex-col gap-3 sm:flex-row sm:gap-6">
+        <div class="flex items-center gap-2.5">
+          <span
+            class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-amber-200 text-amber-900"
+          >
+            <Eye class="h-4 w-4" />
+          </span>
+          <span class="text-sm text-foreground"
+            >Änderungen, die im Review geprüft werden müssen</span
+          >
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span
+            class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-blue-200 text-blue-900"
+          >
+            <Edit class="h-4 w-4" />
+          </span>
+          <span class="text-sm text-foreground">Allgemeine Änderungen</span>
+        </div>
+      </div>
+      <p class="text-xs text-muted-foreground">
+        Weitere Hinweise zum Prüfprozess finden Sie in der
+        <a
+          href="/help#review-process"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-medium text-primary underline-offset-2 hover:underline">Hilfe</a
+        >.
+      </p>
+    </div>
+
+    <!-- Comment -->
+    <div class="space-y-3">
+      <label for="review-comment" class="text-base font-medium text-foreground">Kommentar</label>
       <Textarea
         id="review-comment"
-        class="w-full rounded-md border border-input bg-background p-2 text-sm md:max-w-2xl"
+        class="w-full rounded-md border border-input bg-background p-3 text-sm"
         placeholder="Kommentar verfassen…"
         bind:value={comment}
         aria-describedby="comment-hint"
+        rows={4}
       />
-      <p id="comment-hint" class="text-sm text-amber-800">
+      <p id="comment-hint" class="text-xs text-amber-800">
         Optional bei Zustimmung. Erforderlich bei Ablehnung (mind. {minRejectCommentLength} Zeichen).
       </p>
     </div>
 
+    <!-- Reviews -->
     {#if reviews.length > 0}
-      <div class="space-y-2">
-        <p class="text-base font-medium">Review erteilen für:</p>
+      <div class="space-y-3">
+        <p class="text-base font-medium">
+          Review erteilen für:
+          {#if hasSelectedReviews}
+            <span class="ml-2 text-sm font-normal text-green-700">
+              ({reviewedStudyPrograms.filter((r) => r).length} ausgewählt)
+            </span>
+          {/if}
+        </p>
         <div class="flex flex-col space-y-2">
           {#each reviews as review, index (review.reviewId)}
-            <div class="flex items-center gap-2">
+            <label
+              for={review.reviewId}
+              class="flex cursor-pointer items-center gap-3 rounded-md border-2 px-4 py-3 transition-all"
+              class:bg-amber-50={reviewedStudyPrograms[index]}
+              class:bg-background={!reviewedStudyPrograms[index]}
+              class:border-amber-600={reviewedStudyPrograms[index]}
+              class:border-input={!reviewedStudyPrograms[index]}
+              class:shadow-sm={reviewedStudyPrograms[index]}
+              class:hover:border-amber-400={!reviewedStudyPrograms[index]}
+            >
               <input
                 id={review.reviewId}
                 type="checkbox"
-                class="h-4 w-4 rounded border-input text-amber-800 focus:ring-amber-600"
+                class="h-4 w-4 rounded border-input text-amber-800 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
                 bind:checked={reviewedStudyPrograms[index]}
                 aria-describedby="reviewed-hint"
               />
-              <label for={review.reviewId} class="select-none text-sm">
-                {review.studyProgram} (als {review.role})
-              </label>
-            </div>
+              <span class="select-none text-sm font-medium text-foreground">
+                {review.studyProgram}
+                <span class="ml-1 text-xs font-normal text-muted-foreground"
+                  >(als {review.role})</span
+                >
+              </span>
+            </label>
           {/each}
         </div>
       </div>
     {/if}
 
-    <div class="flex flex-col gap-2 pt-1 lg:flex-row lg:justify-start">
-      <Button
-        variant="destructive"
-        disabled={!canReject}
-        onclick={handleReject}
-        aria-disabled={!canReject}
-      >
-        Änderungen ablehnen und Überarbeitung anfordern
-      </Button>
+    <div class="flex flex-col gap-3 border-t border-amber-300/30 pt-4 sm:flex-row sm:justify-start">
       <Button
         variant="default"
+        size="lg"
         disabled={!canApprove}
-        onclick={handleApprove}
+        onclick={approve}
         aria-disabled={!canApprove}
+        class="flex w-full items-center justify-center gap-2 sm:w-auto"
+        title={!canApprove ? 'Bitte wählen Sie mindestens einen Studiengang aus' : ''}
       >
-        Änderungen akzeptieren und Review abschließen
+        <CheckCircle2 class="h-4 w-4" />
+        <span>Änderungen akzeptieren</span>
+      </Button>
+
+      <Button
+        variant="destructive"
+        size="lg"
+        disabled={!canReject}
+        onclick={reject}
+        aria-disabled={!canReject}
+        class="flex w-full items-center justify-center gap-2 sm:w-auto"
+        title={!canReject
+          ? !hasSelectedReviews
+            ? 'Bitte wählen Sie mindestens einen Studiengang aus'
+            : `Kommentar erforderlich (mind. ${minRejectCommentLength} Zeichen)`
+          : ''}
+      >
+        <XCircle class="h-4 w-4" />
+        <span>Änderungen ablehnen</span>
       </Button>
     </div>
   </div>

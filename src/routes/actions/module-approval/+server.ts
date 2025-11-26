@@ -1,4 +1,4 @@
-import { error, json, type RequestHandler } from '@sveltejs/kit'
+import { error, json, text, type RequestHandler } from '@sveltejs/kit'
 
 export const PUT: RequestHandler = async ({ request, fetch }) => {
   const {
@@ -31,4 +31,21 @@ export const PUT: RequestHandler = async ({ request, fetch }) => {
   }
 
   return json({ success: true })
+}
+
+// fetch the GitLab URL for the given module ID
+export const GET: RequestHandler = async ({ fetch, url }) => {
+  const moduleId = url.searchParams.get('moduleId')
+  if (!moduleId) {
+    return error(400, { message: 'Modul-ID ist erforderlich' })
+  }
+  const res = await fetch(`/auth-api/moduleDrafts/${moduleId}/mrurl`)
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: 'Fehler beim Abrufen der GitLab URL' }))
+    return error(400, { message: err.message })
+  }
+  // remove quotes from URL
+  const gitLabUrl = (await res.text()).slice(1, -1)
+  // return text(gitLabUrl)
+  throw error(400, { message: 'Fehler beim Abrufen der GitLab URL' })
 }

@@ -385,9 +385,9 @@
   </div>
 
   <!-- Approval Status or Review Summary -->
-  <div class="min-w-0 flex-1 lg:max-w-6xl">
+  <div class="min-w-0 flex-1 lg:max-w-4xl">
     {#if isReviewMode}
-      <ModuleReviewSummary reviews={data.reviews} bind:reviewInProgress />
+      <ModuleReviewSummary reviews={data.reviews} bind:reviewInProgress moduleId={id} />
     {:else}
       <ModuleApprovalStatus approvals={data.approvals} />
     {/if}

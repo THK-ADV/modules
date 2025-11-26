@@ -2,7 +2,7 @@
   import { TriangleAlert, X } from '@lucide/svelte'
   import Button from './ui/button/button.svelte'
 
-  let { message = $bindable(undefined), title }: { message: string | undefined; title: string } =
+  let { message = $bindable(undefined), title }: { message: string | undefined; title?: string } =
     $props()
 
   setTimeout(() => {

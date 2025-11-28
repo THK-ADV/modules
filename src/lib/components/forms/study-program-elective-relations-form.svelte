@@ -57,10 +57,7 @@
     {
       SPA: true,
       validators: zodClient(schema),
-      resetForm: false,
-      onUpdate(event) {
-        console.log(event)
-      }
+      resetForm: false
     }
   )
 

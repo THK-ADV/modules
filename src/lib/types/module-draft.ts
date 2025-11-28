@@ -16,8 +16,10 @@ export interface ModuleDraft {
   isDirectlyAssigned: boolean // true if inherited or granted permission (Zugewiesenes Modul => default)
   isPartOfAccreditation: boolean // true if this module is associated to a new PO (Akkreditierungs Badge)
   isDerivedFromRole: boolean // true if this module is only associated via a permission or role (Gesonderte Rolle Badge)
+  canBeFastForwardApproved: boolean // true if the user has fast forward approval permission for this particular module
   ects: number
-  mandatoryPOs: string[] | null // TODO: extend to optional PO
+  mandatoryPOs: string[] | null
+  optionalPOs: string[] | null
   moduleDraftState: ModuleDraftState
   moduleDraft: {
     id: string

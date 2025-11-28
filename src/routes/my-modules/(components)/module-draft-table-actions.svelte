@@ -4,7 +4,6 @@
   import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
-  import * as Separator from '$lib/components/ui/separator/index'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import {
     canCancelReview,
@@ -15,18 +14,20 @@
     type ModuleDraftState
   } from '$lib/types/module-draft'
   import { cn } from '$lib/utils'
-  import { Edit, Ellipsis, Eye, Shield, Trash2, Upload, X, type IconProps } from '@lucide/svelte'
+  import { Edit, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
   import type { ModuleDraftTableAction } from '../../actions/module-actions/[moduleId]/+server'
+
+  type ActionKey = ModuleDraftTableAction | 'edit'
 
   interface Props {
     moduleId: string
     moduleDraftState: ModuleDraftState
-    isModuleManager: boolean
+    canBeFastForwardApproved: boolean
   }
 
   interface Action {
-    key: string
+    key: ActionKey
     label: string
     Icon: Component<IconProps, object, ''>
     onclick: () => void
@@ -35,7 +36,7 @@
     disabled?: boolean
   }
 
-  let { moduleId, moduleDraftState, isModuleManager }: Props = $props()
+  let { moduleId, moduleDraftState, canBeFastForwardApproved }: Props = $props()
 
   let isDeleting = $state(false)
   let isPublishing = $state(false)
@@ -51,6 +52,8 @@
       return 'Änderungen werden verworfen...'
     } else if (isPublishing) {
       return 'Änderungen werden übernommen...'
+    } else if (isRequestingReview && canBeFastForwardApproved) {
+      return 'Review wird übersprungen...'
     } else if (isRequestingReview) {
       return 'Review wird angefragt...'
     } else if (isCancelingReview) {
@@ -60,12 +63,12 @@
     }
   })
 
-  function isActionLoading(key: string): boolean {
+  function isActionLoading(key: ActionKey): boolean {
     return (
       (key === 'publish' && isPublishing) ||
       (key === 'requestReview' && isRequestingReview) ||
       (key === 'cancelReview' && isCancelingReview) ||
-      (key === 'discardChanges' && isDeleting)
+      (key === 'delete' && isDeleting)
     )
   }
 
@@ -99,6 +102,7 @@
           isPublishing = false
           break
         case 'requestReview':
+        case 'requestFastForwardReview':
           isRequestingReview = false
           break
         case 'cancelReview':
@@ -156,6 +160,23 @@
         className: 'border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800',
         disabled: isPerformingAction
       })
+
+      if (canBeFastForwardApproved) {
+        actions.push({
+          key: 'requestFastForwardReview',
+          label: 'Review überspringen',
+          Icon: Zap,
+          onclick: async () => {
+            if (!isRequestingReview) {
+              isRequestingReview = true
+              await performAction('requestFastForwardReview')
+            }
+          },
+          variant: 'outline',
+          className: 'border-purple-400 text-purple-700 hover:bg-purple-50 hover:text-purple-800',
+          disabled: isPerformingAction
+        })
+      }
     }
 
     if (canCancelReview(state)) {
@@ -177,7 +198,7 @@
 
     if (canDiscardChanges(state)) {
       actions.push({
-        key: 'discardChanges',
+        key: 'delete',
         label: 'Änderungen verwerfen',
         Icon: Trash2,
         onclick: async () => {
@@ -200,30 +221,7 @@
     return actions
   })
 
-  let adminActions = $derived.by(() => {
-    const actions = new Array<Action>()
-
-    if (isModuleManager) {
-      actions.push({
-        key: 'managePermissions',
-        label: 'Bearbeitungsrechte setzen',
-        Icon: Shield,
-        onclick: () => {
-          // TODO: Implement permissions management
-          console.log('Manage permissions for module:', moduleId)
-        },
-        variant: 'outline',
-        className: 'border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800',
-        disabled: isPerformingAction
-      })
-    }
-
-    return actions
-  })
-
-  let hasModuleActions = $derived(moduleActions.length > 0)
-  let hasAdminActions = $derived(adminActions.length > 0)
-  let hasAnyActions = $derived(hasModuleActions || hasAdminActions)
+  let hasActions = $derived(moduleActions.length > 0)
 </script>
 
 {#snippet buttonRow({ className, variant, onclick, label, Icon, disabled, key }: Action)}
@@ -251,11 +249,11 @@
   <DropdownMenu.Item
     class={cn(
       'flex cursor-pointer items-center gap-2 font-medium',
-      key === 'discardChanges' && 'text-red-600 focus:text-red-700',
+      key === 'delete' && 'text-red-600 focus:text-red-700',
       key === 'publish' && 'text-green-600 focus:text-green-700',
       key === 'requestReview' && 'text-amber-600 focus:text-amber-700',
+      key === 'requestFastForwardReview' && 'text-purple-600 focus:text-purple-700',
       key === 'edit' && 'text-blue-600 focus:text-blue-700',
-      key === 'managePermissions' && 'text-purple-600 focus:text-purple-700',
       disabled && 'pointer-events-none cursor-not-allowed opacity-50'
     )}
     {onclick}
@@ -273,7 +271,7 @@
 <!-- loading overlay -->
 <LoadingOverlay show={isPerformingAction} message={loadingOverlayMessage} />
 
-{#if hasAnyActions}
+{#if hasActions}
   <div
     class="flex items-center gap-2"
     class:pointer-events-none={isPerformingAction}
@@ -281,26 +279,11 @@
   >
     <!-- Desktop: Show all actions inline -->
     <div class="hidden items-center gap-1 lg:flex">
-      {#if hasModuleActions}
-        <div class="flex items-center gap-1">
-          {#each moduleActions as action (action.key)}
-            {@render buttonRow(action)}
-          {/each}
-        </div>
-      {/if}
-
-      <!-- Separator between regular and admin actions -->
-      {#if hasModuleActions && hasAdminActions}
-        <Separator.Root orientation="vertical" class="mx-1 h-6" />
-      {/if}
-
-      {#if hasAdminActions}
-        <div class="flex items-center gap-1">
-          {#each adminActions as action (action.key)}
-            {@render buttonRow(action)}
-          {/each}
-        </div>
-      {/if}
+      <div class="flex items-center gap-1">
+        {#each moduleActions as action (action.key)}
+          {@render buttonRow(action)}
+        {/each}
+      </div>
     </div>
 
     <!-- Mobile: Dropdown menu -->
@@ -321,27 +304,12 @@
           {/snippet}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end" class="w-56">
-          {#if hasModuleActions}
-            <DropdownMenu.Group>
-              <DropdownMenu.GroupHeading>Modul Aktionen</DropdownMenu.GroupHeading>
-              {#each moduleActions as action (action.key)}
-                {@render buttonMenuItem(action)}
-              {/each}
-            </DropdownMenu.Group>
-          {/if}
-
-          {#if hasModuleActions && hasAdminActions}
-            <DropdownMenu.Separator />
-          {/if}
-
-          {#if hasAdminActions}
-            <DropdownMenu.Group>
-              <DropdownMenu.GroupHeading>Administration</DropdownMenu.GroupHeading>
-              {#each adminActions as action (action.key)}
-                {@render buttonMenuItem(action)}
-              {/each}
-            </DropdownMenu.Group>
-          {/if}
+          <DropdownMenu.Group>
+            <DropdownMenu.GroupHeading>Modul Aktionen</DropdownMenu.GroupHeading>
+            {#each moduleActions as action (action.key)}
+              {@render buttonMenuItem(action)}
+            {/each}
+          </DropdownMenu.Group>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     </div>

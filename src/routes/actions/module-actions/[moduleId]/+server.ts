@@ -1,7 +1,12 @@
 import { error, json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 
-export type ModuleDraftTableAction = 'delete' | 'publish' | 'requestReview' | 'cancelReview'
+export type ModuleDraftTableAction =
+  | 'delete'
+  | 'publish'
+  | 'requestReview'
+  | 'cancelReview'
+  | 'requestFastForwardReview'
 
 async function deleteModuleDraft(moduleId: string, fetch: typeof globalThis.fetch) {
   const response = await fetch(`/auth-api/moduleDrafts/${moduleId}`, { method: 'DELETE' })
@@ -39,6 +44,23 @@ async function createReview(
   return json({ success: true })
 }
 
+async function createFastForwardReview(moduleId: string, fetch: typeof globalThis.fetch) {
+  const response = await fetch(`/auth-api/moduleReviews/${moduleId}/ff`, {
+    method: 'POST'
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw error(response.status, {
+      message:
+        errorData.message ||
+        `Fehler beim Überspringen des Reviews: ${response.status} ${response.statusText}`
+    })
+  }
+
+  return json({ success: true })
+}
+
 async function cancelReview(moduleId: string, fetch: typeof globalThis.fetch) {
   const response = await fetch(`/auth-api/moduleReviews/${moduleId}`, { method: 'DELETE' })
 
@@ -67,5 +89,7 @@ export const POST: RequestHandler = async ({ params, request, fetch }) => {
       return createReview(moduleId, true, fetch)
     case 'cancelReview':
       return cancelReview(moduleId, fetch)
+    case 'requestFastForwardReview':
+      return createFastForwardReview(moduleId, fetch)
   }
 }

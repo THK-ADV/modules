@@ -7,6 +7,7 @@ export type UserInfo = {
   hasModulesToEdit: boolean
   rejectedReviews: number
   reviewsToApprove: number
+  fastForwardApprovalPOs: string[] | undefined
 }
 
 export interface User {

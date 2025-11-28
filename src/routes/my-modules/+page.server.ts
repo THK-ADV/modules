@@ -38,7 +38,50 @@ function orderByTitle(lhs: ModuleDraft, rhs: ModuleDraft) {
   return lhs.module.title.localeCompare(rhs.module.title)
 }
 
-export const load: PageServerLoad = async ({ fetch }) => {
+// This function assumes that the specialization is delimited by an underscore at the end of the PO
+function checkSpecialization(maybeFullPO: string, allowedPOs: string[]) {
+  const poParts = maybeFullPO.split('_')
+  if (poParts.length === 2) {
+    // default PO
+    return allowedPOs.includes(maybeFullPO)
+  } else if (poParts.length === 3) {
+    // full PO with specialization. Check the PO without the specialization
+    const po = poParts[0] + '_' + poParts[1]
+    return allowedPOs.includes(po)
+  } else {
+    return false
+  }
+}
+
+function canBeFastForwardApproved(
+  module: ModuleDraft,
+  fastForwardApprovalPOs: string[] | undefined
+) {
+  if (!fastForwardApprovalPOs) return false
+  // fast forward approval is granted, if any of the mandatory or optional POs of the module are in the allowed list.
+  // This may be extended so that ALL module POs must match
+  // We assume that most POs are not specialized, so we check the full PO first
+
+  // Check mandatory POs
+  if (module.mandatoryPOs && module.mandatoryPOs.length > 0) {
+    const hasMandatoryMatch = module.mandatoryPOs.some(
+      (po) => fastForwardApprovalPOs.includes(po) || checkSpecialization(po, fastForwardApprovalPOs)
+    )
+    if (hasMandatoryMatch) return true
+  }
+
+  // Check optional POs
+  if (module.optionalPOs && module.optionalPOs.length > 0) {
+    return module.optionalPOs.some(
+      (po) => fastForwardApprovalPOs.includes(po) || checkSpecialization(po, fastForwardApprovalPOs)
+    )
+  }
+
+  return false
+}
+
+export const load: PageServerLoad = async ({ fetch, parent }) => {
+  const { userInfo } = await parent()
   const res = await fetch(`/auth-api/moduleDrafts`)
 
   if (!res.ok) {
@@ -56,6 +99,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     m.isDirectlyAssigned = true
     m.isDerivedFromRole = false
     m.isPartOfAccreditation = false
+    m.canBeFastForwardApproved = canBeFastForwardApproved(m, userInfo?.fastForwardApprovalPOs)
     moduleDrafts.push(m)
     directlyAssigned[m.module.id] = i
     i++
@@ -77,7 +121,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
         m.isDirectlyAssigned = false
         m.isDerivedFromRole = true
         m.isPartOfAccreditation = false
-
+        m.canBeFastForwardApproved = canBeFastForwardApproved(m, userInfo?.fastForwardApprovalPOs)
         if (parsed.accreditationPOs != null && m.mandatoryPOs != null) {
           const accreditationPOs = parsed.accreditationPOs
           m.isPartOfAccreditation = m.mandatoryPOs.some((po) => accreditationPOs.includes(po))

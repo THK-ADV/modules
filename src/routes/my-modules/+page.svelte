@@ -38,7 +38,7 @@
         return renderComponent(ModuleDraftTableActions, {
           moduleId: row.original.module.id,
           moduleDraftState: row.original.moduleDraftState,
-          isModuleManager: row.original.isModuleManager
+          canBeFastForwardApproved: row.original.canBeFastForwardApproved
         })
       }
     }

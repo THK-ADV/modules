@@ -4,7 +4,7 @@
     | 'previewExamList'
     | 'createModuleCatalog'
     | 'previewExamLoad'
-  export type ActionKey = PreviewActionKey | 'releaseExamList'
+  export type ActionKey = PreviewActionKey | 'releaseExamList' | 'uploadModuleCatalogIntroduction'
 
   export interface Action {
     key: ActionKey
@@ -46,6 +46,7 @@
       key === 'createModuleCatalog' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamList' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamLoad' && 'text-gray-600 focus:text-gray-700',
+      key === 'uploadModuleCatalogIntroduction' && 'text-gray-600 focus:text-gray-700',
       key === 'releaseExamList' && 'text-green-600 focus:text-green-700'
     )}
     {onclick}

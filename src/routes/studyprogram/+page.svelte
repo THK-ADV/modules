@@ -10,16 +10,42 @@
     }
     return `${studyProgram.deLabel} (${studyProgram.degree.deLabel})`
   }
+
+  const dateFormatter = new DateFormatter('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
+
+  const dateTimeFormatter = new DateFormatter('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+  function fmtSemester(semester: Semester) {
+    return `${semester.abbrev.toUpperCase()} ${semester.year}`
+  }
+
+  function fmtExamListPublishDate(examList: ExamList) {
+    return `${dateFormatter.format(new Date(examList.date))} (${fmtSemester(examList.semester)})`
+  }
 </script>
 
 <script lang="ts">
   import ErrorMessage from '$lib/components/error-message.svelte'
+  import SuccessMessage from '$lib/components/success-message.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { previewExamList, previewExamLoad } from '$lib/preview-action'
+  import type { ExamList } from '$lib/types/exam-list'
+  import type { Semester } from '$lib/types/semester'
   import type { StudyProgram } from '$lib/types/study-program'
+  import { DateFormatter } from '@internationalized/date'
   import { FlaskConical } from '@lucide/svelte'
   import type { ColumnDef } from '@tanstack/table-core'
   import type { PageProps } from './$types'
@@ -28,6 +54,7 @@
   import ExamLoadTableActions from './(components)/exam-load-table-actions.svelte'
   import ModuleCatalogCreateDialog from './(components)/module-catalog-create-dialog.svelte'
   import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
+  import ModuleCatalogUploadIntroDialog from './(components)/module-catalog-upload-intro-dialog.svelte'
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
   import StudyProgramTable from './(components)/studyProgram-table.svelte'
   import type { StudyProgramMangerInfo } from './+page.server'
@@ -36,10 +63,11 @@
 
   let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
   let showModuleCatalogCreateDialog: StudyProgram | undefined = $state(undefined)
+  let showModuleCatalogIntroductionUploadDialog: StudyProgram | undefined = $state(undefined)
   let showErrorMessage: string | undefined = $state(undefined)
+  let showSuccessMessage: string | undefined = $state(undefined)
   let isPublishing = $state(false)
   let isPreviewing = $state(false)
-
   // Tab handling
 
   let selectedTab: Tab = $derived((data.selectedTab || 'module-catalog') as Tab)
@@ -67,6 +95,22 @@
         return [
           ...cols,
           {
+            accessorKey: 'module-catalog-intro-upload-info',
+            header: 'Einleitung hochgeladen am',
+            cell: ({ row }) => {
+              const badgeContent = row.original.moduleCatalogIntroLastModified
+                ? dateTimeFormatter.format(row.original.moduleCatalogIntroLastModified)
+                : undefined
+              return renderComponent(StudyProgramTableStatus, {
+                badgeContent,
+                tooltipBadge: () =>
+                  'Bei der Vorschau oder Erstellung des Modulhandbuchs wird die aktuelle Einleitung verwendet. Diese kann jederzeit ausgetauscht werden.',
+                tooltipPending: () =>
+                  'Die Einleitung des Modulhandbuchs (Prolog Teil) wurde noch nicht hochgeladen. Hierfür auf "Einleitung hochladen" klicken.'
+              })
+            }
+          },
+          {
             id: 'module-catalog-actions',
             cell: ({ row }) => {
               return renderComponent(ModuleCatalogTableActions, {
@@ -79,6 +123,10 @@
                 onClickModulePreview: (sp: StudyProgram) => {
                   showModuleCatalogCreateDialog = sp
                   isPreviewing = true
+                },
+                onClickModuleIntroductionUpload: (sp: StudyProgram) => {
+                  showModuleCatalogIntroductionUploadDialog = sp
+                  isPreviewing = false
                 }
               })
             }
@@ -91,7 +139,16 @@
             accessorKey: 'exam-list-publish-info',
             header: 'Veröffentlicht am',
             cell: ({ row }) => {
-              return renderComponent(StudyProgramTableStatus, { examList: row.original.examList })
+              const badgeContent = row.original.examList
+                ? fmtExamListPublishDate(row.original.examList)
+                : undefined
+              return renderComponent(StudyProgramTableStatus, {
+                badgeContent,
+                tooltipBadge: () =>
+                  'Die Prüfungsliste wurde vom Prüfungsausschuss für das Semester freigegeben und ist unter "Prüfungslisten" für alle öffentlich zugänglich. Diese kann jederzeit überschrieben werden.',
+                tooltipPending: () =>
+                  'Die Prüfungsliste wurde noch nicht freigegeben. Hierfür auf "Freigabe" klicken und das entsprechende Semester auswählen.'
+              })
             }
           },
           {
@@ -134,7 +191,9 @@
 
 <LoadingOverlay show={isPublishing} message="Prüfungsliste wird freigegeben…" />
 
-<ErrorMessage bind:message={showErrorMessage} title="Fehler beim Freigeben der Prüfungsliste" />
+<ErrorMessage bind:message={showErrorMessage} />
+
+<SuccessMessage bind:message={showSuccessMessage} />
 
 <ExamListReleaseDialog
   semesters={data.semesters}
@@ -145,6 +204,12 @@
 
 <ModuleCatalogCreateDialog bind:showModuleCatalogCreateDialog isPreview={isPreviewing} />
 
+<ModuleCatalogUploadIntroDialog
+  bind:showModuleCatalogIntroductionUploadDialog
+  bind:showSuccessMessage
+  bind:showErrorMessage
+/>
+
 <div class="flex h-full flex-1 flex-col space-y-8">
   <div class="space-y-2">
     <h2 class="text-3xl font-bold tracking-tight">
@@ -153,6 +218,10 @@
     <p class="text-sm text-muted-foreground">
       Als PAV oder SGL können hier die <span class="font-bold">aktuellsten Versionen</span> von Modulhandbüchern
       und Prüfungslisten eingesehen werden. Für die Vorschau werden ausschließlich aktive Module verwendet.
+    </p>
+    <p class="text-sm text-muted-foreground">
+      Zudem können die Einleitung des Modulhandbuchs (Prolog Teil) hochgeladen werden. Diese wird
+      bei der Vorschau und Erstellung des Modulhandbuchs verwendet.
     </p>
   </div>
   <div class="space-y-4">

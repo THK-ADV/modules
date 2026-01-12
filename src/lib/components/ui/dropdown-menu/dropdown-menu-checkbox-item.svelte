@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui'
-  import { type WithoutChildrenOrChild } from '$lib/utils.js'
+  import { DropdownMenu as DropdownMenuPrimitive, type WithoutChildrenOrChild } from 'bits-ui'
   import Check from '@lucide/svelte/icons/check'
   import Minus from '@lucide/svelte/icons/minus'
   import { cn } from '$lib/utils.js'
@@ -23,7 +22,7 @@
   bind:checked
   bind:indeterminate
   class={cn(
-    'data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+    'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
     className
   )}
   {...restProps}

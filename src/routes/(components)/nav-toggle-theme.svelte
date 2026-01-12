@@ -4,6 +4,8 @@
 
   import { mode, toggleMode } from 'mode-watcher'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+
+  const toggleModeText = $derived(mode.current === 'dark' ? 'Light' : 'Dark')
 </script>
 
 <Sidebar.MenuItem>
@@ -14,6 +16,6 @@
         class="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
       />
     </span>
-    <span>{$mode === 'dark' ? 'Light' : 'Dark'}</span>
+    <span>{toggleModeText}</span>
   </Sidebar.MenuButton>
 </Sidebar.MenuItem>

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Switch as SwitchPrimitive, type WithoutChildrenOrChild } from 'bits-ui'
+  import { Switch as SwitchPrimitive } from 'bits-ui'
+  import { type WithoutChildrenOrChild } from '$lib/utils.js'
   import { cn } from '$lib/utils.js'
 
   let {

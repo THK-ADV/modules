@@ -146,8 +146,8 @@
             <p>
               Die Prüfung erfolgt durch die PAVs oder SGLs der zugeordneten Studiengänge. Es müssen <strong
                 >alle</strong
-              > zustimmen, damit die Änderungen wirksam werden. Sobald eine Person ablehnt, muss der
-              / die MV Anpassungen vornehmen und die Prüfung erneut anfordern. Der Prüfprozess wiederholt
+              > zustimmen, damit die Änderungen wirksam werden. Sobald eine Person ablehnt, muss der /
+              die MV Anpassungen vornehmen und die Prüfung erneut anfordern. Der Prüfprozess wiederholt
               sich.
             </p>
           </div>

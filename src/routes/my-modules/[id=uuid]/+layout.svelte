@@ -471,11 +471,9 @@
                     >⚠️ {section.label}</option
                   >
                 </Tooltip.Trigger>
-                <Tooltip.Portal>
-                  <Tooltip.Content class="z-100 max-w-xs wrap-break-word"
-                    >{ERROR_TOOLTIP_TEXT}</Tooltip.Content
-                  >
-                </Tooltip.Portal>
+                <Tooltip.Content class="z-100 max-w-xs wrap-break-word"
+                  >{ERROR_TOOLTIP_TEXT}</Tooltip.Content
+                >
               </Tooltip.Root>
             </Tooltip.Provider>
           {:else}
@@ -516,9 +514,7 @@
                           <Tooltip.Trigger>
                             <span class="text-destructive">⚠️ {section.label}</span>
                           </Tooltip.Trigger>
-                          <Tooltip.Portal>
-                            <Tooltip.Content class="z-100">{ERROR_TOOLTIP_TEXT}</Tooltip.Content>
-                          </Tooltip.Portal>
+                          <Tooltip.Content class="z-100">{ERROR_TOOLTIP_TEXT}</Tooltip.Content>
                         </Tooltip.Root>
                       </Tooltip.Provider>
                     {:else}

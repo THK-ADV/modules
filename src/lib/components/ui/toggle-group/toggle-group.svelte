@@ -23,10 +23,8 @@
     ...restProps
   }: ToggleGroupPrimitive.RootProps & ToggleVariants = $props()
 
-  setToggleGroupCtx({
-    variant,
-    size
-  })
+  // svelte-ignore state_referenced_locally
+  setToggleGroupCtx({ variant, size })
 </script>
 
 <!--

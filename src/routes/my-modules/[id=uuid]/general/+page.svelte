@@ -7,6 +7,8 @@
 
   let { data }: PageProps = $props()
 
+  const canEditTitle = $derived(data.userInfo?.hasExtendedModuleEditPermissions ?? false)
+
   let moduleTypes = moduleUpdateState.moduleTypes
   let languages = moduleUpdateState.languages
   let seasons = moduleUpdateState.seasons
@@ -53,7 +55,7 @@
         bind:value={$formData.title}
         {errors}
         modificationStatus={titleStatus}
-        disabled={true}
+        disabled={!canEditTitle}
       />
 
       <InputField

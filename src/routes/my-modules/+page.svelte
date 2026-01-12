@@ -158,19 +158,6 @@
 
     {#if !isPublishingPhase}
       <div class="w-full space-y-4">
-        <!-- {#if hasAccreditationModules}
-          <Tabs.Root bind:value={selectedTab} onValueChange={updateSelectedTab}>
-            <Tabs.List>
-              <Tabs.Trigger value="default">Zugewiesene Module</Tabs.Trigger>
-              <Tabs.Trigger value="accreditation">Module aus Reakkreditierung</Tabs.Trigger>
-            </Tabs.List>
-            <Tabs.Content value="accreditation" class="ml-1">
-              <p class="break-words text-sm text-muted-foreground">
-                Im Rahmen der Reakkreditierung können Sie alle Module bearbeiten
-              </p>
-            </Tabs.Content>
-          </Tabs.Root>
-        {/if} -->
         <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} />
       </div>
     {/if}

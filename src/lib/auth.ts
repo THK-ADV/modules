@@ -5,6 +5,7 @@ export type UserInfo = {
   hasDirectorPrivileges: boolean
   hasModuleReviewPrivileges: boolean
   hasModulesToEdit: boolean
+  hasExtendedModuleEditPermissions: boolean
   rejectedReviews: number
   reviewsToApprove: number
   fastForwardApprovalPOs: string[] | undefined

@@ -7,7 +7,7 @@
   import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
   const { data }: PageProps = $props()

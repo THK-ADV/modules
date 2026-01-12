@@ -2,7 +2,7 @@
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
   import { getModuleFormContext } from '../context'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
 
   let { data }: PageProps = $props()
 

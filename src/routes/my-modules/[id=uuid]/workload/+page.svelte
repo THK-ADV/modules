@@ -5,7 +5,7 @@
   import { getPOsWithIds } from '$lib/http'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { onMount } from 'svelte'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
   const { data }: PageProps = $props()

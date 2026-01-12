@@ -3,7 +3,7 @@
   import MarkdownHelp from '$lib/components/markdown-help.svelte'
   import MarkdownHint from '$lib/components/markdown-hint.svelte'
   import { getModuleFormContext } from '../context'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
 

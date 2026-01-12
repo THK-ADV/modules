@@ -54,7 +54,7 @@
 <script lang="ts">
   import type { Semester } from '$lib/types/semester'
   import type { StudyProgram } from '$lib/types/study-program'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
   import ExamListTable from './(components)/exam-list-table.svelte'
 
   let { data }: PageProps = $props()

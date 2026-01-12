@@ -39,7 +39,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-sm font-medium text-foreground">{label}</span>
+      <span class="text-foreground text-sm font-medium">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <Form.Field {form} {name}>
@@ -71,7 +71,7 @@
           <Tooltip.Provider>
             <Tooltip.Root>
               <Tooltip.Trigger><Form.Label>{label}*</Form.Label></Tooltip.Trigger>
-              <Tooltip.Content class="max-w-md break-words">
+              <Tooltip.Content class="max-w-md wrap-break-word">
                 Dieses Attribut kann nicht verändert werden. Falls eine Änderung dennoch
                 erforderlich sein sollte, wenden Sie sich an den PAV.
               </Tooltip.Content>

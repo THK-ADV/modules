@@ -55,8 +55,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Empfohlene Literatur</h3>
-      <p class="text-sm text-muted-foreground">Empfohlene Literatur für das Modul.</p>
+      <h3 class="text-foreground text-lg font-medium">Empfohlene Literatur</h3>
+      <p class="text-muted-foreground text-sm">Empfohlene Literatur für das Modul.</p>
       <MarkdownHint />
       <MarkdownHelp />
     </div>

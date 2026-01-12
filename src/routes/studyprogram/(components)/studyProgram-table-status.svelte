@@ -15,9 +15,9 @@
 </script>
 
 {#if badgeContent}
-  <Badge variant="outline" class="gap-1.5 text-muted-foreground">
+  <Badge variant="outline" class="text-muted-foreground gap-1.5">
     <CircleCheckIcon
-      class="h-4 w-4 fill-green-600 stroke-white dark:fill-green-400 dark:stroke-white"
+      class="size-4 fill-green-600 stroke-white dark:fill-green-400 dark:stroke-white"
     />
     {#if tooltipBadge}
       <Tooltip.Provider>
@@ -35,8 +35,8 @@
     {/if}
   </Badge>
 {:else}
-  <Badge variant="outline" class="gap-1.5 text-muted-foreground">
-    <LoaderCircleIcon class="h-3.5 w-3.5 stroke-muted-foreground" />
+  <Badge variant="outline" class="text-muted-foreground gap-1.5">
+    <LoaderCircleIcon class="stroke-muted-foreground size-3.5" />
     {#if tooltipPending}
       <Tooltip.Provider>
         <Tooltip.Root>

@@ -15,7 +15,7 @@
   bind:this={ref}
   data-sidebar="menu-badge"
   class={cn(
-    'pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-full bg-red-500 px-2 text-xs font-medium tabular-nums text-white',
+    'pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-medium text-white tabular-nums select-none',
     'peer-hover/menu-button:text-sidebar-primary-foreground peer-data-[active=true]/menu-button:text-sidebar-primary-foreground',
     'peer-data-[size=sm]/menu-button:top-1',
     'peer-data-[size=default]/menu-button:top-1.5',

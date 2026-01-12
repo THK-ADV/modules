@@ -17,7 +17,7 @@
     class="border-amber-300 font-medium text-amber-700 shadow-sm transition-colors hover:bg-amber-50 hover:text-amber-800"
     onclick={() => goto(`${page.url.pathname}/${moduleId}`)}
   >
-    <Eye class="h-4 w-4" />
+    <Eye class="size-4" />
     <span class="hidden md:block">Prüfen</span>
   </Button>
 {/if}

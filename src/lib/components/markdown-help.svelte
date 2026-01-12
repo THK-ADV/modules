@@ -1,7 +1,7 @@
-<p class="rounded-md bg-muted/50 p-2 text-sm text-muted-foreground">
+<p class="bg-muted/50 text-muted-foreground rounded-md p-2 text-sm">
   💡 <strong>Markdown-Unterstützung:</strong> Die Eingabefelder unterstützen
   <a
-    class="underline transition-colors hover:text-foreground"
+    class="hover:text-foreground underline transition-colors"
     href="https://www.markdownguide.org/basic-syntax/"
     target="_blank">Markdown-Syntax</a
   >. Nutzen Sie die Toolbar für schnelle Formatierung oder den "Vorschau"-Button zum Überprüfen der

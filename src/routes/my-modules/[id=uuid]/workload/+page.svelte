@@ -98,8 +98,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Workload</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Workload</h3>
+      <p class="text-muted-foreground text-sm">
         Der Workload orientiert sich an der SWS Rechnung. Alle Angaben in Stunden. Das Selbststudium
         berechnet sich automatisch aus der Differenz zwischen dem hier angegebenen Workload und den
         ECTS-Punkten.
@@ -115,10 +115,10 @@
         {#if allowedHoursCalculations.length > 1}
           <div class="space-y-4">
             <div class="space-y-1">
-              <div class="font-medium text-foreground">
+              <div class="text-foreground font-medium">
                 Stunden laut ECTS (je nach Prüfungsordnung)
               </div>
-              <div class="text-xs text-muted-foreground">
+              <div class="text-muted-foreground text-xs">
                 Dieses Modul ist verschiedenen Prüfungsordnungen mit unterschiedlichen ECTS-Faktoren
                 zugeordnet
               </div>
@@ -132,7 +132,7 @@
                 <div class="space-x-0.5">
                   <span class="font-medium">Selbststudium:</span>
                   <span
-                    class={calc.selfStudy < 0 ? 'font-semibold text-destructive' : 'text-green-600'}
+                    class={calc.selfStudy < 0 ? 'text-destructive font-semibold' : 'text-green-600'}
                     >{calc.selfStudy} Stunden</span
                   >
                 </div>
@@ -151,12 +151,12 @@
             <span class="font-medium">Selbststudium:</span>
             <span
               class={allowedHoursCalculations[0].selfStudy < 0
-                ? 'font-semibold text-destructive'
+                ? 'text-destructive font-semibold'
                 : 'text-green-600'}>{allowedHoursCalculations[0].selfStudy} Stunden</span
             >
           </div>
         {:else}
-          <div class="space-x-0.5 text-muted-foreground">
+          <div class="text-muted-foreground space-x-0.5">
             <span>Lade ECTS-Faktoren...</span>
           </div>
         {/if}
@@ -168,8 +168,8 @@
       </div>
 
       {#if hasWorkloadError}
-        <div class="mt-3 rounded-md border border-destructive bg-destructive/10 p-3">
-          <p class="text-sm text-destructive">
+        <div class="border-destructive bg-destructive/10 mt-3 rounded-md border p-3">
+          <p class="text-destructive text-sm">
             {#if $errors.workload?._errors?.[0]}
               {$errors.workload._errors[0]}
             {:else if customWorkloadErrorMessage}
@@ -212,12 +212,12 @@
   <div class="space-y-4 {workloadStatus ? getFieldHighlightClasses(workloadStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Stunden pro Kategorie</h4>
+        <h4 class="text-foreground text-base font-medium">Stunden pro Kategorie</h4>
         {#if workloadStatus}
           <ModificationIndicator status={workloadStatus} iconOnly={false} inline={true} />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Angabe der Arbeitsstunden je Veranstaltungstyp für das gesamte Semester.
       </p>
     </div>

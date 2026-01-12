@@ -239,7 +239,7 @@
       <div class="space-y-4">
         <!-- Add Button -->
         <Button type="button" variant="outline" onclick={openAddDialog} class="w-full sm:w-auto">
-          <Plus class="mr-2 h-4 w-4" />
+          <Plus class="mr-2 size-4" />
           PO-Beziehung hinzufügen
         </Button>
 
@@ -275,7 +275,7 @@
                         class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                         onclick={() => openEditDialog(index)}
                       >
-                        <Edit class="h-4 w-4" />
+                        <Edit class="size-4" />
                       </Button>
                       <Button
                         type="button"
@@ -284,7 +284,7 @@
                         class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                         onclick={() => deleteEntry(index)}
                       >
-                        <Trash2 class="h-4 w-4" />
+                        <Trash2 class="size-4" />
                       </Button>
                     </div>
                   </Table.Cell>
@@ -295,11 +295,11 @@
         </div>
       </div>
     {:else}
-      <div class="rounded-md border border-dashed border-muted-foreground/25 bg-muted/10">
+      <div class="border-muted-foreground/25 bg-muted/10 rounded-md border border-dashed">
         <div class="flex flex-col items-center justify-center px-6 py-8 text-center">
-          <div class="mb-3 rounded-full bg-muted p-3">
+          <div class="bg-muted mb-3 rounded-full p-3">
             <svg
-              class="h-6 w-6 text-muted-foreground"
+              class="text-muted-foreground size-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -313,14 +313,14 @@
               />
             </svg>
           </div>
-          <h3 class="mb-2 text-base font-medium text-foreground">
+          <h3 class="text-foreground mb-2 text-base font-medium">
             Keine Wahlmodul-Zugehörigkeiten definiert
           </h3>
-          <p class="mb-4 max-w-sm text-muted-foreground">
+          <p class="text-muted-foreground mb-4 max-w-sm">
             Das Modul wird aktuell in keinem Studiengang als Wahlmodul gelehrt.
           </p>
           <Button type="button" variant="outline" onclick={openAddDialog}>
-            <Plus class="mr-2 h-4 w-4" />
+            <Plus class="mr-2 size-4" />
             PO-Beziehung hinzufügen
           </Button>
         </div>
@@ -336,12 +336,12 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-base font-medium text-foreground"
+      <span class="text-foreground text-base font-medium"
         >Verwendung in Studiengängen als Wahlmodul (optional)</span
       >
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Hier wird festgelegt, in welchen Studiengängen das Modul als Wahlmodul / WPF gelehrt wird.
     </p>
     <Form.Field {form} {name}>
@@ -368,10 +368,10 @@
       {#snippet children({ props })}
         <div class="space-y-4">
           <div class="border-b pb-2">
-            <Form.Label class="text-base font-medium text-foreground"
+            <Form.Label class="text-foreground text-base font-medium"
               >Verwendung in Studiengängen als Wahlmodul (optional)</Form.Label
             >
-            <Form.Description class="mt-1 text-sm text-muted-foreground">
+            <Form.Description class="text-muted-foreground mt-1 text-sm">
               Hier wird festgelegt, in welchen Studiengängen das Modul als Wahlmodul / WPF gelehrt
               wird.
             </Form.Description>

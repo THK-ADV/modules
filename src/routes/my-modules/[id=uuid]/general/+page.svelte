@@ -41,8 +41,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Allgemeine Informationen</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Allgemeine Informationen</h3>
+      <p class="text-muted-foreground text-sm">
         Grundlegende Informationen und Klassifizierung des Moduls.
       </p>
     </div>
@@ -50,8 +50,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Grundangaben</h4>
-      <p class="text-sm text-muted-foreground">Name, Abkürzung und Credits des Moduls.</p>
+      <h4 class="text-foreground text-base font-medium">Grundangaben</h4>
+      <p class="text-muted-foreground text-sm">Name, Abkürzung und Credits des Moduls.</p>
     </div>
 
     <div class="space-y-4">
@@ -95,8 +95,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Klassifizierung</h4>
-      <p class="text-sm text-muted-foreground">
+      <h4 class="text-foreground text-base font-medium">Klassifizierung</h4>
+      <p class="text-muted-foreground text-sm">
         Art, Sprache und organisatorische Einordnung des Moduls.
       </p>
     </div>
@@ -142,8 +142,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Terminplanung</h4>
-      <p class="text-sm text-muted-foreground">Zeitliche und örtliche Einordnung des Moduls.</p>
+      <h4 class="text-foreground text-base font-medium">Terminplanung</h4>
+      <p class="text-muted-foreground text-sm">Zeitliche und örtliche Einordnung des Moduls.</p>
     </div>
 
     <div class="space-y-4">

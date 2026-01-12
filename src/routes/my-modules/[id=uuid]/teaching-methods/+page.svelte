@@ -55,8 +55,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Lehr- und Lernmethoden</h3>
-      <p class="text-sm text-muted-foreground">Die Lehr- und Lernmethoden des Moduls.</p>
+      <h3 class="text-foreground text-lg font-medium">Lehr- und Lernmethoden</h3>
+      <p class="text-muted-foreground text-sm">Die Lehr- und Lernmethoden des Moduls.</p>
       <MarkdownHint />
       <MarkdownHelp />
     </div>

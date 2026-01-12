@@ -46,9 +46,9 @@
           class="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 {sizeClasses}"
         >
           {#if iconOnly}
-            <Eye class="h-4 w-4" />
+            <Eye class="size-4" />
           {:else}
-            <Eye class="mr-1 h-4 w-4" />
+            <Eye class="mr-1 size-4" />
             Review
           {/if}
         </Badge>
@@ -58,9 +58,9 @@
           class="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 {sizeClasses}"
         >
           {#if iconOnly}
-            <Edit class="h-4 w-4" />
+            <Edit class="size-4" />
           {:else}
-            <Edit class="mr-1 h-4 w-4" />
+            <Edit class="mr-1 size-4" />
             Geändert
           {/if}
         </Badge>

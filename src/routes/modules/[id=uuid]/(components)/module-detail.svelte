@@ -338,7 +338,7 @@
 {/snippet}
 
 {#snippet rawAvatar(person: Person)}
-  <Avatar.Root class="h-12 w-12 bg-muted">
+  <Avatar.Root class="bg-muted size-12">
     {#if person.imageUrl}
       <Avatar.Image
         src={person.imageUrl}
@@ -352,7 +352,7 @@
   </Avatar.Root>
   <div class="flex flex-col">
     <div class="font-medium">{formatPerson(person)}</div>
-    <div class="text-sm text-muted-foreground">{formatEmploymentType(person)}</div>
+    <div class="text-muted-foreground text-sm">{formatEmploymentType(person)}</div>
   </div>
 {/snippet}
 
@@ -362,7 +362,7 @@
       href={person.websiteUrl}
       target="_blank"
       rel="noopener noreferrer"
-      class="flex cursor-pointer items-center gap-4 rounded-md transition-colors hover:bg-muted"
+      class="hover:bg-muted flex cursor-pointer items-center gap-4 rounded-md transition-colors"
     >
       {@render rawAvatar(person)}
     </a>
@@ -375,8 +375,8 @@
 
 {#snippet group(other: Other)}
   <div class="flex items-center gap-2">
-    <Avatar.Root class="h-12 w-12 bg-muted">
-      <Avatar.Fallback><Users class="h-4 w-4" /></Avatar.Fallback>
+    <Avatar.Root class="bg-muted size-12">
+      <Avatar.Fallback><Users class="size-4" /></Avatar.Fallback>
     </Avatar.Root>
     <div class="font-medium">{other.title}</div>
   </div>
@@ -409,7 +409,7 @@
             </Tooltip.Provider>
           {/each}
         </div>
-        <div class="whitespace-nowrap text-sm text-muted-foreground sm:text-right">
+        <div class="text-muted-foreground text-sm whitespace-nowrap sm:text-right">
           {studyProgram.semester.length > 0 ? `Sem. ${studyProgram.semester.join(', ')}` : 'N/A'}
         </div>
       </div>
@@ -449,7 +449,7 @@
     {#if attendanceRequirement}
       <button
         type="button"
-        class="flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
+        class="hover:bg-muted/50 flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors"
         onclick={() => (isAttendanceRequirementExpanded = !isAttendanceRequirementExpanded)}
         onkeydown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -463,24 +463,24 @@
         <div class="flex items-center gap-2">
           <span class="font-medium">Anwesenheitspflichtig</span>
         </div>
-        <div class="flex items-center gap-1 text-sm text-muted-foreground">
-          <Info class="h-3 w-3" />
+        <div class="text-muted-foreground flex items-center gap-1 text-sm">
+          <Info class="size-3" />
           <span>Weitere Infos</span>
           {#if isAttendanceRequirementExpanded}
-            <ChevronUp class="h-4 w-4" />
+            <ChevronUp class="size-4" />
           {:else}
-            <ChevronDown class="h-4 w-4" />
+            <ChevronDown class="size-4" />
           {/if}
         </div>
       </button>
       {#if isAttendanceRequirementExpanded}
         <div id="attendance-requirement-details" class="space-y-2 pl-4">
           <div class="space-y-1">
-            <div class="text-sm text-muted-foreground">Mindestpräsenzzeit</div>
+            <div class="text-muted-foreground text-sm">Mindestpräsenzzeit</div>
             <div>{attendanceRequirement.min}</div>
           </div>
           <div class="space-y-1">
-            <div class="text-sm text-muted-foreground">Umgang mit Fehlzeiten</div>
+            <div class="text-muted-foreground text-sm">Umgang mit Fehlzeiten</div>
             <div>{attendanceRequirement.absence}</div>
           </div>
         </div>
@@ -489,7 +489,7 @@
     {#if assessmentPrerequisite}
       <button
         type="button"
-        class="flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
+        class="hover:bg-muted/50 flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors"
         onclick={() => (isAssessmentPrerequisiteExpanded = !isAssessmentPrerequisiteExpanded)}
         onkeydown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -503,13 +503,13 @@
         <div class="flex items-center gap-2">
           <span class="font-medium">Vorleistungen erforderlich</span>
         </div>
-        <div class="flex items-center gap-1 text-sm text-muted-foreground">
-          <Info class="h-3 w-3" />
+        <div class="text-muted-foreground flex items-center gap-1 text-sm">
+          <Info class="size-3" />
           <span>Weitere Infos</span>
           {#if isAssessmentPrerequisiteExpanded}
-            <ChevronUp class="h-4 w-4" />
+            <ChevronUp class="size-4" />
           {:else}
-            <ChevronDown class="h-4 w-4" />
+            <ChevronDown class="size-4" />
           {/if}
         </div>
       </button>
@@ -522,7 +522,7 @@
       {/if}
     {/if}
     {#if requiredPrerequisites?.text}
-      <div class="border-l-2 border-muted-foreground/30 pl-2 italic">
+      <div class="border-muted-foreground/30 border-l-2 pl-2 italic">
         {requiredPrerequisites.text}
       </div>
     {/if}
@@ -545,7 +545,7 @@
               <Badge
                 class="flex cursor-help items-center border-red-200 bg-red-100 px-4 py-1 text-red-800 hover:bg-red-100"
               >
-                <XCircle class="mr-1.5 h-4 w-4 flex-shrink-0 " />
+                <XCircle class="mr-1.5 size-4 shrink-0 " />
                 <span class="text-sm">{module.status.label}</span>
               </Badge>
             </Tooltip.Trigger>
@@ -555,22 +555,22 @@
           </Tooltip.Root>
         </Tooltip.Provider>
       {/if}
-      <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
-        <Award class="mr-1.5 h-4 w-4 flex-shrink-0" />
+      <Badge variant="outline" class="text-muted-foreground flex items-center px-4 py-1">
+        <Award class="mr-1.5 size-4 shrink-0" />
         <span class="text-sm">{module.ects} ECTS</span>
       </Badge>
-      <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
-        <Globe class="mr-1.5 h-4 w-4 flex-shrink-0" />
+      <Badge variant="outline" class="text-muted-foreground flex items-center px-4 py-1">
+        <Globe class="mr-1.5 size-4 shrink-0" />
         <span class="text-sm">{module.language.label}</span>
       </Badge>
       {#each degrees as degree (degree)}
-        <Badge variant="outline" class="flex items-center px-4 py-1 text-muted-foreground">
-          <GraduationCap class="mr-1.5 h-4 w-4 flex-shrink-0" />
+        <Badge variant="outline" class="text-muted-foreground flex items-center px-4 py-1">
+          <GraduationCap class="mr-1.5 size-4 shrink-0" />
           <span class="text-sm">{degree}</span>
         </Badge>
       {/each}
     </div>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Letzte Aktualisierung: {lastModified}
     </p>
   </div>
@@ -582,34 +582,34 @@
     <Card.Root>
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Info class="h-5 w-5" />
+          <Info class="size-5" />
           Grunddaten
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Kürzel</span>
+          <span class="text-muted-foreground text-sm">Kürzel</span>
           <span class="font-medium">{module.abbreviation}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Dauer des Moduls</span>
+          <span class="text-muted-foreground text-sm">Dauer des Moduls</span>
           <span class="font-medium">{module.duration} Semester</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Angeboten im</span>
+          <span class="text-muted-foreground text-sm">Angeboten im</span>
           <span class="font-medium">{module.season}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">Veranstaltungsort</span>
+          <span class="text-muted-foreground text-sm">Veranstaltungsort</span>
           <span class="font-medium">{module.location}</span>
         </div>
         {#if module.moduleRelation}
           <div class="flex items-center justify-between">
             {#if module.moduleRelation.relationType === 'parent'}
-              <span class="text-sm text-muted-foreground">Hat Teilmodule</span>
+              <span class="text-muted-foreground text-sm">Hat Teilmodule</span>
               <div>{@render moduleLinks(module.moduleRelation.modules)}</div>
             {:else if module.moduleRelation.relationType === 'child'}
-              <span class="text-sm text-muted-foreground">Teil von Obermodul</span>
+              <span class="text-muted-foreground text-sm">Teil von Obermodul</span>
               <div>{@render moduleLinks([module.moduleRelation.module])}</div>
             {/if}
           </div>
@@ -617,7 +617,7 @@
         {#if isGenericModule && genericModuleOptions.length > 0}
           <button
             type="button"
-            class="flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
+            class="hover:bg-muted/50 flex w-full cursor-pointer flex-wrap items-center justify-between rounded-md text-left transition-colors"
             onclick={() => (isGenericModuleExpanded = !isGenericModuleExpanded)}
             onkeydown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -629,11 +629,11 @@
             aria-controls="generic-module-details"
           >
             <div class="flex items-center gap-2">
-              <span class="text-sm text-muted-foreground">Wählbare Moduloptionen</span>
+              <span class="text-muted-foreground text-sm">Wählbare Moduloptionen</span>
               {#if isGenericModuleExpanded}
-                <ChevronUp class="h-4 w-4 text-muted-foreground" />
+                <ChevronUp class="text-muted-foreground size-4" />
               {:else}
-                <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                <ChevronDown class="text-muted-foreground size-4" />
               {/if}
             </div>
             <span class="font-medium"
@@ -646,7 +646,7 @@
               <ul class="list-none space-y-2">
                 {#each genericModuleOptions as module (module.id)}
                   <li class="flex items-baseline gap-2">
-                    <ExternalLink class="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    <ExternalLink class="text-muted-foreground size-4 shrink-0" />
                     <a
                       title={module.title}
                       href={resolve('/modules/[id=uuid]', { id: module.id })}
@@ -667,12 +667,12 @@
     <Card.Root>
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Users class="h-5 w-5" />
+          <Users class="size-5" />
           Verantwortliche
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
-        <div class="text-sm text-muted-foreground">Modulverantwortung</div>
+        <div class="text-muted-foreground text-sm">Modulverantwortung</div>
         {#each module.moduleManagement as management (management.id)}
           {#if management.kind === 'person'}
             {@render avatar(management)}
@@ -681,7 +681,7 @@
           {/if}
         {/each}
         <Separator />
-        <div class="text-sm text-muted-foreground">Lehrende</div>
+        <div class="text-muted-foreground text-sm">Lehrende</div>
         {#each module.lecturer as lecturer (lecturer.id)}
           {#if lecturer.kind === 'person'}
             {@render avatar(lecturer)}
@@ -697,18 +697,18 @@
       <Card.Root>
         <Card.Header>
           <Card.Title class="flex items-center gap-2">
-            <ClipboardCheck class="h-5 w-5" />
+            <ClipboardCheck class="size-5" />
             Prüfung
           </Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           <div class="space-y-1">
-            <div class="text-sm text-muted-foreground">Prüfungsformen</div>
+            <div class="text-muted-foreground text-sm">Prüfungsformen</div>
             {#each module.assessments as assessment, index (index)}
               <p class="font-medium">
                 {assessment.label}
                 {#if assessment.percentage}
-                  <span class="font-normal text-muted-foreground">({assessment.percentage} %)</span>
+                  <span class="text-muted-foreground font-normal">({assessment.percentage} %)</span>
                 {/if}
               </p>
             {:else}
@@ -717,7 +717,7 @@
           </div>
 
           <div class="space-y-1">
-            <div class="text-sm text-muted-foreground">Prüfungsphasen</div>
+            <div class="text-muted-foreground text-sm">Prüfungsphasen</div>
             {#each examPhases as phase (phase)}
               <p class="font-medium">{examPhaseLabel(phase)}</p>
             {:else}
@@ -726,7 +726,7 @@
           </div>
 
           <div class="space-y-1">
-            <div class="text-sm text-muted-foreground">Prüfende</div>
+            <div class="text-muted-foreground text-sm">Prüfende</div>
             <div class="flex items-center gap-2 font-medium">
               <span class="w-4">1.</span>
               <span>{formatIdentity(module.firstExaminer)}</span>
@@ -746,7 +746,7 @@
         <Card.Header>
           <div class="flex items-center justify-between">
             <Card.Title class="flex items-center gap-2">
-              <Clock class="h-5 w-5" />
+              <Clock class="size-5" />
               Workload
             </Card.Title>
             {#if hasMultipleECTSFactors}
@@ -784,7 +784,7 @@
         <Card.Content class="space-y-2">
           <button
             type="button"
-            class="flex w-full cursor-pointer items-center justify-between rounded-md text-left transition-colors hover:bg-muted/50"
+            class="hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between rounded-md text-left transition-colors"
             onclick={() => (isWorkloadDetailsExpanded = !isWorkloadDetailsExpanded)}
             onkeydown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -796,11 +796,11 @@
             aria-controls="workload-details"
           >
             <div class="flex items-center gap-2">
-              <span class="text-sm text-muted-foreground">Präsenzzeit</span>
+              <span class="text-muted-foreground text-sm">Präsenzzeit</span>
               {#if isWorkloadDetailsExpanded}
-                <ChevronUp class="h-4 w-4 text-muted-foreground" />
+                <ChevronUp class="text-muted-foreground size-4" />
               {:else}
-                <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                <ChevronDown class="text-muted-foreground size-4" />
               {/if}
             </div>
             <span class="font-medium">{contact} h</span>
@@ -808,44 +808,44 @@
           {#if isWorkloadDetailsExpanded}
             <div id="workload-details" class="space-y-1 pl-4">
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Vorlesung</span>
+                <span class="text-muted-foreground text-sm">Vorlesung</span>
                 <span class="font-medium">{module.workload.lecture} h</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Übung</span>
+                <span class="text-muted-foreground text-sm">Übung</span>
                 <span class="font-medium">{module.workload.exercise} h</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Seminar</span>
+                <span class="text-muted-foreground text-sm">Seminar</span>
                 <span class="font-medium">{module.workload.seminar} h</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Praktikum</span>
+                <span class="text-muted-foreground text-sm">Praktikum</span>
                 <span class="font-medium">{module.workload.practical} h</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Projektbetreuung</span>
+                <span class="text-muted-foreground text-sm">Projektbetreuung</span>
                 <span class="font-medium">{module.workload.projectSupervision} h</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-muted-foreground">Projektarbeit</span>
+                <span class="text-muted-foreground text-sm">Projektarbeit</span>
                 <span class="font-medium">{module.workload.projectWork} h</span>
               </div>
             </div>
           {/if}
           <div class="flex items-center justify-between">
-            <span class="text-sm text-muted-foreground">Selbststudium</span>
+            <span class="text-muted-foreground text-sm">Selbststudium</span>
             <span class="font-medium">{selfStudy} h</span>
           </div>
           <Separator />
           <div class="flex items-center justify-between">
-            <span class="text-sm text-muted-foreground">Gesamt</span>
+            <span class="text-muted-foreground text-sm">Gesamt</span>
             <span class="font-medium">{total} h</span>
           </div>
         </Card.Content>
         {#if hasMultipleECTSFactors}
           <Card.Footer>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-muted-foreground text-sm">
               <sup>*</sup>Dieses Modul ist Studiengängen zugeordnet, die unterschiedliche
               ECTS-Faktoren haben. Für eine korrekte Darstellung des Workloads ist die Auswahl eines
               ECTS-Faktors notwendig.
@@ -859,14 +859,14 @@
     <Card.Root class="col-span-1">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <GraduationCap class="h-6 w-6" />
+          <GraduationCap class="size-6" />
           Studiengänge
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-2">
-        <div class="text-sm text-muted-foreground">Pflichtmodul</div>
+        <div class="text-muted-foreground text-sm">Pflichtmodul</div>
         {@render studyPrograms(studyProgramsMandatory)}
-        <div class="text-sm text-muted-foreground">Wahlmodul</div>
+        <div class="text-muted-foreground text-sm">Wahlmodul</div>
         {@render studyPrograms(studyProgramsOptional)}
       </Card.Content>
     </Card.Root>
@@ -875,21 +875,21 @@
     <Card.Root class="col-span-1">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <ShieldAlert class="h-5 w-5" />
+          <ShieldAlert class="size-5" />
           Voraussetzungen
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-2">
-        <div class="text-sm text-muted-foreground">Zwingend</div>
+        <div class="text-muted-foreground text-sm">Zwingend</div>
         {@render requiredPrerequisites(
           module.requiredPrerequisites,
           module.assessmentPrerequisite,
           module.attendanceRequirement
         )}
         {#if module.recommendedPrerequisites}
-          <div class="text-sm text-muted-foreground">Empfohlen</div>
+          <div class="text-muted-foreground text-sm">Empfohlen</div>
           {#if module.recommendedPrerequisites.text}
-            <div class="border-l-2 border-muted-foreground/30 pl-2 italic">
+            <div class="border-muted-foreground/30 border-l-2 pl-2 italic">
               {module.recommendedPrerequisites.text}
             </div>
           {/if}
@@ -923,7 +923,7 @@
         }}
         class="flex items-center gap-2"
       >
-        <img src="/flags/de-flag-circle.svg" alt="German flag" class="h-5 w-5" />
+        <img src="/flags/de-flag-circle.svg" alt="German flag" class="size-5" />
         Deutsch
       </ToggleGroup.Item>
       <ToggleGroup.Item
@@ -935,13 +935,13 @@
         }}
         class="flex items-center gap-2"
       >
-        <img src="/flags/us-flag-circle.svg" alt="US flag" class="h-5 w-5" />
+        <img src="/flags/us-flag-circle.svg" alt="US flag" class="size-5" />
         English
       </ToggleGroup.Item>
     </ToggleGroup.Root>
   </div>
 
-  <div class="prose max-w-none dark:prose-invert">
+  <div class="prose dark:prose-invert max-w-none">
     {#if selectedLanguage === 'en'}
       {@render markdown('Learning Outcome', module.enContent.learningOutcome)}
       {@render markdown('Module Content', module.enContent.moduleContent)}

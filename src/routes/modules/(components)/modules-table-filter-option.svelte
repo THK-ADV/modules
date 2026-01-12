@@ -34,7 +34,7 @@
   <Popover.Trigger>
     <div>
       <Button variant="outline" size="sm" class="h-8 border-2 border-dashed">
-        <CirclePlus class="h-4 w-4" />
+        <CirclePlus class="size-4" />
         {title}
         {#if filterValues.length > 0}
           <Separator orientation="vertical" class="mx-1 h-4" />
@@ -74,13 +74,13 @@
             <Command.Item value={option.label} onSelect={() => handleSelect(option.id)}>
               <div
                 class={cn(
-                  'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                  'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
                   filterValues.includes(option.id)
                     ? 'bg-primary text-primary-foreground'
                     : 'opacity-50 [&_svg]:invisible'
                 )}
               >
-                <Check class="h-4 w-4" />
+                <Check class="size-4" />
               </div>
               <span>{option.label}</span>
             </Command.Item>

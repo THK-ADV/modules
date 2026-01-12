@@ -216,11 +216,11 @@
     <h2 class="text-3xl font-bold tracking-tight">
       Verwaltung von Modulhandbüchern und Prüfungslisten
     </h2>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Als PAV oder SGL können hier die <span class="font-bold">aktuellsten Versionen</span> von Modulhandbüchern
       und Prüfungslisten eingesehen werden. Für die Vorschau werden ausschließlich aktive Module verwendet.
     </p>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Zudem können die Einleitung des Modulhandbuchs (Prolog Teil) hochgeladen werden. Diese wird
       bei der Vorschau und Erstellung des Modulhandbuchs verwendet.
     </p>
@@ -236,7 +236,7 @@
             <Tooltip.Provider>
               <Tooltip.Root>
                 <Tooltip.Trigger>
-                  <FlaskConical class="h-4 w-4 text-muted-foreground" />
+                  <FlaskConical class="text-muted-foreground size-4" />
                 </Tooltip.Trigger>
                 <Tooltip.Content>
                   <p class="text-sm">Experimentell</p>
@@ -247,7 +247,7 @@
         </Tabs.Trigger>
       </Tabs.List>
       <Tabs.Content value="exam-list" class="ml-1">
-        <p class="text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm">
           PAVs haben darüber hinaus die Möglichkeit, Prüfungslisten für <span class="font-bold"
             >alle öffentlich freizugeben</span
           >. Hierfür wird ein Datum der Freigabe und ein Semester, für die die Prüfungsliste gilt,
@@ -260,13 +260,13 @@
         </p>
       </Tabs.Content>
       <Tabs.Content value="module-catalog" class="ml-1">
-        <p class="text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm">
           Für die Vorschau und Erstellung von Modulhandbüchern können bestimmte Module
           <span class="font-bold">ausgeschlossen</span> werden.
         </p>
       </Tabs.Content>
       <Tabs.Content value="exam-load" class="ml-1">
-        <p class="text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm">
           Erzeugt die Prüfungslast als CSV. Achtung: Diese Funktion ist experimentell. Feedback ist
           sehr erwünscht!
         </p>

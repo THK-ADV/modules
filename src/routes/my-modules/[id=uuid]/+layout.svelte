@@ -357,7 +357,7 @@
       <h1 class="text-3xl font-bold tracking-tight">
         {isReviewMode ? 'Modul prüfen' : 'Modul bearbeiten'}
       </h1>
-      <p class="break-words text-muted-foreground">
+      <p class="text-muted-foreground wrap-break-word">
         {isReviewMode
           ? 'Prüfen Sie die Modulinformationen. Änderungen können gespeichert werden; die Seite lädt danach neu.'
           : 'Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.'}
@@ -365,10 +365,10 @@
     </div>
 
     {#if browser && dev}
-      <div class="flex-shrink-0">
+      <div class="shrink-0">
         <Dialog.Root>
           <Dialog.Trigger
-            class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-3 text-xs font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+            class="border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
           >
             Debug Info
           </Dialog.Trigger>
@@ -401,11 +401,11 @@
 
   <!-- Error Message Display -->
   {#if page.form?.message && showError}
-    <div class="rounded-md border border-destructive/20 bg-destructive/5 p-3">
+    <div class="border-destructive/20 bg-destructive/5 rounded-md border p-3">
       <div class="flex items-start justify-between">
         <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-4 w-4 text-destructive" viewBox="0 0 20 20" fill="currentColor">
+          <div class="shrink-0">
+            <svg class="text-destructive size-4" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fill-rule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -414,23 +414,23 @@
             </svg>
           </div>
           <div class="ml-2">
-            <h3 class="text-sm font-medium text-destructive">
+            <h3 class="text-destructive text-sm font-medium">
               Fehler beim Aktualisieren des Moduls
             </h3>
-            <div class="mt-1 text-sm text-destructive/80">
+            <div class="text-destructive/80 mt-1 text-sm">
               <p>{page.form.message}</p>
             </div>
           </div>
         </div>
-        <div class="ml-4 flex-shrink-0">
+        <div class="ml-4 shrink-0">
           <Button
             variant="ghost"
             size="sm"
-            class="h-6 w-6 p-0 text-destructive/60 hover:text-destructive"
+            class="text-destructive/60 hover:text-destructive size-6 p-0"
             onclick={() => (showError = false)}
             aria-label="Fehlermeldung schließen"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -452,12 +452,12 @@
   >
     <!-- mobile section selector (shown on small screens) -->
     <div class="mb-6 space-y-2 lg:hidden">
-      <label for="section-select" class="block text-sm font-medium text-foreground">
+      <label for="section-select" class="text-foreground block text-sm font-medium">
         Abschnitt auswählen:
       </label>
       <select
         id="section-select"
-        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        class="border-input bg-background focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
         value={`${currentSection.href}${page.url.search}`}
         onchange={handleSectionChange}
       >
@@ -472,7 +472,7 @@
                   >
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
-                  <Tooltip.Content class="z-[100] max-w-xs break-words"
+                  <Tooltip.Content class="z-100 max-w-xs wrap-break-word"
                     >{ERROR_TOOLTIP_TEXT}</Tooltip.Content
                   >
                 </Tooltip.Portal>
@@ -492,9 +492,9 @@
     </div>
 
     <!-- desktop layout -->
-    <div class="flex flex-col lg:flex-row lg:space-x-12 lg:space-y-0">
+    <div class="flex flex-col lg:flex-row lg:space-y-0 lg:space-x-12">
       <!-- sidebar navigation (hidden on small screens) -->
-      <aside class="hidden flex-shrink-0 lg:block lg:w-1/5">
+      <aside class="hidden shrink-0 lg:block lg:w-1/5">
         <div class="sticky top-6 space-y-6">
           <nav class="flex flex-col space-y-1">
             {#each sections as section (section.id)}
@@ -517,7 +517,7 @@
                             <span class="text-destructive">⚠️ {section.label}</span>
                           </Tooltip.Trigger>
                           <Tooltip.Portal>
-                            <Tooltip.Content class="z-[100]">{ERROR_TOOLTIP_TEXT}</Tooltip.Content>
+                            <Tooltip.Content class="z-100">{ERROR_TOOLTIP_TEXT}</Tooltip.Content>
                           </Tooltip.Portal>
                         </Tooltip.Root>
                       </Tooltip.Provider>

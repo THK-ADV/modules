@@ -20,8 +20,8 @@
 
 <div class="flex items-center">
   {#if Icon}
-    <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
-    <Icon class="mr-2 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+    <!-- The shrink-0 will prevent the icon from shrinking if space is limited -->
+    <Icon class="text-muted-foreground mr-2 size-4 shrink-0" />
   {/if}
   <span class="hidden md:inline">{label}</span>
   <span class="inline md:hidden">{abbrev}</span>

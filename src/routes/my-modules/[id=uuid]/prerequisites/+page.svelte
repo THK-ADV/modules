@@ -184,8 +184,8 @@
 <div class="space-y-10">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Voraussetzungen</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Voraussetzungen</h3>
+      <p class="text-muted-foreground text-sm">
         Festlegung von Voraussetzungen für die Teilnahme an einem Modul und Erfassung der
         Prüfungslast.
       </p>
@@ -200,7 +200,7 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Empfohlene Voraussetzungen (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Empfohlene Voraussetzungen (optional)</h4>
         {#if recommendedPrerequisitesStatus}
           <ModificationIndicator
             status={recommendedPrerequisitesStatus}
@@ -209,7 +209,7 @@
           />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Module oder Kenntnisse, die zur erfolgreichen Teilnahme empfohlen werden.
       </p>
     </div>
@@ -254,7 +254,7 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Zwingende Voraussetzungen (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Zwingende Voraussetzungen (optional)</h4>
         {#if requiredPrerequisitesStatus}
           <ModificationIndicator
             status={requiredPrerequisitesStatus}
@@ -263,7 +263,7 @@
           />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Module oder Kenntnisse, die zwingend erforderlich sind. Nur erlaubt, wenn diese akkreditiert
         sind.
       </p>
@@ -309,7 +309,7 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Anwesenheitspflicht (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Anwesenheitspflicht (optional)</h4>
         {#if attendanceRequirementStatus}
           <ModificationIndicator
             status={attendanceRequirementStatus}
@@ -318,7 +318,7 @@
           />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Die Festlegung von Anwesenheitspflichten stellt eine Ausnahme dar. <a
           href="/help#attendance-requirement"
           target="_blank"
@@ -395,7 +395,7 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Prüfungsvorleistung (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Prüfungsvorleistung (optional)</h4>
         {#if assessmentPrerequisiteStatus}
           <ModificationIndicator
             status={assessmentPrerequisiteStatus}
@@ -404,7 +404,7 @@
           />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Die Festlegung von Prüfungsvorleistungen stellt eine Ausnahme dar und kann nur in engen
         Grenzen zur Voraussetzung für die Zulassung zur Modulprüfung gemacht werden. <a
           href="/help#assessment-prerequisite"

@@ -116,7 +116,7 @@
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-foreground">{label}</span>
+                <span class="text-foreground text-sm font-medium">{label}</span>
                 <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
               </div>
               <div class="flex items-center gap-2">
@@ -128,50 +128,50 @@
                       variant="ghost"
                       size="sm"
                       onclick={makeBold}
-                      class="h-7 w-7 p-0"
+                      class="size-7 p-0"
                       title="Fett"
                     >
-                      <Bold class="h-3 w-3" />
+                      <Bold class="size-3" />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onclick={makeItalic}
-                      class="h-7 w-7 p-0"
+                      class="size-7 p-0"
                       title="Kursiv"
                     >
-                      <Italic class="h-3 w-3" />
+                      <Italic class="size-3" />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onclick={insertBulletList}
-                      class="h-7 w-7 p-0"
+                      class="size-7 p-0"
                       title="Aufzählungsliste"
                     >
-                      <List class="h-3 w-3" />
+                      <List class="size-3" />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onclick={insertNumberedList}
-                      class="h-7 w-7 p-0"
+                      class="size-7 p-0"
                       title="Nummerierte Liste"
                     >
-                      <ListOrdered class="h-3 w-3" />
+                      <ListOrdered class="size-3" />
                     </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onclick={insertLink}
-                      class="h-7 w-7 p-0"
+                      class="size-7 p-0"
                       title="Link"
                     >
-                      <Link class="h-3 w-3" />
+                      <Link class="size-3" />
                     </Button>
                   </div>
                 {/if}
@@ -184,10 +184,10 @@
                   class="h-9 px-2"
                 >
                   {#if showPreview}
-                    <Pencil class="mr-1 h-3 w-3" />
+                    <Pencil class="mr-1 size-3" />
                     Bearbeiten
                   {:else}
-                    <Eye class="mr-1 h-3 w-3" />
+                    <Eye class="mr-1 size-3" />
                     Vorschau
                   {/if}
                 </Button>
@@ -198,7 +198,7 @@
               {#if showPreview}
                 <div
                   class="min-h-[{calculatedRows *
-                    1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
+                    1.5}rem] prose prose-sm bg-background max-w-none rounded-md border px-3 py-2 text-sm"
                 >
                   <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                   {@html renderedMarkdown()}
@@ -240,50 +240,50 @@
                     variant="ghost"
                     size="sm"
                     onclick={makeBold}
-                    class="h-7 w-7 p-0"
+                    class="size-7 p-0"
                     title="Fett"
                   >
-                    <Bold class="h-3 w-3" />
+                    <Bold class="size-3" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onclick={makeItalic}
-                    class="h-7 w-7 p-0"
+                    class="size-7 p-0"
                     title="Kursiv"
                   >
-                    <Italic class="h-3 w-3" />
+                    <Italic class="size-3" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onclick={insertBulletList}
-                    class="h-7 w-7 p-0"
+                    class="size-7 p-0"
                     title="Aufzählungsliste"
                   >
-                    <List class="h-3 w-3" />
+                    <List class="size-3" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onclick={insertNumberedList}
-                    class="h-7 w-7 p-0"
+                    class="size-7 p-0"
                     title="Nummerierte Liste"
                   >
-                    <ListOrdered class="h-3 w-3" />
+                    <ListOrdered class="size-3" />
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onclick={insertLink}
-                    class="h-7 w-7 p-0"
+                    class="size-7 p-0"
                     title="Link"
                   >
-                    <Link class="h-3 w-3" />
+                    <Link class="size-3" />
                   </Button>
                 </div>
               {/if}
@@ -296,10 +296,10 @@
                 class="h-9 px-2"
               >
                 {#if showPreview}
-                  <Pencil class="mr-1 h-3 w-3" />
+                  s<Pencil class="mr-1 size-3" />
                   Bearbeiten
                 {:else}
-                  <Eye class="mr-1 h-3 w-3" />
+                  <Eye class="mr-1 size-3" />
                   Vorschau
                 {/if}
               </Button>
@@ -310,7 +310,7 @@
             {#if showPreview}
               <div
                 class="min-h-[{calculatedRows *
-                  1.5}rem] prose prose-sm max-w-none rounded-md border bg-background px-3 py-2 text-sm"
+                  1.5}rem] prose prose-sm bg-background max-w-none rounded-md border px-3 py-2 text-sm"
               >
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html renderedMarkdown()}

@@ -18,6 +18,6 @@
     showExamList()
   }}
 >
-  <Download class="h-4 w-4" />
+  <Download class="size-4" />
   Öffnen
 </Button>

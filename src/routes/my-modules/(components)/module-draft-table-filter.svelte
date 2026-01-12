@@ -41,14 +41,14 @@
 <div class="space-y-4">
   <!-- Search Section -->
   <div class="flex items-center gap-3">
-    <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground md:w-16">
-      <Search class="h-4 w-4" />
+    <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
+      <Search class="size-4" />
       <span class="hidden md:inline">Suche</span>
     </div>
     <div class="flex-1">
       <Input
         placeholder="Suche nach Modulbezeichnung..."
-        class="h-10 w-full max-w-md border-2 border-muted-foreground/20 text-sm transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+        class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full max-w-md border-2 text-sm transition-colors focus-visible:ring-2"
         type="search"
         value={myModuleFilter.searchString}
         onchange={(e) => setFilterValue(e.currentTarget.value)}
@@ -59,14 +59,14 @@
 
   {#if hasAdditionalModules}
     <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground md:w-16">
-        <Filter class="h-4 w-4" />
+      <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
+        <Filter class="size-4" />
         <span class="hidden md:inline">Filter</span>
       </div>
       <RadioGroup.Root
         bind:value={myModuleFilter.currentSelection}
         onValueChange={(e) => setSelection(e)}
-        class="flex gap-4 text-sm font-medium text-muted-foreground"
+        class="text-muted-foreground flex gap-4 text-sm font-medium"
       >
         <div class="flex items-center space-x-2">
           <RadioGroup.Item value="my" id="r2" />
@@ -98,9 +98,9 @@
           onclick={reset}
           variant="outline"
           size="sm"
-          class="h-8 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
         >
-          <X class="h-4 w-4" />
+          <X class="size-4" />
           Alle Filter zurücksetzen
         </Button>
       </div>

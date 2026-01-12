@@ -21,8 +21,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Studiengangszuordnung</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Studiengangszuordnung</h3>
+      <p class="text-muted-foreground text-sm">
         Zuordnung des Moduls zu Studiengängen, in denen es als Pflicht- oder Wahlmodul gelehrt wird.
         Die Beziehungen werden in der Modulsuche, im Modulhandbuch, in den Prüfungslisten und im
         Studienplan verwendet.

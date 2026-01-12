@@ -166,8 +166,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Sonstige Informationen</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Sonstige Informationen</h3>
+      <p class="text-muted-foreground text-sm">
         Zusätzliche organisatorische Informationen wie Teilnehmerbegrenzungen, gemeinsame
         Veranstaltungen und Modulbeziehungen.
       </p>
@@ -177,12 +177,12 @@
   <div class="space-y-4 {participantsStatus ? getFieldHighlightClasses(participantsStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Teilnehmerbegrenzung (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Teilnehmerbegrenzung (optional)</h4>
         {#if participantsStatus}
           <ModificationIndicator status={participantsStatus} iconOnly={false} inline={true} />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">Wird häufig für Wahlmodule bzw. WPFs verwendet.</p>
+      <p class="text-muted-foreground text-sm">Wird häufig für Wahlmodule bzw. WPFs verwendet.</p>
     </div>
 
     <div class="space-y-4">
@@ -225,12 +225,12 @@
   <div class="space-y-4 {taughtWithStatus ? getFieldHighlightClasses(taughtWithStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Gemeinsame Veranstaltung (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Gemeinsame Veranstaltung (optional)</h4>
         {#if taughtWithStatus}
           <ModificationIndicator status={taughtWithStatus} iconOnly={false} inline={true} />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Das Modul wird mit einem anderen Modul gemeinsam gelehrt. Wird häufig für inhaltlich
         verwandte Module verwendet.
       </p>
@@ -255,12 +255,12 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-base font-medium text-foreground">Modulbeziehung (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Modulbeziehung (optional)</h4>
         {#if moduleRelationStatus}
           <ModificationIndicator status={moduleRelationStatus} iconOnly={false} inline={true} />
         {/if}
       </div>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm">
         Ein Modul kann ein Ober- oder Kind-Modul sein. Wird häufig verwendet, um mehrere Module zu
         einem Ober-Modul zusammenzufassen. Das Ober-Modul taucht dabei nicht im Stundenplan auf.
         Ober- und Kind-Module werden zusammen im Modulhandbuch und in den Prüfungslisten angezeigt.

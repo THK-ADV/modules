@@ -72,9 +72,9 @@
 </script>
 
 {#snippet TLDR(content: string)}
-  <div class="rounded border-l-2 border-l-muted-foreground/30 bg-muted/50 py-2 pl-3 pr-2 italic">
-    <div class="text-sm text-muted-foreground">
-      <span class="font-medium text-foreground">TLDR:</span>
+  <div class="border-l-muted-foreground/30 bg-muted/50 rounded border-l-2 py-2 pr-2 pl-3 italic">
+    <div class="text-muted-foreground text-sm">
+      <span class="text-foreground font-medium">TLDR:</span>
       <span class="text-muted-foreground">{content}</span>
     </div>
   </div>
@@ -87,7 +87,7 @@
       <!-- Page Header -->
       <div class="space-y-2">
         <h2 class="text-3xl font-bold tracking-tight">Hilfe und Dokumentation</h2>
-        <p class="break-words text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm wrap-break-word">
           Auf dieser Seite werden die wichtigsten Systemabläufe der Modulverwaltung erklärt. Zudem
           finden Sie hier eine detaillierte Beschreibung der wichtigsten Modulattribute.
         </p>
@@ -197,38 +197,38 @@
     </main>
 
     <!-- Navigation Sidebar -->
-    <aside class="sticky top-6 hidden w-64 flex-shrink-0 self-start lg:block">
-      <div class="max-h-[calc(100vh-4rem)] overflow-y-auto rounded-lg border bg-card p-4 shadow-sm">
+    <aside class="sticky top-6 hidden w-64 shrink-0 self-start lg:block">
+      <div class="bg-card max-h-[calc(100vh-4rem)] overflow-y-auto rounded-lg border p-4 shadow-sm">
         <nav class="space-y-1">
-          <div class="mb-6 border-b border-border pb-3">
-            <h3 class="text-lg font-semibold text-foreground">Inhaltsverzeichnis</h3>
+          <div class="border-border mb-6 border-b pb-3">
+            <h3 class="text-foreground text-lg font-semibold">Inhaltsverzeichnis</h3>
           </div>
 
           {#each navigationSections as section (section.id)}
             <div class="space-y-1">
               <button
-                class="relative flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium transition-all duration-200 hover:bg-muted {activeSection ===
+                class="hover:bg-muted relative flex w-full items-center rounded-md px-3 py-2 text-left text-sm font-medium transition-all duration-200 {activeSection ===
                 section.id
-                  ? 'bg-primary/15 font-semibold text-primary'
+                  ? 'bg-primary/15 text-primary font-semibold'
                   : 'text-muted-foreground hover:text-foreground'}"
                 onclick={() => scrollToSection(section.id)}
               >
                 <div class="flex items-center space-x-2">
                   {#if section.icon}
                     {@const Icon = section.icon}
-                    <Icon class="h-4 w-4" />
+                    <Icon class="size-4" />
                   {/if}
                   <span>{section.title}</span>
                 </div>
               </button>
 
               {#if section.subsections}
-                <div class="ml-4 space-y-1 border-l border-border pl-4">
+                <div class="border-border ml-4 space-y-1 border-l pl-4">
                   {#each section.subsections as subsection (subsection.id)}
                     <button
-                      class="relative block w-full rounded-md px-3 py-1.5 text-left text-xs transition-all duration-200 hover:bg-muted {activeSubsection ===
+                      class="hover:bg-muted relative block w-full rounded-md px-3 py-1.5 text-left text-xs transition-all duration-200 {activeSubsection ===
                       subsection.id
-                        ? 'scale-[1.02] bg-primary/10 font-medium text-primary shadow-sm'
+                        ? 'bg-primary/10 text-primary scale-[1.02] font-medium shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'}"
                       onclick={() => scrollToSection(subsection.id)}
                     >

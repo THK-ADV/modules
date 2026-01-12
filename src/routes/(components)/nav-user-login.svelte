@@ -39,10 +39,10 @@
               class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               {...props}
             >
-              <Avatar.Root class="h-8 w-8 rounded-lg">
+              <Avatar.Root class="size-8 rounded-lg">
                 <Avatar.Fallback class="rounded-lg">{abbreviation}</Avatar.Fallback>
               </Avatar.Root>
-              <p class="grid flex-1 truncate text-left text-sm font-semibold leading-tight">
+              <p class="grid flex-1 truncate text-left text-sm leading-tight font-semibold">
                 {user.firstname}
                 {user.lastname}
               </p>
@@ -51,7 +51,7 @@
           {/snippet}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content
-          class="w-[var(--bits-dropdown-menu-anchor-width)] min-w-56 rounded-lg"
+          class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
           side="bottom"
           align="end"
           sideOffset={4}
@@ -69,7 +69,7 @@
     <Sidebar.MenuItem>
       <Sidebar.MenuButton
         onclick={login}
-        class="h-12 justify-center bg-primary px-4 py-3 font-medium text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2"
+        class="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground h-12 justify-center px-4 py-3 font-medium group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2!"
       >
         <LogIn />
         <span>Einloggen</span>

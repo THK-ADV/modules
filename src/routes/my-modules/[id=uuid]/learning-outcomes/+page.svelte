@@ -55,8 +55,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Lernergebnisse (Learning Outcomes)</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Lernergebnisse (Learning Outcomes)</h3>
+      <p class="text-muted-foreground text-sm">
         Die angestrebten Lernergebnisse des Moduls. Formulieren Sie die Lernziele präzise nach der <strong
           >"WAS", "WOMIT", "WOZU"</strong
         >-Struktur.

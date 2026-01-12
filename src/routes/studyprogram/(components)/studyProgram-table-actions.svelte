@@ -33,7 +33,7 @@
     class={cn('font-medium shadow-sm transition-colors', className)}
     {onclick}
   >
-    <Icon class="h-4 w-4" />
+    <Icon class="size-4" />
     {label}
   </Button>
 {/snippet}
@@ -51,7 +51,7 @@
     )}
     {onclick}
   >
-    <Icon class="h-4 w-4" />
+    <Icon class="size-4" />
     {label}
   </DropdownMenu.Item>
 {/snippet}
@@ -74,10 +74,10 @@
           {...props}
           variant="outline"
           size="sm"
-          class="h-7 w-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
+          class="size-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
         >
           <span class="sr-only">Aktionen öffnen</span>
-          <Ellipsis class="h-4 w-4" />
+          <Ellipsis class="size-4" />
         </Button>
       {/snippet}
     </DropdownMenu.Trigger>

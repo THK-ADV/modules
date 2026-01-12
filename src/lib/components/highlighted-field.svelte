@@ -14,7 +14,7 @@
 
 <div class="space-y-2 {getFieldHighlightClasses(status)}">
   <div class="flex items-center justify-between">
-    <span class="text-sm font-medium text-foreground">{label}</span>
+    <span class="text-foreground text-sm font-medium">{label}</span>
     <ModificationIndicator {status} iconOnly={false} inline={true} />
   </div>
   {@render children()}

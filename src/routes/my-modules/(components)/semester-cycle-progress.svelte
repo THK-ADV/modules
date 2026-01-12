@@ -173,25 +173,25 @@
 </script>
 
 {#if showComponent}
-  <div class="rounded-lg border bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+  <div class="rounded-lg border bg-linear-to-r from-blue-50 to-indigo-50 p-6">
     <div class="mb-4">
-      <h3 class="text-lg font-semibold text-foreground">
+      <h3 class="text-foreground text-lg font-semibold">
         Bearbeitungszyklus {semesterInfo.type}
         {semesterInfo.period}
       </h3>
-      <p class="mt-1 text-sm text-muted-foreground">
+      <p class="text-muted-foreground mt-1 text-sm">
         {semesterInfo.displayStart} - {semesterInfo.displayEnd}
       </p>
     </div>
 
     <!-- Progress Bar -->
     <div class="relative mb-6">
-      <div class="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+      <div class="text-muted-foreground mb-2 flex items-center justify-between text-xs">
         <span>Bearbeitungsphase</span>
         <span>Veröffentlichung</span>
       </div>
 
-      <div class="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+      <div class="bg-muted relative h-3 w-full overflow-hidden rounded-full">
         <!-- Background phases -->
         <div class="absolute inset-0 flex">
           <div style="width: {EDITING_PHASE_END}%" class={PHASE_THEMES.editing.bgLight}></div>
@@ -213,16 +213,16 @@
 
         <!-- Phase markers -->
         <div
-          class="absolute top-0 h-full w-0.5 bg-muted-foreground opacity-50"
+          class="bg-muted-foreground absolute top-0 h-full w-0.5 opacity-50"
           style="left: {EDITING_PHASE_END}%"
         ></div>
         <div
-          class="absolute top-0 h-full w-0.5 bg-muted-foreground opacity-50"
+          class="bg-muted-foreground absolute top-0 h-full w-0.5 opacity-50"
           style="left: {FINALIZING_PHASE_END}%"
         ></div>
       </div>
 
-      <div class="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+      <div class="text-muted-foreground mt-1 flex items-center justify-between text-xs">
         <span>{semesterInfo.displayStart}</span>
         <span class="font-medium">{cycleProgress}% abgeschlossen</span>
         <span>{semesterInfo.displayEnd}</span>
@@ -239,17 +239,17 @@
           </h4>
           {#if !isPublishingPhase}
             <button
-              class="flex items-center gap-1 text-xs {phaseTheme.textButton} transition-colors {phaseTheme.textButtonHover} focus:outline-none focus:ring-2 focus:ring-{phaseTheme.primary}-500 rounded focus:ring-offset-1"
+              class="flex items-center gap-1 text-xs {phaseTheme.textButton} transition-colors {phaseTheme.textButtonHover} focus:ring-2 focus:outline-none focus:ring-{phaseTheme.primary}-500 rounded focus:ring-offset-1"
               onclick={toggleProcessExplanation}
               aria-expanded={showProcessExplanation}
               aria-label="Prozess-Erklärung {showProcessExplanation ? 'ausblenden' : 'anzeigen'}"
             >
-              <Info class="h-3 w-3" />
+              <Info class="size-3" />
               <span>Info</span>
               {#if showProcessExplanation}
-                <ChevronUp class="h-3 w-3" />
+                <ChevronUp class="size-3" />
               {:else}
-                <ChevronDown class="h-3 w-3" />
+                <ChevronDown class="size-3" />
               {/if}
             </button>
           {/if}
@@ -259,8 +259,8 @@
         </p>
       </div>
       <div class="rounded-lg border bg-white p-4">
-        <h5 class="mb-2 font-medium text-foreground">{phaseContent.actionTitle}</h5>
-        <ul class="space-y-1 text-sm text-muted-foreground">
+        <h5 class="text-foreground mb-2 font-medium">{phaseContent.actionTitle}</h5>
+        <ul class="text-muted-foreground space-y-1 text-sm">
           {#each phaseContent.actions as action, index (index)}
             <li>• {action}</li>
           {/each}

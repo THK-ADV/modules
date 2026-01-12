@@ -18,14 +18,23 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  // svelte-ignore state_referenced_locally
   const titleStatus = data.fieldStatuses?.title
+  // svelte-ignore state_referenced_locally
   const abbrevStatus = data.fieldStatuses?.abbrev
+  // svelte-ignore state_referenced_locally
   const ectsStatus = data.fieldStatuses?.ects
+  // svelte-ignore state_referenced_locally
   const moduleTypeStatus = data.fieldStatuses?.moduleType
+  // svelte-ignore state_referenced_locally
   const languageStatus = data.fieldStatuses?.language
+  // svelte-ignore state_referenced_locally
   const statusStatus = data.fieldStatuses?.status
+  // svelte-ignore state_referenced_locally
   const durationStatus = data.fieldStatuses?.duration
+  // svelte-ignore state_referenced_locally
   const seasonStatus = data.fieldStatuses?.season
+  // svelte-ignore state_referenced_locally
   const locationStatus = data.fieldStatuses?.location
 </script>
 

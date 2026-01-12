@@ -10,6 +10,7 @@
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const workloadStatus =
     data.fieldStatuses?.workload ||
     data.fieldStatuses?.['workload.lecture'] ||
@@ -26,7 +27,9 @@
 
   // fetch all ECTS factors from the POs that are linked to the module
   onMount(async () => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const factors = new Set<number>()
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const pos = new Set<string>()
     for (const { po } of $formData.po.mandatory) {
       pos.add(po)

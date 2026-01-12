@@ -25,17 +25,18 @@
   import type { LayoutProps } from './$types'
   import { setModuleFormContext } from './context'
 
-  let { children, data }: LayoutProps = $props()
+  let { children, data, params }: LayoutProps = $props()
 
+  // svelte-ignore state_referenced_locally
   routesMap.selectedModule = { id: data.module.id, title: data.module.metadata.title }
 
-  const id = page.params.id
+  const id = $derived(params.id)
 
   const isReviewMode = $derived.by(() => page.url.searchParams.get('mode') === 'review')
 
   let reviewInProgress = $state(false)
 
-  const sections: Section[] = [
+  const sections: Section[] = $derived([
     {
       id: 'general',
       label: 'Allgemeine Informationen',
@@ -96,8 +97,9 @@
       label: 'Sonstige Informationen',
       href: `/my-modules/${id}/misc`
     }
-  ] as const
+  ] as const)
 
+  // svelte-ignore state_referenced_locally
   const form = superForm(data.form, {
     validators: zodClient(moduleSchema),
     dataType: 'json',
@@ -212,6 +214,7 @@
     const errors = $allErrors
     if (!errors) return undefined
 
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const sectionsWithErrors = new Set<string>()
 
     for (const error of errors) {
@@ -247,6 +250,7 @@
   }
 
   // store original form data for comparison
+  // svelte-ignore state_referenced_locally
   const originalFormData = structuredClone(data.form.data)
 
   // deep comparison function to check for actual changes

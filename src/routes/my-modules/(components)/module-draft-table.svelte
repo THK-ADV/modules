@@ -51,7 +51,9 @@
     get data() {
       return moduleDrafts
     },
-    columns,
+    get columns() {
+      return columns
+    },
     getCoreRowModel: getCoreRowModel(),
     // sorting
     getSortedRowModel: getSortedRowModel(),

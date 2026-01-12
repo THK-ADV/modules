@@ -13,9 +13,13 @@
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const recommendedPrerequisitesStatus = data.fieldStatuses?.recommendedPrerequisites
+  // svelte-ignore state_referenced_locally
   const requiredPrerequisitesStatus = data.fieldStatuses?.requiredPrerequisites
+  // svelte-ignore state_referenced_locally
   const attendanceRequirementStatus = data.fieldStatuses?.attendanceRequirement
+  // svelte-ignore state_referenced_locally
   const assessmentPrerequisiteStatus = data.fieldStatuses?.assessmentPrerequisite
 
   const moduleOptions = moduleUpdateState.modules.map((m) => ({

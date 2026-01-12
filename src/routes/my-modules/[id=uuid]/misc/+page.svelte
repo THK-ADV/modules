@@ -12,8 +12,11 @@
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const participantsStatus = data.fieldStatuses?.participants
+  // svelte-ignore state_referenced_locally
   const taughtWithStatus = data.fieldStatuses?.taughtWith
+  // svelte-ignore state_referenced_locally
   const moduleRelationStatus = data.fieldStatuses?.moduleRelation
 
   const form = getModuleFormContext()

@@ -14,7 +14,9 @@
     get data() {
       return moduleReviews
     },
-    columns,
+    get columns() {
+      return columns
+    },
     getCoreRowModel: getCoreRowModel()
   })
 </script>

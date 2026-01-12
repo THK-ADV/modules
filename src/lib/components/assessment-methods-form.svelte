@@ -123,7 +123,7 @@
       .map(({ id, deLabel }) => ({ id, deLabel }))
   })
 
-  const preconditionOptions = preconditions.map(({ id, label }) => ({ id, label }))
+  const preconditionOptions = $derived(preconditions.map(({ id, label }) => ({ id, label })))
 
   // updates
 

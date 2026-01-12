@@ -20,19 +20,21 @@
   }
 
   function createDegrees({ poMandatory, poOptional }: ModuleDetail) {
-    let label = new Set<string>()
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const labels = new Set<string>()
     for (const po of poMandatory) {
-      label.add(po.degree)
+      labels.add(po.degree)
     }
     for (const po of poOptional) {
-      label.add(po.degree)
+      labels.add(po.degree)
     }
-    const array = Array.from(label)
+    const array = Array.from(labels)
     array.sort((a, b) => a.localeCompare(b))
     return array
   }
 
   function createECTSFactors({ poMandatory, poOptional }: ModuleDetail) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const factors = new Set<number>()
     for (const po of poMandatory) {
       factors.add(po.poECTSFactor)
@@ -145,7 +147,8 @@
       }
     }
 
-    let merged = new Set<string>()
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const merged = new Set<string>()
 
     for (const phase of examPhases) {
       switch (phase) {
@@ -270,6 +273,7 @@
     XCircle
   } from '@lucide/svelte'
   import { marked } from 'marked'
+  import { resolve } from '$app/paths'
 
   const {
     module,
@@ -419,8 +423,10 @@
   {@const mods = modules?.toSorted((a, b) => a.title.localeCompare(b.title))}
 
   {#each mods as module, i (module.id)}
-    <a title={module.title} href={`/modules/${module.id}`} class="font-medium underline"
-      >{module.abbreviation}</a
+    <a
+      title={module.title}
+      href={resolve('/modules/[id=uuid]', { id: module.id })}
+      class="font-medium underline">{module.abbreviation}</a
     >{#if i < modules.length - 1}<span>,&nbsp</span>{/if}
   {/each}
 {/snippet}
@@ -643,7 +649,7 @@
                     <ExternalLink class="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <a
                       title={module.title}
-                      href={`/modules/${module.id}`}
+                      href={resolve('/modules/[id=uuid]', { id: module.id })}
                       class={cn(module.status === 'inactive' && 'line-through')}
                     >
                       {module.title}

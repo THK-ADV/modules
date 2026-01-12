@@ -44,10 +44,12 @@
     year: 'numeric'
   })
 
-  const semesterOptions = semesters.map((s) => ({
-    id: s.id,
-    deLabel: `${s.deLabel} ${s.year}`
-  }))
+  const semesterOptions = $derived(
+    semesters.map((s) => ({
+      id: s.id,
+      deLabel: `${s.deLabel} ${s.year}`
+    }))
+  )
 
   function createDialogForm() {
     const schema = z.object({

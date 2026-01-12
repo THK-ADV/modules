@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
+  import { resolve } from '$app/paths'
   import type { User, UserInfo } from '$lib/auth'
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
@@ -19,11 +20,11 @@
   })
 
   async function login() {
-    await goto('/login')
+    await goto(resolve('/login'))
   }
 
   async function logout() {
-    await goto('/logout')
+    await goto(resolve('/logout'))
   }
 </script>
 

@@ -20,9 +20,13 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  // svelte-ignore state_referenced_locally
   const firstExaminerStatus = data.fieldStatuses?.firstExaminer
+  // svelte-ignore state_referenced_locally
   const secondExaminerStatus = data.fieldStatuses?.secondExaminer
+  // svelte-ignore state_referenced_locally
   const examPhasesStatus = data.fieldStatuses?.examPhases
+  // svelte-ignore state_referenced_locally
   const assessmentMethodsStatus = data.fieldStatuses?.assessmentMethods
 </script>
 

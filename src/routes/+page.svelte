@@ -3,7 +3,7 @@
   import * as Card from '$lib/components/ui/card/index.js'
   import { routesMap } from '$lib/routes.svelte'
   import { Book, FileText, Github, Mail, Pencil, Search } from '@lucide/svelte'
-
+  import { resolve } from '$app/paths'
   const defaultRoutes = routesMap.defaultRoutes
 </script>
 
@@ -17,11 +17,11 @@
         Prüfungslisten aller Studiengänge der Fakultät 10.
       </p>
       <div class="flex flex-col gap-4 sm:flex-row sm:justify-center">
-        <Button size="lg" class="text-base" href="/modules">
+        <Button size="lg" class="text-base" href={resolve('/modules')}>
           <Search class="mr-2 h-5 w-5" />
           Module durchsuchen
         </Button>
-        <Button variant="outline" size="lg" class="text-base" href="/module-catalogs">
+        <Button variant="outline" size="lg" class="text-base" href={resolve('/module-catalogs')}>
           <Book class="mr-2 h-5 w-5" />
           {defaultRoutes['/module-catalogs'].name}
         </Button>
@@ -58,7 +58,7 @@
             <Button
               variant="outline"
               size="sm"
-              href="/modules"
+              href={resolve('/modules')}
               class="w-full hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
             >
               Zur {defaultRoutes['/modules'].name}
@@ -85,7 +85,7 @@
             <Button
               variant="outline"
               size="sm"
-              href="/module-catalogs"
+              href={resolve('/module-catalogs')}
               class="w-full hover:border-green-200 hover:bg-green-50 hover:text-green-700"
             >
               Zu den {defaultRoutes['/module-catalogs'].name}
@@ -112,7 +112,7 @@
             <Button
               variant="outline"
               size="sm"
-              href="/exam-lists"
+              href={resolve('/exam-lists')}
               class="w-full hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
             >
               Zu den {defaultRoutes['/exam-lists'].name}
@@ -139,7 +139,7 @@
             <Button
               variant="outline"
               size="sm"
-              href="/my-modules"
+              href={resolve('/my-modules')}
               class="w-full hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
             >
               Zu meinen Modulen
@@ -278,7 +278,10 @@
         >
           Datenschutzhinweise
         </a>
-        <a href="/help" class="text-muted-foreground transition-colors hover:text-foreground">
+        <a
+          href={resolve('/help')}
+          class="text-muted-foreground transition-colors hover:text-foreground"
+        >
           Hilfe und Dokumentation
         </a>
       </div>

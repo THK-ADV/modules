@@ -9,8 +9,11 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  // svelte-ignore state_referenced_locally
   const managementStatus = data.fieldStatuses?.management
+  // svelte-ignore state_referenced_locally
   const lecturersStatus = data.fieldStatuses?.lecturers
+  // svelte-ignore state_referenced_locally
   const updatePermissionsStatus = data.fieldStatuses?.updatePermissions
 
   const identities = moduleUpdateState.identities

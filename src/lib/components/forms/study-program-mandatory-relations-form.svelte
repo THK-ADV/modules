@@ -155,6 +155,7 @@
     form.validate(name)
   }
 
+  // svelte-ignore state_referenced_locally
   const showPOMandatory = showPO(studyPrograms)
 
   let recommendedSemester = {

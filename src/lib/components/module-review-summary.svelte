@@ -19,7 +19,7 @@
   const minRejectCommentLength = 10
 
   let errorMessage = $state(undefined)
-  let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
+  let reviewedStudyPrograms = $derived(new Array<boolean>(reviews.length).fill(false))
   let comment = $state('')
   let mrURLisLoading = $state(false)
 

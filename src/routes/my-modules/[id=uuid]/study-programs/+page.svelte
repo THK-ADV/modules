@@ -7,7 +7,9 @@
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const poMandatoryStatus = data.fieldStatuses?.['po.mandatory']
+  // svelte-ignore state_referenced_locally
   const poOptionalStatus = data.fieldStatuses?.['po.optional']
 
   const studyPrograms = moduleUpdateState.studyPrograms

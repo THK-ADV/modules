@@ -5,7 +5,7 @@
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
-  const releases = data.releases
+  const releases = $derived(data.releases)
 
   function formatReleaseDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('de-DE', {

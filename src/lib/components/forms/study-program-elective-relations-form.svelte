@@ -32,10 +32,12 @@
 
   const genericModules = moduleUpdateState.genericModules
 
-  const studyProgramsWithGenericModules = studyPrograms.filter((sp) => {
-    const fullPOId = getFullPOId(sp)
-    return genericModules.some(({ pos }) => pos.includes(fullPOId))
-  })
+  const studyProgramsWithGenericModules = $derived(
+    studyPrograms.filter((sp) => {
+      const fullPOId = getFullPOId(sp)
+      return genericModules.some(({ pos }) => pos.includes(fullPOId))
+    })
+  )
 
   const schema = z.object({
     fullPOId: z.string().nonempty('Studiengang ist erforderlich'),
@@ -129,10 +131,12 @@
 
   const semesterOptions = createSemesterOptions()
 
-  const studyProgramOptions = studyProgramsWithGenericModules.map((sp) => ({
-    id: getFullPOId(sp),
-    deLabel: fmtStudyProgram(sp)
-  }))
+  const studyProgramOptions = $derived(
+    studyProgramsWithGenericModules.map((sp) => ({
+      id: getFullPOId(sp),
+      deLabel: fmtStudyProgram(sp)
+    }))
+  )
 
   const instanceOfOptions = $derived.by(() => {
     const currentSelectedPOs = value
@@ -211,6 +215,7 @@
 
   // table rendering
 
+  // svelte-ignore state_referenced_locally
   const showPOOptional = showPO(studyPrograms)
 
   function showModule(moduleId: string) {

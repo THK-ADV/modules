@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { resolve } from '$app/paths'
 
   let { id, title, status }: { id: string; title: string; status: string } = $props()
 </script>
@@ -21,5 +22,5 @@
       </Tooltip.Root>
     </Tooltip.Provider>
   {/if}
-  <a href="/modules/{id}">{title}</a>
+  <a href={resolve('/modules/[id=uuid]', { id })}>{title}</a>
 </div>

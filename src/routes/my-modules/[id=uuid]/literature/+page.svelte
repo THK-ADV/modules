@@ -7,7 +7,9 @@
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const deContentStatus = data.fieldStatuses?.['deContent.recommendedReading']
+  // svelte-ignore state_referenced_locally
   const enContentStatus = data.fieldStatuses?.['enContent.recommendedReading']
 
   const form = getModuleFormContext()

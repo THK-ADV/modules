@@ -1,6 +1,6 @@
-import prettier from 'eslint-config-prettier'
-import js from '@eslint/js'
 import { includeIgnoreFile } from '@eslint/compat'
+import js from '@eslint/js'
+import prettier from 'eslint-config-prettier'
 import svelte from 'eslint-plugin-svelte'
 import globals from 'globals'
 import { fileURLToPath } from 'node:url'
@@ -20,7 +20,10 @@ export default ts.config(
     languageOptions: {
       globals: { ...globals.browser, ...globals.node }
     },
-    rules: { 'no-undef': 'off' }
+    rules: {
+      'no-undef': 'off',
+      'svelte/no-navigation-without-resolve': 'warn' // this rule is intentionally disabled, because the current implementation does not support query parameters or fragments (see https://github.com/sveltejs/kit/issues/14103)
+    }
   },
   {
     files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],

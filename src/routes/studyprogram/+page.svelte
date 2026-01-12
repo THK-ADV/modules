@@ -58,6 +58,7 @@
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
   import StudyProgramTable from './(components)/studyProgram-table.svelte'
   import type { StudyProgramMangerInfo } from './+page.server'
+  import { resolve } from '$app/paths'
 
   let { data }: PageProps = $props()
 
@@ -251,7 +252,9 @@
             >alle öffentlich freizugeben</span
           >. Hierfür wird ein Datum der Freigabe und ein Semester, für die die Prüfungsliste gilt,
           ausgewählt. Die PDF wird anschließend unter
-          <a href="/exam-lists" class="text-primary underline hover:no-underline">Prüfungslisten</a>
+          <a href={resolve('/exam-lists')} class="text-primary underline hover:no-underline"
+            >Prüfungslisten</a
+          >
           veröffentlicht. Pro Studiengang, PO und Semester kann es nur eine Prüfungsliste geben. Erneute
           Freigaben überschreiben die vorherige Prüfungsliste.
         </p>

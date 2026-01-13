@@ -22,7 +22,7 @@ export default ts.config(
     },
     rules: {
       'no-undef': 'off',
-      'svelte/no-navigation-without-resolve': 'warn' // this rule is intentionally disabled, because the current implementation does not support query parameters or fragments (see https://github.com/sveltejs/kit/issues/14103)
+      'svelte/no-navigation-without-resolve': 'warn' // this rule is intentionally set to warn, because the current implementation does not support query parameters or fragments (see https://github.com/sveltejs/kit/issues/14103)
     }
   },
   {

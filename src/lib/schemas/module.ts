@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-// TODO update to zod v4 (https://zod.dev/v4/changelog)
-
 const createYamlSafeText = (
   minLength?: number,
   maxLength?: number,
@@ -49,7 +47,7 @@ const createYamlSafeText = (
         return !forbiddenChars.some((char) => text.includes(char))
       },
       {
-        message:
+        error:
           'Text enthält nicht erlaubte Zeichen: Anführungszeichen (\' "), Doppelpunkte (:), Zeilenumbrüche, Tabs, Raute (#), Und-Zeichen (&), Sterne (*), eckige Klammern ([]), geschweifte Klammern ({}), senkrechte Striche (|), Größer-Zeichen (>), Ausrufezeichen (!), Prozentzeichen (%), At-Zeichen (@) und Backticks (`)'
       }
     )
@@ -60,13 +58,13 @@ const createYamlSafeText = (
         return text === text.trim()
       },
       {
-        message: 'Text darf nicht mit Leerzeichen beginnen oder enden'
+        error: 'Text darf nicht mit Leerzeichen beginnen oder enden'
       }
     )
 }
 
 const workloadNumber = z
-  .number({ message: 'Eintrag erforderlich' })
+  .number({ error: 'Eintrag erforderlich' })
   .int('Muss eine ganze Zahl sein')
   .min(0, 'Muss mindestens 0 sein')
 
@@ -88,13 +86,13 @@ export const moduleSchema = z.object({
   ),
   moduleType: z.string().nonempty('Modulart erforderlich'),
   ects: z
-    .number({ message: 'ECTS credits erforderlich' })
+    .number({ error: 'ECTS credits erforderlich' })
     .positive('ECTS credits müssen positiv sein')
     .max(100, 'ECTS credits dürfen nicht mehr als 100 sein')
     .multipleOf(0.1, 'ECTS credits dürfen nur eine Dezimalstelle haben'),
   language: z.string().nonempty('Sprache erforderlich'),
   duration: z
-    .number({ message: 'Moduldauer erforderlich' })
+    .number({ error: 'Moduldauer erforderlich' })
     .positive('Moduldauer muss positiv sein')
     .max(10, 'Moduldauer darf nicht mehr als 10 sein'),
   season: z.string().nonempty('Häufigkeit des Angebots erforderlich'),
@@ -111,8 +109,8 @@ export const moduleSchema = z.object({
       method: z.string().nonempty('Prüfungsform erforderlich'),
       percentage: z
         .number()
-        .min(0, { message: 'Prozentsatz muss mindestens 0 sein' }) // 0 represents an ungraded assessment
-        .max(100, { message: 'Prozentsatz muss kleiner als 100 sein' })
+        .min(0, { error: 'Prozentsatz muss mindestens 0 sein' }) // 0 represents an ungraded assessment
+        .max(100, { error: 'Prozentsatz muss kleiner als 100 sein' })
         .nullable(),
       precondition: z.array(z.string())
     })
@@ -161,7 +159,7 @@ export const moduleSchema = z.object({
       max: z.number().positive('Maximale Teilnehmerzahl muss positiv sein')
     })
     .refine(({ min, max }) => max > min, {
-      message: 'Maximale Teilnehmerzahl muss größer als Mindestteilnehmerzahl sein',
+      error: 'Maximale Teilnehmerzahl muss größer als Mindestteilnehmerzahl sein',
       path: ['max']
     })
     .nullable(),

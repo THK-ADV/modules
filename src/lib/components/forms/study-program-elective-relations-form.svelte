@@ -21,9 +21,9 @@
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { POOptional } from '$lib/types/module-protocol'
   import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
-  import { Edit, Plus, Trash2 } from '@lucide/svelte'
+  import { SquarePen, Plus, Trash2 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
   import ModificationIndicator from '../modification-indicator.svelte'
   import { createSemesterOptions, showPO, showRecommendedSemester } from './forms'
@@ -58,7 +58,7 @@
     },
     {
       SPA: true,
-      validators: zodClient(schema),
+      validators: zod4Client(schema),
       resetForm: false
     }
   )
@@ -275,7 +275,7 @@
                         class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                         onclick={() => openEditDialog(index)}
                       >
-                        <Edit class="size-4" />
+                        <SquarePen class="size-4" />
                       </Button>
                       <Button
                         type="button"

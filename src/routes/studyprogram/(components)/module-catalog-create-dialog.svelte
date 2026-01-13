@@ -20,7 +20,7 @@
   import { createModuleCatalog, previewModuleCatalog } from '$lib/preview-action'
   import type { StudyProgram } from '$lib/types/study-program'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
 
   let { showModuleCatalogCreateDialog = $bindable(), isPreview }: Props = $props()
@@ -61,7 +61,7 @@
       },
       {
         SPA: true,
-        validators: zodClient(schema)
+        validators: zod4Client(schema)
       }
     )
   }

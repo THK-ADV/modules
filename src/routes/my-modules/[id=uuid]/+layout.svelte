@@ -21,7 +21,7 @@
   } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils'
   import SuperDebug, { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import type { LayoutProps } from './$types'
   import { setModuleFormContext } from './context'
 
@@ -101,7 +101,7 @@
 
   // svelte-ignore state_referenced_locally
   const form = superForm(data.form, {
-    validators: zodClient(moduleSchema),
+    validators: zod4Client(moduleSchema),
     dataType: 'json',
     onError: ({ result }) => {
       console.error('Form submission failed:', result)

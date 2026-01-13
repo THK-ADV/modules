@@ -14,7 +14,7 @@
   import type { AssessmentEntry } from '$lib/types/module-protocol'
   import { Edit, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from './modification-indicator.svelte'
 
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale Gewichtung hat, soll die der zweiten auf die Differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
@@ -54,7 +54,7 @@
     },
     {
       SPA: true,
-      validators: zodClient(assessmentEntrySchema),
+      validators: zod4Client(assessmentEntrySchema),
       resetForm: false
     }
   )

@@ -28,7 +28,7 @@
   import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
   import CalendarIcon from '@lucide/svelte/icons/calendar'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
 
   let {
@@ -54,7 +54,7 @@
   function createDialogForm() {
     const schema = z.object({
       semester: z.string().nonempty('Semester ist erforderlich'),
-      releaseDate: z.date({ required_error: 'Datum ist erforderlich' })
+      releaseDate: z.date({ error: 'Datum ist erforderlich' })
     })
 
     return superForm(
@@ -64,7 +64,7 @@
       },
       {
         SPA: true,
-        validators: zodClient(schema)
+        validators: zod4Client(schema)
       }
     )
   }

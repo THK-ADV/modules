@@ -8,8 +8,8 @@
   import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
 
@@ -22,11 +22,13 @@
   // svelte-ignore state_referenced_locally
   const assessmentPrerequisiteStatus = data.fieldStatuses?.assessmentPrerequisite
 
-  const moduleOptions = moduleUpdateState.modules.map((m) => ({
-    id: m.id,
-    label: fmtModule(m),
-    abbrev: m.abbreviation
-  }))
+  const moduleOptions = moduleUpdateState.modules
+    .filter((m) => m.id !== data.module.id) // exclude self
+    .map((m) => ({
+      id: m.id,
+      label: fmtModule(m),
+      abbrev: m.abbreviation
+    }))
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form

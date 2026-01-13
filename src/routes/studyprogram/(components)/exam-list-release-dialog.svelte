@@ -26,7 +26,7 @@
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
   import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
-  import CalendarIcon from '@lucide/svelte/icons/calendar'
+  import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
@@ -159,7 +159,7 @@
                 )}
                 {...props}
               >
-                <CalendarIcon class="mr-2 size-4" />
+                <Calendar1 class="mr-2 size-4" />
                 {$dialogFormData.releaseDate
                   ? df.format($dialogFormData.releaseDate)
                   : 'Datum auswählen…'}

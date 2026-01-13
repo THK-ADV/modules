@@ -5,9 +5,7 @@
   import * as RadioGroup from '$lib/components/ui/radio-group/index.js'
   import { myModuleFilter } from '$lib/store.svelte'
   import type { ModuleDraft } from '$lib/types/module-draft'
-  import { X } from '@lucide/svelte'
-  import Filter from '@lucide/svelte/icons/filter'
-  import Search from '@lucide/svelte/icons/search'
+  import { X, Funnel, Search } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'
   import type { Selection } from './types'
 
@@ -60,7 +58,7 @@
   {#if hasAdditionalModules}
     <div class="flex items-center gap-3">
       <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
-        <Filter class="size-4" />
+        <Funnel class="size-4" />
         <span class="hidden md:inline">Filter</span>
       </div>
       <RadioGroup.Root

@@ -6,8 +6,7 @@
   import { Separator } from '$lib/components/ui/separator'
   import type { FilterData } from '$lib/types/filter-data'
   import { cn } from '$lib/utils.js'
-  import Check from '@lucide/svelte/icons/check'
-  import CirclePlus from '@lucide/svelte/icons/circle-plus'
+  import { Check, CirclePlus } from '@lucide/svelte'
 
   let {
     options,

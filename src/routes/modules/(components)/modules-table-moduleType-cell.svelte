@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ModuleType } from '$lib/types/module'
-  import { CircleFadingPlus, CircleHelp, CirclePlus } from '@lucide/svelte'
+  import { CircleFadingPlus, CircleQuestionMark, CirclePlus } from '@lucide/svelte'
 
   let { moduleType }: { moduleType: ModuleType | undefined } = $props()
 
@@ -9,7 +9,7 @@
       case 'pm':
         return { label: moduleType.label, abbrev: moduleType.abbrev, Icon: CirclePlus }
       case 'wm':
-        return { label: moduleType.label, abbrev: moduleType.abbrev, Icon: CircleHelp }
+        return { label: moduleType.label, abbrev: moduleType.abbrev, Icon: CircleQuestionMark }
       case 'pwm':
         return { label: moduleType.label, abbrev: moduleType.abbrev, Icon: CircleFadingPlus }
       default:

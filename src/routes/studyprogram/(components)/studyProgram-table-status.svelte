@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { CircleCheckIcon, LoaderCircleIcon } from '@lucide/svelte'
+  import { CircleCheck, CircleDashed } from '@lucide/svelte'
 
   let {
     badgeContent,
@@ -16,9 +16,7 @@
 
 {#if badgeContent}
   <Badge variant="outline" class="text-muted-foreground gap-1.5">
-    <CircleCheckIcon
-      class="size-4 fill-green-600 stroke-white dark:fill-green-400 dark:stroke-white"
-    />
+    <CircleCheck class="size-4 fill-green-600 stroke-white dark:fill-green-400 dark:stroke-white" />
     {#if tooltipBadge}
       <Tooltip.Provider>
         <Tooltip.Root>
@@ -36,7 +34,7 @@
   </Badge>
 {:else}
   <Badge variant="outline" class="text-muted-foreground gap-1.5">
-    <LoaderCircleIcon class="stroke-muted-foreground size-3.5" />
+    <CircleDashed class="stroke-muted-foreground size-3.5" />
     {#if tooltipPending}
       <Tooltip.Provider>
         <Tooltip.Root>

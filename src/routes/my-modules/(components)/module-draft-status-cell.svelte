@@ -1,7 +1,15 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModuleDraftState } from '$lib/types/module-draft'
-  import { BookCheck, Clock, Eye, HelpCircle, Loader, TriangleAlert, Upload } from '@lucide/svelte'
+  import {
+    BookCheck,
+    Clock,
+    Eye,
+    CircleQuestionMark,
+    Loader,
+    TriangleAlert,
+    Upload
+  } from '@lucide/svelte'
 
   let { state }: { state: ModuleDraftState } = $props()
 
@@ -20,7 +28,7 @@
       case 'waiting_for_publication':
         return Loader
       case 'unknown':
-        return HelpCircle
+        return CircleQuestionMark
     }
   })
 

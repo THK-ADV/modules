@@ -14,7 +14,7 @@
     type ModuleDraftState
   } from '$lib/types/module-draft'
   import { cn } from '$lib/utils'
-  import { Edit, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
+  import { SquarePen, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
   import type { ModuleDraftTableAction } from '../../actions/module-actions/[moduleId]/+server'
 
@@ -120,7 +120,7 @@
       actions.push({
         key: 'edit',
         label: 'Bearbeiten',
-        Icon: Edit,
+        Icon: SquarePen,
         onclick: () => goto(`${page.url.pathname}/${moduleId}`),
         variant: 'outline',
         className: 'border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700',

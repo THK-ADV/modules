@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { CheckCircle2, Edit, Eye, Gitlab, XCircle } from '@lucide/svelte'
+  import { CircleCheck, SquarePen, Eye, Gitlab, CircleX } from '@lucide/svelte'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
@@ -128,7 +128,7 @@
           <span
             class="inline-flex size-6 shrink-0 items-center justify-center rounded bg-blue-200 text-blue-900"
           >
-            <Edit class="size-4" />
+            <SquarePen class="size-4" />
           </span>
           <span class="text-foreground text-sm">Allgemeine Änderungen</span>
         </div>
@@ -212,7 +212,7 @@
         class="flex w-full items-center justify-center gap-2 sm:w-auto"
         title={!canApprove ? 'Bitte wählen Sie mindestens einen Studiengang aus' : ''}
       >
-        <CheckCircle2 class="size-4" />
+        <CircleCheck class="size-4" />
         <span>Änderungen akzeptieren</span>
       </Button>
 
@@ -229,7 +229,7 @@
             : `Kommentar erforderlich (mind. ${minRejectCommentLength} Zeichen)`
           : ''}
       >
-        <XCircle class="size-4" />
+        <CircleX class="size-4" />
         <span>Änderungen ablehnen</span>
       </Button>
     </div>

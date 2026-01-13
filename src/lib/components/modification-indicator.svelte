@@ -2,7 +2,7 @@
   import { Badge } from '$lib/components/ui/badge/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
-  import { Edit, Eye } from '@lucide/svelte'
+  import { SquarePen, Eye } from '@lucide/svelte'
 
   interface Props {
     status: ModificationStatus
@@ -58,9 +58,9 @@
           class="bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 {sizeClasses}"
         >
           {#if iconOnly}
-            <Edit class="size-4" />
+            <SquarePen class="size-4" />
           {:else}
-            <Edit class="mr-1 size-4" />
+            <SquarePen class="mr-1 size-4" />
             Geändert
           {/if}
         </Badge>

@@ -270,7 +270,7 @@
     Info,
     ShieldAlert,
     Users,
-    XCircle
+    CircleX
   } from '@lucide/svelte'
   import { marked } from 'marked'
   import { resolve } from '$app/paths'
@@ -545,7 +545,7 @@
               <Badge
                 class="flex cursor-help items-center border-red-200 bg-red-100 px-4 py-1 text-red-800 hover:bg-red-100"
               >
-                <XCircle class="mr-1.5 size-4 shrink-0 " />
+                <CircleX class="mr-1.5 size-4 shrink-0 " />
                 <span class="text-sm">{module.status.label}</span>
               </Badge>
             </Tooltip.Trigger>

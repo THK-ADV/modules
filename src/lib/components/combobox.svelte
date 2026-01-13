@@ -6,7 +6,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils.js'
-  import { Check, ChevronsUpDownIcon } from '@lucide/svelte'
+  import { Check, ChevronsUpDown } from '@lucide/svelte'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Option {
@@ -71,7 +71,7 @@
               {...props}
             >
               {options.find(({ id }) => id === value)?.deLabel || placeholder}
-              <ChevronsUpDownIcon class="ml-2 size-4 shrink-0 opacity-50" />
+              <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
             </Popover.Trigger>
             <input hidden {value} name={props.name} />
           {/snippet}
@@ -116,7 +116,7 @@
             {...props}
           >
             {options.find(({ id }) => id === value)?.deLabel || placeholder}
-            <ChevronsUpDownIcon class="ml-2 size-4 shrink-0 opacity-50" />
+            <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
           </Popover.Trigger>
           <input hidden {value} name={props.name} />
         {/snippet}

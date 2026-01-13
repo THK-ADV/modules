@@ -5,9 +5,7 @@
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-  import { LogIn } from '@lucide/svelte'
-  import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down'
-  import LogOut from '@lucide/svelte/icons/log-out'
+  import { ChevronsUpDown, LogOut, LogIn } from '@lucide/svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 

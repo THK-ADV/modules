@@ -12,7 +12,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { AssessmentEntry } from '$lib/types/module-protocol'
-  import { Edit, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
+  import { SquarePen, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from './modification-indicator.svelte'
@@ -234,7 +234,7 @@
                         class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                         onclick={() => openEditDialog(index)}
                       >
-                        <Edit class="size-4" />
+                        <SquarePen class="size-4" />
                       </Button>
                       <Button
                         type="button"

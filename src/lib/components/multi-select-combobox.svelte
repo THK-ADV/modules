@@ -8,7 +8,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils.js'
-  import { Check, ChevronsUpDownIcon, CirclePlus } from '@lucide/svelte'
+  import { Check, ChevronsUpDown, CirclePlus } from '@lucide/svelte'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Option {
@@ -117,7 +117,7 @@
         {/if}
       </div>
     {/if}
-    <ChevronsUpDownIcon class="ml-auto size-4 shrink-0 opacity-50" />
+    <ChevronsUpDown class="ml-auto size-4 shrink-0 opacity-50" />
   </Popover.Trigger>
 {/snippet}
 

@@ -12,9 +12,9 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { AssessmentEntry } from '$lib/types/module-protocol'
-  import { Edit, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
+  import { SquarePen, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from './modification-indicator.svelte'
 
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale Gewichtung hat, soll die der zweiten auf die Differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
@@ -54,7 +54,7 @@
     },
     {
       SPA: true,
-      validators: zodClient(assessmentEntrySchema),
+      validators: zod4Client(assessmentEntrySchema),
       resetForm: false
     }
   )
@@ -123,7 +123,7 @@
       .map(({ id, deLabel }) => ({ id, deLabel }))
   })
 
-  const preconditionOptions = preconditions.map(({ id, label }) => ({ id, label }))
+  const preconditionOptions = $derived(preconditions.map(({ id, label }) => ({ id, label })))
 
   // updates
 
@@ -181,7 +181,7 @@
       <div class="space-y-4">
         <!-- Add Button -->
         <Button type="button" variant="outline" onclick={openAddDialog} class="w-full sm:w-auto">
-          <Plus class="mr-2 h-4 w-4" />
+          <Plus class="mr-2 size-4" />
           Prüfungsform hinzufügen
         </Button>
 
@@ -207,11 +207,11 @@
                         <Tooltip.Root>
                           <Tooltip.Trigger>
                             <div class="flex items-center">
-                              <TriangleAlert class="mr-2 h-4 w-4 flex-shrink-0 text-red-500" />
+                              <TriangleAlert class="mr-2 size-4 shrink-0 text-red-500" />
                               <span>{showAssessmentMethod(entry.method)}</span>
                             </div>
                           </Tooltip.Trigger>
-                          <Tooltip.Content class="max-w-md break-words">
+                          <Tooltip.Content class="max-w-md wrap-break-word">
                             Die Prüfungsform ist nicht in der Rahmenprüfungsordnung enthalten und
                             sollte nicht verwendet werden.
                           </Tooltip.Content>
@@ -234,7 +234,7 @@
                         class="text-blue-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800"
                         onclick={() => openEditDialog(index)}
                       >
-                        <Edit class="h-4 w-4" />
+                        <SquarePen class="size-4" />
                       </Button>
                       <Button
                         type="button"
@@ -243,7 +243,7 @@
                         class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                         onclick={() => deleteEntry(index)}
                       >
-                        <Trash2 class="h-4 w-4" />
+                        <Trash2 class="size-4" />
                       </Button>
                     </div>
                   </Table.Cell>
@@ -254,11 +254,11 @@
         </div>
       </div>
     {:else}
-      <div class="rounded-md border border-dashed border-muted-foreground/25 bg-muted/10">
+      <div class="border-muted-foreground/25 bg-muted/10 rounded-md border border-dashed">
         <div class="flex flex-col items-center justify-center px-6 py-8 text-center">
-          <div class="mb-3 rounded-full bg-muted p-3">
+          <div class="bg-muted mb-3 rounded-full p-3">
             <svg
-              class="h-6 w-6 text-muted-foreground"
+              class="text-muted-foreground size-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -272,12 +272,12 @@
               />
             </svg>
           </div>
-          <h3 class="mb-2 text-base font-medium text-foreground">Keine Prüfungsformen definiert</h3>
-          <p class="mb-4 max-w-sm text-sm text-muted-foreground">
+          <h3 class="text-foreground mb-2 text-base font-medium">Keine Prüfungsformen definiert</h3>
+          <p class="text-muted-foreground mb-4 max-w-sm text-sm">
             Es wurden noch keine Prüfungsformen für dieses Modul festgelegt.
           </p>
           <Button type="button" variant="outline" onclick={openAddDialog}>
-            <Plus class="mr-2 h-4 w-4" />
+            <Plus class="mr-2 size-4" />
             Prüfungsform hinzufügen
           </Button>
         </div>
@@ -293,10 +293,10 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-base font-medium text-foreground">{label}</span>
+      <span class="text-foreground text-base font-medium">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
     </p>
     <Form.Field {form} {name}>
@@ -330,8 +330,8 @@
       {#snippet children({ props })}
         <div class="space-y-4">
           <div class="border-b pb-2">
-            <Form.Label class="text-base font-medium text-foreground">{label}</Form.Label>
-            <Form.Description class="mt-1 text-sm text-muted-foreground">
+            <Form.Label class="text-foreground text-base font-medium">{label}</Form.Label>
+            <Form.Description class="text-muted-foreground mt-1 text-sm">
               Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
             </Form.Description>
           </div>

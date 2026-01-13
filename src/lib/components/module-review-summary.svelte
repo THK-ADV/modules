@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { CheckCircle2, Edit, Eye, Gitlab, XCircle } from '@lucide/svelte'
+  import { CircleCheck, SquarePen, Eye, Gitlab, CircleX } from '@lucide/svelte'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
@@ -19,7 +19,7 @@
   const minRejectCommentLength = 10
 
   let errorMessage = $state(undefined)
-  let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
+  let reviewedStudyPrograms = $derived(new Array<boolean>(reviews.length).fill(false))
   let comment = $state('')
   let mrURLisLoading = $state(false)
 
@@ -89,19 +89,19 @@
   <div class="ml-3 flex-1 space-y-5">
     <!-- Header -->
     <div class="flex items-start justify-between gap-4">
-      <h3 class="text-lg font-semibold text-foreground">Prüfprozess</h3>
+      <h3 class="text-foreground text-lg font-semibold">Prüfprozess</h3>
       <Button
         variant="outline"
         size="sm"
         onclick={openGitLabMR}
         disabled={mrURLisLoading}
-        class="flex-shrink-0"
+        class="shrink-0"
       >
         {#if mrURLisLoading}
           <Spinner size="sm" class="mr-1" />
           Lädt…
         {:else}
-          <Gitlab class="mr-1 h-4 w-4" />
+          <Gitlab class="mr-1 size-4" />
           Änderungen auf GitLab anzeigen
         {/if}
       </Button>
@@ -116,40 +116,40 @@
       <div class="flex flex-col gap-3 sm:flex-row sm:gap-6">
         <div class="flex items-center gap-2.5">
           <span
-            class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-amber-200 text-amber-900"
+            class="inline-flex size-6 shrink-0 items-center justify-center rounded bg-amber-200 text-amber-900"
           >
-            <Eye class="h-4 w-4" />
+            <Eye class="size-4" />
           </span>
-          <span class="text-sm text-foreground"
+          <span class="text-foreground text-sm"
             >Änderungen, die im Review geprüft werden müssen</span
           >
         </div>
         <div class="flex items-center gap-2.5">
           <span
-            class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-blue-200 text-blue-900"
+            class="inline-flex size-6 shrink-0 items-center justify-center rounded bg-blue-200 text-blue-900"
           >
-            <Edit class="h-4 w-4" />
+            <SquarePen class="size-4" />
           </span>
-          <span class="text-sm text-foreground">Allgemeine Änderungen</span>
+          <span class="text-foreground text-sm">Allgemeine Änderungen</span>
         </div>
       </div>
-      <p class="text-xs text-muted-foreground">
+      <p class="text-muted-foreground text-xs">
         Weitere Hinweise zum Prüfprozess finden Sie in der
         <a
           href="/help#review-process"
           target="_blank"
           rel="noopener noreferrer"
-          class="font-medium text-primary underline-offset-2 hover:underline">Hilfe</a
+          class="text-primary font-medium underline-offset-2 hover:underline">Hilfe</a
         >.
       </p>
     </div>
 
     <!-- Comment -->
     <div class="space-y-3">
-      <label for="review-comment" class="text-base font-medium text-foreground">Kommentar</label>
+      <label for="review-comment" class="text-foreground text-base font-medium">Kommentar</label>
       <Textarea
         id="review-comment"
-        class="w-full rounded-md border border-input bg-background p-3 text-sm"
+        class="border-input bg-background w-full rounded-md border p-3 text-sm"
         placeholder="Kommentar verfassen…"
         bind:value={comment}
         aria-describedby="comment-hint"
@@ -186,13 +186,13 @@
               <input
                 id={review.reviewId}
                 type="checkbox"
-                class="h-4 w-4 rounded border-input text-amber-800 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
+                class="border-input size-4 rounded text-amber-800 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
                 bind:checked={reviewedStudyPrograms[index]}
                 aria-describedby="reviewed-hint"
               />
-              <span class="select-none text-sm font-medium text-foreground">
+              <span class="text-foreground text-sm font-medium select-none">
                 {review.studyProgram}
-                <span class="ml-1 text-xs font-normal text-muted-foreground"
+                <span class="text-muted-foreground ml-1 text-xs font-normal"
                   >(als {review.role})</span
                 >
               </span>
@@ -212,7 +212,7 @@
         class="flex w-full items-center justify-center gap-2 sm:w-auto"
         title={!canApprove ? 'Bitte wählen Sie mindestens einen Studiengang aus' : ''}
       >
-        <CheckCircle2 class="h-4 w-4" />
+        <CircleCheck class="size-4" />
         <span>Änderungen akzeptieren</span>
       </Button>
 
@@ -229,7 +229,7 @@
             : `Kommentar erforderlich (mind. ${minRejectCommentLength} Zeichen)`
           : ''}
       >
-        <XCircle class="h-4 w-4" />
+        <CircleX class="size-4" />
         <span>Änderungen ablehnen</span>
       </Button>
     </div>

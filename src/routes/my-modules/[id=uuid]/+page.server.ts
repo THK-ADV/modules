@@ -1,8 +1,8 @@
 import { moduleSchema } from '$lib/schemas/module.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { fail } from '@sveltejs/kit'
-import { zod } from 'sveltekit-superforms/adapters'
-import { superValidate } from 'sveltekit-superforms/server'
+import { zod4 } from 'sveltekit-superforms/adapters'
+import { superValidate } from 'sveltekit-superforms'
 import type { Actions } from './$types.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +23,7 @@ type ModuleProtocolUpdate = Omit<ModuleProtocol, 'id'>
 
 export const actions: Actions = {
   default: async ({ request, params, fetch }) => {
-    const form = await superValidate(request, zod(moduleSchema))
+    const form = await superValidate(request, zod4(moduleSchema))
 
     if (!form.valid) {
       return fail(400, { form })

@@ -3,9 +3,7 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import { moduleFilter } from '$lib/store.svelte'
   import type { ModuleView } from '$lib/types/module'
-  import Filter from '@lucide/svelte/icons/filter'
-  import Search from '@lucide/svelte/icons/search'
-  import X from '@lucide/svelte/icons/x'
+  import { X, Funnel, Search } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'
   import DataTableFilterOption from './modules-table-filter-option.svelte'
 
@@ -86,14 +84,14 @@
 <div class="space-y-4">
   <!-- Search Section -->
   <div class="flex items-center gap-3">
-    <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground md:w-16">
-      <Search class="h-4 w-4" />
+    <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
+      <Search class="size-4" />
       <span class="hidden md:inline">Suche</span>
     </div>
     <div class="flex-1">
       <Input
         placeholder="Suche nach Modulbezeichnung..."
-        class="h-10 w-full max-w-md border-2 border-muted-foreground/20 text-sm transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+        class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full max-w-md border-2 text-sm transition-colors focus-visible:ring-2"
         type="search"
         value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}
         onchange={(e) => setFilterValue(e.currentTarget.value)}
@@ -104,8 +102,8 @@
 
   <!-- Filter Section -->
   <div class="flex items-center gap-3">
-    <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground md:w-16">
-      <Filter class="h-4 w-4" />
+    <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
+      <Funnel class="size-4" />
       <span class="hidden md:inline">Filter</span>
     </div>
 
@@ -148,9 +146,9 @@
         onclick={reset}
         variant="outline"
         size="sm"
-        class="h-8 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
       >
-        <X class="h-4 w-4" />
+        <X class="size-4" />
         Alle Filter zurücksetzen
       </Button>
     </div>

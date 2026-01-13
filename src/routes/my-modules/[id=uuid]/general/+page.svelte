@@ -2,7 +2,7 @@
   import ComboboxField from '$lib/components/combobox.svelte'
   import InputField from '$lib/components/input-field.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
   let { data }: PageProps = $props()
@@ -18,22 +18,31 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  // svelte-ignore state_referenced_locally
   const titleStatus = data.fieldStatuses?.title
+  // svelte-ignore state_referenced_locally
   const abbrevStatus = data.fieldStatuses?.abbrev
+  // svelte-ignore state_referenced_locally
   const ectsStatus = data.fieldStatuses?.ects
+  // svelte-ignore state_referenced_locally
   const moduleTypeStatus = data.fieldStatuses?.moduleType
+  // svelte-ignore state_referenced_locally
   const languageStatus = data.fieldStatuses?.language
+  // svelte-ignore state_referenced_locally
   const statusStatus = data.fieldStatuses?.status
+  // svelte-ignore state_referenced_locally
   const durationStatus = data.fieldStatuses?.duration
+  // svelte-ignore state_referenced_locally
   const seasonStatus = data.fieldStatuses?.season
+  // svelte-ignore state_referenced_locally
   const locationStatus = data.fieldStatuses?.location
 </script>
 
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Allgemeine Informationen</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Allgemeine Informationen</h3>
+      <p class="text-muted-foreground text-sm">
         Grundlegende Informationen und Klassifizierung des Moduls.
       </p>
     </div>
@@ -41,8 +50,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Grundangaben</h4>
-      <p class="text-sm text-muted-foreground">Name, Abkürzung und Credits des Moduls.</p>
+      <h4 class="text-foreground text-base font-medium">Grundangaben</h4>
+      <p class="text-muted-foreground text-sm">Name, Abkürzung und Credits des Moduls.</p>
     </div>
 
     <div class="space-y-4">
@@ -86,8 +95,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Klassifizierung</h4>
-      <p class="text-sm text-muted-foreground">
+      <h4 class="text-foreground text-base font-medium">Klassifizierung</h4>
+      <p class="text-muted-foreground text-sm">
         Art, Sprache und organisatorische Einordnung des Moduls.
       </p>
     </div>
@@ -133,8 +142,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Terminplanung</h4>
-      <p class="text-sm text-muted-foreground">Zeitliche und örtliche Einordnung des Moduls.</p>
+      <h4 class="text-foreground text-base font-medium">Terminplanung</h4>
+      <p class="text-muted-foreground text-sm">Zeitliche und örtliche Einordnung des Moduls.</p>
     </div>
 
     <div class="space-y-4">

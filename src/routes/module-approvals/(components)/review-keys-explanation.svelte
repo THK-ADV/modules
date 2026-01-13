@@ -6,11 +6,11 @@
 </script>
 
 {#if showComponent && reviewKeys.length > 0}
-  <div class="rounded-lg border bg-gradient-to-r from-amber-50 to-yellow-50 p-6">
+  <div class="rounded-lg border bg-linear-to-r from-amber-50 to-yellow-50 p-6">
     <div class="space-y-4">
       <div class="space-y-2">
-        <h3 class="text-lg font-semibold text-foreground">Prüfprozess</h3>
-        <p class="text-sm text-muted-foreground">
+        <h3 class="text-foreground text-lg font-semibold">Prüfprozess</h3>
+        <p class="text-muted-foreground text-sm">
           Folgende Modulattribute lösen bei Änderungen einen Prüfprozess aus. In der Prüfung werden
           die Änderungen entweder akzeptiert oder mit Änderungswünschen zurückgesendet.
         </p>

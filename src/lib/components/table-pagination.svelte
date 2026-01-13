@@ -9,7 +9,7 @@
 </script>
 
 <div class="flex items-center justify-between">
-  <p class="text-sm font-medium text-muted-foreground">
+  <p class="text-muted-foreground text-sm font-medium">
     Anzahl der Einträge: {table.getRowCount()}
   </p>
   <div class="flex justify-end space-x-6 lg:space-x-8">
@@ -38,7 +38,7 @@
     <div class="flex items-center space-x-2">
       <Button
         variant="outline"
-        class="hidden h-8 w-8 p-0 lg:flex"
+        class="hidden size-8 p-0 lg:flex"
         onclick={() => table.firstPage()}
         disabled={!table.getCanPreviousPage()}
       >
@@ -46,7 +46,7 @@
       </Button>
       <Button
         variant="outline"
-        class="h-8 w-8 p-0"
+        class="size-8 p-0"
         onclick={() => table.previousPage()}
         disabled={!table.getCanPreviousPage()}
       >
@@ -54,7 +54,7 @@
       </Button>
       <Button
         variant="outline"
-        class="h-8 w-8 p-0"
+        class="size-8 p-0"
         disabled={!table.getCanNextPage()}
         onclick={() => table.nextPage()}
       >
@@ -62,7 +62,7 @@
       </Button>
       <Button
         variant="outline"
-        class="hidden h-8 w-8 p-0 lg:flex"
+        class="hidden size-8 p-0 lg:flex"
         disabled={!table.getCanNextPage()}
         onclick={() => table.lastPage()}
       >

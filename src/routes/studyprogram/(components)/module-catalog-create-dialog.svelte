@@ -20,12 +20,24 @@
   import { createModuleCatalog, previewModuleCatalog } from '$lib/preview-action'
   import type { StudyProgram } from '$lib/types/study-program'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
 
   let { showModuleCatalogCreateDialog = $bindable(), isPreview }: Props = $props()
 
-  let genericModuleOptions = $state(new Array<{ id: string; label: string; abbrev: string }>())
+  const genericModuleOptions = $derived.by(async () => {
+    const sp = showModuleCatalogCreateDialog
+
+    if (!sp) {
+      return []
+    }
+    const genericModules = await fetchGenericModules(sp.id, sp.po.id, fetch)
+    return genericModules.map((m) => ({
+      id: m.id,
+      label: m.title,
+      abbrev: m.abbrev
+    }))
+  })
 
   const dialogTitle = $derived.by(() => {
     const sp = showModuleCatalogCreateDialog
@@ -36,25 +48,6 @@
       return `Vorschau des Modulhandbuchs für ${fmtStudyProgram(sp)}`
     }
     return `Modulhandbuch für ${fmtStudyProgram(sp)} erstellen`
-  })
-
-  // Consider using async derived if svelte is updated to 5.36 (https://svelte.dev/docs/svelte/await-expressions)
-  $effect(async () => {
-    const sp = showModuleCatalogCreateDialog
-    if (!sp) {
-      return
-    }
-    try {
-      const genericModules = await fetchGenericModules(sp.id, sp.po.id, fetch)
-      genericModuleOptions = genericModules.map((m) => ({
-        id: m.id,
-        label: m.title,
-        abbrev: m.abbrev
-      }))
-    } catch (error) {
-      console.error(error)
-      genericModuleOptions = []
-    }
   })
 
   function createDialogForm() {
@@ -68,7 +61,7 @@
       },
       {
         SPA: true,
-        validators: zodClient(schema)
+        validators: zod4Client(schema)
       }
     )
   }
@@ -120,7 +113,7 @@
         name="genericModules"
         label="Module ausschließen"
         description="Wählen Sie die Module aus, die <span class='font-bold'>nicht</span> im Modulhandbuch berücksichtigt werden sollen. Wenn keine Auswahl getroffen wird, werden alle Module berücksichtigt."
-        options={genericModuleOptions}
+        options={await genericModuleOptions}
         bind:value={$dialogFormData.genericModules}
         errors={$dialogErrors}
       />

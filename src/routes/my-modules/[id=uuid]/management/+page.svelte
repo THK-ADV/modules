@@ -2,15 +2,18 @@
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { moduleUpdateState } from '$lib/store.svelte.js'
   import { getModuleFormContext } from '../context'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
 
   let { data }: PageProps = $props()
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  // svelte-ignore state_referenced_locally
   const managementStatus = data.fieldStatuses?.management
+  // svelte-ignore state_referenced_locally
   const lecturersStatus = data.fieldStatuses?.lecturers
+  // svelte-ignore state_referenced_locally
   const updatePermissionsStatus = data.fieldStatuses?.updatePermissions
 
   const identities = moduleUpdateState.identities
@@ -37,8 +40,8 @@
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Verantwortliche</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Verantwortliche</h3>
+      <p class="text-muted-foreground text-sm">
         Festlegung der Modulverantwortung, Dozierenden und Bearbeitungsrechte.
       </p>
     </div>
@@ -46,8 +49,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Modulverantwortung und Lehre</h4>
-      <p class="text-sm text-muted-foreground">
+      <h4 class="text-foreground text-base font-medium">Modulverantwortung und Lehre</h4>
+      <p class="text-muted-foreground text-sm">
         Hauptverantwortliche und aktive Lehrende des Moduls.
       </p>
     </div>
@@ -79,8 +82,8 @@
 
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h4 class="text-base font-medium text-foreground">Bearbeitungsrechte</h4>
-      <p class="text-sm text-muted-foreground">
+      <h4 class="text-foreground text-base font-medium">Bearbeitungsrechte</h4>
+      <p class="text-muted-foreground text-sm">
         Zusätzliche Personen mit Berechtigung zur Bearbeitung der Modulinformationen.
       </p>
     </div>

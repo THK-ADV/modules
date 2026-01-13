@@ -14,7 +14,7 @@
     type ModuleDraftState
   } from '$lib/types/module-draft'
   import { cn } from '$lib/utils'
-  import { Edit, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
+  import { SquarePen, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
   import type { ModuleDraftTableAction } from '../../actions/module-actions/[moduleId]/+server'
 
@@ -120,7 +120,7 @@
       actions.push({
         key: 'edit',
         label: 'Bearbeiten',
-        Icon: Edit,
+        Icon: SquarePen,
         onclick: () => goto(`${page.url.pathname}/${moduleId}`),
         variant: 'outline',
         className: 'border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700',
@@ -239,7 +239,7 @@
     {#if isActionLoading(key)}
       <Spinner size="sm" />
     {:else}
-      <Icon class="h-4 w-4" />
+      <Icon class="size-4" />
     {/if}
     {label}
   </Button>
@@ -262,7 +262,7 @@
     {#if isActionLoading(key)}
       <Spinner size="sm" />
     {:else}
-      <Icon class="h-4 w-4" />
+      <Icon class="size-4" />
     {/if}
     {label}
   </DropdownMenu.Item>
@@ -295,11 +295,11 @@
               {...props}
               variant="outline"
               size="sm"
-              class="h-7 w-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
+              class="size-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
               disabled={isPerformingAction}
             >
               <span class="sr-only">Aktionen öffnen</span>
-              <Ellipsis class="h-4 w-4" />
+              <Ellipsis class="size-4" />
             </Button>
           {/snippet}
         </DropdownMenu.Trigger>
@@ -316,5 +316,5 @@
   </div>
 {:else}
   <!-- Show empty state or disabled button when no actions available -->
-  <div class="text-sm italic text-muted-foreground">Keine</div>
+  <div class="text-muted-foreground text-sm italic">Keine</div>
 {/if}

@@ -154,7 +154,7 @@
     />
 
     {#if validationError}
-      <p class="text-sm text-destructive">{validationError}</p>
+      <p class="text-destructive text-sm">{validationError}</p>
     {/if}
 
     <Dialog.Footer class="gap-2">

@@ -6,7 +6,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils.js'
-  import { Check, ChevronsUpDownIcon } from '@lucide/svelte'
+  import { Check, ChevronsUpDown } from '@lucide/svelte'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Option {
@@ -53,7 +53,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-sm font-medium text-foreground">{label}</span>
+      <span class="text-foreground text-sm font-medium">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <Form.Field {form} {name}>
@@ -71,7 +71,7 @@
               {...props}
             >
               {options.find(({ id }) => id === value)?.deLabel || placeholder}
-              <ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
             </Popover.Trigger>
             <input hidden {value} name={props.name} />
           {/snippet}
@@ -84,7 +84,7 @@
               <Command.Group>
                 {#each options as { id, deLabel } (id)}
                   <Command.Item value={deLabel} onSelect={() => onSelect(id)}>
-                    <Check class={cn('mr-2 h-4 w-4', id === value ? 'opacity-100' : 'opacity-0')} />
+                    <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                     <span>{deLabel}</span>
                   </Command.Item>
                 {/each}
@@ -116,7 +116,7 @@
             {...props}
           >
             {options.find(({ id }) => id === value)?.deLabel || placeholder}
-            <ChevronsUpDownIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
           </Popover.Trigger>
           <input hidden {value} name={props.name} />
         {/snippet}
@@ -129,7 +129,7 @@
             <Command.Group>
               {#each options as { id, deLabel } (id)}
                 <Command.Item value={deLabel} onSelect={() => onSelect(id)}>
-                  <Check class={cn('mr-2 h-4 w-4', id === value ? 'opacity-100' : 'opacity-0')} />
+                  <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                   <span>{deLabel}</span>
                 </Command.Item>
               {/each}

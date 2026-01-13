@@ -7,8 +7,8 @@ import { canEdit, type ModuleDraftState } from '$lib/types/module-draft.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import type { ModuleReviewJson } from '$lib/types/review-request.js'
 import { error, redirect } from '@sveltejs/kit'
-import { zod } from 'sveltekit-superforms/adapters'
-import { superValidate } from 'sveltekit-superforms/server'
+import { superValidate } from 'sveltekit-superforms'
+import { zod4 } from 'sveltekit-superforms/adapters'
 import type { LayoutServerLoad } from './$types.js'
 
 export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) => {
@@ -149,7 +149,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       attendanceRequirement: module.metadata.attendanceRequirement,
       assessmentPrerequisite: module.metadata.assessmentPrerequisite
     },
-    zod(moduleSchema)
+    zod4(moduleSchema)
   )
 
   const fieldStatuses = getFieldModifications(moduleDraftKeys)

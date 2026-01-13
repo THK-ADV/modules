@@ -1,7 +1,15 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import type { ModuleDraftState } from '$lib/types/module-draft'
-  import { BookCheck, Clock, Eye, HelpCircle, Loader, TriangleAlert, Upload } from '@lucide/svelte'
+  import {
+    BookCheck,
+    Clock,
+    Eye,
+    CircleQuestionMark,
+    Loader,
+    TriangleAlert,
+    Upload
+  } from '@lucide/svelte'
 
   let { state }: { state: ModuleDraftState } = $props()
 
@@ -20,7 +28,7 @@
       case 'waiting_for_publication':
         return Loader
       case 'unknown':
-        return HelpCircle
+        return CircleQuestionMark
     }
   })
 
@@ -67,9 +75,9 @@
   <Tooltip.Root>
     <Tooltip.Trigger>
       <div class="flex min-w-0 items-center">
-        <!-- The flex-shrink-0 will prevent the icon from shrinking if space is limited -->
+        <!-- The shrink-0 will prevent the icon from shrinking if space is limited -->
         <Icon
-          class="mr-2 h-4 w-4 flex-shrink-0 {state === 'waiting_for_changes'
+          class="mr-2 size-4 shrink-0 {state === 'waiting_for_changes'
             ? 'text-amber-500'
             : 'text-muted-foreground'}"
         />
@@ -77,6 +85,6 @@
       </div>
     </Tooltip.Trigger>
     <!-- long tooltips will wrap properly by word breaking if needed -->
-    <Tooltip.Content class="max-w-xs break-words">{tooltip}</Tooltip.Content>
+    <Tooltip.Content class="max-w-xs wrap-break-word">{tooltip}</Tooltip.Content>
   </Tooltip.Root>
 </Tooltip.Provider>

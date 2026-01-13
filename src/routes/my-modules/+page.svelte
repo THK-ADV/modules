@@ -86,7 +86,7 @@
   {#if showSuccessMessage}
     <div class="rounded-md border border-green-200 bg-green-50 p-4">
       <div class="flex">
-        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+        <svg class="size-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
           <path
             fill-rule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -99,11 +99,11 @@
         <div class="ml-auto pl-3">
           <button
             type="button"
-            class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50"
+            class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50 focus:outline-none"
             onclick={() => (showSuccessMessage = false)}
             aria-label="Erfolgsmeldung schließen"
           >
-            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <svg class="size-4" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fill-rule="evenodd"
                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -120,7 +120,7 @@
     <div class="space-y-8">
       <div class="space-y-2">
         <h2 class="text-3xl font-bold tracking-tight">Meine Module</h2>
-        <p class="break-words text-sm text-muted-foreground">
+        <p class="text-muted-foreground text-sm wrap-break-word">
           Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
           Genehmigung freigeben. Eine Genehmigung ist nur bei <a
             class="text-primary underline hover:no-underline"
@@ -137,14 +137,14 @@
             onclick={() => (showSemesterProgress = !showSemesterProgress)}
             class="h-auto p-2 text-sm"
           >
-            <ChartLine class="mr-1 h-4 w-4" />
+            <ChartLine class="mr-1 size-4" />
             {showSemesterProgress
               ? 'Erklärung zum Bearbeitungszyklus ausblenden'
               : 'Erklärung zum Bearbeitungszyklus anzeigen'}
             {#if showSemesterProgress}
-              <ChevronUp class="ml-1 h-4 w-4" />
+              <ChevronUp class="ml-1 size-4" />
             {:else}
-              <ChevronDown class="ml-1 h-4 w-4" />
+              <ChevronDown class="ml-1 size-4" />
             {/if}
           </Button>
         {/if}
@@ -164,7 +164,7 @@
   {:else}
     <div class="space-y-2">
       <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
-      <p class="break-words text-sm text-muted-foreground">
+      <p class="text-muted-foreground text-sm wrap-break-word">
         Sie werden in keinem Modul als Modulverantwortliche*r geführt oder haben keine zugeteilten
         Module.
       </p>

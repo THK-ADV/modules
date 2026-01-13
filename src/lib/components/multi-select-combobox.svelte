@@ -8,7 +8,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils.js'
-  import { Check, ChevronsUpDownIcon, CirclePlus } from '@lucide/svelte'
+  import { Check, ChevronsUpDown, CirclePlus } from '@lucide/svelte'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Option {
@@ -94,7 +94,7 @@
     )}
     {...props}
   >
-    <CirclePlus class="h-4 w-4" />
+    <CirclePlus class="size-4" />
     {#if value.length > 0}
       <Separator orientation="vertical" class="mx-1 h-4" />
 
@@ -106,18 +106,18 @@
       <!-- Large screens: show individual badges -->
       <div class="hidden min-w-0 flex-1 space-x-1 sm:flex">
         {#each displayedSelection.badges as id (id)}
-          <Badge variant="secondary" class="flex-shrink-0 rounded-sm px-1 font-normal">
+          <Badge variant="secondary" class="shrink-0 rounded-sm px-1 font-normal">
             {getOptionBadgeLabel(id)}
           </Badge>
         {/each}
         {#if displayedSelection.overflow > 0}
-          <Badge variant="secondary" class="flex-shrink-0 rounded-sm px-1 font-normal">
+          <Badge variant="secondary" class="shrink-0 rounded-sm px-1 font-normal">
             +{displayedSelection.overflow} weitere
           </Badge>
         {/if}
       </div>
     {/if}
-    <ChevronsUpDownIcon class="ml-auto h-4 w-4 shrink-0 opacity-50" />
+    <ChevronsUpDown class="ml-auto size-4 shrink-0 opacity-50" />
   </Popover.Trigger>
 {/snippet}
 
@@ -138,13 +138,13 @@
             <Command.Item value={label} onSelect={() => toggle(id)}>
               <div
                 class={cn(
-                  'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                  'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
                   value.includes(id)
                     ? 'bg-primary text-primary-foreground'
                     : 'opacity-50 [&_svg]:invisible'
                 )}
               >
-                <Check class="h-4 w-4" />
+                <Check class="size-4" />
               </div>
               <span>{label}</span>
             </Command.Item>
@@ -159,7 +159,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-sm font-medium text-foreground">{label}</span>
+      <span class="text-foreground text-sm font-medium">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <Form.Field {form} {name}>

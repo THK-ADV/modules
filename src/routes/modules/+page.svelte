@@ -168,12 +168,12 @@
 <div class="flex h-full flex-1 flex-col space-y-8">
   <div class="space-y-2">
     <h2 class="text-3xl font-bold tracking-tight">Modulbeschreibungen</h2>
-    <p class="text-sm text-muted-foreground">
+    <p class="text-muted-foreground text-sm">
       Veröffentlichte Modulbeschreibungen aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>
     {#if latestModuleUpdate}
-      <div class="flex items-center gap-2 text-sm text-muted-foreground">
-        <Calendar class="h-4 w-4" />
+      <div class="text-muted-foreground flex items-center gap-2 text-sm">
+        <Calendar class="size-4" />
         <span class="text-sm">Letzte Aktualisierung: {latestModuleUpdate}</span>
       </div>
     {/if}

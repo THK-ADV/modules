@@ -2,7 +2,7 @@ import {
   Book,
   FileText,
   GraduationCap,
-  Home,
+  House,
   LifeBuoy,
   Megaphone,
   Pencil,
@@ -25,7 +25,7 @@ function createRoutes() {
   const defaultRoutes: RoutesMap = {
     '/': {
       name: 'Home',
-      icon: Home
+      icon: House
     },
     '/modules': {
       name: 'Modulsuche',

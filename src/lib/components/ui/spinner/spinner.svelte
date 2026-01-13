@@ -12,9 +12,9 @@
   } & Record<string, any> = $props()
 
   const sizeClasses = {
-    sm: 'h-3.5 w-3.5',
-    md: 'h-4 w-4',
-    lg: 'h-5 w-5'
+    sm: 'size-3.5',
+    md: 'size-4',
+    lg: 'size-5'
   }
 </script>
 

@@ -26,9 +26,9 @@
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
   import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
-  import CalendarIcon from '@lucide/svelte/icons/calendar'
+  import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
-  import { zodClient } from 'sveltekit-superforms/adapters'
+  import { zod4Client } from 'sveltekit-superforms/adapters'
   import { z } from 'zod'
 
   let {
@@ -44,15 +44,17 @@
     year: 'numeric'
   })
 
-  const semesterOptions = semesters.map((s) => ({
-    id: s.id,
-    deLabel: `${s.deLabel} ${s.year}`
-  }))
+  const semesterOptions = $derived(
+    semesters.map((s) => ({
+      id: s.id,
+      deLabel: `${s.deLabel} ${s.year}`
+    }))
+  )
 
   function createDialogForm() {
     const schema = z.object({
       semester: z.string().nonempty('Semester ist erforderlich'),
-      releaseDate: z.date({ required_error: 'Datum ist erforderlich' })
+      releaseDate: z.date({ error: 'Datum ist erforderlich' })
     })
 
     return superForm(
@@ -62,7 +64,7 @@
       },
       {
         SPA: true,
-        validators: zodClient(schema)
+        validators: zod4Client(schema)
       }
     )
   }
@@ -157,7 +159,7 @@
                 )}
                 {...props}
               >
-                <CalendarIcon class="mr-2 size-4" />
+                <Calendar1 class="mr-2 size-4" />
                 {$dialogFormData.releaseDate
                   ? df.format($dialogFormData.releaseDate)
                   : 'Datum auswählen…'}

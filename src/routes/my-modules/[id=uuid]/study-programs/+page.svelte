@@ -3,24 +3,26 @@
   import StudyProgramMandatoryRelationsForm from '$lib/components/forms/study-program-mandatory-relations-form.svelte'
   import { moduleUpdateState } from '$lib/store.svelte'
   import { getModuleFormContext } from '../context'
-  import type { PageProps } from '../$types'
+  import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
 
+  // svelte-ignore state_referenced_locally
   const poMandatoryStatus = data.fieldStatuses?.['po.mandatory']
+  // svelte-ignore state_referenced_locally
   const poOptionalStatus = data.fieldStatuses?.['po.optional']
 
   const studyPrograms = moduleUpdateState.studyPrograms
 
   const form = getModuleFormContext()
-  const { form: formData, errors } = form
+  const { form: formData } = form
 </script>
 
 <div class="space-y-8">
   <div class="space-y-4">
     <div class="space-y-2 border-b pb-4">
-      <h3 class="text-lg font-medium text-foreground">Studiengangszuordnung</h3>
-      <p class="text-sm text-muted-foreground">
+      <h3 class="text-foreground text-lg font-medium">Studiengangszuordnung</h3>
+      <p class="text-muted-foreground text-sm">
         Zuordnung des Moduls zu Studiengängen, in denen es als Pflicht- oder Wahlmodul gelehrt wird.
         Die Beziehungen werden in der Modulsuche, im Modulhandbuch, in den Prüfungslisten und im
         Studienplan verwendet.
@@ -34,7 +36,6 @@
       name="po.mandatory"
       {studyPrograms}
       bind:value={$formData.po.mandatory}
-      {errors}
       modificationStatus={poMandatoryStatus}
     />
   </div>
@@ -45,7 +46,6 @@
       name="po.optional"
       {studyPrograms}
       bind:value={$formData.po.optional}
-      {errors}
       modificationStatus={poOptionalStatus}
     />
   </div>

@@ -6,15 +6,7 @@
       accessorKey: 'title',
       header: 'Modulbezeichnung',
       cell: ({ row }) => {
-        const snippet = createRawSnippet<[string]>((getTitle) => {
-          const title = getTitle()
-          return {
-            render: () =>
-              `<a href="/modules/${row.original.moduleId}?source=latest" class="hover:underline">${title}</a>`
-          }
-        })
-
-        return renderSnippet(snippet, `${row.original.moduleTitle} (${row.original.moduleAbbrev})`)
+        return `${row.original.moduleTitle} (${row.original.moduleAbbrev})`
       },
       enableColumnFilter: false
     },
@@ -55,10 +47,9 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import Button from '$lib/components/ui/button/button.svelte'
-  import { renderComponent, renderSnippet } from '$lib/components/ui/data-table'
+  import { renderComponent } from '$lib/components/ui/data-table'
   import type { ModuleReview } from '$lib/types/review-request'
   import { ChevronDown, ChevronUp, Info } from '@lucide/svelte'
-  import { createRawSnippet } from 'svelte'
   import type { PageProps } from './$types'
   import ReviewKeysExplanation from './(components)/review-keys-explanation.svelte'
   import ReviewRequestsStatusCell from './(components)/review-requests-status-cell.svelte'

@@ -1,6 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { CircleCheck, SquarePen, Eye, Gitlab, CircleX } from '@lucide/svelte'
+  import { Checkbox } from '$lib/components/ui/checkbox/index.js'
+  import { Label } from '$lib/components/ui/label/index.js'
+  import { CircleCheck, CircleX, Eye, Gitlab, SquarePen } from '@lucide/svelte'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
@@ -19,7 +21,8 @@
   const minRejectCommentLength = 10
 
   let errorMessage = $state(undefined)
-  let reviewedStudyPrograms = $derived(new Array<boolean>(reviews.length).fill(false))
+  // svelte-ignore state_referenced_locally
+  let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
   let comment = $state('')
   let mrURLisLoading = $state(false)
 
@@ -173,22 +176,15 @@
         </p>
         <div class="flex flex-col space-y-2">
           {#each reviews as review, index (review.reviewId)}
-            <label
+            <Label
               for={review.reviewId}
-              class="flex cursor-pointer items-center gap-3 rounded-md border-2 px-4 py-3 transition-all"
-              class:bg-amber-50={reviewedStudyPrograms[index]}
-              class:bg-background={!reviewedStudyPrograms[index]}
-              class:border-amber-600={reviewedStudyPrograms[index]}
-              class:border-input={!reviewedStudyPrograms[index]}
-              class:shadow-sm={reviewedStudyPrograms[index]}
-              class:hover:border-amber-400={!reviewedStudyPrograms[index]}
+              class="border-input bg-background flex items-center gap-3 rounded-md border-2 px-4 py-3 transition-all hover:border-amber-400 has-aria-checked:border-amber-600 has-aria-checked:shadow-sm"
             >
-              <input
+              <Checkbox
                 id={review.reviewId}
-                type="checkbox"
-                class="border-input size-4 rounded text-amber-800 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2"
                 bind:checked={reviewedStudyPrograms[index]}
                 aria-describedby="reviewed-hint"
+                class="data-[state=checked]:border-amber-600 data-[state=checked]:bg-amber-600 data-[state=checked]:text-white"
               />
               <span class="text-foreground text-sm font-medium select-none">
                 {review.studyProgram}
@@ -196,7 +192,7 @@
                   >(als {review.role})</span
                 >
               </span>
-            </label>
+            </Label>
           {/each}
         </div>
       </div>

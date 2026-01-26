@@ -22,6 +22,7 @@ import {
   peopleOrdering
 } from './formats'
 import type { FilterData } from './types/filter-data'
+import type { TeachingUnit } from './types/schedule'
 
 function createModuleFilter() {
   let studyPrograms = $state.raw(new Array<FilterData>())
@@ -381,8 +382,116 @@ function createMyModuleFilter() {
   }
 }
 
+function createScheduleFilter() {
+  // Search
+  let searchString = $state('')
+
+  // Source toggles
+  let showHolidays = $state(true)
+  let showSemester = $state(true)
+  let showSchedule = $state(true)
+  let showExams = $state(false)
+
+  // Filter options
+  let teachingUnits: FilterData[] = $state.raw([])
+
+  // Selected options by the user
+  let selectedTeachingUnits: string[] = $state([])
+
+  return {
+    // Search
+    get searchString() {
+      return searchString
+    },
+    set searchString(value: string) {
+      searchString = value
+    },
+
+    // Source toggles
+    get showHolidays() {
+      return showHolidays
+    },
+    set showHolidays(value: boolean) {
+      showHolidays = value
+    },
+    get showSemester() {
+      return showSemester
+    },
+    set showSemester(value: boolean) {
+      showSemester = value
+    },
+    get showSchedule() {
+      return showSchedule
+    },
+    set showSchedule(value: boolean) {
+      showSchedule = value
+    },
+    get showExams() {
+      return showExams
+    },
+    set showExams(value: boolean) {
+      showExams = value
+    },
+
+    // Filter options
+    get teachingUnits() {
+      return teachingUnits
+    },
+    get selectedTeachingUnits() {
+      return selectedTeachingUnits
+    },
+    selectTeachingUnit(id: string) {
+      if (selectedTeachingUnits.includes(id)) {
+        selectedTeachingUnits = selectedTeachingUnits.filter((x) => x !== id)
+      } else {
+        selectedTeachingUnits = [...selectedTeachingUnits, id] // TODO: look into this later
+      }
+    },
+    clearSelectedTeachingUnits() {
+      selectedTeachingUnits = []
+    },
+
+    /**
+     * Track this to react to any filter change.
+     * Just access it in an $effect to create reactive dependencies.
+     */
+    get _(): void {
+      void selectedTeachingUnits
+      return
+    },
+
+    // Reset
+    clearSelections() {
+      searchString = ''
+      selectedTeachingUnits = []
+    },
+    resetSources() {
+      showHolidays = true
+      showSemester = true
+      showSchedule = true
+      showExams = false
+    },
+
+    async init(fetch: typeof globalThis.fetch) {
+      if (teachingUnits.length === 0) {
+        const res = await fetch('/api/teachingUnits')
+        if (res.ok) {
+          const xs: TeachingUnit[] = await res.json()
+          teachingUnits = xs.map((tu) => ({
+            id: tu.id,
+            label: tu.label,
+            badge: tu.label.slice(0, 3).toUpperCase()
+          }))
+        }
+      }
+    }
+  }
+}
+
 export const moduleFilter = createModuleFilter()
 
 export const moduleUpdateState = createModuleUpdateState()
 
 export const myModuleFilter = createMyModuleFilter()
+
+export const scheduleFilter = createScheduleFilter()

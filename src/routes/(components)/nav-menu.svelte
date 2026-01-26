@@ -6,7 +6,7 @@
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
-  const { defaultRoutes, managerRoutes, pavRoutes, secondaryRoutes } = routesMap
+  const { defaultRoutes, managerRoutes, pavRoutes, secondaryRoutes, scheduleRoutes } = routesMap
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
@@ -31,6 +31,26 @@
 <Sidebar.Group>
   <Sidebar.Menu>
     {#each Object.entries(defaultRoutes) as [path, route] (path)}
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton>
+          {#snippet child({ props })}
+            <a href={path} {...props}>
+              <route.icon />
+              <span>{route.name}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+    {/each}
+  </Sidebar.Menu>
+</Sidebar.Group>
+
+<!-- schedule section -->
+<Sidebar.Separator />
+<Sidebar.Group>
+  <Sidebar.GroupLabel>Stundenplan (Experimentell)</Sidebar.GroupLabel>
+  <Sidebar.Menu>
+    {#each Object.entries(scheduleRoutes) as [path, route] (path)}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}

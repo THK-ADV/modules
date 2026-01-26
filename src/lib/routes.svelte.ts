@@ -1,5 +1,6 @@
 import {
   Book,
+  Calendar1,
   FileText,
   GraduationCap,
   House,
@@ -70,6 +71,13 @@ function createRoutes() {
     }
   }
 
+  const scheduleRoutes: RoutesMap = {
+    '/schedule': {
+      name: 'Kalender',
+      icon: Calendar1
+    }
+  }
+
   const protectedRoutes = [...Object.keys(managerRoutes), ...Object.keys(pavRoutes)]
 
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
@@ -87,8 +95,17 @@ function createRoutes() {
     get pavRoutes() {
       return pavRoutes
     },
+    get scheduleRoutes() {
+      return scheduleRoutes
+    },
     get allRoutes() {
-      return { ...defaultRoutes, ...managerRoutes, ...pavRoutes, ...secondaryRoutes }
+      return {
+        ...defaultRoutes,
+        ...managerRoutes,
+        ...pavRoutes,
+        ...secondaryRoutes,
+        ...scheduleRoutes
+      }
     },
     get protectedRoutes() {
       return protectedRoutes

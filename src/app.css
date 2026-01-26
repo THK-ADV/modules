@@ -122,3 +122,350 @@
     cursor: pointer;
   }
 }
+
+/* FullCalendar */
+
+/* Maps FullCalendar's internal CSS variables to shadcn theme tokens */
+.fc {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--card);
+  --fc-neutral-bg-color: transparent;
+  --fc-today-bg-color: hsl(217 91% 60% / 0.08); /* Subtle blue tint for today's column */
+  --fc-event-bg-color: var(--primary);
+  --fc-event-border-color: var(--primary);
+  --fc-event-text-color: var(--primary-foreground);
+  --fc-now-indicator-color: hsl(0 84% 60%); /* Red color for current time indicator */
+  font-family: inherit; /* Inherits app font instead of FullCalendar's default */
+}
+
+/* Increases today's highlight opacity for better visibility in dark mode */
+.dark .fc {
+  --fc-today-bg-color: hsl(217 91% 60% / 0.12);
+}
+
+/* Dark mode event border - lighter for better visibility */
+.dark .fc .fc-event {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- Grid Structure ---- */
+
+/* Removes default outer border from the calendar grid */
+.fc-theme-standard .fc-scrollgrid {
+  border: none;
+}
+
+/* Removes borders from grid section containers */
+.fc .fc-scrollgrid-section > * {
+  border: none;
+}
+
+/* Removes borders from sync tables used for column alignment */
+.fc .fc-scrollgrid-sync-table {
+  border: none;
+}
+
+/* ---- Header Row ---- */
+
+/* Sets the day header row background to match card color */
+.fc .fc-col-header {
+  background-color: var(--card);
+}
+
+/* Styles individual day header cells (Mo. 19.1., Di. 20.1., etc.) */
+.fc .fc-col-header-cell {
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border); /* Adds separator below header */
+  border-right: none; /* Removes vertical borders between days */
+  padding: 0.75rem 0;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  vertical-align: middle;
+}
+
+/* Styles the clickable text inside header cells */
+.fc .fc-col-header-cell-cushion {
+  color: var(--muted-foreground);
+  text-decoration: none; /* Removes default link underline */
+  padding: 0;
+}
+
+/* Highlights today's date in the header with blue text */
+.fc .fc-day-today .fc-col-header-cell-cushion,
+.fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+  color: hsl(217 91% 60%);
+  font-weight: 600;
+}
+
+/* ---- Time Axis (Left Column) ---- */
+
+/* Styles the left column containing time labels and "Ganztägig" */
+.fc .fc-timegrid-axis {
+  background-color: var(--card);
+  border-right: 1px solid var(--border); /* Separates axis from day columns */
+  width: 5.5rem; /* Fixed width to fit "Ganztägig" label */
+  min-width: 5.5rem;
+}
+
+/* Centers content (like "Ganztägig") within axis cells */
+.fc .fc-timegrid-axis-frame {
+  justify-content: center;
+  align-items: center;
+}
+
+/* Styles the "Ganztägig" and week number text in the axis */
+.fc .fc-timegrid-axis-cushion {
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: none; /* Prevents uppercase transformation */
+  white-space: nowrap; /* Keeps "Ganztägig" on one line */
+}
+
+/* Styles time labels (06 Uhr, 07 Uhr, etc.) in the left column */
+.fc .fc-timegrid-slot-label {
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  vertical-align: top; /* Aligns label to top of slot */
+  padding-top: 0.25rem;
+  border: none;
+}
+
+/* Right-aligns time labels so they sit near the grid lines */
+.fc .fc-timegrid-slot-label-frame {
+  text-align: right;
+}
+
+/* Adds padding between time label and the border */
+.fc .fc-timegrid-slot-label-cushion {
+  padding-right: 0.75rem;
+}
+
+/* ---- Day Columns ---- */
+
+/* Adds vertical borders between day columns */
+.fc .fc-timegrid-col {
+  border-right: 1px solid var(--border);
+}
+
+/* Removes border from last column to avoid double border with container */
+.fc .fc-timegrid-col:last-child {
+  border-right: none;
+}
+
+/* Applies subtle blue background to today's column */
+.fc .fc-timegrid-col.fc-day-today {
+  background-color: var(--fc-today-bg-color);
+}
+
+/* ---- Time Slots ---- */
+
+/* Sets consistent height for each hour slot (3rem = 48px) */
+.fc .fc-timegrid-slot {
+  height: 3rem;
+}
+
+/* Adds solid horizontal lines between hour slots */
+.fc .fc-timegrid-slot-lane {
+  border-top: 1px solid var(--border);
+}
+
+/* Adds dashed lines for half-hour marks (less prominent than hour lines) */
+.fc .fc-timegrid-slot-minor {
+  border-top: 1px dashed hsl(240 5.9% 90% / 0.5);
+}
+
+/* Adjusts half-hour line color for dark mode visibility */
+.dark .fc .fc-timegrid-slot-minor {
+  border-top: 1px dashed hsl(240 3.7% 25%);
+}
+
+/* ---- All-Day Section ---- */
+
+/* Adds border below all-day row to separate from time grid */
+.fc .fc-daygrid-body {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Sets background for all-day event cells */
+.fc .fc-daygrid-day {
+  background-color: var(--card);
+}
+
+/* Highlights today in the all-day row */
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: var(--fc-today-bg-color);
+}
+
+/* Sets minimum height for all-day row */
+.fc .fc-daygrid-day-frame {
+  min-height: 2.5rem;
+}
+
+/* ---- Week Numbers ---- */
+
+/* Styles the week number cell (KW 4) in the header */
+.fc .fc-daygrid-week-number {
+  background-color: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+  width: 5.5rem; /* Matches axis column width */
+  min-width: 5.5rem;
+  opacity: 0.7; /* Slightly faded to not compete with day headers */
+}
+
+/* ---- Events ---- */
+
+/* Base styles for calendar events with subtle shadow and hover animation */
+.fc .fc-event {
+  border-radius: calc(var(--radius) - 2px); /* Slightly smaller than card radius */
+  border: 1px solid rgba(0, 0, 0, 0.15); /* Small border to distinguish between events */
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+/* Lifts event slightly on hover with enhanced shadow */
+.fc .fc-event:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
+}
+
+/* Adds internal padding to event content */
+.fc .fc-event-main {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Styles event time text (e.g., "10:00 - 12:00") */
+.fc .fc-event-time {
+  font-weight: 600;
+  font-size: 0.6875rem;
+  opacity: 0.9;
+}
+
+/* Styles event title text */
+.fc .fc-event-title {
+  font-weight: 500;
+}
+
+/* Ensures time grid events have consistent border radius */
+.fc .fc-timegrid-event {
+  border-radius: calc(var(--radius) - 2px);
+}
+
+/* Adds more padding to time grid events (they have more vertical space) */
+.fc .fc-timegrid-event .fc-event-main {
+  padding: 0.375rem 0.5rem;
+}
+
+/* ---- Now Indicator ---- */
+
+/* Styles the horizontal line showing current time */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--fc-now-indicator-color);
+  border-width: 2px; /* Thicker than default for visibility */
+}
+
+/* Styles the arrow/dot at the left edge of the now indicator */
+.fc .fc-timegrid-now-indicator-arrow {
+  border-width: 6px;
+  border-color: var(--fc-now-indicator-color);
+  border-top-color: transparent; /* Creates arrow shape pointing right */
+  border-bottom-color: transparent;
+  margin-top: -5px; /* Centers arrow on the line */
+}
+
+/* ---- Scrollbar ---- */
+
+/* Uses thin scrollbar with theme colors (Firefox) */
+.fc .fc-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Sets scrollbar dimensions (WebKit browsers) */
+.fc .fc-scroller::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Styles scrollbar thumb with border color */
+.fc .fc-scroller::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 3px;
+}
+
+/* Darkens scrollbar thumb on hover */
+.fc .fc-scroller::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
+}
+
+/* Makes scrollbar track transparent */
+.fc .fc-scroller::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---- Popover (More Events) ---- */
+
+/* Styles the popup that appears when clicking "+X more" */
+.fc .fc-popover {
+  background-color: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Styles the popover header showing the date */
+.fc .fc-popover-header {
+  background-color: var(--muted);
+  color: var(--foreground);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Adds padding around popover event list */
+.fc .fc-popover-body {
+  padding: 0.5rem;
+}
+
+/* ---- More Link ---- */
+
+/* Styles the "+X more" link in day cells */
+.fc .fc-daygrid-more-link {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Darkens more link on hover */
+.fc .fc-daygrid-more-link:hover {
+  color: var(--foreground);
+}
+
+/* ---- Focus States ---- */
+
+/* Removes default focus outlines (we provide custom ones) */
+.fc *:focus {
+  outline: none;
+}
+
+/* Adds shadcn-style focus ring to events for keyboard navigation */
+.fc .fc-event:focus {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring);
+}

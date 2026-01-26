@@ -70,7 +70,11 @@
         {/if}
         <Command.Group>
           {#each options as option (option.id)}
-            <Command.Item value={option.label} onSelect={() => handleSelect(option.id)}>
+            <Command.Item
+              value={option.id}
+              keywords={[option.label]}
+              onSelect={() => handleSelect(option.id)}
+            >
               <div
                 class={cn(
                   'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',

@@ -21,10 +21,11 @@
     type EventDropInfo,
     type EventSourceConfig,
     type FetcherEventSource,
+    type EventSource,
     SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE,
-    SELECTED_CALENDAR_VIEW_COOKIE_NAME
+    SELECTED_CALENDAR_VIEW_COOKIE_NAME,
+    type CalendarEventProps
   } from './types.js'
-  import { ca } from 'zod/v4/locales'
 
   interface Props {
     /**
@@ -49,6 +50,7 @@
     api?: CalendarApi
     /** Additional CSS classes for the container */
     class?: string
+    sourceUpdated?: (sourceId: EventSource, eventCount: number) => void
   }
 
   let {
@@ -60,7 +62,8 @@
     onEventClick,
     onEventDrop,
     api = $bindable(),
-    class: className
+    class: className,
+    sourceUpdated
   }: Props = $props()
 
   let calendarEl: HTMLDivElement
@@ -111,12 +114,14 @@
             startStr: fetchInfo.startStr,
             endStr: fetchInfo.endStr
           })
+          sourceUpdated?.(config.id, events.length)
           successCallback(events)
         } catch (error) {
           failureCallback(error instanceof Error ? error : new Error(String(error)))
         }
       }
     } else {
+      sourceUpdated?.(config.id, config.events?.length ?? 0)
       events = config.events
     }
 
@@ -152,7 +157,7 @@
       weekends: false,
       slotDuration: '00:15:00', // Display 15-minute slots
       snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
-      slotEventOverlap: true,
+      slotEventOverlap: false,
       // Format slot label as HH:mm without "Uhr"
       slotLabelFormat: {
         hour: '2-digit',
@@ -197,11 +202,7 @@
         onEventClick?.({
           event: {
             id: arg.event.id,
-            title: arg.event.title,
-            start: arg.event.start,
-            end: arg.event.end,
-            allDay: arg.event.allDay,
-            extendedProps: arg.event.extendedProps as Record<string, unknown>
+            extendedProps: arg.event.extendedProps as CalendarEventProps
           },
           jsEvent: arg.jsEvent
         })
@@ -210,18 +211,11 @@
         onEventDrop?.({
           event: {
             id: arg.event.id,
-            title: arg.event.title,
-            start: arg.event.start,
-            end: arg.event.end,
-            allDay: arg.event.allDay,
-            extendedProps: arg.event.extendedProps as Record<string, unknown>
+            extendedProps: arg.event.extendedProps as CalendarEventProps
           },
           oldEvent: {
             id: arg.oldEvent.id,
-            title: arg.oldEvent.title,
-            start: arg.oldEvent.start,
-            end: arg.oldEvent.end,
-            allDay: arg.oldEvent.allDay
+            extendedProps: arg.oldEvent.extendedProps as CalendarEventProps
           },
           revert: arg.revert
         })
@@ -261,11 +255,12 @@
     untrack(() => {
       if (!calendar) return
 
-      const currentIds = new Set(calendar.getEventSources().map((s) => s.id))
+      const currentIds = new Set(calendar.getEventSources().map((s) => s.id as EventSource))
       const newIds = new Set(sources.map((s) => s.id))
 
       for (const id of currentIds) {
         if (!newIds.has(id)) {
+          sourceUpdated?.(id, 0)
           calendar.getEventSourceById(id)?.remove()
         }
       }

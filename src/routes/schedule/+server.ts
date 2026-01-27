@@ -30,7 +30,8 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
       roomAbbrev: entry.roomAbbrev,
       module: entry.module,
       moduleManagement: entry.moduleManagement,
-      teachingUnits: entry.teachingUnits
+      teachingUnits: entry.teachingUnits,
+      props: entry.props
     }
     return {
       id: entry.id,

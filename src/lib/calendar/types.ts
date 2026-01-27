@@ -31,7 +31,7 @@ export interface SemesterPlanEventProps extends Pick<
  */
 export interface ScheduleEventProps extends Pick<
   ScheduleEntry,
-  'courseType' | 'room' | 'roomAbbrev' | 'module' | 'moduleManagement' | 'teachingUnits'
+  'courseType' | 'room' | 'roomAbbrev' | 'module' | 'moduleManagement' | 'teachingUnits' | 'props'
 > {
   source: 'schedule'
 }
@@ -106,11 +106,7 @@ export interface DateSelectInfo {
 export interface EventClickInfo {
   event: {
     id: string
-    title: string
-    start: Date | null
-    end: Date | null
-    allDay: boolean
-    extendedProps: Record<string, unknown>
+    extendedProps: CalendarEventProps
   }
   jsEvent: MouseEvent
 }
@@ -121,18 +117,11 @@ export interface EventClickInfo {
 export interface EventDropInfo {
   event: {
     id: string
-    title: string
-    start: Date | null
-    end: Date | null
-    allDay: boolean
-    extendedProps: Record<string, unknown>
+    extendedProps: CalendarEventProps
   }
   oldEvent: {
     id: string
-    title: string
-    start: Date | null
-    end: Date | null
-    allDay: boolean
+    extendedProps: CalendarEventProps
   }
   revert: () => void
 }
@@ -170,7 +159,7 @@ export type EventFetcher = (info: DateRangeInfo) => Promise<CalendarEvent[]>
  */
 interface EventSourceBase {
   /** Unique identifier for this source */
-  id: string
+  id: EventSource
   /** Human-readable name for the source (for UI display) */
   name?: string
   /** Color for events from this source */

@@ -5,13 +5,18 @@
     type CalendarApi,
     type CalendarEvent,
     type CalendarView,
+    type EventClickInfo,
     type EventFetcher,
+    type EventSource,
     type EventSourceConfig
   } from '$lib/calendar'
   import { scheduleFilter } from '$lib/store.svelte'
   import { FlaskConical } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ScheduleFilter from './(components)/schedule-filter.svelte'
+  import { createFilteredFetcher } from '$lib/calendar/filter'
+  import { goto } from '$app/navigation'
+  import { resolve } from '$app/paths'
 
   const { data }: PageProps = $props()
 
@@ -23,6 +28,13 @@
   const semesterEntries: CalendarEvent[] = data.semesterEntries
 
   let calendarApi: CalendarApi | undefined = $state()
+
+  let sourceEventCounts: Record<EventSource, number> = $state({
+    holiday: 0,
+    'semester-plan': 0,
+    schedule: 0,
+    exam: 0
+  })
 
   // Fetcher for schedule entries - calls server-side API route
   const scheduleFetcher: EventFetcher = async ({ start, end }) => {
@@ -36,66 +48,18 @@
     return res.json()
   }
 
-  const fetchExams: EventFetcher = () => {
-    return Promise.resolve([
-      {
-        id: 'exam-1',
-        title: 'Klausur: Mathematik I',
-        start: '2026-02-05T09:00:00',
-        end: '2026-02-05T11:00:00',
-        backgroundColor: '#cd853f', // muted peru orange from autumn palette - softer than bright orange
-        extendedProps: {
-          source: 'exam'
-        }
-      }
-    ])
-  }
-
   const fetchSemesterEntries: EventFetcher = () => {
     return Promise.resolve(semesterEntries)
   }
 
-  // Called at fetch time, reads current filter values from closure
-  function filterEvents(events: CalendarEvent[]): CalendarEvent[] {
-    return events.filter((event) => {
-      const props = event.extendedProps
-      if (!props) return true
-
-      switch (props.source) {
-        case 'holiday':
-          return true
-        case 'semester-plan': {
-          const tus = scheduleFilter.selectedTeachingUnits
-          if (tus.length === 0) return true
-          if (props.teachingUnit === null) return true
-          return tus.includes(props.teachingUnit)
-        }
-        case 'exam':
-          return true
-        case 'schedule': {
-          const tus = scheduleFilter.selectedTeachingUnits
-          if (tus.length === 0) return true
-          return props.teachingUnits.some((tu) => tus.includes(tu))
-        }
-      }
-    })
-  }
-
-  function createFilteredFetcher(baseFetcher: EventFetcher): EventFetcher {
-    return async (info) => {
-      const events = await baseFetcher(info)
-      return filterEvents(events)
-    }
-  }
-
   // Tracks sources toggles only (filters are read in closure, not here)
   const eventSources: EventSourceConfig[] = $derived.by(() => {
-    const { showHolidays, showSemester, showSchedule, showExams } = scheduleFilter
+    const { showHolidays, showSemester, showSchedule } = scheduleFilter
     const sources: EventSourceConfig[] = []
 
     if (showHolidays) {
       sources.push({
-        id: 'holidays',
+        id: 'holiday',
         name: 'Feiertage',
         events: holidays
       })
@@ -103,7 +67,7 @@
 
     if (showSemester) {
       sources.push({
-        id: 'semester',
+        id: 'semester-plan',
         name: 'Semesterzeiten',
         fetcher: createFilteredFetcher(fetchSemesterEntries)
       })
@@ -117,16 +81,19 @@
       })
     }
 
-    if (showExams) {
-      sources.push({
-        id: 'exams',
-        name: 'Prüfungen',
-        fetcher: createFilteredFetcher(fetchExams)
-      })
-    }
-
     return sources
   })
+
+  function sourceUpdated(sourceId: EventSource, eventCount: number) {
+    sourceEventCounts[sourceId] = eventCount
+  }
+
+  function onEventClick(info: EventClickInfo) {
+    if (info.event.extendedProps?.source !== 'schedule') {
+      return
+    }
+    goto(resolve(`/modules/[id=uuid]`, { id: info.event.extendedProps.module }))
+  }
 
   // Filters aren't tracked by $derived above, so we need this to trigger refetch
   $effect(() => {
@@ -150,9 +117,16 @@
   <!-- Calendar -->
   {#if browser}
     <!-- Filters & Source Toggles -->
-    <ScheduleFilter />
+    <ScheduleFilter {sourceEventCounts} />
     <div class="border-border bg-card min-h-0 flex-1 overflow-hidden rounded-lg border">
-      <Calendar {eventSources} {initialView} bind:api={calendarApi} editable />
+      <Calendar
+        {eventSources}
+        {initialView}
+        bind:api={calendarApi}
+        editable
+        {sourceUpdated}
+        {onEventClick}
+      />
     </div>
   {:else}
     <div

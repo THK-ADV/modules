@@ -22,7 +22,27 @@ import {
   peopleOrdering
 } from './formats'
 import type { FilterData } from './types/filter-data'
-import type { TeachingUnit } from './types/schedule'
+import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from './types/schedule'
+
+function getSemesterOptions() {
+  return [
+    { id: '1', label: '1', badge: '1' },
+    { id: '2', label: '2', badge: '2' },
+    { id: '3', label: '3', badge: '3' },
+    { id: '4', label: '4', badge: '4' },
+    { id: '5', label: '5', badge: '5' },
+    { id: '6', label: '6', badge: '6' },
+    { id: '7', label: '7', badge: '7' }
+  ]
+}
+
+// changes to this affect lib/calendar/filter.ts and routes/modules/+page.svelte
+function getModuleTypeOptions() {
+  return [
+    { id: 'pm', label: 'Pflichtmodul', badge: 'PM' },
+    { id: 'wm', label: 'Wahlmodul', badge: 'WM' }
+  ]
+}
 
 function createModuleFilter() {
   let studyPrograms = $state.raw(new Array<FilterData>())
@@ -128,21 +148,10 @@ function createModuleFilter() {
     },
     async init(fetch: typeof globalThis.fetch) {
       if (semester.length === 0) {
-        semester = [
-          { id: '1', label: '1', badge: '1' },
-          { id: '2', label: '2', badge: '2' },
-          { id: '3', label: '3', badge: '3' },
-          { id: '4', label: '4', badge: '4' },
-          { id: '5', label: '5', badge: '5' },
-          { id: '6', label: '6', badge: '6' },
-          { id: '7', label: '7', badge: '7' }
-        ]
+        semester = getSemesterOptions()
       }
       if (moduleTypes.length === 0) {
-        moduleTypes = [
-          { id: 'pm', label: 'Pflichtmodul', badge: 'PM' },
-          { id: 'wm', label: 'Wahlmodul', badge: 'WM' }
-        ]
+        moduleTypes = getModuleTypeOptions()
       }
       if (studyPrograms.length === 0 || identities.length === 0) {
         const [sp, id] = await Promise.allSettled([
@@ -394,9 +403,23 @@ function createScheduleFilter() {
 
   // Filter options
   let teachingUnits: FilterData[] = $state.raw([])
+  let courseTypes: FilterData[] = $state.raw([])
+  let modules: FilterData[] = $state.raw([])
+  let studyPrograms: FilterData[] = $state.raw([])
+  let semesters: FilterData[] = $state.raw([])
+  let identities: FilterData[] = $state.raw([])
+  let rooms: FilterData[] = $state.raw([])
+  let moduleTypes: FilterData[] = $state.raw([])
 
   // Selected options by the user
   let selectedTeachingUnits: string[] = $state([])
+  let selectedCourseTypes: string[] = $state([])
+  let selectedModules: string[] = $state([])
+  let selectedStudyPrograms: string[] = $state([])
+  let selectedSemesters: string[] = $state([])
+  let selectedIdentities: string[] = $state([])
+  let selectedRooms: string[] = $state([])
+  let selectedModuleTypes: string[] = $state([])
 
   return {
     // Search
@@ -440,6 +463,22 @@ function createScheduleFilter() {
     get selectedTeachingUnits() {
       return selectedTeachingUnits
     },
+    get courseTypes() {
+      return courseTypes
+    },
+    get selectedCourseTypes() {
+      return selectedCourseTypes
+    },
+    selectCourseType(id: string) {
+      if (selectedCourseTypes.includes(id)) {
+        selectedCourseTypes = selectedCourseTypes.filter((x) => x !== id)
+      } else {
+        selectedCourseTypes = [...selectedCourseTypes, id]
+      }
+    },
+    clearSelectedCourseTypes() {
+      selectedCourseTypes = []
+    },
     selectTeachingUnit(id: string) {
       if (selectedTeachingUnits.includes(id)) {
         selectedTeachingUnits = selectedTeachingUnits.filter((x) => x !== id)
@@ -450,6 +489,114 @@ function createScheduleFilter() {
     clearSelectedTeachingUnits() {
       selectedTeachingUnits = []
     },
+    get modules() {
+      return modules
+    },
+    get selectedModules() {
+      return selectedModules
+    },
+    selectModule(id: string) {
+      if (selectedModules.includes(id)) {
+        selectedModules = selectedModules.filter((x) => x !== id)
+      } else {
+        selectedModules = [...selectedModules, id]
+      }
+    },
+    clearSelectedModules() {
+      selectedModules = []
+    },
+    get studyPrograms() {
+      return studyPrograms
+    },
+    get selectedStudyPrograms() {
+      return selectedStudyPrograms
+    },
+    selectStudyProgram(id: string) {
+      if (selectedStudyPrograms.includes(id)) {
+        selectedStudyPrograms = selectedStudyPrograms.filter((x) => x !== id)
+      } else {
+        selectedStudyPrograms = [...selectedStudyPrograms, id]
+      }
+    },
+    clearSelectedStudyPrograms() {
+      selectedStudyPrograms = []
+    },
+    get semesters() {
+      return semesters
+    },
+    get selectedSemesters() {
+      return selectedSemesters
+    },
+    selectSemester(id: string) {
+      if (selectedSemesters.includes(id)) {
+        selectedSemesters = selectedSemesters.filter((x) => x !== id)
+      } else {
+        selectedSemesters = [...selectedSemesters, id]
+      }
+    },
+    clearSelectedSemesters() {
+      selectedSemesters = []
+    },
+    get identities() {
+      return identities
+    },
+    get selectedIdentities() {
+      return selectedIdentities
+    },
+    selectIdentity(id: string) {
+      if (selectedIdentities.includes(id)) {
+        selectedIdentities = selectedIdentities.filter((x) => x !== id)
+      } else {
+        selectedIdentities = [...selectedIdentities, id]
+      }
+    },
+    clearSelectedIdentities() {
+      selectedIdentities = []
+    },
+    get rooms() {
+      return rooms
+    },
+    get selectedRooms() {
+      return selectedRooms
+    },
+    selectRoom(id: string) {
+      if (selectedRooms.includes(id)) {
+        selectedRooms = selectedRooms.filter((x) => x !== id)
+      } else {
+        selectedRooms = [...selectedRooms, id]
+      }
+    },
+    clearSelectedRooms() {
+      selectedRooms = []
+    },
+    get moduleTypes() {
+      return moduleTypes
+    },
+    get selectedModuleTypes() {
+      return selectedModuleTypes
+    },
+    selectModuleType(id: string) {
+      if (selectedModuleTypes.includes(id)) {
+        selectedModuleTypes = selectedModuleTypes.filter((x) => x !== id)
+      } else {
+        selectedModuleTypes = [...selectedModuleTypes, id]
+      }
+    },
+    clearSelectedModuleTypes() {
+      selectedModuleTypes = []
+    },
+    hasActiveFilters() {
+      return (
+        selectedTeachingUnits.length > 0 ||
+        selectedCourseTypes.length > 0 ||
+        selectedModules.length > 0 ||
+        selectedStudyPrograms.length > 0 ||
+        selectedSemesters.length > 0 ||
+        selectedIdentities.length > 0 ||
+        selectedRooms.length > 0 ||
+        selectedModuleTypes.length > 0
+      )
+    },
 
     /**
      * Track this to react to any filter change.
@@ -457,6 +604,13 @@ function createScheduleFilter() {
      */
     get _(): void {
       void selectedTeachingUnits
+      void selectedCourseTypes
+      void selectedModules
+      void selectedStudyPrograms
+      void selectedSemesters
+      void selectedIdentities
+      void selectedRooms
+      void selectedModuleTypes
       return
     },
 
@@ -464,6 +618,13 @@ function createScheduleFilter() {
     clearSelections() {
       searchString = ''
       selectedTeachingUnits = []
+      selectedCourseTypes = []
+      selectedModules = []
+      selectedStudyPrograms = []
+      selectedSemesters = []
+      selectedIdentities = []
+      selectedRooms = []
+      selectedModuleTypes = []
     },
     resetSources() {
       showHolidays = true
@@ -473,15 +634,70 @@ function createScheduleFilter() {
     },
 
     async init(fetch: typeof globalThis.fetch) {
-      if (teachingUnits.length === 0) {
-        const res = await fetch('/api/teachingUnits')
-        if (res.ok) {
-          const xs: TeachingUnit[] = await res.json()
+      if (semesters.length === 0) {
+        semesters = getSemesterOptions()
+      }
+      if (courseTypes.length === 0) {
+        courseTypes = [
+          { id: 'lecture', label: 'Vorlesung', badge: 'V' },
+          { id: 'lab', label: 'Praktikum', badge: 'P' },
+          { id: 'exercise', label: 'Übung', badge: 'Ü' },
+          { id: 'seminar', label: 'Seminar', badge: 'S' },
+          { id: 'tutorial', label: 'Tutorium', badge: 'T' }
+        ]
+      }
+      if (moduleTypes.length === 0) {
+        moduleTypes = getModuleTypeOptions()
+      }
+      if (
+        teachingUnits.length === 0 ||
+        modules.length === 0 ||
+        studyPrograms.length === 0 ||
+        identities.length === 0 ||
+        rooms.length === 0
+      ) {
+        const [tu, m, sp, id, ro] = await Promise.allSettled([
+          fetch('/api/teachingUnits'),
+          fetch('/api/modules?source=live'),
+          fetch('/api/studyPrograms?filter=currently-active'),
+          fetch('/api/identities'),
+          fetch('/api/rooms')
+        ])
+        if (tu.status === 'fulfilled' && tu.value.ok) {
+          const xs: TeachingUnit[] = await tu.value.json()
           teachingUnits = xs.map((tu) => ({
             id: tu.id,
             label: tu.label,
             badge: tu.label.slice(0, 3).toUpperCase()
           }))
+        }
+        if (m.status === 'fulfilled' && m.value.ok) {
+          const xs: ScheduleModuleCore[] = await m.value.json()
+          xs.sort((a, b) => a.title.localeCompare(b.title))
+          modules = xs.map((m) => ({
+            id: m.id,
+            label: m.title,
+            badge: m.abbrev
+          }))
+        }
+        if (sp.status === 'fulfilled' && sp.value.ok) {
+          const xs: StudyProgram[] = await sp.value.json()
+          studyPrograms = xs
+            .filter(({ specialization }) => specialization === null)
+            .map((sp) => ({
+              label: fmtStudyProgram(sp),
+              id: sp.po.id,
+              badge: fmtStudyProgramShort(sp)
+            }))
+        }
+        if (id.status === 'fulfilled' && id.value.ok) {
+          const xs: Identity[] = await id.value.json()
+          xs.sort(peopleOrdering)
+          identities = xs.map((i) => ({ id: i.id, label: fmtPerson(i), badge: fmtPersonShort(i) }))
+        }
+        if (ro.status === 'fulfilled' && ro.value.ok) {
+          const xs: Room[] = await ro.value.json()
+          rooms = xs.map((r) => ({ id: r.id, label: r.abbrev, badge: r.abbrev }))
         }
       }
     }

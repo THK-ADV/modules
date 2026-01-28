@@ -1,41 +1,41 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button'
   import * as ToggleGroup from '$lib/components/ui/toggle-group'
-  import {
-    Calendar,
-    type EventInput,
-    type EventSourceFunc,
-    type EventSourceInput
-  } from '@fullcalendar/core'
+  import { Calendar } from '@fullcalendar/core'
   import dayGridPlugin from '@fullcalendar/daygrid'
   import interactionPlugin from '@fullcalendar/interaction'
   import timeGridPlugin from '@fullcalendar/timegrid'
   import { ChevronLeft, ChevronRight } from '@lucide/svelte'
   import { onMount, untrack } from 'svelte'
-  import { renderEventContent } from './event-content-rendering.js'
   import {
-    type CalendarApi,
-    type CalendarView,
-    type DateSelectInfo,
-    type EventClickInfo,
-    type EventDropInfo,
-    type EventSourceConfig,
-    type FetcherEventSource,
-    type EventSource,
+    monthViewEventClassNames,
+    renderWeekViewEventContent
+  } from './event-content-rendering.js'
+  import {
+    SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE,
+    SELECTED_CALENDAR_DATE_COOKIE_NAME,
     SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE,
     SELECTED_CALENDAR_VIEW_COOKIE_NAME,
-    type CalendarEventProps
+    type CalendarApi,
+    type CalendarEvent,
+    type CalendarEventProps,
+    type CalendarView,
+    type DateRangeInfo,
+    type DateSelectInfo,
+    type EventClickInfo,
+    type EventDropInfo
   } from './types.js'
 
   interface Props {
     /**
-     * Array of event source configurations.
-     * Each source can have static events or a fetcher function.
-     * The parent component controls which sources to include.
+     * Array of calendar events to display.
+     * The parent component manages filtering and source toggling.
      */
-    eventSources?: EventSourceConfig[]
+    events?: CalendarEvent[]
     /** Initial view mode (week or month) */
     initialView?: CalendarView
+    /** Initial date to display */
+    initialDate?: Date | string
     /** Whether events can be dragged and resized */
     editable?: boolean
     /** Whether users can select date ranges */
@@ -46,24 +46,26 @@
     onEventClick?: (info: EventClickInfo) => void
     /** Callback when an event is dragged to a new time/date */
     onEventDrop?: (info: EventDropInfo) => void
+    /** Callback when the date range is set */
+    onDateRangeSet?: (info: DateRangeInfo) => void
     /** Exposed calendar API for external control */
     api?: CalendarApi
     /** Additional CSS classes for the container */
     class?: string
-    sourceUpdated?: (sourceId: EventSource, eventCount: number) => void
   }
 
   let {
-    eventSources = [],
+    events = [],
     initialView = 'timeGridWeek',
+    initialDate,
     editable = false,
     selectable = false,
     onDateSelect,
     onEventClick,
     onEventDrop,
+    onDateRangeSet,
     api = $bindable(),
-    class: className,
-    sourceUpdated
+    class: className
   }: Props = $props()
 
   let calendarEl: HTMLDivElement
@@ -84,72 +86,30 @@
     calendar?.today()
   }
 
-  function handleViewChange(value: string | undefined) {
-    if (value === 'week' || value === 'month') {
-      currentView = value === 'week' ? 'timeGridWeek' : 'dayGridMonth'
-      document.cookie = `${SELECTED_CALENDAR_VIEW_COOKIE_NAME}=${currentView}; path=/; max-age=${SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE}`
-      calendar?.changeView(currentView)
-    }
-  }
-
-  /**
-   * Type guard to check if source has a fetcher
-   */
-  function hasFetcher(config: EventSourceConfig): config is FetcherEventSource {
-    return 'fetcher' in config && config.fetcher !== undefined
-  }
-
-  /**
-   * Convert our EventSourceConfig to FullCalendar's EventSourceInput
-   */
-  function toFullCalendarSource(config: EventSourceConfig): EventSourceInput {
-    let events: EventInput[] | EventSourceFunc
-
-    if (hasFetcher(config)) {
-      events = async (fetchInfo, successCallback, failureCallback) => {
-        try {
-          const events = await config.fetcher({
-            start: fetchInfo.start,
-            end: fetchInfo.end,
-            startStr: fetchInfo.startStr,
-            endStr: fetchInfo.endStr
-          })
-          sourceUpdated?.(config.id, events.length)
-          successCallback(events)
-        } catch (error) {
-          failureCallback(error instanceof Error ? error : new Error(String(error)))
-        }
-      }
-    } else {
-      sourceUpdated?.(config.id, config.events?.length ?? 0)
-      events = config.events
-    }
-
-    return {
-      id: config.id,
-      color: config.color,
-      display: config.display,
-      events
-    }
+  function handleViewChange(value: string) {
+    currentView = value as CalendarView
+    document.cookie = `${SELECTED_CALENDAR_VIEW_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE}`
+    calendar?.changeView(value)
   }
 
   onMount(() => {
     const startView = initialView
-    const fcSources = eventSources.map(toFullCalendarSource)
+    const startDate = initialDate
 
     calendar = new Calendar(calendarEl, {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: startView,
+      initialDate: startDate,
       headerToolbar: false,
       editable,
       selectable,
-      eventSources: fcSources,
+      events: [],
       nowIndicator: true,
       dayMaxEvents: true,
       weekNumbers: true,
       allDaySlot: true,
-      slotMinTime: '06:00:00',
-      slotMaxTime: '22:00:00',
+      slotMinTime: '08:30:00',
+      slotMaxTime: '21:00:00',
       expandRows: true,
       stickyHeaderDates: true,
       locale: 'de',
@@ -157,7 +117,7 @@
       weekends: false,
       slotDuration: '00:15:00', // Display 15-minute slots
       snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
-      slotEventOverlap: false,
+      slotEventOverlap: true,
       // Format slot label as HH:mm without "Uhr"
       slotLabelFormat: {
         hour: '2-digit',
@@ -172,8 +132,10 @@
       },
       views: {
         timeGridWeek: {
-          // Custom event rendering for week view only
-          eventContent: renderEventContent
+          eventContent: renderWeekViewEventContent
+        },
+        dayGridMonth: {
+          eventClassNames: monthViewEventClassNames()
         }
       },
       weekNumberFormat: { week: 'numeric' },
@@ -220,15 +182,35 @@
           revert: arg.revert
         })
       },
-      datesSet: () => {
+      datesSet: (arg) => {
         if (calendar) {
           currentTitle = calendar.view.title
+          const currentDate = calendar.getDate().toISOString()
+          document.cookie = `${SELECTED_CALENDAR_DATE_COOKIE_NAME}=${currentDate}; path=/; max-age=${SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE}`
         }
+        onDateRangeSet?.({
+          start: arg.start,
+          end: arg.end,
+          startStr: arg.startStr,
+          endStr: arg.endStr
+        })
       }
     })
 
     calendar.render()
     currentTitle = calendar.view.title
+
+    // Add ResizeObserver to handle container size changes
+    let resizeTimeout: ReturnType<typeof setTimeout>
+    const resizeObserver = new ResizeObserver(() => {
+      // Debounce to avoid excessive updates during animation
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        calendar?.updateSize()
+      }, 150) // Wait for sidebar animation to complete
+    })
+
+    resizeObserver.observe(calendarEl)
 
     // Expose a simple API
     api = {
@@ -236,40 +218,24 @@
       next: () => calendar?.next(),
       today: () => calendar?.today(),
       changeView: (view) => calendar?.changeView(view),
-      getTitle: () => calendar?.view.title ?? '',
-      refetchEvents: () => calendar?.refetchEvents()
+      getTitle: () => calendar?.view.title ?? ''
     }
 
-    // TODO: debug option
-    calendar.gotoDate(Date.parse('2025-10-06'))
-
     return () => {
+      clearTimeout(resizeTimeout)
+      resizeObserver.disconnect()
       calendar?.destroy()
       calendar = null
     }
   })
 
-  // Diff-based sync: only add/remove changed sources (avoids unnecessary refetches)
+  // Update calendar events when the events prop changes
   $effect(() => {
-    const sources = eventSources
+    const currentEvents = events
     untrack(() => {
       if (!calendar) return
-
-      const currentIds = new Set(calendar.getEventSources().map((s) => s.id as EventSource))
-      const newIds = new Set(sources.map((s) => s.id))
-
-      for (const id of currentIds) {
-        if (!newIds.has(id)) {
-          sourceUpdated?.(id, 0)
-          calendar.getEventSourceById(id)?.remove()
-        }
-      }
-
-      for (const config of sources) {
-        if (!currentIds.has(config.id)) {
-          calendar.addEventSource(toFullCalendarSource(config))
-        }
-      }
+      calendar.removeAllEvents()
+      calendar.addEventSource(currentEvents)
     })
   })
 </script>
@@ -310,18 +276,24 @@
     <!-- Right: View Toggle -->
     <ToggleGroup.Root
       type="single"
-      value={currentView === 'timeGridWeek' ? 'week' : 'month'}
+      value={currentView}
       onValueChange={handleViewChange}
       class="bg-muted rounded-lg p-1"
     >
       <ToggleGroup.Item
-        value="week"
+        value="dayGridDay"
+        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
+      >
+        Tag
+      </ToggleGroup.Item>
+      <ToggleGroup.Item
+        value="timeGridWeek"
         class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
       >
         Woche
       </ToggleGroup.Item>
       <ToggleGroup.Item
-        value="month"
+        value="dayGridMonth"
         class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
       >
         Monat

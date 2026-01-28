@@ -1,10 +1,16 @@
-import type { CalendarEvent } from '$lib/calendar'
-import { SELECTED_CALENDAR_VIEW_COOKIE_NAME } from '$lib/calendar/types'
+import type { CalendarEvent, HolidayEventProps, SemesterPlanEventProps } from '$lib/calendar'
+import {
+  EVENT_SOURCE_COLORS,
+  SELECTED_CALENDAR_DATE_COOKIE_NAME,
+  SELECTED_CALENDAR_VIEW_COOKIE_NAME
+} from '$lib/calendar/types'
 import type { SemesterPlanEntry } from '$lib/types/schedule'
 import { error, type HttpError } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<CalendarEvent[]> {
+async function fetchHolidays(
+  fetch: typeof globalThis.fetch
+): Promise<CalendarEvent<HolidayEventProps>[]> {
   const resp = await fetch('/api/holidays')
 
   if (!resp.ok) {
@@ -19,12 +25,14 @@ async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<CalendarEv
     title: label,
     start: date,
     allDay: true,
-    backgroundColor: '#8b7d6b',
+    backgroundColor: EVENT_SOURCE_COLORS['holiday'],
     extendedProps: { source: 'holiday' }
   }))
 }
 
-async function fetchSemesterEntries(fetch: typeof globalThis.fetch): Promise<CalendarEvent[]> {
+async function fetchSemesterEntries(
+  fetch: typeof globalThis.fetch
+): Promise<CalendarEvent<SemesterPlanEventProps>[]> {
   const resp = await fetch('/api/semesterPlan')
 
   if (!resp.ok) {
@@ -41,12 +49,12 @@ async function fetchSemesterEntries(fetch: typeof globalThis.fetch): Promise<Cal
     switch (entry.type) {
       case 'lecture': {
         title = 'Vorlesung'
-        backgroundColor = '#d2b48c'
+        backgroundColor = EVENT_SOURCE_COLORS['semester-plan']
         break
       }
       case 'exam': {
         title = 'Prüfung'
-        backgroundColor = '#cd853f'
+        backgroundColor = EVENT_SOURCE_COLORS['exam']
         break
       }
       case 'block': {
@@ -61,7 +69,7 @@ async function fetchSemesterEntries(fetch: typeof globalThis.fetch): Promise<Cal
       }
       case 'closed_building': {
         title = 'Gebäude geschlossen'
-        backgroundColor = '#8b7d6b'
+        backgroundColor = EVENT_SOURCE_COLORS['holiday']
         break
       }
       case 'self_study': {
@@ -113,10 +121,12 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
   }
 
   const selectedCalendarView = cookies.get(SELECTED_CALENDAR_VIEW_COOKIE_NAME)
+  const selectedCalendarDate = cookies.get(SELECTED_CALENDAR_DATE_COOKIE_NAME)
 
   return {
     holidays: holidaysRes.value,
     semesterEntries: semesterEntriesRes.value,
-    selectedCalendarView
+    selectedCalendarView,
+    selectedCalendarDate
   }
 }

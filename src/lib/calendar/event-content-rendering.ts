@@ -1,7 +1,8 @@
 import { fmtManagement } from '$lib/formats'
+import type { CourseType } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
 import type { ScheduleEventProps } from '.'
-import type { CourseType } from '$lib/types/schedule'
+import { EVENT_SOURCE_COLORS } from './types'
 
 /**
  * Create an SVG icon from a path or an array of paths.
@@ -26,7 +27,11 @@ function createIcon(paths: string | string[]): string {
  * @returns The info row as a string.
  */
 function createInfoRow(icon: string, text: string): string {
-  return `<div class="flex items-center gap-1.5 text-xs opacity-70">${icon}<span>${text}</span></div>`
+  return `<div class="flex items-center gap-1.5 text-xs opacity-70">${icon}<span class="truncate">${text}</span></div>`
+}
+
+function createShortInfoRow(text: string): string {
+  return `<div class="flex items-center gap-1.5 text-xs opacity-70"><span class="truncate">${text}</span></div>`
 }
 
 /**
@@ -64,7 +69,7 @@ function fmtCourseType(courseType: CourseType): string {
  * @param arg - The event content argument.
  * @returns The event content as a string.
  */
-export function renderEventContent(arg: EventContentArg) {
+export function renderWeekViewEventContent(arg: EventContentArg) {
   // Only apply custom layout for schedule events, use default for others
   if (arg.event.extendedProps?.source !== 'schedule') {
     return true
@@ -72,17 +77,58 @@ export function renderEventContent(arg: EventContentArg) {
 
   const props = arg.event.extendedProps as ScheduleEventProps
   const time = arg.timeText
-  const title = arg.event.title
-  const lecturer = props.moduleManagement.map((m) => fmtManagement(m)).join(', ')
+
+  // Long versions
+  const titleLong = props.moduleTitle
+  const lecturerLong = props.moduleManagement.map((m) => fmtManagement(m)).join(', ')
+  const courseTypeLong = fmtCourseType(props.courseType)
+
+  // Short versions
+  const titleShort = props.moduleAbbrev
+  const lecturerShort = props.moduleManagement
+    .map((m) => {
+      switch (m.kind) {
+        case 'person':
+          return `${m.firstname.charAt(0)}${m.lastname.charAt(0)}`
+        case 'group':
+          return m.id.slice(0, 3).toUpperCase()
+        case 'unknown':
+          return m.id.slice(0, 3).toUpperCase()
+      }
+    })
+    .join(', ')
+  const courseTypeShort = courseTypeLong.charAt(0)
+
+  // Always the same
   const location = props.roomAbbrev
 
   return {
-    html: `<div class="flex flex-col gap-1.5 p-2 dark:text-white border dark:border-white">
-             <div class="text-base font-semibold leading-tight">${title}</div>
-             ${createInfoRow(ICONS.clock, time)}
-             ${createInfoRow(ICONS.mapPin, location)}
-             ${createInfoRow(ICONS.user, lecturer)}
-             ${createInfoRow(ICONS.book, fmtCourseType(props.courseType))}
-           </div>`
+    html: `
+      <div class="event-content flex h-full flex-col dark:text-white">
+        <!-- Full view -->
+        <div class="event-size-full flex flex-col gap-1.5 p-2">
+          <div class="text-sm font-semibold leading-tight">${titleLong}</div>
+          ${createInfoRow(ICONS.clock, time)}
+          ${createInfoRow(ICONS.mapPin, location)}
+          ${createInfoRow(ICONS.user, lecturerLong)}
+          ${createInfoRow(ICONS.book, courseTypeLong)}
+        </div>
+        <!-- Compact view -->
+        <div class="event-size-compact flex flex-col gap-1 p-1.5">
+          <div class="text-sm font-semibold leading-tight">${titleShort}</div>
+          ${createShortInfoRow(location)}
+          ${createShortInfoRow(lecturerShort)}
+          ${createShortInfoRow(courseTypeShort)}
+        </div>
+        <!-- Minimum view - just abbreviation, vertically centered -->
+        <div class="event-size-minimum flex h-full items-center justify-center p-1">
+          <span class="text-xs font-bold [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
+        </div>
+      </div>
+    `
   }
+}
+
+export function monthViewEventClassNames(): string[] {
+  return [`bg-[${EVENT_SOURCE_COLORS['schedule']}]`, 'text-white']
 }

@@ -43,7 +43,7 @@
     </div>
     <div class="flex-1">
       <Input
-        placeholder="Suche nach Eintrag..."
+        placeholder="Suche nach Modulbezeichnung…"
         class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-9 w-full max-w-md border bg-transparent text-sm transition-colors focus-visible:ring-2"
         type="search"
         bind:value={scheduleFilter.searchString}

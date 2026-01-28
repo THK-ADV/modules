@@ -3,11 +3,13 @@ import type { EventInput } from '@fullcalendar/core'
 
 export const SELECTED_CALENDAR_VIEW_COOKIE_NAME = 'calendar:selected-view'
 export const SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+export const SELECTED_CALENDAR_DATE_COOKIE_NAME = 'calendar:selected-date'
+export const SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 /**
  * Calendar view types supported by the calendar component.
  */
-export type CalendarView = 'timeGridWeek' | 'dayGridMonth'
+export type CalendarView = 'timeGridWeek' | 'dayGridMonth' | 'timeGridDay'
 
 /**
  * Extended props for holiday events.
@@ -31,7 +33,15 @@ export interface SemesterPlanEventProps extends Pick<
  */
 export interface ScheduleEventProps extends Pick<
   ScheduleEntry,
-  'courseType' | 'room' | 'roomAbbrev' | 'module' | 'moduleManagement' | 'teachingUnits' | 'props'
+  | 'courseType'
+  | 'room'
+  | 'roomAbbrev'
+  | 'module'
+  | 'moduleManagement'
+  | 'teachingUnits'
+  | 'props'
+  | 'moduleTitle'
+  | 'moduleAbbrev'
 > {
   source: 'schedule'
 }
@@ -58,11 +68,20 @@ export type CalendarEventProps =
  */
 export type EventSource = CalendarEventProps['source']
 
+export const EVENT_SOURCE_COLORS: Record<EventSource, string> = {
+  holiday: '#8b7d6b',
+  'semester-plan': '#d2b48c',
+  schedule: '#5f7c8a',
+  exam: '#cd853f'
+}
+
 /**
  * Calendar event type - a superset of FullCalendar's EventInput.
  * Uses CalendarEventProps for type-safe extendedProps with discriminated unions.
  */
-export interface CalendarEvent extends EventInput {
+export interface CalendarEvent<
+  T extends CalendarEventProps = CalendarEventProps
+> extends EventInput {
   /** Unique identifier for the event */
   id: string
   /** Display title of the event */
@@ -86,7 +105,7 @@ export interface CalendarEvent extends EventInput {
   /** URL to navigate to when the event is clicked */
   url?: string
   /** Custom data associated with the event */
-  extendedProps?: CalendarEventProps
+  extendedProps: T
 }
 
 /**
@@ -127,7 +146,7 @@ export interface EventDropInfo {
 }
 
 /**
- * Information about the visible date range, passed to the event fetcher.
+ * Information about the visible date range, passed to callbacks.
  */
 export interface DateRangeInfo {
   /** Start of the visible date range */
@@ -139,57 +158,6 @@ export interface DateRangeInfo {
   /** ISO string of the end date */
   endStr: string
 }
-
-/**
- * Function type for lazy-loading events based on the visible date range.
- * Called whenever the user navigates to a different date range.
- *
- * @example
- * ```ts
- * const fetcher: EventFetcher = async ({ startStr, endStr }) => {
- *   const response = await fetch(`/api/events?start=${startStr}&end=${endStr}`)
- *   return response.json()
- * }
- * ```
- */
-export type EventFetcher = (info: DateRangeInfo) => Promise<CalendarEvent[]>
-
-/**
- * Base configuration shared by all event source types.
- */
-interface EventSourceBase {
-  /** Unique identifier for this source */
-  id: EventSource
-  /** Human-readable name for the source (for UI display) */
-  name?: string
-  /** Color for events from this source */
-  color?: string
-  /** Display mode: 'auto' (normal), 'background' (subtle background), 'inverse-background' */
-  display?: 'auto' | 'background' | 'inverse-background'
-}
-
-/**
- * Event source with static events (loaded upfront, e.g., from SSR).
- */
-export interface StaticEventSource extends EventSourceBase {
-  /** Static array of events */
-  events: CalendarEvent[]
-  fetcher?: never
-}
-
-/**
- * Event source with a fetcher function (lazy-loaded based on visible date range).
- */
-export interface FetcherEventSource extends EventSourceBase {
-  /** Function to fetch events for the visible date range */
-  fetcher: EventFetcher
-  events?: never
-}
-
-/**
- * Configuration for an event source - either static events or a fetcher function.
- */
-export type EventSourceConfig = StaticEventSource | FetcherEventSource
 
 /**
  * API exposed by the Calendar component for external control.
@@ -206,6 +174,4 @@ export interface CalendarApi {
   changeView: (view: CalendarView) => void
   /** Get the current title (e.g., "January 2026") */
   getTitle: () => string
-  /** Refetch all events from fetcher-based sources */
-  refetchEvents: () => void
 }

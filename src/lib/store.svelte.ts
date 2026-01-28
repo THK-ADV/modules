@@ -585,35 +585,6 @@ function createScheduleFilter() {
     clearSelectedModuleTypes() {
       selectedModuleTypes = []
     },
-    hasActiveFilters() {
-      return (
-        selectedTeachingUnits.length > 0 ||
-        selectedCourseTypes.length > 0 ||
-        selectedModules.length > 0 ||
-        selectedStudyPrograms.length > 0 ||
-        selectedSemesters.length > 0 ||
-        selectedIdentities.length > 0 ||
-        selectedRooms.length > 0 ||
-        selectedModuleTypes.length > 0
-      )
-    },
-
-    /**
-     * Track this to react to any filter change.
-     * Just access it in an $effect to create reactive dependencies.
-     */
-    get _(): void {
-      void selectedTeachingUnits
-      void selectedCourseTypes
-      void selectedModules
-      void selectedStudyPrograms
-      void selectedSemesters
-      void selectedIdentities
-      void selectedRooms
-      void selectedModuleTypes
-      return
-    },
-
     // Reset
     clearSelections() {
       searchString = ''

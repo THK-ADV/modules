@@ -354,6 +354,7 @@
 
 /* Styles event title text */
 .fc .fc-event-title {
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -365,6 +366,12 @@
 /* Adds more padding to time grid events (they have more vertical space) */
 .fc .fc-timegrid-event .fc-event-main {
   padding: 0.375rem 0.5rem;
+}
+
+/* TODO: The dot in month view should be overridden to be white */
+.fc .fc-daygrid-event-dot {
+  border-color: 'red';
+  background-color: 'red';
 }
 
 /* ---- Now Indicator ---- */
@@ -468,4 +475,48 @@
   box-shadow:
     0 0 0 2px var(--background),
     0 0 0 4px var(--ring);
+}
+
+/* ---- Event Size Classes (Container Queries) ---- */
+
+/* Make FullCalendar events container query contexts */
+.fc-event-main {
+  container-type: inline-size;
+}
+
+/* Default: show full only */
+.event-size-full {
+  display: block;
+}
+
+.event-size-compact,
+.event-size-minimum {
+  display: none;
+}
+
+/* Compact: 80px - 150px width */
+@container (max-width: 150px) {
+  .event-size-full {
+    display: none;
+  }
+
+  .event-size-compact {
+    display: block;
+  }
+
+  .event-size-minimum {
+    display: none;
+  }
+}
+
+/* Minimum: < 80px width - only show essential info */
+@container (max-width: 80px) {
+  .event-size-full,
+  .event-size-compact {
+    display: none;
+  }
+
+  .event-size-minimum {
+    display: block;
+  }
 }

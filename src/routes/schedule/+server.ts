@@ -1,7 +1,8 @@
-import type { ScheduleEventProps } from '$lib/calendar'
+import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
 import type { ScheduleEntry } from '$lib/types/schedule'
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
+import { EVENT_SOURCE_COLORS } from '$lib/calendar/types'
 
 export const GET: RequestHandler = async ({ fetch, url }) => {
   const startStr = url.searchParams.get('start')
@@ -22,13 +23,15 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
   }
 
   const entries: ScheduleEntry[] = await resp.json()
-  const events = entries.map((entry) => {
+  const events: CalendarEvent<ScheduleEventProps>[] = entries.map((entry) => {
     const extendedProps: ScheduleEventProps = {
       source: 'schedule',
       courseType: entry.courseType,
       room: entry.room,
       roomAbbrev: entry.roomAbbrev,
       module: entry.module,
+      moduleTitle: entry.moduleTitle,
+      moduleAbbrev: entry.moduleAbbrev,
       moduleManagement: entry.moduleManagement,
       teachingUnits: entry.teachingUnits,
       props: entry.props
@@ -38,7 +41,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
       title: entry.moduleTitle,
       start: entry.start,
       end: entry.end,
-      backgroundColor: '#5f7c8a',
+      backgroundColor: EVENT_SOURCE_COLORS['schedule'],
       extendedProps
     }
   })

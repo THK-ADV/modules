@@ -130,5 +130,5 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
 }
 
 export function monthViewEventClassNames(): string[] {
-  return [`bg-[${EVENT_SOURCE_COLORS['schedule']}]`, 'text-white']
+  return [`bg-[${EVENT_SOURCE_COLORS['schedule']}]`, 'dark:text-white']
 }

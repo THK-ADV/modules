@@ -21,33 +21,33 @@
   const PHASE_THEMES = {
     editing: {
       primary: 'blue',
-      bgLight: 'bg-blue-100',
-      bgProgress: 'bg-blue-500',
-      border: 'border-blue-500',
-      textPrimary: 'text-blue-900',
-      textSecondary: 'text-blue-800',
-      textButton: 'text-blue-700',
-      textButtonHover: 'hover:text-blue-900'
+      bgLight: 'bg-blue-100 dark:bg-blue-900/40',
+      bgProgress: 'bg-blue-500 dark:bg-blue-500',
+      border: 'border-blue-500 dark:border-blue-400',
+      textPrimary: 'text-blue-900 dark:text-blue-200',
+      textSecondary: 'text-blue-800 dark:text-blue-300',
+      textButton: 'text-blue-700 dark:text-blue-400',
+      textButtonHover: 'hover:text-blue-900 dark:hover:text-blue-200'
     },
     finalizing: {
       primary: 'orange',
-      bgLight: 'bg-orange-100',
-      bgProgress: 'bg-orange-500',
-      border: 'border-orange-500',
-      textPrimary: 'text-orange-900',
-      textSecondary: 'text-orange-800',
-      textButton: 'text-orange-700',
-      textButtonHover: 'hover:text-orange-900'
+      bgLight: 'bg-orange-100 dark:bg-orange-900/40',
+      bgProgress: 'bg-orange-500 dark:bg-orange-500',
+      border: 'border-orange-500 dark:border-orange-400',
+      textPrimary: 'text-orange-900 dark:text-orange-200',
+      textSecondary: 'text-orange-800 dark:text-orange-300',
+      textButton: 'text-orange-700 dark:text-orange-400',
+      textButtonHover: 'hover:text-orange-900 dark:hover:text-orange-200'
     },
     publishing: {
       primary: 'green',
-      bgLight: 'bg-green-100',
-      bgProgress: 'bg-green-500',
-      border: 'border-green-500',
-      textPrimary: 'text-green-900',
-      textSecondary: 'text-green-800',
-      textButton: 'text-green-700',
-      textButtonHover: 'hover:text-green-900'
+      bgLight: 'bg-green-100 dark:bg-green-900/40',
+      bgProgress: 'bg-green-500 dark:bg-green-500',
+      border: 'border-green-500 dark:border-green-400',
+      textPrimary: 'text-green-900 dark:text-green-200',
+      textSecondary: 'text-green-800 dark:text-green-300',
+      textButton: 'text-green-700 dark:text-green-400',
+      textButtonHover: 'hover:text-green-900 dark:hover:text-green-200'
     }
   } as const
 
@@ -173,7 +173,9 @@
 </script>
 
 {#if showComponent}
-  <div class="rounded-lg border bg-linear-to-r from-blue-50 to-indigo-50 p-6">
+  <div
+    class="rounded-lg border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-gray-700 dark:from-blue-950/30 dark:to-indigo-950/30"
+  >
     <div class="mb-4">
       <h3 class="text-foreground text-lg font-semibold">
         Bearbeitungszyklus {semesterInfo.type}
@@ -191,7 +193,7 @@
         <span>Veröffentlichung</span>
       </div>
 
-      <div class="bg-muted relative h-3 w-full overflow-hidden rounded-full">
+      <div class="relative h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
         <!-- Background phases -->
         <div class="absolute inset-0 flex">
           <div style="width: {EDITING_PHASE_END}%" class={PHASE_THEMES.editing.bgLight}></div>
@@ -213,11 +215,11 @@
 
         <!-- Phase markers -->
         <div
-          class="bg-muted-foreground absolute top-0 h-full w-0.5 opacity-50"
+          class="absolute top-0 h-full w-0.5 bg-gray-600 opacity-60 dark:bg-gray-300 dark:opacity-70"
           style="left: {EDITING_PHASE_END}%"
         ></div>
         <div
-          class="bg-muted-foreground absolute top-0 h-full w-0.5 opacity-50"
+          class="absolute top-0 h-full w-0.5 bg-gray-600 opacity-60 dark:bg-gray-300 dark:opacity-70"
           style="left: {FINALIZING_PHASE_END}%"
         ></div>
       </div>
@@ -231,7 +233,9 @@
 
     <!-- Current Phase Information -->
     <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div class="rounded-lg border-l-4 {phaseTheme.border} {phaseTheme.bgLight} p-4 md:col-span-2">
+      <div
+        class="rounded-lg border border-l-4 border-gray-200 dark:border-gray-700 {phaseTheme.border} {phaseTheme.bgLight} p-4 md:col-span-2"
+      >
         <div class="mb-2 flex items-center justify-between">
           <h4 class="font-medium {phaseTheme.textPrimary}">
             {phaseContent.icon}
@@ -258,7 +262,9 @@
           {phaseContent.description}
         </p>
       </div>
-      <div class="rounded-lg border bg-white p-4">
+      <div
+        class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/50"
+      >
         <h5 class="text-foreground mb-2 font-medium">{phaseContent.actionTitle}</h5>
         <ul class="text-muted-foreground space-y-1 text-sm">
           {#each phaseContent.actions as action, index (index)}
@@ -270,12 +276,16 @@
 
     <!-- Process Explanation (appears when toggled) -->
     {#if showProcessExplanation}
-      <div class="mt-4 rounded-lg border bg-white p-4">
-        <h5 class="mb-3 font-medium text-gray-900">So funktioniert der Bearbeitungszyklus</h5>
-        <div class="space-y-2 text-sm text-gray-700">
+      <div
+        class="mt-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/50"
+      >
+        <h5 class="mb-3 font-medium text-gray-900 dark:text-gray-100">
+          So funktioniert der Bearbeitungszyklus
+        </h5>
+        <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
           <p>
-            <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können Ihre
-            Module bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
+            <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können
+            Ihre Module bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
           </p>
           <p>
             <strong>Finalisierungsphase (bis {FINALIZING_PHASE_END} % des Semesters):</strong> Letzte

@@ -16,7 +16,7 @@
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from './modification-indicator.svelte'
-
+  import { resolve } from '$app/paths'
   // TODO wenn zweite prüfungsform hinzugefügt wird, und die erste bereits eine prozentuale Gewichtung hat, soll die der zweiten auf die Differenz zu 100 gesetzt werden. entsprechend auch für die dritte usw.
 
   interface Props {
@@ -315,7 +315,7 @@
         >
         werden. Zudem dürfen nur valide Prüfungsformen gemäß der
         <a
-          href="/help#assessment-methods"
+          href={resolve('/assessment-methods')}
           target="_blank"
           rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a
@@ -349,7 +349,7 @@
       >
       werden. Zudem dürfen nur valide Prüfungsformen gemäß der
       <a
-        href="/help#assessment-methods"
+        href={resolve('/assessment-methods')}
         target="_blank"
         rel="noopener noreferrer"
         class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a

@@ -71,6 +71,13 @@ function createRoutes() {
     }
   }
 
+  const detailRoutes: RoutesMap = {
+    '/assessment-methods': {
+      name: 'Prüfungsformen',
+      icon: FileText
+    }
+  }
+
   const scheduleRoutes: RoutesMap = {
     '/schedule': {
       name: 'Kalender',
@@ -104,6 +111,7 @@ function createRoutes() {
         ...managerRoutes,
         ...pavRoutes,
         ...secondaryRoutes,
+        ...detailRoutes,
         ...scheduleRoutes
       }
     },

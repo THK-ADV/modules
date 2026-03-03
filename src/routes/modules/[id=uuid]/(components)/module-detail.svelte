@@ -1,5 +1,6 @@
 <script lang="ts" module>
   import type {
+    Assessment,
     GenericModuleOption,
     Identity,
     ModuleDetail,
@@ -243,6 +244,10 @@
       case 'none':
         return 'Keine Angabe'
     }
+  }
+
+  function hasLinkToAssessmentMethodPage(assessment: Assessment) {
+    return assessment.source === 'rpo'
   }
 </script>
 
@@ -704,9 +709,18 @@
         <Card.Content class="space-y-4">
           <div class="space-y-1">
             <div class="text-muted-foreground text-sm">Prüfungsformen</div>
-            {#each module.assessments as assessment, index (index)}
+            {#each module.assessments as assessment (assessment.id)}
               <p class="font-medium">
-                {assessment.label}
+                {#if hasLinkToAssessmentMethodPage(assessment)}
+                  <a
+                    href={`/assessment-methods#${assessment.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:underline">{assessment.label}</a
+                  >
+                {:else}
+                  {assessment.label}
+                {/if}
                 {#if assessment.percentage}
                   <span class="text-muted-foreground font-normal">({assessment.percentage} %)</span>
                 {/if}

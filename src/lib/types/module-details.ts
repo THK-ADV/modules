@@ -66,6 +66,7 @@ export interface Other {
 export type Identity = Person | Other
 
 export interface Assessment {
+  id: string
   label: string
   source: string
   percentage: number | null

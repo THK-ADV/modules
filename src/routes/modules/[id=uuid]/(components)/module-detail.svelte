@@ -706,7 +706,9 @@
             <div class="text-muted-foreground text-sm">Prüfungsformen</div>
             {#each module.assessments as assessment, index (index)}
               <p class="font-medium">
-                {assessment.label}
+                <a href={resolve('/assessment-methods') + '#' + assessment.id} class="underline">
+                  {assessment.label}
+                </a>
                 {#if assessment.percentage}
                   <span class="text-muted-foreground font-normal">({assessment.percentage} %)</span>
                 {/if}

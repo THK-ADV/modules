@@ -90,7 +90,7 @@
     </div>
     <div class="flex-1">
       <Input
-        placeholder="Suche nach Modulbezeichnung…"
+        placeholder="Suche nach Modulbezeichnung oder Kürzel…"
         class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full max-w-md border-2 text-sm transition-colors focus-visible:ring-2"
         type="search"
         value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}

@@ -1,7 +1,5 @@
-import { fmtManagement } from '$lib/formats'
-import type { CourseType } from '$lib/types/schedule'
+import { fmtCourseType, type CourseType, type ScheduleEntry } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
-import type { ScheduleEventProps } from '.'
 import { EVENT_SOURCE_COLORS } from './types'
 
 /**
@@ -18,6 +16,31 @@ function createIcon(paths: string | string[]): string {
     )
     .join('')
   return `<svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">${pathElements}</svg>`
+}
+
+/**
+ * Course type color mappings for badge styling.
+ * Solid backgrounds with white text for reliable contrast on teal event blocks
+ * in both light and dark modes.
+ */
+const COURSE_TYPE_COLORS: Record<CourseType, string> = {
+  lecture: 'bg-orange-500 text-white',
+  lab: 'bg-emerald-600 text-white',
+  exercise: 'bg-slate-600 text-white',
+  seminar: 'bg-sky-600 text-white',
+  tutorial: 'bg-violet-600 text-white'
+}
+
+/**
+ * Create a distinctive badge for course type with color coding.
+ * Uses solid backgrounds with white text for crisp contrast on teal event blocks.
+ * @param courseType - The course type.
+ * @param shortLabel - The short label to display in the badge.
+ * @returns The badge as a string.
+ */
+function createCourseTypeBadge(courseType: CourseType, shortLabel: string): string {
+  const styles = COURSE_TYPE_COLORS[courseType]
+  return `<div class="absolute right-2 top-2 flex items-center justify-center rounded-md px-2 py-0.5 shadow-md ${styles}"><span class="text-[0.65rem] font-bold uppercase tracking-wider">${shortLabel}</span></div>`
 }
 
 /**
@@ -49,21 +72,6 @@ const ICONS: Record<string, string> = {
   )
 }
 
-function fmtCourseType(courseType: CourseType): string {
-  switch (courseType) {
-    case 'lecture':
-      return 'Vorlesung'
-    case 'lab':
-      return 'Praktikum'
-    case 'exercise':
-      return 'Übung'
-    case 'seminar':
-      return 'Seminar'
-    case 'tutorial':
-      return 'Tutorium'
-  }
-}
-
 /**
  * Render the event content for schedule events.
  * @param arg - The event content argument.
@@ -75,39 +83,31 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
     return true
   }
 
-  const props = arg.event.extendedProps as ScheduleEventProps
+  const props: ScheduleEntry = arg.event.extendedProps.raw
   const time = arg.timeText
 
   // Long versions
   const titleLong = props.moduleTitle
-  const lecturerLong = props.moduleManagement.map((m) => fmtManagement(m)).join(', ')
+  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
   const courseTypeLong = fmtCourseType(props.courseType)
 
   // Short versions
   const titleShort = props.moduleAbbrev
   const lecturerShort = props.moduleManagement
-    .map((m) => {
-      switch (m.kind) {
-        case 'person':
-          return `${m.firstname.charAt(0)}${m.lastname.charAt(0)}`
-        case 'group':
-          return m.id.slice(0, 3).toUpperCase()
-        case 'unknown':
-          return m.id.slice(0, 3).toUpperCase()
-      }
-    })
+    .map(({ abbreviation }) => abbreviation.toUpperCase())
     .join(', ')
   const courseTypeShort = courseTypeLong.charAt(0)
 
   // Always the same
-  const location = props.roomAbbrev
+  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
 
   return {
     html: `
       <div class="event-content flex h-full flex-col dark:text-white">
         <!-- Full view -->
-        <div class="event-size-full flex flex-col gap-1.5 p-2">
-          <div class="text-sm font-semibold leading-tight">${titleLong}</div>
+        <div class="event-size-full relative flex flex-col gap-1.5 p-2">
+          ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          <div class="text-sm font-semibold leading-tight pr-12">${titleLong}</div>
           ${createInfoRow(ICONS.clock, time)}
           ${createInfoRow(ICONS.mapPin, location)}
           ${createInfoRow(ICONS.user, lecturerLong)}

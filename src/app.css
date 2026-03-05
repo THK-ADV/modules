@@ -368,6 +368,14 @@
   padding: 0.375rem 0.5rem;
 }
 
+/* Ensure all-day and month view events use white text for better contrast
+   on colored backgrounds in both light and dark mode. */
+.fc .fc-daygrid-event .fc-event-main,
+.fc .fc-daygrid-event .fc-event-time,
+.fc .fc-daygrid-event .fc-event-title {
+  color: #ffffff;
+}
+
 /* TODO: The dot in month view should be overridden to be white */
 .fc .fc-daygrid-event-dot {
   border-color: 'red';

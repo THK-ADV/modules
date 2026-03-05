@@ -270,7 +270,8 @@
     Info,
     ShieldAlert,
     Users,
-    CircleX
+    CircleX,
+    DraftingCompass
   } from '@lucide/svelte'
   import { marked } from 'marked'
   import { resolve } from '$app/paths'
@@ -295,9 +296,18 @@
   const degrees = $derived(createDegrees(module))
   const studyProgramsMandatory = $derived(createStudyPrograms(module.poMandatory))
   const studyProgramsOptional = $derived(createStudyPrograms(module.poOptional))
-  let selectedEctsFactor = $derived(ectsFactors[0].toString())
-  const total = $derived(+selectedEctsFactor * module.ects)
-  const selfStudy = $derived(total - contact)
+
+  let selectedEctsFactor = $derived(ectsFactors.length > 0 ? ectsFactors[0].toString() : null)
+
+  const workloadDetails = $derived.by(() => {
+    if (selectedEctsFactor == null) {
+      return null
+    }
+    const total = +selectedEctsFactor * module.ects
+    const selfStudy = total - contact
+    return { total, selfStudy }
+  })
+
   const hasMultipleECTSFactors = $derived(ectsFactors.length > 1)
   let isWorkloadDetailsExpanded = $state(true)
   let isAssessmentPrerequisiteExpanded = $state(false)
@@ -749,7 +759,7 @@
               <Clock class="size-5" />
               Workload
             </Card.Title>
-            {#if hasMultipleECTSFactors}
+            {#if hasMultipleECTSFactors && selectedEctsFactor}
               <div class="flex items-center gap-1">
                 <ToggleGroup.Root
                   type="single"
@@ -833,15 +843,17 @@
               </div>
             </div>
           {/if}
-          <div class="flex items-center justify-between">
-            <span class="text-muted-foreground text-sm">Selbststudium</span>
-            <span class="font-medium">{selfStudy} h</span>
-          </div>
-          <Separator />
-          <div class="flex items-center justify-between">
-            <span class="text-muted-foreground text-sm">Gesamt</span>
-            <span class="font-medium">{total} h</span>
-          </div>
+          {#if workloadDetails}
+            <div class="flex items-center justify-between">
+              <span class="text-muted-foreground text-sm">Selbststudium</span>
+              <span class="font-medium">{workloadDetails.selfStudy} h</span>
+            </div>
+            <Separator />
+            <div class="flex items-center justify-between">
+              <span class="text-muted-foreground text-sm">Gesamt</span>
+              <span class="font-medium">{workloadDetails.total} h</span>
+            </div>
+          {/if}
         </Card.Content>
         {#if hasMultipleECTSFactors}
           <Card.Footer>

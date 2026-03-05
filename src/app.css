@@ -368,18 +368,26 @@
   padding: 0.375rem 0.5rem;
 }
 
-/* Ensure all-day and month view events use white text for better contrast
-   on colored backgrounds in both light and dark mode. */
-.fc .fc-daygrid-event .fc-event-main,
-.fc .fc-daygrid-event .fc-event-time,
-.fc .fc-daygrid-event .fc-event-title {
+/* Ensure all-day events (block events in daygrid views such as holidays and
+   semester plans) use white text for better contrast on colored backgrounds
+   in both light and dark mode. */
+.fc .fc-daygrid-block-event .fc-event-main,
+.fc .fc-daygrid-block-event .fc-event-time,
+.fc .fc-daygrid-block-event .fc-event-title {
   color: #ffffff;
 }
 
-/* TODO: The dot in month view should be overridden to be white */
-.fc .fc-daygrid-event-dot {
-  border-color: 'red';
-  background-color: 'red';
+/* Month view timed schedule entries (dot events, non-all-day) should have
+   dark titles in light mode and white titles in dark mode, while all-day
+   events keep their white text above. */
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-time,
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title {
+  color: var(--foreground);
+}
+
+.dark .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-time,
+.dark .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title {
+  color: #ffffff;
 }
 
 /* ---- Now Indicator ---- */

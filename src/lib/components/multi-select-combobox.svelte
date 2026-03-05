@@ -21,13 +21,14 @@
     form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     label: string
-    description: string
+    description?: string
     options: Option[]
     value: string[]
     errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     maxVisibleBadges?: number
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
+    disabled?: boolean
   }
 
   let {
@@ -40,7 +41,8 @@
     errors = {},
     maxVisibleBadges = 4,
     width = 'w-[350px]', // Default width
-    modificationStatus
+    modificationStatus,
+    disabled = false
   }: Props = $props()
 
   let open = $state(false)
@@ -93,6 +95,7 @@
       errors[name] && 'border-destructive'
     )}
     {...props}
+    {disabled}
   >
     <CirclePlus class="size-4" />
     {#if value.length > 0}
@@ -135,7 +138,7 @@
         {/if}
         <Command.Group>
           {#each options as { id, label } (id)}
-            <Command.Item value={label} onSelect={() => toggle(id)}>
+            <Command.Item value={label} onSelect={() => toggle(id)} {disabled}>
               <div
                 class={cn(
                   'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
@@ -172,8 +175,10 @@
         </Form.Control>
         {@render dropdownMenu()}
       </Popover.Root>
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <Form.Description>{@html description}</Form.Description>
+      {#if description}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <Form.Description>{@html description}</Form.Description>
+      {/if}
       <Form.FieldErrors />
     </Form.Field>
   </div>
@@ -190,8 +195,10 @@
       </Form.Control>
       {@render dropdownMenu()}
     </Popover.Root>
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    <Form.Description>{@html description}</Form.Description>
+    {#if description}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      <Form.Description>{@html description}</Form.Description>
+    {/if}
     <Form.FieldErrors />
   </Form.Field>
 {/if}

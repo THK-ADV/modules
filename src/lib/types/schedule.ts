@@ -1,4 +1,4 @@
-import type { ModuleManagement } from './core'
+import type { IdentityKind } from './module'
 
 export interface TeachingUnit {
   id: string
@@ -33,13 +33,35 @@ export interface PO {
   mandatory: boolean
 }
 
+export interface ModuleManagement {
+  id: string
+  kind: IdentityKind
+  label: string
+  abbreviation: string
+}
+
+export function fmtCourseType(courseType: CourseType): string {
+  switch (courseType) {
+    case 'lecture':
+      return 'Vorlesung'
+    case 'lab':
+      return 'Praktikum'
+    case 'exercise':
+      return 'Übung'
+    case 'seminar':
+      return 'Seminar'
+    case 'tutorial':
+      return 'Tutorium'
+  }
+}
+
+// used for the schedule calendar to show data
 export interface ScheduleEntry {
   id: string
-  start: string
-  end: string
+  start: Date
+  end: Date
   courseType: CourseType
-  room: string
-  roomAbbrev: string
+  rooms: { id: string; abbrev: string }[]
   module: string
   moduleTitle: string
   moduleAbbrev: string
@@ -47,6 +69,19 @@ export interface ScheduleEntry {
   teachingUnits: string[]
   props: { po: PO[] }
 }
+
+// used for the schedule entry dialog to edit data
+export interface ScheduleEntryEdit {
+  id: string
+  module: string
+  courseType: CourseType
+  start: Date
+  end: Date
+  rooms: string[]
+  props: { po: PO[] }
+}
+
+export type ScheduleEntryCreate = Omit<ScheduleEntryEdit, 'id'>
 
 export interface ModuleCore {
   id: string

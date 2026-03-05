@@ -483,7 +483,7 @@ function createScheduleFilter() {
       if (selectedTeachingUnits.includes(id)) {
         selectedTeachingUnits = selectedTeachingUnits.filter((x) => x !== id)
       } else {
-        selectedTeachingUnits = [...selectedTeachingUnits, id] // TODO: look into this later
+        selectedTeachingUnits = [...selectedTeachingUnits, id]
       }
     },
     clearSelectedTeachingUnits() {
@@ -682,3 +682,7 @@ export const moduleUpdateState = createModuleUpdateState()
 export const myModuleFilter = createMyModuleFilter()
 
 export const scheduleFilter = createScheduleFilter()
+
+export const schedulePlanningFilter = createScheduleFilter()
+
+export type ScheduleFilter = typeof scheduleFilter

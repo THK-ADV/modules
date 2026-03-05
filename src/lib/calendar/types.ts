@@ -25,25 +25,15 @@ export interface SemesterPlanEventProps extends Pick<
   SemesterPlanEntry,
   'type' | 'teachingUnit' | 'semesterIndex'
 > {
-  source: 'semester-plan'
+  source: 'semesterPlan'
 }
 
 /**
  * Extended props for schedule (lecture) events.
  */
-export interface ScheduleEventProps extends Pick<
-  ScheduleEntry,
-  | 'courseType'
-  | 'room'
-  | 'roomAbbrev'
-  | 'module'
-  | 'moduleManagement'
-  | 'teachingUnits'
-  | 'props'
-  | 'moduleTitle'
-  | 'moduleAbbrev'
-> {
+export interface ScheduleEventProps {
   source: 'schedule'
+  raw: ScheduleEntry
 }
 
 /**
@@ -70,7 +60,7 @@ export type EventSource = CalendarEventProps['source']
 
 export const EVENT_SOURCE_COLORS: Record<EventSource, string> = {
   holiday: '#8b7d6b',
-  'semester-plan': '#d2b48c',
+  semesterPlan: '#d2b48c',
   schedule: '#5f7c8a',
   exam: '#cd853f'
 }
@@ -134,14 +124,32 @@ export interface EventClickInfo {
  * Arguments passed to the event drop callback.
  */
 export interface EventDropInfo {
-  event: {
-    id: string
-    extendedProps: CalendarEventProps
-  }
-  oldEvent: {
-    id: string
-    extendedProps: CalendarEventProps
-  }
+  eventId: string
+  extendedProps: CalendarEventProps
+  newStart: Date | null
+  newEnd: Date | null
+  revert: () => void
+}
+
+/**
+ * Arguments passed to the event copy callback (Option/Alt + drag).
+ */
+export interface EventCopyInfo {
+  eventId: string
+  extendedProps: CalendarEventProps
+  newStart: Date | null
+  newEnd: Date | null
+  revert: () => void
+}
+
+/**
+ * Arguments passed to the event resize callback.
+ */
+export interface EventResizeInfo {
+  eventId: string
+  extendedProps: CalendarEventProps
+  newStart: Date | null
+  newEnd: Date | null
   revert: () => void
 }
 

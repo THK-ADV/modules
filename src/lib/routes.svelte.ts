@@ -9,6 +9,7 @@ import {
   Pencil,
   Search,
   Signature,
+  CalendarCog,
   type IconProps
 } from '@lucide/svelte'
 import type { Component } from 'svelte'
@@ -78,7 +79,19 @@ function createRoutes() {
     }
   }
 
-  const protectedRoutes = [...Object.keys(managerRoutes), ...Object.keys(pavRoutes)]
+  const schedulePlanningRoutes: RoutesMap = {
+    '/schedule-planning': {
+      name: 'Stundenplanung',
+      icon: CalendarCog
+    }
+  }
+
+  // Protected routes require authentication to access
+  const protectedRoutes = [
+    ...Object.keys(managerRoutes),
+    ...Object.keys(pavRoutes),
+    ...Object.keys(schedulePlanningRoutes)
+  ]
 
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
 
@@ -98,13 +111,17 @@ function createRoutes() {
     get scheduleRoutes() {
       return scheduleRoutes
     },
+    get schedulePlanningRoutes() {
+      return schedulePlanningRoutes
+    },
     get allRoutes() {
       return {
         ...defaultRoutes,
         ...managerRoutes,
         ...pavRoutes,
         ...secondaryRoutes,
-        ...scheduleRoutes
+        ...scheduleRoutes,
+        ...schedulePlanningRoutes
       }
     },
     get protectedRoutes() {

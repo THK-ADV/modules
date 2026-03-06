@@ -205,6 +205,9 @@
         day: 'Tag'
       },
       select: (arg) => {
+        if (arg.allDay) {
+          return
+        }
         onDateSelect?.({
           start: arg.start,
           end: arg.end,
@@ -223,11 +226,19 @@
         })
       },
       eventDragStart: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          return
+        }
         isEventDragging = true
         dragStartedWithCopyModifier = isCopyModifierPressed(arg.jsEvent)
         setCopyCursorIndicator(dragStartedWithCopyModifier)
       },
       eventDrop: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          arg.revert()
+          return
+        }
+
         const dropInfo = {
           eventId: arg.event.id,
           extendedProps: arg.event.extendedProps as CalendarEventProps,
@@ -256,12 +267,19 @@
         // If dragging is enabled only for copy, revert non-copy drags.
         arg.revert()
       },
-      eventDragStop: () => {
+      eventDragStop: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          return
+        }
         isEventDragging = false
         dragStartedWithCopyModifier = false
         setCopyCursorIndicator(false)
       },
       eventResize: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          arg.revert()
+          return
+        }
         const resizeInfo = {
           eventId: arg.event.id,
           extendedProps: arg.event.extendedProps as CalendarEventProps,

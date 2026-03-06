@@ -122,9 +122,11 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
           ${createShortInfoRow(lecturerShort)}
           ${createShortInfoRow(courseTypeShort)}
         </div>
-        <!-- Minimum view - just abbreviation, vertically centered -->
-        <div class="event-size-minimum flex h-full items-center justify-center p-1">
-          <span class="text-xs font-bold [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
+        <!-- Minimum view - centered abbreviation for narrow stacked columns -->
+        <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
+          <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
+            ${titleShort}
+          </span>
         </div>
       </div>
     `

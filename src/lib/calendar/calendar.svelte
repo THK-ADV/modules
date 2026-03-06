@@ -143,6 +143,7 @@
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: startView,
       initialDate: startDate,
+      height: 'auto',
       headerToolbar: false,
       editable: onEventDrop || onEventCopy || onEventResize ? true : false,
       eventStartEditable: onEventDrop || onEventCopy ? true : false,
@@ -155,16 +156,19 @@
       dayMaxEvents: true,
       weekNumbers: true,
       allDaySlot: true,
-      slotMinTime: '08:30:00',
+      slotMinTime: '08:00:00',
       slotMaxTime: '21:00:00',
-      expandRows: true,
+      expandRows: false,
       stickyHeaderDates: true,
       locale: 'de',
       firstDay: 1,
       weekends: false,
-      slotDuration: '00:15:00', // Display 15-minute slots
-      snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
+      slotDuration: '00:30:00',
+      slotLabelInterval: '01:00:00',
+      snapDuration: '00:15:00',
       slotEventOverlap: false,
+      eventMinHeight: 22,
+      eventShortHeight: 22,
       // Format slot label as HH:mm without "Uhr"
       slotLabelFormat: {
         hour: '2-digit',
@@ -182,6 +186,8 @@
           eventContent: renderWeekViewEventContent
         },
         dayGridMonth: {
+          fixedWeekCount: false,
+          dayMaxEvents: 6,
           eventContent: renderMonthViewEventContent
         }
       },
@@ -335,7 +341,7 @@
   })
 </script>
 
-<div class="flex h-full flex-col {className}">
+<div class="flex flex-col {className}">
   <!-- Toolbar -->
   <div class="border-border bg-card flex items-center justify-between border-b px-4 py-3">
     <!-- Left: Navigation -->
@@ -397,7 +403,7 @@
   </div>
 
   <!-- Calendar -->
-  <div bind:this={calendarEl} class="min-h-0 flex-1"></div>
+  <div bind:this={calendarEl} class="w-full"></div>
 </div>
 
 <style>

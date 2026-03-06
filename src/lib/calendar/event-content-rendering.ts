@@ -40,7 +40,7 @@ const COURSE_TYPE_COLORS: Record<CourseType, string> = {
  */
 function createCourseTypeBadge(courseType: CourseType, shortLabel: string): string {
   const styles = COURSE_TYPE_COLORS[courseType]
-  return `<div class="absolute right-2 top-2 flex items-center justify-center rounded-md px-2 py-0.5 shadow-md ${styles}"><span class="text-[0.65rem] font-bold uppercase tracking-wider">${shortLabel}</span></div>`
+  return `<div class="inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 ${styles}"><span class="text-[0.65rem] font-bold uppercase tracking-wider">${shortLabel}</span></div>`
 }
 
 /**
@@ -86,41 +86,82 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   }
 
   const props: ScheduleEntry = arg.event.extendedProps.raw
-  const time = arg.timeText
-
-  // Long versions
+  const durationMinutes = Math.round(
+    (new Date(props.end).getTime() - new Date(props.start).getTime()) / (1000 * 60)
+  )
   const titleLong = props.moduleTitle
-  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
-  const courseTypeLong = fmtCourseType(props.courseType)
-
-  // Short versions
   const titleShort = props.moduleAbbrev
+  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
+  const courseTypeLong = fmtCourseType(props.courseType)
+  const courseTypeShort = courseTypeLong.charAt(0)
+
+  if (durationMinutes <= 90) {
+    return {
+      html: `
+        <div class="event-content flex h-full flex-col dark:text-white">
+          <!-- Full view -->
+          <div class="event-size-full flex flex-col gap-1.5 p-1.5">
+            <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleLong}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            </div>
+            ${createInfoRow(ICONS.mapPin, location)}
+          </div>
+          <!-- Compact view -->
+          <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
+            <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleShort}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            </div>
+            ${createShortInfoRow(location)}
+          </div>
+          <!-- Minimum view - centered abbreviation for narrow stacked columns -->
+          <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
+            <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
+              ${titleShort}
+            </span>
+          </div>
+        </div>
+      `
+    }
+  }
+
+  const time = arg.timeText
+  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
   const lecturerShort = props.moduleManagement
     .map(({ abbreviation }) => abbreviation.toUpperCase())
     .join(', ')
-  const courseTypeShort = courseTypeLong.charAt(0)
-
-  // Always the same
-  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
 
   return {
     html: `
       <div class="event-content flex h-full flex-col dark:text-white">
         <!-- Full view -->
-        <div class="event-size-full relative flex flex-col gap-1.5 p-2">
-          ${createCourseTypeBadge(props.courseType, courseTypeShort)}
-          <div class="text-sm font-semibold leading-tight pr-12">${titleLong}</div>
+        <div class="event-size-full flex flex-col gap-1.5 p-1.5">
+          <div class="flex min-w-0 items-start gap-1.5 mb-1">
+            <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+              ${titleLong}
+            </div>
+            ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          </div>
           ${createInfoRow(ICONS.clock, time)}
           ${createInfoRow(ICONS.mapPin, location)}
           ${createInfoRow(ICONS.user, lecturerLong)}
           ${createInfoRow(ICONS.book, courseTypeLong)}
         </div>
         <!-- Compact view -->
-        <div class="event-size-compact flex flex-col gap-1 p-1.5">
-          <div class="text-sm font-semibold leading-tight">${titleShort}</div>
+        <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
+          <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleShort}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          </div>
           ${createShortInfoRow(location)}
           ${createShortInfoRow(lecturerShort)}
-          ${createShortInfoRow(courseTypeShort)}
         </div>
         <!-- Minimum view - centered abbreviation for narrow stacked columns -->
         <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
@@ -146,7 +187,7 @@ function createMonthRow(
   courseType: string
 ) {
   return `
-<div class="flex w-full min-w-0 items-center gap-0.5 overflow-hidden px-1.5 py-0.5 leading-[1.15]">
+<div class="flex h-full w-full min-w-0 items-center gap-0.5 overflow-hidden px-1.5 py-0.5 leading-[1.15]">
   <span
     class="inline-block size-1.5 shrink-0 rounded-full"
     style="background-color: ${color};"
@@ -154,7 +195,7 @@ function createMonthRow(
   <span class="shrink-0 tabular-nums opacity-80">${time}</span>
   <span class="min-w-0 flex-1 truncate">${title}</span>
   <span
-    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-full px-1.5 py-0.5 text-[0.65rem] uppercase leading-none ${badgeStyles}"
+    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 text-[0.65rem] uppercase leading-none ${badgeStyles}"
   >
     ${courseType}
   </span>

@@ -217,7 +217,7 @@
 </script>
 
 <!-- Calendar -->
-<div class="border-border bg-card min-h-0 flex-1 overflow-hidden rounded-lg border">
+<div class="border-border bg-card min-h-[60vh] rounded-lg border">
   <Calendar
     events={filteredEvents}
     {initialView}

@@ -137,7 +137,7 @@ export async function fetchScheduleEntriesByRange(
   fetch: typeof globalThis.fetch,
   start: string | null,
   end: string | null,
-  bypassCache: boolean = false
+  bypassCache: boolean
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
   if (!start || !end) {
     throw error(400, { message: 'Start- und Enddatum sind erforderlich' })
@@ -165,13 +165,19 @@ export async function fetchScheduleEntriesByRange(
 
 export async function fetchScheduleEntriesBySemester(
   fetch: typeof globalThis.fetch,
-  semester: string | null
+  semester: string | null,
+  bypassCache: boolean
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
   if (!semester) {
     throw error(400, { message: 'Semester ist erforderlich' })
   }
 
-  const resp = await fetch(`/api/scheduleEntries/${semester}`)
+  const headers: HeadersInit = {}
+  if (bypassCache) {
+    headers['Cache-Control'] = 'no-cache'
+  }
+
+  const resp = await fetch(`/api/scheduleEntries?semester=${semester}`, { headers })
 
   if (!resp.ok) {
     const err = await resp.json()

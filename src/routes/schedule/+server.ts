@@ -6,7 +6,8 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
   const events = await fetchScheduleEntriesByRange(
     fetch,
     url.searchParams.get('start'),
-    url.searchParams.get('end')
+    url.searchParams.get('end'),
+    false
   )
   return json(events, { status: 200 })
 }

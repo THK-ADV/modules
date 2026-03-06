@@ -34,7 +34,7 @@ function toLocalISOString(date: Date): string {
 
 // Fetches schedule entries for the given semester
 export const GET: RequestHandler = async ({ fetch, url }) => {
-  const events = await fetchScheduleEntriesBySemester(fetch, url.searchParams.get('semester'))
+  const events = await fetchScheduleEntriesBySemester(fetch, url.searchParams.get('semester'), true)
   return json(events, { status: 200 })
 }
 

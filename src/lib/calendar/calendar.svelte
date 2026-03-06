@@ -8,7 +8,7 @@
   import { ChevronLeft, ChevronRight } from '@lucide/svelte'
   import { onMount, untrack } from 'svelte'
   import {
-    monthViewEventClassNames,
+    renderMonthViewEventContent,
     renderWeekViewEventContent
   } from './event-content-rendering.js'
   import {
@@ -182,7 +182,7 @@
           eventContent: renderWeekViewEventContent
         },
         dayGridMonth: {
-          eventClassNames: monthViewEventClassNames()
+          eventContent: renderMonthViewEventContent
         }
       },
       weekNumberFormat: { week: 'numeric' },

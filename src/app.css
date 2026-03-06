@@ -390,6 +390,66 @@
   color: #ffffff;
 }
 
+/* Use tighter Apple-like vertical rhythm in all-day rows (month/week/day)
+   so holiday and semester-plan block entries stay visually consistent. */
+.fc .fc-dayGridMonth-view .fc-daygrid-day-events,
+.fc .fc-timeGridWeek-view .fc-daygrid-day-events,
+.fc .fc-timeGridDay-view .fc-daygrid-day-events {
+  margin-top: 0.125rem;
+}
+
+.fc .fc-dayGridMonth-view .fc-daygrid-event-harness,
+.fc .fc-timeGridWeek-view .fc-daygrid-event-harness,
+.fc .fc-timeGridDay-view .fc-daygrid-event-harness {
+  margin-top: 1px;
+}
+
+.fc .fc-dayGridMonth-view .fc-daygrid-block-event,
+.fc .fc-timeGridWeek-view .fc-daygrid-block-event,
+.fc .fc-timeGridDay-view .fc-daygrid-block-event {
+  min-height: 1.125rem;
+}
+
+.fc .fc-dayGridMonth-view .fc-daygrid-block-event .fc-event-main,
+.fc .fc-timeGridWeek-view .fc-daygrid-block-event .fc-event-main,
+.fc .fc-timeGridDay-view .fc-daygrid-block-event .fc-event-main {
+  padding: 0.125rem 0.375rem;
+  line-height: 1.15;
+}
+
+.fc .fc-dayGridMonth-view .fc-daygrid-block-event .fc-event-time,
+.fc .fc-dayGridMonth-view .fc-daygrid-block-event .fc-event-title,
+.fc .fc-timeGridWeek-view .fc-daygrid-block-event .fc-event-time,
+.fc .fc-timeGridWeek-view .fc-daygrid-block-event .fc-event-title,
+.fc .fc-timeGridDay-view .fc-daygrid-block-event .fc-event-time,
+.fc .fc-timeGridDay-view .fc-daygrid-block-event .fc-event-title {
+  line-height: 1.15;
+}
+
+/* Keep this block in sync with `renderMonthViewEventContent()` in
+   `src/lib/calendar/event-content-rendering.ts`.
+   If the renderer markup/class names or spacing changes, update these selectors too.
+   Constrains month dot-event internals so content cannot exceed cell width and ensures
+   .event-size-* container queries switch reliably. */
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event,
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-main,
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-main-frame,
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-main-frame,
+.fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title-container {
+  overflow: hidden;
+}
+
+/* Month custom event renderer container for reliable size switching */
+.event-content-size-container {
+  container-type: inline-size;
+}
+
 /* ---- Now Indicator ---- */
 
 /* Styles the horizontal line showing current time */

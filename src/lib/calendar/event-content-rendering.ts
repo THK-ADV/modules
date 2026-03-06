@@ -73,7 +73,9 @@ const ICONS: Record<string, string> = {
 }
 
 /**
- * Render the event content for schedule events.
+ * Render rich schedule entries for time-grid views (week/day).
+ * Uses responsive variants (`event-size-full`, `event-size-compact`, `event-size-minimum`)
+ * to show full details in larger slots and progressively condensed content in small slots.
  * @param arg - The event content argument.
  * @returns The event content as a string.
  */
@@ -129,6 +131,74 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   }
 }
 
-export function monthViewEventClassNames(): string[] {
-  return [`bg-[${EVENT_SOURCE_COLORS['schedule']}]`]
+/**
+ * Create one month-view schedule row with fixed-priority segments:
+ * color dot -> time -> truncating title -> course-type badge.
+ * Dot, time, and badge are non-shrinking; only the title truncates.
+ */
+function createMonthRow(
+  title: string,
+  time: string,
+  color: string,
+  badgeStyles: string,
+  courseType: string
+) {
+  return `
+<div class="flex w-full min-w-0 items-center gap-0.5 overflow-hidden px-1.5 py-0.5 leading-[1.15]">
+  <span
+    class="inline-block size-1.5 shrink-0 rounded-full"
+    style="background-color: ${color};"
+  ></span>
+  <span class="shrink-0 tabular-nums opacity-80">${time}</span>
+  <span class="min-w-0 flex-1 truncate">${title}</span>
+  <span
+    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-full px-1.5 py-0.5 text-[0.65rem] uppercase leading-none ${badgeStyles}"
+  >
+    ${courseType}
+  </span>
+</div>
+`
+}
+
+/**
+ * Render month-view schedule entries with full and compact title variants.
+ * IMPORTANT: Keep this renderer in sync with the month-view CSS in `src/app.css`
+ * (`.fc-dayGridMonth-view .fc-daygrid-dot-event*`, `.event-content-size-container`,
+ * and `.event-size-*` container-query rules). If layout/markup/spacing changes here,
+ * update those CSS selectors and spacing rules as well.
+ * @param arg - The event content argument.
+ * @returns The event content as a string.
+ */
+export function renderMonthViewEventContent(arg: EventContentArg) {
+  // Only apply custom layout for schedule events, use default for others
+  if (arg.event.extendedProps?.source !== 'schedule') {
+    return true
+  }
+
+  const props: ScheduleEntry = arg.event.extendedProps.raw
+  const time = arg.timeText
+  const titleFull = props.moduleTitle
+  const titleCompact = props.moduleAbbrev || props.moduleTitle
+  const courseType = fmtCourseType(props.courseType).charAt(0)
+  const badgeStyles = COURSE_TYPE_COLORS[props.courseType]
+  const color = EVENT_SOURCE_COLORS.schedule
+
+  const fullRow = createMonthRow(titleFull, time, color, badgeStyles, courseType)
+  const compactRow = createMonthRow(titleCompact, time, color, badgeStyles, courseType)
+
+  return {
+    html: `
+      <div class="event-content event-content-size-container flex h-full w-full min-w-0 flex-col overflow-hidden text-xs text-slate-900 dark:text-white">
+        <div class="event-size-full w-full min-w-0 overflow-hidden">
+          ${fullRow}
+        </div>
+        <div class="event-size-compact w-full min-w-0 overflow-hidden">
+          ${compactRow}
+        </div>
+        <div class="event-size-minimum w-full min-w-0 overflow-hidden">
+          ${compactRow}
+        </div>
+      </div>
+    `
+  }
 }

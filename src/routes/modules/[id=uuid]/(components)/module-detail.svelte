@@ -270,8 +270,7 @@
     Info,
     ShieldAlert,
     Users,
-    CircleX,
-    DraftingCompass
+    CircleX
   } from '@lucide/svelte'
   import { marked } from 'marked'
   import { resolve } from '$app/paths'

@@ -254,13 +254,6 @@
     deLabel: sp.label
   }))
 
-  // Advance "end" also by "start" + 1 hour
-  function onStartChange(newValue: Date) {
-    const newDate = new Date(newValue)
-    newDate.setHours(newDate.getHours() + 1)
-    $formData.date.end = newDate
-  }
-
   function createCurrentEntry(): ScheduleEntryCreate {
     return {
       module: $formData.module,
@@ -570,7 +563,6 @@
           bind:value={dateStart.value}
           disabled={mode.id === 'duplicate'}
           {errors}
-          onUpdate={onStartChange}
         />
         <DateTimePicker
           {form}

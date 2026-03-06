@@ -19,7 +19,6 @@
     disabled?: boolean
     hourRange?: { start: number; end: number }
     minuteIntervals?: number[]
-    onUpdate?: (date: Date) => void
   }
 
   let {
@@ -32,8 +31,7 @@
     errors = {},
     disabled = false,
     hourRange = { start: 8, end: 21 },
-    minuteIntervals = [0, 15, 30, 45],
-    onUpdate
+    minuteIntervals = [0, 15, 30, 45]
   }: Props = $props()
 
   const df = new DateFormatter('de-DE', {
@@ -66,7 +64,6 @@
     const newDate = new Date(date)
     newDate.setHours(selectedHour, selectedMinute, 0, 0)
     value = newDate
-    onUpdate?.(newDate)
   }
 
   function formatDateTime(date: Date | null): string {

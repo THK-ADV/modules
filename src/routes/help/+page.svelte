@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths'
   import { page } from '$app/state'
   import { FileText, Settings } from '@lucide/svelte'
   import type { PageProps } from './$types'
@@ -176,7 +177,15 @@
         <div id="assessment-methods" class="space-y-4">
           <h3 class="text-xl font-semibold">Prüfungsformen</h3>
           <div class="space-y-2">
-            <p>TODO</p>
+            <p>
+              Die zulässigen Prüfungsformen sind in der Prüfungsordnung definiert. Für eine schnelle
+              Übersicht <a
+                href={resolve('/assessment-methods')}
+                class="text-primary underline hover:no-underline"
+              >
+                gibt es eine eigene Seite.
+              </a>
+            </p>
           </div>
         </div>
 

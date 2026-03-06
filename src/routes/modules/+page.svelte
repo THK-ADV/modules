@@ -77,7 +77,13 @@
           status: row.original.status
         })
       },
-      filterFn: 'includesString'
+      filterFn: (row, _, filterValue) => {
+        const searchValue = (filterValue as string).toLowerCase()
+        if (!searchValue) return true
+        const title = row.original.title.toLowerCase()
+        const abbrev = row.original.abbrev.toLowerCase()
+        return title.includes(searchValue) || abbrev.includes(searchValue)
+      }
     },
     {
       accessorKey: 'moduleManagement',

@@ -12,7 +12,7 @@
 
 <ModeWatcher />
 
-<Sidebar.Provider>
+<Sidebar.Provider open={data.sidebarOpen}>
   <AppSidebar user={data.user} userInfo={data.userInfo} />
   <Sidebar.Inset>
     <header

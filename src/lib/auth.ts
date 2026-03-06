@@ -9,6 +9,7 @@ export type UserInfo = {
   rejectedReviews: number
   reviewsToApprove: number
   fastForwardApprovalPOs: string[] | undefined
+  hasSchedulePlanningPrivileges: boolean
 }
 
 export interface User {

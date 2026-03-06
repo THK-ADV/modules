@@ -1,207 +1,35 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { resolve } from '$app/paths'
-  import {
-    Calendar,
-    type CalendarEvent,
-    type CalendarEventProps,
-    type CalendarView,
-    type DateRangeInfo,
-    type EventClickInfo,
-    type HolidayEventProps,
-    type ScheduleEventProps,
-    type SemesterPlanEventProps
-  } from '$lib/calendar'
-  import { scheduleFilter } from '$lib/store.svelte'
+  import { type CalendarView, type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
+  import Schedule from '$lib/components/schedule/schedule.svelte'
   import { TriangleAlert } from '@lucide/svelte'
   import type { PageProps } from './$types'
-  import ScheduleFilter from './(components)/schedule-filter.svelte'
+  import { scheduleFilter } from '$lib/store.svelte'
+  import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
 
   const { data }: PageProps = $props()
 
   const initialView = $derived((data.selectedCalendarView || 'timeGridWeek') as CalendarView)
   const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
 
-  // svelte-ignore state_referenced_locally
-  const holidays: CalendarEvent<HolidayEventProps>[] = data.holidays
-  // svelte-ignore state_referenced_locally
-  const semesterEntries: CalendarEvent<SemesterPlanEventProps>[] = data.semesterEntries
-
-  let scheduleEntries: CalendarEvent<ScheduleEventProps>[] = $state([])
-
-  // Single derived function that tracks source toggles and filters
-  const [filteredEvents, sourceEventCounts] = $derived.by(() => {
-    const { showHolidays, showSemester, showSchedule } = scheduleFilter
-    const allEvents: CalendarEvent<CalendarEventProps>[] = []
-
-    const counts = {
-      holiday: 0,
-      'semester-plan': 0,
-      schedule: 0,
-      exam: 0
-    }
-
-    // Filter events inline as we collect them
-    if (showHolidays) {
-      // holidays are always shown
-      allEvents.push(...holidays)
-      counts.holiday = holidays.length
-    }
-
-    if (showSemester) {
-      const { selectedTeachingUnits, selectedSemesters } = scheduleFilter
-
-      for (const entry of semesterEntries) {
-        const { teachingUnit, semesterIndex } = entry.extendedProps
-
-        // Teaching units filter
-        if (selectedTeachingUnits.length > 0 && teachingUnit !== null) {
-          if (!selectedTeachingUnits.includes(teachingUnit)) {
-            continue
-          }
-        }
-
-        // Semesters filter
-        if (selectedSemesters.length > 0 && semesterIndex !== null) {
-          if (!selectedSemesters.some((s) => semesterIndex.includes(parseInt(s, 10)))) {
-            continue
-          }
-        }
-
-        allEvents.push(entry)
-        counts['semester-plan']++
-      }
-    }
-
-    if (showSchedule) {
-      const {
-        selectedTeachingUnits,
-        selectedCourseTypes,
-        selectedModules,
-        selectedStudyPrograms,
-        selectedSemesters,
-        selectedIdentities,
-        selectedRooms,
-        selectedModuleTypes,
-        searchString
-      } = scheduleFilter
-
-      for (const entry of scheduleEntries) {
-        const { teachingUnits, courseType, module, moduleManagement, props, room } =
-          entry.extendedProps
-
-        // Free-text search is constrained to the title of the event
-        if (searchString && !entry.title.toLowerCase().includes(searchString.toLowerCase())) {
-          continue
-        }
-
-        // Teaching units filter
-        if (selectedTeachingUnits.length > 0) {
-          if (!selectedTeachingUnits.some((tu) => teachingUnits.includes(tu))) {
-            continue
-          }
-        }
-
-        // Course types filter
-        if (selectedCourseTypes.length > 0) {
-          if (!selectedCourseTypes.includes(courseType)) {
-            continue
-          }
-        }
-
-        // Modules filter
-        if (selectedModules.length > 0) {
-          if (!selectedModules.includes(module)) {
-            continue
-          }
-        }
-
-        // Study programs filter
-        if (selectedStudyPrograms.length > 0) {
-          if (!selectedStudyPrograms.some((po) => props.po.some((p) => p.po === po))) {
-            continue
-          }
-        }
-
-        // Semesters filter
-        if (selectedSemesters.length > 0) {
-          if (
-            !selectedSemesters.some((s) =>
-              props.po.some(({ recommendedSemester }) =>
-                recommendedSemester.includes(parseInt(s, 10))
-              )
-            )
-          ) {
-            continue
-          }
-        }
-
-        // Identities filter
-        if (selectedIdentities.length > 0) {
-          if (!selectedIdentities.some((id) => moduleManagement.some((m) => m.id === id))) {
-            continue
-          }
-        }
-
-        // Rooms filter
-        if (selectedRooms.length > 0) {
-          if (!selectedRooms.includes(room)) {
-            continue
-          }
-        }
-
-        // Module types filter
-        if (selectedModuleTypes.length > 0) {
-          // If both module types and study programs are selected, apply them in combination
-          if (selectedStudyPrograms.length > 0) {
-            const relevantPos = props.po.filter(({ po }) => selectedStudyPrograms.includes(po))
-            if (
-              !selectedModuleTypes.some((id) =>
-                relevantPos.some(
-                  ({ mandatory }) => (id === 'pm' && mandatory) || (id === 'wm' && !mandatory)
-                )
-              )
-            ) {
-              continue
-            }
-          } else {
-            // Check module types across all study programs (in isolation)
-            if (
-              !selectedModuleTypes.some((id) =>
-                props.po.some(
-                  ({ mandatory }) => (id === 'pm' && mandatory) || (id === 'wm' && !mandatory)
-                )
-              )
-            ) {
-              continue
-            }
-          }
-        }
-
-        allEvents.push(entry)
-        counts.schedule++
-      }
-    }
-
-    return [allEvents, counts]
+  let sourceEventCounts = $state({
+    holiday: 0,
+    semesterPlan: 0,
+    schedule: 0,
+    exam: 0
   })
 
   function onEventClick(info: EventClickInfo) {
     if (info.event.extendedProps?.source !== 'schedule') {
       return
     }
-    goto(resolve(`/modules/[id=uuid]`, { id: info.event.extendedProps.module }))
+    goto(resolve(`/modules/[id=uuid]`, { id: info.event.extendedProps.raw.module }))
   }
 
   // Fetch schedule entries when the date range changes
-  async function onDateRangeSet(info: DateRangeInfo) {
-    const res = await fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
-
-    if (!res.ok) {
-      return
-    }
-
-    scheduleEntries = await res.json()
+  async function fetchScheduleEntries(info: DateRangeInfo) {
+    return await fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
   }
 </script>
 
@@ -258,10 +86,16 @@
     </p>
   </div>
 
-  <!-- Filters & Source Toggles -->
-  <ScheduleFilter {sourceEventCounts} />
+  <ScheduleFilter {sourceEventCounts} {scheduleFilter} />
 
-  <div class="border-border bg-card min-h-0 flex-1 overflow-hidden rounded-lg border">
-    <Calendar events={filteredEvents} {initialView} {initialDate} {onEventClick} {onDateRangeSet} />
-  </div>
+  <Schedule
+    bind:sourceEventCounts
+    holidays={data.holidays}
+    semesterEntries={data.semesterEntries}
+    {initialView}
+    {initialDate}
+    {onEventClick}
+    {scheduleFilter}
+    scheduleSource={{ id: 'fetch', fetch: fetchScheduleEntries }}
+  />
 </div>

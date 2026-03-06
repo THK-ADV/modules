@@ -5,10 +5,16 @@
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
-  import { scheduleFilter } from '$lib/store.svelte'
   import { Funnel, Layers, Search, X } from '@lucide/svelte'
+  import type { ScheduleProps } from './types'
 
-  let { sourceEventCounts }: { sourceEventCounts: Record<EventSource, number> } = $props()
+  let {
+    sourceEventCounts,
+    scheduleFilter
+  }: {
+    sourceEventCounts: Record<EventSource, number>
+    scheduleFilter: ScheduleProps['scheduleFilter']
+  } = $props()
 
   const showReset = $derived.by(() => {
     const {
@@ -66,7 +72,7 @@
       <div class="flex items-center gap-2">
         <Checkbox id="source-semester" bind:checked={scheduleFilter.showSemester} />
         <Label for="source-semester" class="cursor-pointer text-sm font-normal">Semesterplan</Label>
-        <span class="text-muted-foreground text-sm">({sourceEventCounts['semester-plan']})</span>
+        <span class="text-muted-foreground text-sm">({sourceEventCounts.semesterPlan})</span>
       </div>
       <div class="flex items-center gap-2">
         <Checkbox id="source-schedule" bind:checked={scheduleFilter.showSchedule} />

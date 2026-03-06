@@ -6,6 +6,8 @@ export type {
   DateSelectInfo,
   EventClickInfo,
   EventDropInfo,
+  EventCopyInfo,
+  EventResizeInfo,
   DateRangeInfo,
   EventSource,
   CalendarEventProps,

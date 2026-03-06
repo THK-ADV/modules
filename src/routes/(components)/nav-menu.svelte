@@ -6,7 +6,14 @@
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
-  const { defaultRoutes, managerRoutes, pavRoutes, secondaryRoutes, scheduleRoutes } = routesMap
+  const {
+    defaultRoutes,
+    managerRoutes,
+    pavRoutes,
+    secondaryRoutes,
+    scheduleRoutes,
+    schedulePlanningRoutes
+  } = routesMap
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
@@ -25,6 +32,8 @@
   const rejectedReviews = $derived(userInfo?.rejectedReviews)
 
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
+
+  const showSchedulePlanningSection = $derived(userInfo?.hasSchedulePlanningPrivileges)
 </script>
 
 <!-- main navigation -->
@@ -62,6 +71,20 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
+    {#if showSchedulePlanningSection}
+      {#each Object.entries(schedulePlanningRoutes) as [path, route] (path)}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton>
+            {#snippet child({ props })}
+              <a href={path} {...props}>
+                <route.icon />
+                <span>{route.name}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      {/each}
+    {/if}
   </Sidebar.Menu>
 </Sidebar.Group>
 

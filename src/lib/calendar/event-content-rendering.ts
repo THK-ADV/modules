@@ -1,7 +1,5 @@
-import { fmtManagement } from '$lib/formats'
-import type { CourseType } from '$lib/types/schedule'
+import { fmtCourseType, type CourseType, type ScheduleEntry } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
-import type { ScheduleEventProps } from '.'
 import { EVENT_SOURCE_COLORS } from './types'
 
 /**
@@ -18,6 +16,31 @@ function createIcon(paths: string | string[]): string {
     )
     .join('')
   return `<svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">${pathElements}</svg>`
+}
+
+/**
+ * Course type color mappings for badge styling.
+ * Solid backgrounds with white text for reliable contrast on teal event blocks
+ * in both light and dark modes.
+ */
+const COURSE_TYPE_COLORS: Record<CourseType, string> = {
+  lecture: 'bg-orange-500 text-white',
+  lab: 'bg-emerald-600 text-white',
+  exercise: 'bg-slate-600 text-white',
+  seminar: 'bg-sky-600 text-white',
+  tutorial: 'bg-violet-600 text-white'
+}
+
+/**
+ * Create a distinctive badge for course type with color coding.
+ * Uses solid backgrounds with white text for crisp contrast on teal event blocks.
+ * @param courseType - The course type.
+ * @param shortLabel - The short label to display in the badge.
+ * @returns The badge as a string.
+ */
+function createCourseTypeBadge(courseType: CourseType, shortLabel: string): string {
+  const styles = COURSE_TYPE_COLORS[courseType]
+  return `<div class="inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 ${styles}"><span class="text-[0.65rem] font-bold uppercase tracking-wider">${shortLabel}</span></div>`
 }
 
 /**
@@ -49,23 +72,10 @@ const ICONS: Record<string, string> = {
   )
 }
 
-function fmtCourseType(courseType: CourseType): string {
-  switch (courseType) {
-    case 'lecture':
-      return 'Vorlesung'
-    case 'lab':
-      return 'Praktikum'
-    case 'exercise':
-      return 'Übung'
-    case 'seminar':
-      return 'Seminar'
-    case 'tutorial':
-      return 'Tutorium'
-  }
-}
-
 /**
- * Render the event content for schedule events.
+ * Render rich schedule entries for time-grid views (week/day).
+ * Uses responsive variants (`event-size-full`, `event-size-compact`, `event-size-minimum`)
+ * to show full details in larger slots and progressively condensed content in small slots.
  * @param arg - The event content argument.
  * @returns The event content as a string.
  */
@@ -75,60 +85,163 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
     return true
   }
 
-  const props = arg.event.extendedProps as ScheduleEventProps
-  const time = arg.timeText
-
-  // Long versions
+  const props: ScheduleEntry = arg.event.extendedProps.raw
+  const durationMinutes = Math.round(
+    (new Date(props.end).getTime() - new Date(props.start).getTime()) / (1000 * 60)
+  )
   const titleLong = props.moduleTitle
-  const lecturerLong = props.moduleManagement.map((m) => fmtManagement(m)).join(', ')
-  const courseTypeLong = fmtCourseType(props.courseType)
-
-  // Short versions
   const titleShort = props.moduleAbbrev
-  const lecturerShort = props.moduleManagement
-    .map((m) => {
-      switch (m.kind) {
-        case 'person':
-          return `${m.firstname.charAt(0)}${m.lastname.charAt(0)}`
-        case 'group':
-          return m.id.slice(0, 3).toUpperCase()
-        case 'unknown':
-          return m.id.slice(0, 3).toUpperCase()
-      }
-    })
-    .join(', ')
+  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
+  const courseTypeLong = fmtCourseType(props.courseType)
   const courseTypeShort = courseTypeLong.charAt(0)
 
-  // Always the same
-  const location = props.roomAbbrev
+  if (durationMinutes <= 90) {
+    return {
+      html: `
+        <div class="event-content flex h-full flex-col dark:text-white">
+          <!-- Full view -->
+          <div class="event-size-full flex flex-col gap-1.5 p-1.5">
+            <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleLong}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            </div>
+            ${createInfoRow(ICONS.mapPin, location)}
+          </div>
+          <!-- Compact view -->
+          <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
+            <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleShort}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            </div>
+            ${createShortInfoRow(location)}
+          </div>
+          <!-- Minimum view - centered abbreviation for narrow stacked columns -->
+          <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
+            <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
+              ${titleShort}
+            </span>
+          </div>
+        </div>
+      `
+    }
+  }
+
+  const time = arg.timeText
+  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
+  const lecturerShort = props.moduleManagement
+    .map(({ abbreviation }) => abbreviation.toUpperCase())
+    .join(', ')
 
   return {
     html: `
       <div class="event-content flex h-full flex-col dark:text-white">
         <!-- Full view -->
-        <div class="event-size-full flex flex-col gap-1.5 p-2">
-          <div class="text-sm font-semibold leading-tight">${titleLong}</div>
+        <div class="event-size-full flex flex-col gap-1.5 p-1.5">
+          <div class="flex min-w-0 items-start gap-1.5 mb-1">
+            <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+              ${titleLong}
+            </div>
+            ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          </div>
           ${createInfoRow(ICONS.clock, time)}
           ${createInfoRow(ICONS.mapPin, location)}
           ${createInfoRow(ICONS.user, lecturerLong)}
           ${createInfoRow(ICONS.book, courseTypeLong)}
         </div>
         <!-- Compact view -->
-        <div class="event-size-compact flex flex-col gap-1 p-1.5">
-          <div class="text-sm font-semibold leading-tight">${titleShort}</div>
+        <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
+          <div class="flex min-w-0 items-start gap-1 mb-1">
+              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+                ${titleShort}
+              </div>
+              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          </div>
           ${createShortInfoRow(location)}
           ${createShortInfoRow(lecturerShort)}
-          ${createShortInfoRow(courseTypeShort)}
         </div>
-        <!-- Minimum view - just abbreviation, vertically centered -->
-        <div class="event-size-minimum flex h-full items-center justify-center p-1">
-          <span class="text-xs font-bold [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
+        <!-- Minimum view - centered abbreviation for narrow stacked columns -->
+        <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
+          <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
+            ${titleShort}
+          </span>
         </div>
       </div>
     `
   }
 }
 
-export function monthViewEventClassNames(): string[] {
-  return [`bg-[${EVENT_SOURCE_COLORS['schedule']}]`, 'text-white']
+/**
+ * Create one month-view schedule row with fixed-priority segments:
+ * color dot -> time -> truncating title -> course-type badge.
+ * Dot, time, and badge are non-shrinking; only the title truncates.
+ */
+function createMonthRow(
+  title: string,
+  time: string,
+  color: string,
+  badgeStyles: string,
+  courseType: string
+) {
+  return `
+<div class="flex h-full w-full min-w-0 items-center gap-0.5 overflow-hidden px-1.5 py-0.5 leading-[1.15]">
+  <span
+    class="inline-block size-1.5 shrink-0 rounded-full"
+    style="background-color: ${color};"
+  ></span>
+  <span class="shrink-0 tabular-nums opacity-80">${time}</span>
+  <span class="min-w-0 flex-1 truncate">${title}</span>
+  <span
+    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 text-[0.65rem] uppercase leading-none ${badgeStyles}"
+  >
+    ${courseType}
+  </span>
+</div>
+`
+}
+
+/**
+ * Render month-view schedule entries with full and compact title variants.
+ * IMPORTANT: Keep this renderer in sync with the month-view CSS in `src/app.css`
+ * (`.fc-dayGridMonth-view .fc-daygrid-dot-event*`, `.event-content-size-container`,
+ * and `.event-size-*` container-query rules). If layout/markup/spacing changes here,
+ * update those CSS selectors and spacing rules as well.
+ * @param arg - The event content argument.
+ * @returns The event content as a string.
+ */
+export function renderMonthViewEventContent(arg: EventContentArg) {
+  // Only apply custom layout for schedule events, use default for others
+  if (arg.event.extendedProps?.source !== 'schedule') {
+    return true
+  }
+
+  const props: ScheduleEntry = arg.event.extendedProps.raw
+  const time = arg.timeText
+  const titleFull = props.moduleTitle
+  const titleCompact = props.moduleAbbrev || props.moduleTitle
+  const courseType = fmtCourseType(props.courseType).charAt(0)
+  const badgeStyles = COURSE_TYPE_COLORS[props.courseType]
+  const color = EVENT_SOURCE_COLORS.schedule
+
+  const fullRow = createMonthRow(titleFull, time, color, badgeStyles, courseType)
+  const compactRow = createMonthRow(titleCompact, time, color, badgeStyles, courseType)
+
+  return {
+    html: `
+      <div class="event-content event-content-size-container flex h-full w-full min-w-0 flex-col overflow-hidden text-xs text-slate-900 dark:text-white">
+        <div class="event-size-full w-full min-w-0 overflow-hidden">
+          ${fullRow}
+        </div>
+        <div class="event-size-compact w-full min-w-0 overflow-hidden">
+          ${compactRow}
+        </div>
+        <div class="event-size-minimum w-full min-w-0 overflow-hidden">
+          ${compactRow}
+        </div>
+      </div>
+    `
+  }
 }

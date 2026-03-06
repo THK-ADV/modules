@@ -17,14 +17,15 @@
   interface Props {
     form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string
-    label: string
+    label?: string
     placeholder: string
-    description: string
+    description?: string
     options: Option[]
     value: string
     errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
+    disabled?: boolean
   }
 
   let {
@@ -37,7 +38,8 @@
     value = $bindable(),
     errors = {},
     width = 'w-[350px]', // Default width
-    modificationStatus
+    modificationStatus,
+    disabled = false
   }: Props = $props()
 
   let open = $state(false)
@@ -53,7 +55,9 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-foreground text-sm font-medium">{label}</span>
+      {#if label}
+        <span class="text-foreground text-sm font-medium">{label}</span>
+      {/if}
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <Form.Field {form} {name}>
@@ -66,7 +70,8 @@
                 buttonVariants({ variant: 'outline' }),
                 'h-10 w-full justify-between px-3 py-2 text-left font-normal',
                 !value && 'text-muted-foreground',
-                errors[name] && 'border-destructive'
+                errors[name] && 'border-destructive',
+                disabled && 'cursor-not-allowed opacity-50'
               )}
               {...props}
             >
@@ -83,7 +88,7 @@
               <Command.Empty>Keine Ergebnisse</Command.Empty>
               <Command.Group>
                 {#each options as { id, deLabel } (id)}
-                  <Command.Item value={deLabel} onSelect={() => onSelect(id)}>
+                  <Command.Item value={deLabel} onSelect={() => onSelect(id)} {disabled}>
                     <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                     <span>{deLabel}</span>
                   </Command.Item>
@@ -93,8 +98,10 @@
           </Command.Root>
         </Popover.Content>
       </Popover.Root>
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      <Form.Description>{@html description}</Form.Description>
+      {#if description}
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        <Form.Description>{@html description}</Form.Description>
+      {/if}
       <Form.FieldErrors />
     </Form.Field>
   </div>
@@ -104,14 +111,17 @@
     <Popover.Root bind:open>
       <Form.Control>
         {#snippet children({ props })}
-          <Form.Label>{label}</Form.Label>
+          {#if label}
+            <Form.Label>{label}</Form.Label>
+          {/if}
           <Popover.Trigger
             role="combobox"
             class={cn(
               buttonVariants({ variant: 'outline' }),
               'h-10 w-full justify-between px-3 py-2 text-left font-normal',
               !value && 'text-muted-foreground',
-              errors[name] && 'border-destructive'
+              errors[name] && 'border-destructive',
+              disabled && 'cursor-not-allowed opacity-50'
             )}
             {...props}
           >
@@ -128,7 +138,7 @@
             <Command.Empty>Keine Ergebnisse</Command.Empty>
             <Command.Group>
               {#each options as { id, deLabel } (id)}
-                <Command.Item value={deLabel} onSelect={() => onSelect(id)}>
+                <Command.Item value={deLabel} onSelect={() => onSelect(id)} {disabled}>
                   <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                   <span>{deLabel}</span>
                 </Command.Item>
@@ -138,8 +148,10 @@
         </Command.Root>
       </Popover.Content>
     </Popover.Root>
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    <Form.Description>{@html description}</Form.Description>
+    {#if description}
+      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+      <Form.Description>{@html description}</Form.Description>
+    {/if}
     <Form.FieldErrors />
   </Form.Field>
 {/if}

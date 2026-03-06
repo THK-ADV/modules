@@ -9,10 +9,12 @@
     ref = $bindable(null),
     class: className,
     portalProps,
+    showClose = true,
     children,
     ...restProps
   }: WithoutChildrenOrChild<DialogPrimitive.ContentProps> & {
     portalProps?: DialogPrimitive.PortalProps
+    showClose?: boolean
     children: Snippet
   } = $props()
 </script>
@@ -28,11 +30,13 @@
     {...restProps}
   >
     {@render children?.()}
-    <DialogPrimitive.Close
-      class="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
-    >
-      <X class="size-4" />
-      <span class="sr-only">Close</span>
-    </DialogPrimitive.Close>
+    {#if showClose}
+      <DialogPrimitive.Close
+        class="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
+      >
+        <X class="size-4" />
+        <span class="sr-only">Close</span>
+      </DialogPrimitive.Close>
+    {/if}
   </DialogPrimitive.Content>
 </Dialog.Portal>

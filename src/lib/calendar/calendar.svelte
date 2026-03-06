@@ -8,7 +8,7 @@
   import { ChevronLeft, ChevronRight } from '@lucide/svelte'
   import { onMount, untrack } from 'svelte'
   import {
-    monthViewEventClassNames,
+    renderMonthViewEventContent,
     renderWeekViewEventContent
   } from './event-content-rendering.js'
   import {
@@ -22,8 +22,10 @@
     type CalendarView,
     type DateRangeInfo,
     type DateSelectInfo,
+    type EventCopyInfo,
     type EventClickInfo,
-    type EventDropInfo
+    type EventDropInfo,
+    type EventResizeInfo
   } from './types.js'
 
   interface Props {
@@ -36,16 +38,16 @@
     initialView?: CalendarView
     /** Initial date to display */
     initialDate?: Date | string
-    /** Whether events can be dragged and resized */
-    editable?: boolean
-    /** Whether users can select date ranges */
-    selectable?: boolean
     /** Callback when a date range is selected */
     onDateSelect?: (info: DateSelectInfo) => void
     /** Callback when an event is clicked */
     onEventClick?: (info: EventClickInfo) => void
     /** Callback when an event is dragged to a new time/date */
     onEventDrop?: (info: EventDropInfo) => void
+    /** Callback when Option/Alt + dragging an event to copy it */
+    onEventCopy?: (info: EventCopyInfo) => void
+    /** Callback when an event is resized (start/end changed) */
+    onEventResize?: (info: EventResizeInfo) => void
     /** Callback when the date range is set */
     onDateRangeSet?: (info: DateRangeInfo) => void
     /** Exposed calendar API for external control */
@@ -58,11 +60,11 @@
     events = [],
     initialView = 'timeGridWeek',
     initialDate,
-    editable = false,
-    selectable = false,
     onDateSelect,
     onEventClick,
     onEventDrop,
+    onEventCopy,
+    onEventResize,
     onDateRangeSet,
     api = $bindable(),
     class: className
@@ -71,8 +73,26 @@
   let calendarEl: HTMLDivElement
   let calendar: Calendar | null = null
   let currentTitle = $state('')
+  let dragStartedWithCopyModifier = false
+  let isEventDragging = false
   // svelte-ignore state_referenced_locally
   let currentView = $state<CalendarView>(initialView)
+
+  function setCopyCursorIndicator(active: boolean) {
+    document.body.classList.toggle('calendar-copy-cursor', active)
+  }
+
+  function isMacPlatform() {
+    const platformHint = navigator.userAgent
+    return /Mac|iPhone|iPad|iPod/i.test(platformHint)
+  }
+
+  function isCopyModifierPressed(event: { altKey: boolean; ctrlKey: boolean }) {
+    if (!onEventCopy) return false
+    if (isMacPlatform()) return event.altKey
+    // Keep Alt as fallback for Linux setups that forward it.
+    return event.ctrlKey || event.altKey
+  }
 
   function handlePrev() {
     calendar?.prev()
@@ -95,29 +115,60 @@
   onMount(() => {
     const startView = initialView
     const startDate = initialDate
+    const supportsCopy = Boolean(onEventCopy)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isEventDragging) return
+      if (event.key !== 'Alt' && event.key !== 'Control') return
+      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      setCopyCursorIndicator(dragStartedWithCopyModifier)
+    }
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (!isEventDragging) return
+      if (event.key !== 'Alt' && event.key !== 'Control') return
+      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      setCopyCursorIndicator(dragStartedWithCopyModifier)
+    }
+    const handleWindowBlur = () => {
+      dragStartedWithCopyModifier = false
+      setCopyCursorIndicator(false)
+    }
+
+    if (supportsCopy) {
+      window.addEventListener('keydown', handleKeyDown)
+      window.addEventListener('keyup', handleKeyUp)
+      window.addEventListener('blur', handleWindowBlur)
+    }
 
     calendar = new Calendar(calendarEl, {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: startView,
       initialDate: startDate,
+      height: 'auto',
       headerToolbar: false,
-      editable,
-      selectable,
+      editable: onEventDrop || onEventCopy || onEventResize ? true : false,
+      eventStartEditable: onEventDrop || onEventCopy ? true : false,
+      eventDurationEditable: onEventResize ? true : false,
+      eventResizableFromStart: onEventResize ? true : false,
+      selectable: onDateSelect ? true : false,
+      selectMinDistance: onDateSelect ? 15 : 0, // Only trigger date selection after a drag gesture (15 min range), not simple clicks.
       events: [],
       nowIndicator: true,
       dayMaxEvents: true,
       weekNumbers: true,
       allDaySlot: true,
-      slotMinTime: '08:30:00',
+      slotMinTime: '08:00:00',
       slotMaxTime: '21:00:00',
-      expandRows: true,
+      expandRows: false,
       stickyHeaderDates: true,
       locale: 'de',
       firstDay: 1,
       weekends: false,
-      slotDuration: '00:15:00', // Display 15-minute slots
-      snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
-      slotEventOverlap: true,
+      slotDuration: '00:30:00',
+      slotLabelInterval: '01:00:00',
+      snapDuration: '00:15:00',
+      slotEventOverlap: false,
+      eventMinHeight: 22,
+      eventShortHeight: 22,
       // Format slot label as HH:mm without "Uhr"
       slotLabelFormat: {
         hour: '2-digit',
@@ -135,7 +186,9 @@
           eventContent: renderWeekViewEventContent
         },
         dayGridMonth: {
-          eventClassNames: monthViewEventClassNames()
+          fixedWeekCount: false,
+          dayMaxEvents: 6,
+          eventContent: renderMonthViewEventContent
         }
       },
       weekNumberFormat: { week: 'numeric' },
@@ -152,6 +205,9 @@
         day: 'Tag'
       },
       select: (arg) => {
+        if (arg.allDay) {
+          return
+        }
         onDateSelect?.({
           start: arg.start,
           end: arg.end,
@@ -169,18 +225,75 @@
           jsEvent: arg.jsEvent
         })
       },
+      eventDragStart: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          return
+        }
+        isEventDragging = true
+        dragStartedWithCopyModifier = isCopyModifierPressed(arg.jsEvent)
+        setCopyCursorIndicator(dragStartedWithCopyModifier)
+      },
       eventDrop: (arg) => {
-        onEventDrop?.({
-          event: {
-            id: arg.event.id,
-            extendedProps: arg.event.extendedProps as CalendarEventProps
-          },
-          oldEvent: {
-            id: arg.oldEvent.id,
-            extendedProps: arg.oldEvent.extendedProps as CalendarEventProps
-          },
+        if (arg.event.extendedProps.source !== 'schedule') {
+          arg.revert()
+          return
+        }
+
+        const dropInfo = {
+          eventId: arg.event.id,
+          extendedProps: arg.event.extendedProps as CalendarEventProps,
+          newStart: arg.event.start,
+          newEnd: arg.event.end,
           revert: arg.revert
-        })
+        }
+
+        const isCopyGesture = dragStartedWithCopyModifier || isCopyModifierPressed(arg.jsEvent)
+
+        isEventDragging = false
+        dragStartedWithCopyModifier = false
+        setCopyCursorIndicator(false)
+
+        if (onEventCopy && isCopyGesture) {
+          arg.revert()
+          onEventCopy(dropInfo)
+          return
+        }
+
+        if (onEventDrop) {
+          onEventDrop(dropInfo)
+          return
+        }
+
+        // If dragging is enabled only for copy, revert non-copy drags.
+        arg.revert()
+      },
+      eventDragStop: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          return
+        }
+        isEventDragging = false
+        dragStartedWithCopyModifier = false
+        setCopyCursorIndicator(false)
+      },
+      eventResize: (arg) => {
+        if (arg.event.extendedProps.source !== 'schedule') {
+          arg.revert()
+          return
+        }
+        const resizeInfo = {
+          eventId: arg.event.id,
+          extendedProps: arg.event.extendedProps as CalendarEventProps,
+          newStart: arg.event.start,
+          newEnd: arg.event.end,
+          revert: arg.revert
+        }
+
+        if (onEventResize) {
+          onEventResize(resizeInfo)
+          return
+        }
+
+        arg.revert()
       },
       datesSet: (arg) => {
         if (calendar) {
@@ -224,6 +337,12 @@
     return () => {
       clearTimeout(resizeTimeout)
       resizeObserver.disconnect()
+      if (supportsCopy) {
+        window.removeEventListener('keydown', handleKeyDown)
+        window.removeEventListener('keyup', handleKeyUp)
+        window.removeEventListener('blur', handleWindowBlur)
+      }
+      setCopyCursorIndicator(false)
       calendar?.destroy()
       calendar = null
     }
@@ -240,7 +359,7 @@
   })
 </script>
 
-<div class="flex h-full flex-col {className}">
+<div class="flex flex-col {className}">
   <!-- Toolbar -->
   <div class="border-border bg-card flex items-center justify-between border-b px-4 py-3">
     <!-- Left: Navigation -->
@@ -302,5 +421,12 @@
   </div>
 
   <!-- Calendar -->
-  <div bind:this={calendarEl} class="min-h-0 flex-1"></div>
+  <div bind:this={calendarEl} class="w-full"></div>
 </div>
+
+<style>
+  :global(body.calendar-copy-cursor),
+  :global(body.calendar-copy-cursor *) {
+    cursor: copy !important;
+  }
+</style>

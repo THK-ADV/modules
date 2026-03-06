@@ -1,3 +1,4 @@
+import { dev } from '$app/environment'
 import { BACKEND_URL_PREFIX } from '$env/static/private'
 import { routesMap } from '$lib/routes.svelte'
 import { getValidAccessToken } from '$lib/server/auth'
@@ -67,7 +68,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     const backendUrl =
       BACKEND_URL_PREFIX + event.url.pathname.slice(AUTH_API_PREFIX.length) + event.url.search
 
-    console.log('[auth-api] rewrite from', event.url.pathname, ' to ', backendUrl)
+    if (dev) {
+      console.log('[auth-api] rewrite from', event.url.pathname, ' to ', backendUrl)
+    }
 
     const proxyResponse = await fetch(backendUrl, requestInit)
 
@@ -83,7 +86,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     const backendUrl =
       BACKEND_URL_PREFIX + event.url.pathname.slice(API_PREFIX.length) + event.url.search
 
-    console.log('[api] rewrite from', event.url.pathname, ' to ', backendUrl)
+    if (dev) {
+      console.log('[api] rewrite from', event.url.pathname, ' to ', backendUrl)
+    }
 
     const proxyResponse = await fetch(backendUrl, event.request)
 

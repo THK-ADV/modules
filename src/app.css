@@ -267,19 +267,50 @@
   height: 2.25rem;
 }
 
-/* Adds solid horizontal lines between hour slots */
+/* Full-hour lines on the background slot grid */
 .fc .fc-timegrid-slot-lane {
   border-top: 1px solid var(--border);
 }
 
-/* Adds dashed lines for half-hour marks (less prominent than hour lines) */
+/* Half-hour marks: subtle dashed lines that recede behind full-hour lines */
 .fc .fc-timegrid-slot-minor {
-  border-top: 1px dashed hsl(240 5.9% 90% / 0.5);
+  border-top: 1px dashed hsl(240 5.9% 90% / 0.4);
 }
 
-/* Adjusts half-hour line color for dark mode visibility */
 .dark .fc .fc-timegrid-slot-minor {
   border-top: 1px dashed hsl(240 3.7% 25%);
+}
+
+/*
+ * Overlay full-hour grid lines on top of events so they remain visible
+ * even when events span multiple hours. Each slot is 2.25rem tall,
+ * so full hours repeat every 4.5rem (2 slots per hour).
+ */
+.fc .fc-timegrid-col-frame {
+  position: relative;
+}
+.fc .fc-timegrid-col-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    hsl(0 0% 0% / 0.15) 0,
+    hsl(0 0% 0% / 0.15) 1px,
+    transparent 1px,
+    transparent 4.5rem
+  );
+}
+.dark .fc .fc-timegrid-col-frame::after {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    hsl(0 0% 100% / 0.18) 0,
+    hsl(0 0% 100% / 0.18) 1px,
+    transparent 1px,
+    transparent 4.5rem
+  );
 }
 
 /* ---- All-Day Section ---- */

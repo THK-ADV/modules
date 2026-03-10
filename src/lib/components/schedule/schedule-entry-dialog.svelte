@@ -712,7 +712,7 @@
 
     <Separator class="my-1" />
 
-    <Dialog.Footer>
+    <Dialog.Footer class="gap-2">
       <Dialog.Close class={buttonVariants({ variant: 'outline' })}>Abbrechen</Dialog.Close>
       <Button type="button" onclick={handleSave} disabled={saveButtonDisabled}>Speichern</Button>
     </Dialog.Footer>

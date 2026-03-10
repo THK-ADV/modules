@@ -58,6 +58,27 @@ function createShortInfoRow(text: string): string {
 }
 
 /**
+ * Create a short time string from the default time string.
+ */
+function createTimeShort(time: string): string {
+  const [start, end] = time.split(' - ')
+  const [startHour, startMinute] = start.split(':')
+  const [endHour, endMinute] = end.split(':')
+  let timeShort = ''
+  if (startMinute === '00') {
+    timeShort = `${startHour}`
+  } else {
+    timeShort = `${startHour}:${startMinute}`
+  }
+  if (endMinute === '00') {
+    timeShort = `${timeShort} - ${endHour}`
+  } else {
+    timeShort = `${timeShort} - ${endHour}:${endMinute}`
+  }
+  return timeShort
+}
+
+/**
  * The icons to use for the event content.
  */
 const ICONS: Record<string, string> = {
@@ -120,10 +141,10 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
             ${createShortInfoRow(location)}
           </div>
           <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-          <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
-            <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
-              ${titleShort}
-            </span>
+          <div class="event-size-minimum grid h-full overflow-hidden m-1.5">
+            <div class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed] flex items-center justify-center">
+              <span>${titleShort}</span>
+            </div>
           </div>
         </div>
       `
@@ -131,6 +152,7 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   }
 
   const time = arg.timeText
+  const timeShort = createTimeShort(time)
   const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
   const lecturerShort = props.moduleManagement
     .map(({ abbreviation }) => abbreviation.toUpperCase())
@@ -160,14 +182,15 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
               </div>
               ${createCourseTypeBadge(props.courseType, courseTypeShort)}
           </div>
+          ${createShortInfoRow(timeShort)}
           ${createShortInfoRow(location)}
           ${createShortInfoRow(lecturerShort)}
         </div>
         <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-        <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
-          <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
-            ${titleShort}
-          </span>
+        <div class="event-size-minimum grid h-full overflow-hidden m-1.5">
+          <div class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed] flex items-center justify-center">
+            <span>${titleShort}</span>
+          </div>
         </div>
       </div>
     `

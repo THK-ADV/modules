@@ -20,40 +20,9 @@
     onEventResize,
     scheduleFilter,
     sourceEventCounts = $bindable(),
-    scheduleSource
+    scheduleEntries = $bindable([]),
+    scheduleFetcher
   }: ScheduleProps = $props()
-
-  let scheduleEntries: CalendarEvent<ScheduleEventProps>[] = $derived.by(() => {
-    switch (scheduleSource.id) {
-      case 'fetch':
-        return []
-      case 'data':
-        return scheduleSource.entries
-    }
-  })
-
-  // Passed to <Calendar> as the `datesSet` callback. Only produced for the 'fetch' source;
-  // undefined for 'data' (entries are already present). When the visible date range changes,
-  // FullCalendar calls this handler, which fetches the matching entries and writes them back
-  // to scheduleEntries so the calendar re-renders with up-to-date data.
-  const onDateRangeSet: ((info: DateRangeInfo) => void) | undefined = $derived.by(() => {
-    switch (scheduleSource.id) {
-      case 'fetch':
-        return async (info: DateRangeInfo) => {
-          try {
-            const res = await scheduleSource.fetch(info)
-            if (!res.ok) {
-              return
-            }
-            scheduleEntries = await res.json()
-          } catch {
-            // network or parse error — leave current entries in place
-          }
-        }
-      case 'data':
-        return undefined
-    }
-  })
 
   // Single derived function that tracks source toggles and filters
   const [filteredEvents, _sourceEventCounts] = $derived.by(() => {
@@ -214,6 +183,20 @@
     sourceEventCounts.holiday = holiday
     sourceEventCounts.exam = exam
   })
+
+  async function onDateRangeSet(info: DateRangeInfo) {
+    try {
+      const res = await scheduleFetcher(info)
+      if (!res.ok) {
+        return
+      }
+      const entries: CalendarEvent<ScheduleEventProps>[] = await res.json()
+      scheduleEntries.length = 0
+      scheduleEntries.push(...entries)
+    } catch {
+      // network or parse error — leave current entries in place
+    }
+  }
 </script>
 
 <!-- Calendar -->

@@ -30,8 +30,8 @@
   }
 
   // Fetch schedule entries when the date range changes
-  async function fetchScheduleEntries(info: DateRangeInfo) {
-    return await fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
+  function fetchScheduleEntries(info: DateRangeInfo) {
+    return fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
   }
 </script>
 
@@ -98,7 +98,7 @@
     {initialDate}
     {onEventClick}
     {scheduleFilter}
-    scheduleSource={{ id: 'fetch', fetch: fetchScheduleEntries }}
+    scheduleFetcher={fetchScheduleEntries}
   />
 
   {#if selectedScheduleEntry}

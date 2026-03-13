@@ -1,5 +1,6 @@
 import {
   createScheduleEntries,
+  fetchLecturerOptions,
   fetchScheduleEntriesByRange,
   updateScheduleEntry
 } from '$lib/server/calendar'
@@ -32,8 +33,12 @@ function toLocalISOString(date: Date): string {
   )
 }
 
-// Fetches schedule entries for the given date range
+// Supports GET requests for fetching schedule entries and lecturer options
 export const GET: RequestHandler = async ({ fetch, url }) => {
+  if (url.searchParams.get('select') === 'lecturers' && url.searchParams.has('module')) {
+    return json(await fetchLecturerOptions(fetch, url.searchParams.get('module')!), { status: 200 })
+  }
+
   const events = await fetchScheduleEntriesByRange(
     fetch,
     url.searchParams.get('start'),

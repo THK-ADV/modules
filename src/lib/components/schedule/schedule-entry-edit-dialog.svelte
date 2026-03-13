@@ -81,7 +81,8 @@
       lhs.courseType !== rhs.courseType ||
       !posEqual(lhs.props.po, rhs.props.po) ||
       lhs.start.getTime() !== rhs.start.getTime() ||
-      lhs.end.getTime() !== rhs.end.getTime()
+      lhs.end.getTime() !== rhs.end.getTime() ||
+      !arraysEqual(lhs.props.lecturer, rhs.props.lecturer)
     )
   }
 
@@ -109,7 +110,8 @@
         .refine(({ start, end }) => end > start, {
           error: 'Ende der Veranstaltung muss nach dem Beginn liegen',
           path: ['end']
-        })
+        }),
+      lecturer: z.array(z.string())
     })
 
     return superForm(
@@ -126,12 +128,18 @@
         date: {
           start: entry?.start ?? null,
           end: entry?.end ?? null
-        }
+        },
+        lecturer: entry?.props?.lecturer ?? []
       },
       {
         SPA: true,
         dataType: 'json',
-        validators: zod4(schema)
+        validators: zod4(schema),
+        onChange: async (event) => {
+          if (event.paths.includes('module')) {
+            await updateLecturerByModule(event.get('module'))
+          }
+        }
       }
     )
   }
@@ -254,6 +262,12 @@
     deLabel: sp.label
   }))
 
+  const lecturerOptions = schedulePlanningFilter.identities.map((i) => ({
+    id: i.id,
+    label: i.label,
+    abbrev: i.label
+  }))
+
   function createCurrentEntry(): ScheduleEntryCreate {
     return {
       module: $formData.module,
@@ -265,7 +279,8 @@
           recommendedSemester,
           mandatory,
           specialization: null
-        }))
+        })),
+        lecturer: $formData.lecturer
       },
       start: new Date($formData.date.start!),
       end: new Date($formData.date.end!)
@@ -480,6 +495,13 @@
       poDialogOpen = false
     }
   }
+
+  async function updateLecturerByModule(module: string) {
+    const resp = await fetch('/schedule-planning?select=lecturers&module=' + module)
+    if (resp.ok) {
+      $formData.lecturer = await resp.json()
+    }
+  }
 </script>
 
 <Dialog.Root
@@ -552,6 +574,17 @@
         options={moduleOptions}
         bind:value={$formData.module}
         width="w-[450px]"
+      />
+
+      <!-- Lecturer -->
+      <MultiSelectCombobox
+        {form}
+        {errors}
+        name="lecturer"
+        label="Dozierende"
+        options={lecturerOptions}
+        bind:value={$formData.lecturer}
+        maxVisibleBadges={3}
       />
 
       <!-- Date & Time -->

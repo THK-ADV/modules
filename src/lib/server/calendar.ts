@@ -239,3 +239,16 @@ export function getCalendarCookies(cookies: Cookies) {
     selectedCalendarDate: cookies.get(SELECTED_CALENDAR_DATE_COOKIE_NAME)
   }
 }
+
+export async function fetchLecturerOptions(
+  fetch: typeof globalThis.fetch,
+  module: string
+): Promise<string[]> {
+  const resp = await fetch(`/api/modules/${module}?select=lecturers`)
+  if (!resp.ok) {
+    const err = await resp.json()
+    throw error(resp.status, { message: `Fehler beim Laden der Lehrkräfte: ${err.message}` })
+  }
+  const ids: string[] = await resp.json()
+  return ids
+}

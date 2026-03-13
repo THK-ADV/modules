@@ -41,7 +41,7 @@
   // svelte-ignore state_referenced_locally
   const roomLabel = entry.rooms.map((room) => room.abbrev).join(', ')
   // svelte-ignore state_referenced_locally
-  const lecturerLabel = entry.moduleManagement.map(({ label }) => label).join(', ')
+  const lecturerLabel = entry.lecturer.map(({ label }) => label).join(', ')
   // svelte-ignore state_referenced_locally
   const studyProgramLabels = entry.props.po
     .sort((a, b) => a.po.localeCompare(b.po))
@@ -114,7 +114,7 @@
             class="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wide uppercase"
           >
             <MapPin class="size-4" />
-            Raum
+            Räume
           </span>
           <span class="text-sm">{roomLabel}</span>
         </div>
@@ -123,7 +123,7 @@
             class="text-muted-foreground flex items-center gap-2 text-xs font-medium tracking-wide uppercase"
           >
             <Users class="size-4" />
-            Dozent
+            Dozierende
           </span>
           <span class="text-sm">{lecturerLabel}</span>
         </div>

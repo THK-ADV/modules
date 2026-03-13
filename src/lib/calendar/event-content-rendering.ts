@@ -153,8 +153,8 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
 
   const time = arg.timeText
   const timeShort = createTimeShort(time)
-  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
-  const lecturerShort = props.moduleManagement
+  const lecturerLong = props.lecturer.map(({ label }) => label).join(', ')
+  const lecturerShort = props.lecturer
     .map(({ abbreviation }) => abbreviation.toUpperCase())
     .join(', ')
 

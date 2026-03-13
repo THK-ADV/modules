@@ -12,9 +12,9 @@
   } from '$lib/calendar'
   import ErrorMessage from '$lib/components/error-message.svelte'
   import ScheduleDraftPanel from '$lib/components/schedule/schedule-draft-panel.svelte'
-  import ScheduleEntryDialog, {
+  import ScheduleEntryEditDialog, {
     type Mode
-  } from '$lib/components/schedule/schedule-entry-dialog.svelte'
+  } from '$lib/components/schedule/schedule-entry-edit-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -344,6 +344,6 @@
   </div>
 
   {#if dialogMode}
-    <ScheduleEntryDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
+    <ScheduleEntryEditDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
   {/if}
 </div>

@@ -504,6 +504,15 @@
   }
 </script>
 
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Delete' && mode.id === 'edit' && !poDialogOpen) {
+      e.preventDefault()
+      mode.onDelete(mode.entry.id)
+    }
+  }}
+/>
+
 <Dialog.Root
   open={true}
   onOpenChange={(open) => {
@@ -553,7 +562,12 @@
                   <span class="sr-only">Eintrag löschen</span>
                 </Button>
               </Tooltip.Trigger>
-              <Tooltip.Content>Eintrag löschen</Tooltip.Content>
+              <Tooltip.Content
+                >Eintrag löschen <kbd
+                  class="bg-muted text-muted-foreground ml-1 rounded px-1.5 py-0.5 text-xs font-medium"
+                  >Del</kbd
+                ></Tooltip.Content
+              >
             </Tooltip.Root>
           </div>
         {/if}

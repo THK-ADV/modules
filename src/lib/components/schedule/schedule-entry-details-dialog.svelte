@@ -39,9 +39,15 @@
   const endLabel = timeFormatter.format(end)
   const dateLabel = dateFormatter.format(start)
   // svelte-ignore state_referenced_locally
-  const roomLabel = entry.rooms.map((room) => room.abbrev).join(', ')
+  const roomLabel = entry.rooms
+    .map((room) => room.abbrev)
+    .sort()
+    .join(', ')
   // svelte-ignore state_referenced_locally
-  const lecturerLabel = entry.lecturer.map(({ label }) => label).join(', ')
+  const lecturerLabel = entry.lecturer
+    .map(({ label }) => label)
+    .sort()
+    .join(', ')
   // svelte-ignore state_referenced_locally
   const studyProgramLabels = entry.props.po
     .sort((a, b) => a.po.localeCompare(b.po))

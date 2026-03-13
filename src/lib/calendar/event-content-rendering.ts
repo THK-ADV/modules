@@ -112,7 +112,10 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   )
   const titleLong = props.moduleTitle
   const titleShort = props.moduleAbbrev
-  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
+  const location = props.rooms
+    .map(({ abbrev }) => abbrev)
+    .sort()
+    .join(', ')
   const courseTypeLong = fmtCourseType(props.courseType)
   const courseTypeShort = courseTypeLong.charAt(0)
 
@@ -153,9 +156,13 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
 
   const time = arg.timeText
   const timeShort = createTimeShort(time)
-  const lecturerLong = props.lecturer.map(({ label }) => label).join(', ')
+  const lecturerLong = props.lecturer
+    .map(({ label }) => label)
+    .sort()
+    .join(', ')
   const lecturerShort = props.lecturer
     .map(({ abbreviation }) => abbreviation.toUpperCase())
+    .sort()
     .join(', ')
 
   return {

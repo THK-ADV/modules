@@ -73,6 +73,7 @@
   let calendarEl: HTMLDivElement
   let calendar: Calendar | null = null
   let currentTitle = $state('')
+  let copyModifierHeld = false
   let dragStartedWithCopyModifier = false
   let isEventDragging = false
   let isCopyDragging = $state(false)
@@ -150,18 +151,21 @@
     const startDate = initialDate
     const supportsCopy = Boolean(onEventCopy)
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isEventDragging) return
       if (event.key !== 'Alt' && event.key !== 'Control') return
-      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      copyModifierHeld = isCopyModifierPressed(event)
+      if (!isEventDragging) return
+      dragStartedWithCopyModifier = copyModifierHeld
       setCopyCursorIndicator(dragStartedWithCopyModifier)
     }
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (!isEventDragging) return
       if (event.key !== 'Alt' && event.key !== 'Control') return
-      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      copyModifierHeld = isCopyModifierPressed(event)
+      if (!isEventDragging) return
+      dragStartedWithCopyModifier = copyModifierHeld
       setCopyCursorIndicator(dragStartedWithCopyModifier)
     }
     const handleWindowBlur = () => {
+      copyModifierHeld = false
       dragStartedWithCopyModifier = false
       setCopyCursorIndicator(false)
     }
@@ -264,7 +268,7 @@
         }
         isEventDragging = true
         draggedEventEl = arg.el
-        dragStartedWithCopyModifier = isCopyModifierPressed(arg.jsEvent)
+        dragStartedWithCopyModifier = copyModifierHeld || isCopyModifierPressed(arg.jsEvent)
         setCopyCursorIndicator(dragStartedWithCopyModifier)
       },
       eventDrop: (arg) => {

@@ -5,9 +5,11 @@ import type {
   SemesterPlanEventProps
 } from '$lib/calendar'
 import {
-  EVENT_SOURCE_COLORS,
+  COURSE_TYPE_COLORS,
+  HOLIDAY_COLOR,
   SELECTED_CALENDAR_DATE_COOKIE_NAME,
-  SELECTED_CALENDAR_VIEW_COOKIE_NAME
+  SELECTED_CALENDAR_VIEW_COOKIE_NAME,
+  SEMESTER_PLAN_TYPE_COLORS
 } from '$lib/calendar/types'
 import type { ScheduleEntry, SemesterPlanEntry } from '$lib/types/schedule'
 import type { Cookies } from '@sveltejs/kit'
@@ -30,7 +32,7 @@ export async function fetchHolidays(
     title: label,
     start: date,
     allDay: true,
-    backgroundColor: EVENT_SOURCE_COLORS['holiday'],
+    backgroundColor: HOLIDAY_COLOR,
     extendedProps: { source: 'holiday' }
   }))
 }
@@ -49,42 +51,38 @@ export async function fetchSemesterEntries(
 
   return entries.map((entry) => {
     let title: string
-    let backgroundColor: string
 
     switch (entry.type) {
       case 'lecture': {
         title = 'Vorlesung'
-        backgroundColor = EVENT_SOURCE_COLORS['semesterPlan']
         break
       }
       case 'exam': {
         title = 'Prüfung'
-        backgroundColor = EVENT_SOURCE_COLORS['exam']
         break
       }
       case 'block': {
         title = 'Block'
-        backgroundColor = '#daa520'
         break
       }
       case 'project': {
         title = 'Projekt'
-        backgroundColor = '#daa520'
         break
       }
       case 'closed_building': {
         title = 'Gebäude geschlossen'
-        backgroundColor = EVENT_SOURCE_COLORS['holiday']
         break
       }
       case 'self_study': {
         title = 'Selbstlernphase'
-        backgroundColor = '#8b7d6b'
+        break
+      }
+      case 'semester_break': {
+        title = 'Vorlesungsfreie Zeit'
         break
       }
       default: {
         title = 'Unbekannt'
-        backgroundColor = '#000000'
         break
       }
     }
@@ -103,7 +101,7 @@ export async function fetchSemesterEntries(
       start: entry.start,
       end: entry.end,
       allDay: true,
-      backgroundColor,
+      backgroundColor: SEMESTER_PLAN_TYPE_COLORS[entry.type],
       extendedProps: {
         source: 'semesterPlan',
         type: entry.type,
@@ -124,7 +122,7 @@ function createScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventP
     title: entry.moduleTitle,
     start: new Date(entry.start),
     end: new Date(entry.end),
-    backgroundColor: EVENT_SOURCE_COLORS['schedule'],
+    backgroundColor: COURSE_TYPE_COLORS[entry.courseType] + 'CC',
     extendedProps
   }
 }

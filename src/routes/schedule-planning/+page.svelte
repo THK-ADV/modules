@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    getDefaultCalendarView,
     type CalendarEvent,
     type CalendarView,
     type DateRangeInfo,
@@ -30,7 +31,9 @@
 
   const { data }: PageProps = $props()
 
-  const initialView = $derived((data.selectedCalendarView || 'timeGridWeek') as CalendarView)
+  const initialView = $derived(
+    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
+  )
   const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
   let selectedTab = $state('calendar') // calendar or table
 

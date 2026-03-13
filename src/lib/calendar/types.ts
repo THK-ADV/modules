@@ -1,4 +1,9 @@
-import type { ScheduleEntry, SemesterPlanEntry } from '$lib/types/schedule'
+import type {
+  CourseType,
+  ScheduleEntry,
+  SemesterPlanEntry,
+  SemesterPlanType
+} from '$lib/types/schedule'
 import type { EventInput } from '@fullcalendar/core'
 
 export const SELECTED_CALENDAR_VIEW_COOKIE_NAME = 'calendar:selected-view'
@@ -58,11 +63,24 @@ export type CalendarEventProps =
  */
 export type EventSource = CalendarEventProps['source']
 
-export const EVENT_SOURCE_COLORS: Record<EventSource, string> = {
-  holiday: '#8b7d6b',
-  semesterPlan: '#d2b48c',
-  schedule: '#5f7c8a',
-  exam: '#cd853f'
+export const HOLIDAY_COLOR = '#5C5462'
+
+export const SEMESTER_PLAN_TYPE_COLORS: Record<SemesterPlanType, string> = {
+  exam: '#D06B5A',
+  lecture: '#000000',
+  block: '#4E8E84',
+  project: '#4E8E84',
+  closed_building: HOLIDAY_COLOR,
+  self_study: '#8CB84A',
+  semester_break: '#8CB84A'
+}
+
+export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
+  lecture: '#3A8FBF',
+  lab: '#2AA89E',
+  seminar: '#F0A870',
+  exercise: '#7059AA',
+  tutorial: '#EC7E3C'
 }
 
 /**

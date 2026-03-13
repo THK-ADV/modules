@@ -222,6 +222,9 @@
         timeGridWeek: {
           eventContent: renderWeekViewEventContent
         },
+        timeGridDay: {
+          eventContent: renderWeekViewEventContent
+        },
         dayGridMonth: {
           fixedWeekCount: false,
           dayMaxEvents: 6,
@@ -233,7 +236,7 @@
         return { html: `<span>KW ${arg.num}</span>` }
       },
       allDayContent: () => {
-        return { html: '<span>Ganztägig</span>' }
+        return { html: '<span>Tag</span>' }
       },
       buttonText: {
         today: 'Heute',
@@ -445,7 +448,7 @@
       class="bg-muted rounded-lg p-1"
     >
       <ToggleGroup.Item
-        value="dayGridDay"
+        value="timeGridDay"
         class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
       >
         Tag

@@ -1,4 +1,5 @@
 export { default as Calendar } from './calendar.svelte'
+export { getDefaultCalendarView } from './default-view.js'
 export type {
   CalendarEvent,
   CalendarView,

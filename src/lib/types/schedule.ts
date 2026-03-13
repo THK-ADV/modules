@@ -23,6 +23,7 @@ export type SemesterPlanType =
   | 'project'
   | 'closed_building'
   | 'self_study'
+  | 'semester_break'
 
 export type CourseType = 'lecture' | 'lab' | 'exercise' | 'seminar' | 'tutorial'
 

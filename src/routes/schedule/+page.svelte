@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { type CalendarView, type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
+  import {
+    getDefaultCalendarView,
+    type CalendarView,
+    type DateRangeInfo,
+    type EventClickInfo
+  } from '$lib/calendar'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
@@ -10,7 +15,9 @@
 
   const { data }: PageProps = $props()
 
-  const initialView = $derived((data.selectedCalendarView || 'timeGridWeek') as CalendarView)
+  const initialView = $derived(
+    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
+  )
   const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
 
   let selectedScheduleEntry = $state<ScheduleEntry | null>(null)

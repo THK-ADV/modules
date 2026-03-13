@@ -24,6 +24,20 @@
 
   let open = $state(false)
 
+  let sortedOptions = $derived.by(() => {
+    const selectedSet = new Set(filterValues)
+    const selected: FilterData[] = []
+    const unselected: FilterData[] = []
+    for (const o of options) {
+      if (selectedSet.has(o.id)) {
+        selected.push(o)
+      } else {
+        unselected.push(o)
+      }
+    }
+    return [...selected, ...unselected]
+  })
+
   function fmtBadge(option: string): string {
     return options.find((o) => o.id === option)?.badge ?? ''
   }
@@ -69,7 +83,7 @@
           </Command.Item>
         {/if}
         <Command.Group>
-          {#each options as option (option.id)}
+          {#each sortedOptions as option (option.id)}
             <Command.Item
               value={option.id}
               keywords={[option.label]}

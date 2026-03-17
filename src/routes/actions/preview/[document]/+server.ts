@@ -78,9 +78,8 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
     const response = await performRequest(document, sp, po, request, fetch)
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      const message =
-        errorData.message || `Fehler beim Erzeugen: ${response.status} ${response.statusText}`
+      const errorData = await response.json().catch(() => ({ message: 'Unbekannter Latex Fehler' }))
+      const message = errorData.message || `Fehler beim Erzeugen: ${JSON.stringify(errorData)}`
       throw error(response.status, { message })
     }
 

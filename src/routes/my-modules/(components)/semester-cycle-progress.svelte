@@ -20,45 +20,39 @@
   // Color theme configurations
   const PHASE_THEMES = {
     editing: {
-      primary: 'blue',
-      bgLight: 'bg-blue-100 dark:bg-blue-900/40',
-      bgProgress: 'bg-blue-500 dark:bg-blue-500',
-      border: 'border-blue-500 dark:border-blue-400',
-      textPrimary: 'text-blue-900 dark:text-blue-200',
-      textSecondary: 'text-blue-800 dark:text-blue-300',
-      textButton: 'text-blue-700 dark:text-blue-400',
-      textButtonHover: 'hover:text-blue-900 dark:hover:text-blue-200'
+      dot: 'bg-green-500',
+      bgSegment: 'bg-green-100 dark:bg-green-900/40',
+      bgProgress: 'bg-green-500',
+      bgPanel: 'from-green-50/50 to-green-50/20 dark:from-green-950/20 dark:to-green-950/5',
+      accent: 'border-l-green-500 dark:border-l-green-400',
+      textPrimary: 'text-green-900 dark:text-green-200',
+      textSecondary: 'text-green-800 dark:text-green-300'
     },
     finalizing: {
-      primary: 'orange',
-      bgLight: 'bg-orange-100 dark:bg-orange-900/40',
-      bgProgress: 'bg-orange-500 dark:bg-orange-500',
-      border: 'border-orange-500 dark:border-orange-400',
-      textPrimary: 'text-orange-900 dark:text-orange-200',
-      textSecondary: 'text-orange-800 dark:text-orange-300',
-      textButton: 'text-orange-700 dark:text-orange-400',
-      textButtonHover: 'hover:text-orange-900 dark:hover:text-orange-200'
+      dot: 'bg-amber-500',
+      bgSegment: 'bg-amber-100 dark:bg-amber-900/40',
+      bgProgress: 'bg-amber-500',
+      bgPanel: 'from-amber-50/50 to-amber-50/20 dark:from-amber-950/20 dark:to-amber-950/5',
+      accent: 'border-l-amber-500 dark:border-l-amber-400',
+      textPrimary: 'text-amber-900 dark:text-amber-200',
+      textSecondary: 'text-amber-800 dark:text-amber-300'
     },
     publishing: {
-      primary: 'green',
-      bgLight: 'bg-green-100 dark:bg-green-900/40',
-      bgProgress: 'bg-green-500 dark:bg-green-500',
-      border: 'border-green-500 dark:border-green-400',
-      textPrimary: 'text-green-900 dark:text-green-200',
-      textSecondary: 'text-green-800 dark:text-green-300',
-      textButton: 'text-green-700 dark:text-green-400',
-      textButtonHover: 'hover:text-green-900 dark:hover:text-green-200'
+      dot: 'bg-red-500',
+      bgSegment: 'bg-red-100 dark:bg-red-900/40',
+      bgProgress: 'bg-red-500',
+      bgPanel: 'from-red-50/50 to-red-50/20 dark:from-red-950/20 dark:to-red-950/5',
+      accent: 'border-l-red-500 dark:border-l-red-400',
+      textPrimary: 'text-red-900 dark:text-red-200',
+      textSecondary: 'text-red-800 dark:text-red-300'
     }
   } as const
 
-  // Phase content configuration
   const PHASE_CONTENT = {
     editing: {
-      icon: '🎯',
-      title: 'Aktuelle Phase: Bearbeitung',
+      title: 'Bearbeitungsphase',
       description:
         'Sie können Ihre Module jetzt bearbeiten und Änderungen vornehmen. Alle Änderungen sind nur für Sie und berechtigte Personen sichtbar. Prüfen Sie vor allem die Prüfungsformen für das nächste Semester. Aktualisieren Sie auch Ihre Wahlmodule und WPFs.',
-      actionTitle: '💡 Empfohlene Aktionen',
       actions: [
         'Module überprüfen und aktualisieren',
         'Änderungen regelmäßig speichern',
@@ -66,11 +60,9 @@
       ]
     },
     finalizing: {
-      icon: '⚡',
-      title: 'Aktuelle Phase: Finalisierung',
+      title: 'Finalisierungsphase',
       description:
         'Die Bearbeitungsphase neigt sich dem Ende zu. Stellen Sie sicher, dass alle Änderungen abgeschlossen und übernommen wurden. Moduländerungen, die nicht übernommen oder zur Genehmigung freigegeben wurden, werden nicht in der nächsten Ausgabe des Modulhandbuchs und der Modulsuche aufgeführt.',
-      actionTitle: '⚠️ Dringende Aktionen',
       actions: [
         'Letzte Änderungen vornehmen',
         'Module zur Übernahme freigeben',
@@ -78,11 +70,9 @@
       ]
     },
     publishing: {
-      icon: '✅',
-      title: 'Aktuelle Phase: Veröffentlichung',
+      title: 'Veröffentlichungsphase',
       description:
-        'Der Bearbeitungszyklus ist abgeschlossen. Keine Änderungen mehr möglich! Alle finalisierten Änderungen werden jetzt im Modulhandbuch und der Modulsuche veröffentlicht.',
-      actionTitle: '📋 Nächste Schritte',
+        'Der Bearbeitungszyklus ist abgeschlossen. Keine Änderungen mehr möglich. Alle finalisierten Änderungen werden jetzt im Modulhandbuch und der Modulsuche veröffentlicht.',
       actions: ['Warten auf nächsten Zyklus']
     }
   } as const
@@ -146,14 +136,9 @@
 </script>
 
 <script lang="ts">
-  import { ChevronDown, ChevronUp, Info } from '@lucide/svelte'
+  import { ChevronDown, ChevronUp } from '@lucide/svelte'
 
-  let {
-    isPublishingPhase = $bindable(),
-    showComponent
-  }: { isPublishingPhase?: boolean; showComponent: boolean } = $props()
-
-  let showProcessExplanation = $state(false)
+  let expanded = $state(false)
 
   const currentDate = new Date()
   const semesterInfo = calculateSemesterInfo(currentDate)
@@ -161,143 +146,136 @@
   const currentPhase = determinePhase(cycleProgress)
   const phaseTheme = PHASE_THEMES[currentPhase]
   const phaseContent = PHASE_CONTENT[currentPhase]
-
-  $effect(() => {
-    isPublishingPhase = currentPhase === 'publishing'
-  })
-
-  // toggle process explanation
-  function toggleProcessExplanation() {
-    showProcessExplanation = !showProcessExplanation
-  }
 </script>
 
-{#if showComponent}
-  <div
-    class="rounded-lg border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-gray-700 dark:from-blue-950/30 dark:to-indigo-950/30"
+<div class="border-border/80 overflow-hidden rounded-lg border">
+  <!-- Compact summary bar -->
+  <button
+    onclick={() => (expanded = !expanded)}
+    aria-expanded={expanded}
+    class="bg-muted/30 hover:bg-muted/50 flex w-full items-center gap-4 px-4 py-3 text-left transition-colors"
   >
-    <div class="mb-4">
-      <h3 class="text-foreground text-lg font-semibold">
-        Bearbeitungszyklus {semesterInfo.type}
+    <span class="size-2.5 shrink-0 rounded-full {phaseTheme.dot}"></span>
+
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <span class="text-sm font-medium">{phaseContent.title}</span>
+      <span class="text-muted-foreground hidden text-xs sm:inline">
+        {semesterInfo.type}
         {semesterInfo.period}
-      </h3>
-      <p class="text-muted-foreground mt-1 text-sm">
-        {semesterInfo.displayStart} - {semesterInfo.displayEnd}
-      </p>
+      </span>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="relative mb-6">
-      <div class="text-muted-foreground mb-2 flex items-center justify-between text-xs">
-        <span>Bearbeitungsphase</span>
-        <span>Veröffentlichung</span>
+    <div class="flex shrink-0 items-center gap-3">
+      <div class="hidden items-center gap-2 sm:flex">
+        <div class="bg-border h-1.5 w-20 overflow-hidden rounded-full">
+          <div
+            class="h-full rounded-full {phaseTheme.bgProgress}"
+            style="width: {cycleProgress}%"
+          ></div>
+        </div>
+        <span class="text-muted-foreground w-8 text-right text-xs font-medium tabular-nums">
+          {cycleProgress}%
+        </span>
       </div>
 
-      <div class="relative h-3 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-        <!-- Background phases -->
-        <div class="absolute inset-0 flex">
-          <div style="width: {EDITING_PHASE_END}%" class={PHASE_THEMES.editing.bgLight}></div>
+      {#if expanded}
+        <ChevronUp class="text-muted-foreground size-4" />
+      {:else}
+        <ChevronDown class="text-muted-foreground size-4" />
+      {/if}
+    </div>
+  </button>
+
+  <!-- Expanded detail panel -->
+  {#if expanded}
+    <div class="border-border/60 space-y-5 border-t bg-linear-to-b {phaseTheme.bgPanel} p-5">
+      <!-- Progress bar -->
+      <div>
+        <div class="bg-border relative h-2.5 w-full overflow-hidden rounded-full">
+          <div class="absolute inset-0 flex">
+            <div style="width: {EDITING_PHASE_END}%" class={PHASE_THEMES.editing.bgSegment}></div>
+            <div
+              style="width: {FINALIZING_PHASE_END - EDITING_PHASE_END}%"
+              class={PHASE_THEMES.finalizing.bgSegment}
+            ></div>
+            <div
+              style="width: {100 - FINALIZING_PHASE_END}%"
+              class={PHASE_THEMES.publishing.bgSegment}
+            ></div>
+          </div>
+
           <div
-            style="width: {FINALIZING_PHASE_END - EDITING_PHASE_END}%"
-            class={PHASE_THEMES.finalizing.bgLight}
+            class="relative z-10 h-full rounded-full {phaseTheme.bgProgress} transition-all duration-500 ease-out"
+            style="width: {cycleProgress}%"
+          ></div>
+
+          <div
+            class="bg-foreground/30 absolute top-0 h-full w-px"
+            style="left: {EDITING_PHASE_END}%"
           ></div>
           <div
-            style="width: {100 - FINALIZING_PHASE_END}%"
-            class={PHASE_THEMES.publishing.bgLight}
+            class="bg-foreground/30 absolute top-0 h-full w-px"
+            style="left: {FINALIZING_PHASE_END}%"
           ></div>
         </div>
 
-        <!-- Progress fill -->
-        <div
-          class="relative z-10 h-full rounded-full transition-all duration-500 ease-out {phaseTheme.bgProgress}"
-          style="width: {cycleProgress}%"
-        ></div>
-
-        <!-- Phase markers -->
-        <div
-          class="absolute top-0 h-full w-0.5 bg-gray-600 opacity-60 dark:bg-gray-300 dark:opacity-70"
-          style="left: {EDITING_PHASE_END}%"
-        ></div>
-        <div
-          class="absolute top-0 h-full w-0.5 bg-gray-600 opacity-60 dark:bg-gray-300 dark:opacity-70"
-          style="left: {FINALIZING_PHASE_END}%"
-        ></div>
-      </div>
-
-      <div class="text-muted-foreground mt-1 flex items-center justify-between text-xs">
-        <span>{semesterInfo.displayStart}</span>
-        <span class="font-medium">{cycleProgress}% abgeschlossen</span>
-        <span>{semesterInfo.displayEnd}</span>
-      </div>
-    </div>
-
-    <!-- Current Phase Information -->
-    <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <div
-        class="rounded-lg border border-l-4 border-gray-200 dark:border-gray-700 {phaseTheme.border} {phaseTheme.bgLight} p-4 md:col-span-2"
-      >
-        <div class="mb-2 flex items-center justify-between">
-          <h4 class="font-medium {phaseTheme.textPrimary}">
-            {phaseContent.icon}
-            {phaseContent.title}
-          </h4>
-          {#if !isPublishingPhase}
-            <button
-              class="flex items-center gap-1 text-xs {phaseTheme.textButton} transition-colors {phaseTheme.textButtonHover} focus:ring-2 focus:outline-none focus:ring-{phaseTheme.primary}-500 rounded focus:ring-offset-1"
-              onclick={toggleProcessExplanation}
-              aria-expanded={showProcessExplanation}
-              aria-label="Prozess-Erklärung {showProcessExplanation ? 'ausblenden' : 'anzeigen'}"
-            >
-              <Info class="size-3" />
-              <span>Info</span>
-              {#if showProcessExplanation}
-                <ChevronUp class="size-3" />
-              {:else}
-                <ChevronDown class="size-3" />
-              {/if}
-            </button>
-          {/if}
+        <div class="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
+          <span>{semesterInfo.displayStart}</span>
+          <span class="font-medium tabular-nums">{cycleProgress}% abgeschlossen</span>
+          <span>{semesterInfo.displayEnd}</span>
         </div>
-        <p class="text-sm {phaseTheme.textSecondary}">
+      </div>
+
+      <!-- Phase description with accent border -->
+      <div class="border-l-2 {phaseTheme.accent} pl-4">
+        <h4 class="text-sm font-medium {phaseTheme.textPrimary}">
+          {phaseContent.title}
+        </h4>
+        <p class="mt-1 text-sm {phaseTheme.textSecondary}">
           {phaseContent.description}
         </p>
-      </div>
-      <div
-        class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/50"
-      >
-        <h5 class="text-foreground mb-2 font-medium">{phaseContent.actionTitle}</h5>
-        <ul class="text-muted-foreground space-y-1 text-sm">
-          {#each phaseContent.actions as action, index (index)}
-            <li>• {action}</li>
-          {/each}
-        </ul>
-      </div>
-    </div>
 
-    <!-- Process Explanation (appears when toggled) -->
-    {#if showProcessExplanation}
-      <div
-        class="mt-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/50"
-      >
-        <h5 class="mb-3 font-medium text-gray-900 dark:text-gray-100">
-          So funktioniert der Bearbeitungszyklus
-        </h5>
-        <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+        {#if phaseContent.actions.length > 0}
+          <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            {#each phaseContent.actions as action, index (index)}
+              <li class="text-muted-foreground flex items-center gap-1.5 text-xs">
+                <span class="size-1 rounded-full bg-current opacity-60"></span>
+                {action}
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+
+      <!-- Cycle explanation — always visible when expanded, no nested toggle -->
+      <details class="group/details">
+        <summary
+          class="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1.5 text-xs font-medium transition-colors select-none"
+        >
+          <span>So funktioniert der Bearbeitungszyklus</span>
+          <ChevronDown class="size-3 transition-transform group-open/details:rotate-180" />
+        </summary>
+        <div class="text-muted-foreground mt-3 space-y-2 text-sm">
           <p>
-            <strong>Bearbeitungsphase (bis {EDITING_PHASE_END} % des Semesters):</strong> Sie können Ihre
+            <strong class="text-foreground font-medium"
+              >Bearbeitungsphase (bis {EDITING_PHASE_END}%):</strong
+            >
             Module bearbeiten. Änderungen sind nur für Sie und berechtigte Personen sichtbar.
           </p>
           <p>
-            <strong>Finalisierungsphase (bis {FINALIZING_PHASE_END} % des Semesters):</strong> Letzte
-            Gelegenheit für Änderungen. Bereiten Sie Module für die Veröffentlichung vor.
+            <strong class="text-foreground font-medium"
+              >Finalisierung (bis {FINALIZING_PHASE_END}%):</strong
+            >
+            Letzte Gelegenheit für Änderungen. Module für die Veröffentlichung vorbereiten.
           </p>
           <p>
-            <strong
-              >Veröffentlichung (die letzten {(100 - FINALIZING_PHASE_END).toFixed(1)} %):</strong
-            > Alle finalisierten Änderungen werden automatisch im Modulhandbuch und der Modulsuche veröffentlicht.
+            <strong class="text-foreground font-medium"
+              >Veröffentlichung ({(100 - FINALIZING_PHASE_END).toFixed(1)}%):</strong
+            >
+            Alle finalisierten Änderungen werden im Modulhandbuch und der Modulsuche veröffentlicht.
           </p>
         </div>
-      </div>
-    {/if}
-  </div>
-{/if}
+      </details>
+    </div>
+  {/if}
+</div>

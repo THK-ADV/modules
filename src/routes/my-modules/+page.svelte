@@ -52,94 +52,81 @@
   import SuccessMessage from '$lib/components/success-message.svelte'
   import { Button } from '$lib/components/ui/button'
   import type { ModuleDraft } from '$lib/types/module-draft'
-  import { ChartLine, ChevronDown, ChevronUp } from '@lucide/svelte'
+  import { BookOpen, Plus } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ModuleDraftTitleCell from './(components)/module-draft-title-cell.svelte'
-
+  import * as Empty from '$lib/components/ui/empty/index.js'
   let { data }: PageProps = $props()
+
+  const canCreateModules = $derived(data.userInfo?.hasExtendedModuleEditPermissions ?? false)
 
   let moduleDrafts = $derived(data.moduleDrafts)
   let hasAdditionalModules = $derived(data.hasAdditionalModules)
-
-  let showSuccessMessage = $state(false)
-  let isPublishingPhase = $state(false)
-  let showSemesterProgress = $state(false)
+  let showSuccessMessage = $state<string | undefined>(undefined)
 
   $effect(() => {
-    if (browser && page.url.searchParams.has('updated')) {
-      showSuccessMessage = true
+    const action = page.url.searchParams.get('action')
+    if (browser && action) {
+      showSuccessMessage =
+        action === 'updated' ? 'Modul wurde aktualisiert' : 'Modul wurde erstellt'
 
       // clean up URL after showing message
       const url = new URL(page.url)
-      url.searchParams.delete('updated')
+      url.searchParams.delete('action')
       goto(url.toString(), { replaceState: true, noScroll: true })
-
-      // auto-hide after 5 seconds
-      setTimeout(() => {
-        showSuccessMessage = false
-      }, 5000)
     }
   })
+
+  async function createNewModule() {
+    await goto(`/my-modules/${crypto.randomUUID()}/general?mode=create`)
+  }
 </script>
 
-<div class="w-full max-w-none space-y-8">
-  <!-- Success message -->
+<div class="flex h-full flex-1 flex-col space-y-8">
   {#if showSuccessMessage}
     <SuccessMessage message={showSuccessMessage} />
   {/if}
 
-  {#if moduleDrafts.length > 0}
-    <div class="space-y-8">
-      <div class="space-y-2">
-        <h2 class="text-3xl font-bold tracking-tight">Meine Module</h2>
-        <p class="text-muted-foreground text-sm wrap-break-word">
-          Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
-          Genehmigung freigeben. Eine Genehmigung ist nur bei <a
-            class="text-primary underline hover:no-underline"
-            href="/help#review-process"
-            target="_blank"
-            rel="noopener noreferrer">Änderungen bestimmter Attribute</a
-          >
-          notwendig.
-        </p>
-        {#if !isPublishingPhase}
-          <Button
-            variant="ghost"
-            size="sm"
-            onclick={() => (showSemesterProgress = !showSemesterProgress)}
-            class="h-auto p-2 text-sm"
-          >
-            <ChartLine class="mr-1 size-4" />
-            {showSemesterProgress
-              ? 'Erklärung zum Bearbeitungszyklus ausblenden'
-              : 'Erklärung zum Bearbeitungszyklus anzeigen'}
-            {#if showSemesterProgress}
-              <ChevronUp class="ml-1 size-4" />
-            {:else}
-              <ChevronDown class="ml-1 size-4" />
-            {/if}
-          </Button>
-        {/if}
-      </div>
-    </div>
-
-    <SemesterCycleProgress
-      bind:isPublishingPhase
-      showComponent={showSemesterProgress || isPublishingPhase}
-    />
-
-    {#if !isPublishingPhase}
-      <div class="w-full space-y-4">
-        <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} />
-      </div>
-    {/if}
-  {:else}
-    <div class="space-y-2">
-      <h2 class="text-2xl font-bold tracking-tight">Meine Module</h2>
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0 space-y-2">
+      <h2 class="text-3xl font-bold tracking-tight">Meine Module</h2>
       <p class="text-muted-foreground text-sm wrap-break-word">
-        Sie werden in keinem Modul als Modulverantwortliche*r geführt oder haben keine zugeteilten
-        Module.
+        Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
+        Genehmigung freigeben. Eine Genehmigung ist nur bei <a
+          class="text-foreground decoration-muted-foreground/40 hover:decoration-foreground underline underline-offset-2 transition-colors"
+          href="/help#review-process"
+          target="_blank"
+          rel="noopener noreferrer">Änderungen bestimmter Attribute</a
+        >
+        notwendig.
       </p>
     </div>
+    {#if canCreateModules}
+      <Button onclick={createNewModule} class="shrink-0 gap-2">
+        <Plus class="size-4" />
+        Neues Modul
+      </Button>
+    {/if}
+  </div>
+
+  {#if moduleDrafts.length > 0}
+    <SemesterCycleProgress />
+  {/if}
+
+  {#if moduleDrafts.length > 0}
+    <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} />
+  {:else}
+    <Empty.Root class="border-border/70 bg-muted/30 min-h-[320px] border">
+      <Empty.Header class="gap-3">
+        <Empty.Media variant="icon" class="bg-muted text-muted-foreground size-14 rounded-2xl">
+          <BookOpen class="size-7" />
+        </Empty.Media>
+        <Empty.Title>Keine Module zugewiesen</Empty.Title>
+        <Empty.Description class="max-w-sm">
+          Sie werden derzeit in keinem Modul als Modulverantwortliche*r geführt und haben keine über
+          Rollen zugeteilten Module.
+        </Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
   {/if}
 </div>

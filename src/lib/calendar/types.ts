@@ -80,7 +80,7 @@ export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
   lab: '#2AA89E',
   seminar: '#F0A870',
   exercise: '#7059AA',
-  tutorial: '#EC7E3C'
+  tutorial: '#B43092'
 }
 
 /**

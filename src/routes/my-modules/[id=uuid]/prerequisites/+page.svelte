@@ -22,13 +22,18 @@
   // svelte-ignore state_referenced_locally
   const assessmentPrerequisiteStatus = data.fieldStatuses?.assessmentPrerequisite
 
-  const moduleOptions = moduleUpdateState.modules
-    .filter((m) => m.id !== data.module.id) // exclude self
-    .map((m) => ({
+  const moduleOptions = $derived.by(() => {
+    const module = data.module
+    const modules =
+      module !== null
+        ? moduleUpdateState.modules.filter((m) => m.id !== module.id)
+        : moduleUpdateState.modules
+    return modules.map((m) => ({
       id: m.id,
       label: fmtModule(m),
       abbrev: m.abbreviation
     }))
+  })
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
@@ -183,8 +188,8 @@
   }
 </script>
 
-<div class="space-y-10">
-  <div class="space-y-4">
+<div class="space-y-8">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Voraussetzungen</h3>
       <p class="text-muted-foreground text-sm">
@@ -196,7 +201,7 @@
 
   <!-- Recommended Prerequisites -->
   <div
-    class="space-y-4 {recommendedPrerequisitesStatus
+    class="space-y-5 {recommendedPrerequisitesStatus
       ? getFieldHighlightClasses(recommendedPrerequisitesStatus)
       : ''}"
   >
@@ -216,7 +221,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <Form.Field {form} name="recommendedPrerequisites.text">
         <Form.Control>
           {#snippet children({ props })}
@@ -250,7 +255,7 @@
 
   <!-- Required Prerequisites -->
   <div
-    class="space-y-4 {requiredPrerequisitesStatus
+    class="space-y-5 {requiredPrerequisitesStatus
       ? getFieldHighlightClasses(requiredPrerequisitesStatus)
       : ''}"
   >
@@ -271,7 +276,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <Form.Field {form} name="requiredPrerequisites.text">
         <Form.Control>
           {#snippet children({ props })}
@@ -305,7 +310,7 @@
 
   <!-- Attendance Requirement -->
   <div
-    class="space-y-4 {attendanceRequirementStatus
+    class="space-y-5 {attendanceRequirementStatus
       ? getFieldHighlightClasses(attendanceRequirementStatus)
       : ''}"
   >
@@ -330,7 +335,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <div class="flex items-center space-x-2">
         <Switch id="attendanceRequirement" bind:checked={attendanceRequirement.value} />
         <Label for="attendanceRequirement">Anwesenheitspflicht</Label>
@@ -391,7 +396,7 @@
 
   <!-- Assessment Prerequisite -->
   <div
-    class="space-y-4 {assessmentPrerequisiteStatus
+    class="space-y-5 {assessmentPrerequisiteStatus
       ? getFieldHighlightClasses(assessmentPrerequisiteStatus)
       : ''}"
   >
@@ -417,7 +422,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <div class="flex items-center space-x-2">
         <Switch id="assessmentPrerequisite" bind:checked={assessmentPrerequisite.value} />
         <Label for="assessmentPrerequisite">Prüfungsvorleistung</Label>

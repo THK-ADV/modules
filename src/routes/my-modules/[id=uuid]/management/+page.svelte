@@ -38,7 +38,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Verantwortliche</h3>
       <p class="text-muted-foreground text-sm">
@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h4 class="text-foreground text-base font-medium">Modulverantwortung und Lehre</h4>
       <p class="text-muted-foreground text-sm">
@@ -55,7 +55,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <MultiSelectCombobox
         {form}
         name="management"
@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h4 class="text-foreground text-base font-medium">Bearbeitungsrechte</h4>
       <p class="text-muted-foreground text-sm">
@@ -88,7 +88,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <MultiSelectCombobox
         {form}
         name="updatePermissions"

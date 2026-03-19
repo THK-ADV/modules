@@ -401,7 +401,7 @@
 
   <!-- Error Message Display -->
   {#if page.form?.message && showError}
-    <div class="border-destructive/20 bg-destructive/5 rounded-md border p-3">
+    <div class="border-destructive/30 bg-destructive/10 rounded-md border p-3">
       <div class="flex items-start justify-between">
         <div class="flex">
           <div class="shrink-0">

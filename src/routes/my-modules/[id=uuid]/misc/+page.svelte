@@ -22,18 +22,27 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
-  const withOutSelf = moduleUpdateState.modules.filter(({ id }) => id !== data.module.id)
+  const withOutSelf = $derived.by(() => {
+    const module = data.module
+    return module !== null
+      ? moduleUpdateState.modules.filter(({ id }) => id !== module.id)
+      : moduleUpdateState.modules
+  })
 
-  const moduleOptions = withOutSelf.map((m) => ({
-    id: m.id,
-    label: fmtModule(m),
-    abbrev: m.abbreviation
-  }))
+  const moduleOptions = $derived(
+    withOutSelf.map((m) => ({
+      id: m.id,
+      label: fmtModule(m),
+      abbrev: m.abbreviation
+    }))
+  )
 
-  const parentOptions = withOutSelf.map((m) => ({
-    id: m.id,
-    deLabel: fmtModule(m)
-  }))
+  const parentOptions = $derived(
+    withOutSelf.map((m) => ({
+      id: m.id,
+      deLabel: fmtModule(m)
+    }))
+  )
 
   const moduleRelationTypeOptions = [
     { id: 'none', deLabel: 'Keine Beziehung' },
@@ -164,7 +173,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Sonstige Informationen</h3>
       <p class="text-muted-foreground text-sm">
@@ -174,7 +183,7 @@
     </div>
   </div>
 
-  <div class="space-y-4 {participantsStatus ? getFieldHighlightClasses(participantsStatus) : ''}">
+  <div class="space-y-5 {participantsStatus ? getFieldHighlightClasses(participantsStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
         <h4 class="text-foreground text-base font-medium">Teilnehmerbegrenzung (optional)</h4>
@@ -185,7 +194,7 @@
       <p class="text-muted-foreground text-sm">Wird häufig für Wahlmodule bzw. WPFs verwendet.</p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <div class="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
         <Form.Field {form} name="participants.min">
           <Form.Control>
@@ -222,7 +231,7 @@
     </div>
   </div>
 
-  <div class="space-y-4 {taughtWithStatus ? getFieldHighlightClasses(taughtWithStatus) : ''}">
+  <div class="space-y-5 {taughtWithStatus ? getFieldHighlightClasses(taughtWithStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
         <h4 class="text-foreground text-base font-medium">Gemeinsame Veranstaltung (optional)</h4>
@@ -236,7 +245,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <MultiSelectCombobox
         {form}
         name="taughtWith"
@@ -251,7 +260,7 @@
   </div>
 
   <div
-    class="space-y-4 {moduleRelationStatus ? getFieldHighlightClasses(moduleRelationStatus) : ''}"
+    class="space-y-5 {moduleRelationStatus ? getFieldHighlightClasses(moduleRelationStatus) : ''}"
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
@@ -267,7 +276,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <Combobox
         {form}
         name="moduleRelation"

@@ -53,7 +53,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Lehr- und Lernmethoden</h3>
       <p class="text-muted-foreground text-sm">Die Lehr- und Lernmethoden des Moduls.</p>
@@ -62,7 +62,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <MarkdownEditor
       {form}
       name="deContent.teachingAndLearningMethods"

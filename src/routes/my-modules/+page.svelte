@@ -49,6 +49,7 @@
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
+  import SuccessMessage from '$lib/components/success-message.svelte'
   import { Button } from '$lib/components/ui/button'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { ChartLine, ChevronDown, ChevronUp } from '@lucide/svelte'
@@ -84,36 +85,7 @@
 <div class="w-full max-w-none space-y-8">
   <!-- Success message -->
   {#if showSuccessMessage}
-    <div class="rounded-md border border-green-200 bg-green-50 p-4">
-      <div class="flex">
-        <svg class="size-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <div class="ml-3 flex-1">
-          <h3 class="text-sm font-medium text-green-800">Modul erfolgreich aktualisiert</h3>
-        </div>
-        <div class="ml-auto pl-3">
-          <button
-            type="button"
-            class="inline-flex rounded-md bg-green-50 p-1.5 text-green-500 hover:bg-green-100 focus:ring-2 focus:ring-green-600 focus:ring-offset-2 focus:ring-offset-green-50 focus:outline-none"
-            onclick={() => (showSuccessMessage = false)}
-            aria-label="Erfolgsmeldung schließen"
-          >
-            <svg class="size-4" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fill-rule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
+    <SuccessMessage message={showSuccessMessage} />
   {/if}
 
   {#if moduleDrafts.length > 0}

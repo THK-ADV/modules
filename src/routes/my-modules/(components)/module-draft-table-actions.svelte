@@ -123,7 +123,8 @@
         Icon: SquarePen,
         onclick: () => goto(`${page.url.pathname}/${moduleId}`),
         variant: 'outline',
-        className: 'border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700',
+        className:
+          'border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700 dark:border-blue-500/50 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300',
         disabled: isPerformingAction
       })
     }
@@ -140,7 +141,8 @@
           }
         },
         variant: 'outline',
-        className: 'border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700',
+        className:
+          'border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-green-500/50 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300',
         disabled: isPerformingAction
       })
     }
@@ -157,7 +159,8 @@
           }
         },
         variant: 'outline',
-        className: 'border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800',
+        className:
+          'border-amber-400 text-amber-700 hover:bg-amber-50 hover:text-amber-800 dark:border-amber-500/50 dark:text-amber-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-300',
         disabled: isPerformingAction
       })
 
@@ -173,7 +176,8 @@
             }
           },
           variant: 'outline',
-          className: 'border-purple-400 text-purple-700 hover:bg-purple-50 hover:text-purple-800',
+          className:
+            'border-purple-400 text-purple-700 hover:bg-purple-50 hover:text-purple-800 dark:border-purple-500/50 dark:text-purple-400 dark:hover:bg-purple-950/40 dark:hover:text-purple-300',
           disabled: isPerformingAction
         })
       }
@@ -191,7 +195,8 @@
           }
         },
         variant: 'outline',
-        className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800',
+        className:
+          'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-200',
         disabled: isPerformingAction
       })
     }
@@ -213,7 +218,8 @@
           }
         },
         variant: 'outline',
-        className: 'border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800',
+        className:
+          'border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300',
         disabled: isPerformingAction
       })
     }
@@ -249,11 +255,16 @@
   <DropdownMenu.Item
     class={cn(
       'flex cursor-pointer items-center gap-2 font-medium',
-      key === 'delete' && 'text-red-600 focus:text-red-700',
-      key === 'publish' && 'text-green-600 focus:text-green-700',
-      key === 'requestReview' && 'text-amber-600 focus:text-amber-700',
-      key === 'requestFastForwardReview' && 'text-purple-600 focus:text-purple-700',
-      key === 'edit' && 'text-blue-600 focus:text-blue-700',
+      key === 'delete' &&
+        'text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300',
+      key === 'publish' &&
+        'text-green-600 focus:text-green-700 dark:text-green-400 dark:focus:text-green-300',
+      key === 'requestReview' &&
+        'text-amber-600 focus:text-amber-700 dark:text-amber-400 dark:focus:text-amber-300',
+      key === 'requestFastForwardReview' &&
+        'text-purple-600 focus:text-purple-700 dark:text-purple-400 dark:focus:text-purple-300',
+      key === 'edit' &&
+        'text-blue-600 focus:text-blue-700 dark:text-blue-400 dark:focus:text-blue-300',
       disabled && 'pointer-events-none cursor-not-allowed opacity-50'
     )}
     {onclick}
@@ -295,7 +306,7 @@
               {...props}
               variant="outline"
               size="sm"
-              class="size-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50"
+              class="size-7 border-gray-200 p-0 shadow-sm hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:border-gray-600 dark:hover:bg-gray-800"
               disabled={isPerformingAction}
             >
               <span class="sr-only">Aktionen öffnen</span>
@@ -316,5 +327,5 @@
   </div>
 {:else}
   <!-- Show empty state or disabled button when no actions available -->
-  <div class="text-muted-foreground text-sm italic">Keine</div>
+  <div class="text-muted-foreground text-sm italic">—</div>
 {/if}

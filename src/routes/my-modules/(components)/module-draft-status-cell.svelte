@@ -78,7 +78,7 @@
         <!-- The shrink-0 will prevent the icon from shrinking if space is limited -->
         <Icon
           class="mr-2 size-4 shrink-0 {state === 'waiting_for_changes'
-            ? 'text-amber-500'
+            ? 'text-amber-500 dark:text-amber-400'
             : 'text-muted-foreground'}"
         />
         <span class="truncate text-sm font-medium">{label}</span>

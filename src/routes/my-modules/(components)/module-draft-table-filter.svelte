@@ -96,7 +96,7 @@
           onclick={reset}
           variant="outline"
           size="sm"
-          class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
+          class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-destructive/30 h-8 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300"
         >
           <X class="size-4" />
           Alle Filter zurücksetzen

@@ -147,7 +147,7 @@
           <Table.Row
             data-state={row.getIsSelected() && 'selected'}
             class={row.original.moduleDraftState === 'waiting_for_changes'
-              ? 'border-l-4 border-l-amber-400 bg-amber-50/50 hover:bg-amber-50/70'
+              ? 'border-l-4 border-l-amber-400 bg-amber-50/50 hover:bg-amber-50/70 dark:border-l-amber-500 dark:bg-amber-950/30 dark:hover:bg-amber-950/40'
               : ''}
           >
             {#each row.getVisibleCells() as cell (cell.id)}

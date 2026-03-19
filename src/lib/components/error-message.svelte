@@ -18,7 +18,7 @@
 
 <!-- TODO: use this everywhere instead custom messages -->
 {#if message}
-  <div class="border-destructive/20 bg-destructive/5 mb-2 flex gap-2 rounded-md border p-2">
+  <div class="border-destructive/30 bg-destructive/10 mb-2 flex gap-2 rounded-md border p-2">
     <TriangleAlert class="text-destructive mt-1 size-4 shrink-0" />
     <div class="flex-1">
       <div class="flex items-center justify-between">

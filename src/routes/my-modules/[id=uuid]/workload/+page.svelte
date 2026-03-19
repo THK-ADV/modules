@@ -96,7 +96,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Workload</h3>
       <p class="text-muted-foreground text-sm">
@@ -108,8 +108,8 @@
 
     <div
       class="rounded-md border p-4 {hasWorkloadError
-        ? 'border-destructive bg-destructive/5'
-        : 'border-gray-200'}"
+        ? 'border-destructive/50 bg-destructive/5'
+        : 'border-border'}"
     >
       <div class="space-y-2 text-sm">
         {#if allowedHoursCalculations.length > 1}
@@ -132,8 +132,9 @@
                 <div class="space-x-0.5">
                   <span class="font-medium">Selbststudium:</span>
                   <span
-                    class={calc.selfStudy < 0 ? 'text-destructive font-semibold' : 'text-green-600'}
-                    >{calc.selfStudy} Stunden</span
+                    class={calc.selfStudy < 0
+                      ? 'text-destructive font-semibold'
+                      : 'text-green-600 dark:text-green-400'}>{calc.selfStudy} Stunden</span
                   >
                 </div>
               </div>
@@ -152,7 +153,8 @@
             <span
               class={allowedHoursCalculations[0].selfStudy < 0
                 ? 'text-destructive font-semibold'
-                : 'text-green-600'}>{allowedHoursCalculations[0].selfStudy} Stunden</span
+                : 'text-green-600 dark:text-green-400'}
+              >{allowedHoursCalculations[0].selfStudy} Stunden</span
             >
           </div>
         {:else}
@@ -168,7 +170,7 @@
       </div>
 
       {#if hasWorkloadError}
-        <div class="border-destructive bg-destructive/10 mt-3 rounded-md border p-3">
+        <div class="border-destructive/40 bg-destructive/10 mt-3 rounded-md border p-3">
           <p class="text-destructive text-sm">
             {#if $errors.workload?._errors?.[0]}
               {$errors.workload._errors[0]}
@@ -181,35 +183,33 @@
     </div>
 
     {#if consideredScheduleEntries.length > 0}
-      <div
-        class="rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
-      >
-        <h4 class="mb-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+      <div class="bg-muted/50 rounded-md border p-4">
+        <h4 class="text-foreground mb-2 text-sm font-medium">
           Im Stundenplan berücksichtigte Einträge:
         </h4>
         <div class="flex flex-wrap gap-2">
           {#each consideredScheduleEntries as entry (entry)}
             <span
-              class="inline-flex items-center rounded-full bg-slate-600 px-2.5 py-0.5 text-xs font-medium text-white dark:bg-slate-300 dark:text-slate-900"
+              class="bg-primary text-primary-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
             >
               {entry}
             </span>
           {/each}
         </div>
-        <p class="mt-2 text-xs text-slate-700 dark:text-slate-300">
+        <p class="text-muted-foreground mt-2 text-xs">
           Einträge mit einem Workload größer als 0 werden automatisch im Stundenplan berücksichtigt.
         </p>
       </div>
     {:else}
-      <div class="rounded-md border border-gray-200 bg-gray-50 p-4">
-        <p class="text-sm text-gray-600">
+      <div class="bg-muted/50 rounded-md border p-4">
+        <p class="text-muted-foreground text-sm">
           Noch keine Einträge für den Stundenplan (alle Workload-Werte sind 0)
         </p>
       </div>
     {/if}
   </div>
 
-  <div class="space-y-4 {workloadStatus ? getFieldHighlightClasses(workloadStatus) : ''}">
+  <div class="space-y-5 {workloadStatus ? getFieldHighlightClasses(workloadStatus) : ''}">
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
         <h4 class="text-foreground text-base font-medium">Stunden pro Kategorie</h4>

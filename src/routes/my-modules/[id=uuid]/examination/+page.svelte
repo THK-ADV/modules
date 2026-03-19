@@ -31,7 +31,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Prüfungsleistungen</h3>
       <p class="text-muted-foreground text-sm">
@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <AssessmentMethodsForm
       {form}
       name="assessmentMethods"
@@ -52,7 +52,7 @@
     />
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h4 class="text-foreground text-base font-medium">Prüfer</h4>
       <p class="text-muted-foreground text-sm">
@@ -60,7 +60,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <ComboboxField
         {form}
         name="firstExaminer"
@@ -87,7 +87,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h4 class="text-foreground text-base font-medium">Prüfungsorganisation</h4>
       <p class="text-muted-foreground text-sm">
@@ -95,7 +95,7 @@
       </p>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-5">
       <MultiSelectCombobox
         {form}
         name="examPhases"

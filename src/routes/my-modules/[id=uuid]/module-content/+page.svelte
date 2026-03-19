@@ -53,7 +53,7 @@
 </script>
 
 <div class="space-y-8">
-  <div class="space-y-4">
+  <div class="space-y-5">
     <div class="space-y-2 border-b pb-4">
       <h3 class="text-foreground text-lg font-medium">Modulinhalte</h3>
       <p class="text-muted-foreground text-sm">
@@ -64,7 +64,7 @@
     </div>
   </div>
 
-  <div class="space-y-4">
+  <div class="space-y-5">
     <MarkdownEditor
       {form}
       name="deContent.content"

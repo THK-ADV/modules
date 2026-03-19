@@ -27,12 +27,48 @@
 
   let { children, data, params }: LayoutProps = $props()
 
-  // svelte-ignore state_referenced_locally
-  routesMap.selectedModule = { id: data.module.id, title: data.module.metadata.title }
-
   const id = $derived(params.id)
 
-  const isReviewMode = $derived.by(() => page.url.searchParams.get('mode') === 'review')
+  // svelte-ignore state_referenced_locally
+  if (data.mode === 'edit' || data.mode === 'review') {
+    routesMap.selectedModule = { id: id, title: data.module.metadata.title }
+  } else {
+    routesMap.selectedModule = { id: id, title: 'Neues Modul' }
+  }
+
+  const isReviewMode = $derived(data.mode === 'review')
+
+  const title = $derived.by(() => {
+    switch (data.mode) {
+      case 'review':
+        return 'Modul prüfen'
+      case 'edit':
+        return 'Modul bearbeiten'
+      default:
+        return 'Neues Modul erstellen'
+    }
+  })
+
+  const description = $derived.by(() => {
+    switch (data.mode) {
+      case 'review':
+        return 'Prüfen Sie die Modulinformationen. Änderungen können gespeichert werden; die Seite lädt danach neu.'
+      case 'edit':
+        return 'Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.'
+      default:
+        return 'Füllen Sie alle erforderlichen Felder aus.'
+    }
+  })
+
+  const formAction = $derived.by(() => {
+    switch (data.mode) {
+      case 'create':
+        return `/my-modules/${id}?mode=create`
+      case 'edit':
+      case 'review':
+        return `/my-modules/${id}?mode=edit`
+    }
+  })
 
   let reviewInProgress = $state(false)
 
@@ -106,7 +142,7 @@
     onError: ({ result }) => {
       console.error('Form submission failed:', result)
     },
-    onUpdated: ({ form }) => {
+    onUpdated: async ({ form }) => {
       // redirect, if form submission was successful and no server error occurred
       if (form.valid && Object.keys(form.errors).length === 0 && !page.form?.message) {
         if (isReviewMode) {
@@ -114,7 +150,7 @@
             location.reload()
           }
         } else {
-          goto('/my-modules?updated=true')
+          await goto(`/my-modules?action=${data.mode === 'create' ? 'created' : 'updated'}`)
         }
       }
     }
@@ -336,7 +372,7 @@
     {:else if !hasChangesToSubmit}
       Keine Änderungen
     {:else}
-      Modul aktualisieren
+      {data.mode === 'create' ? 'Modul erstellen' : 'Modul aktualisieren'}
     {/if}
   </Button>
 {/snippet}
@@ -354,14 +390,8 @@
   <!-- Header -->
   <div class="flex items-start justify-between gap-4">
     <div class="min-w-0 flex-1 space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">
-        {isReviewMode ? 'Modul prüfen' : 'Modul bearbeiten'}
-      </h1>
-      <p class="text-muted-foreground wrap-break-word">
-        {isReviewMode
-          ? 'Prüfen Sie die Modulinformationen. Änderungen können gespeichert werden; die Seite lädt danach neu.'
-          : 'Bearbeiten Sie die Modulinformationen und speichern Sie Ihre Änderungen.'}
-      </p>
+      <h1 class="text-3xl font-bold tracking-tight">{title}</h1>
+      <p class="text-muted-foreground wrap-break-word">{description}</p>
     </div>
 
     {#if browser && dev}
@@ -389,19 +419,21 @@
   </div>
 
   <!-- Approval Status or Review Summary -->
-  <div class="min-w-0 flex-1 lg:max-w-4xl">
-    {#if isReviewMode}
-      <ModuleReviewSummary reviews={data.reviews} bind:reviewInProgress moduleId={id} />
-    {:else}
-      <ModuleApprovalStatus approvals={data.approvals} />
-    {/if}
-  </div>
+  {#if data.mode === 'review' || data.mode === 'edit'}
+    <div class="min-w-0 flex-1 lg:max-w-4xl">
+      {#if data.mode === 'review'}
+        <ModuleReviewSummary reviews={data.reviews} bind:reviewInProgress moduleId={id} />
+      {:else}
+        <ModuleApprovalStatus approvals={data.approvals} />
+      {/if}
+    </div>
+  {/if}
 
   <Separator />
 
   <!-- Error Message Display -->
   {#if page.form?.message && showError}
-    <div class="border-destructive/20 bg-destructive/5 rounded-md border p-3">
+    <div class="border-destructive/30 bg-destructive/10 rounded-md border p-3">
       <div class="flex items-start justify-between">
         <div class="flex">
           <div class="shrink-0">
@@ -446,7 +478,7 @@
 
   <form
     method="POST"
-    action="/my-modules/{id}"
+    action={formAction}
     use:enhance
     class={$submitting ? 'pointer-events-none opacity-75' : ''}
   >

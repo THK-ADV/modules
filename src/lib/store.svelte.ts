@@ -310,8 +310,9 @@ function createModuleUpdateState() {
         const res = await fetch(`/api/modules?source=all`)
         if (res.ok) {
           const xs: ModuleCore[] = await res.json()
-          xs.sort((a, b) => a.title.localeCompare(b.title))
-          modules = xs
+          const distinct = Array.from(new Map(xs.map((m) => [m.id, m])).values())
+          distinct.sort((a, b) => a.title.localeCompare(b.title))
+          modules = distinct
         }
       }
     },

@@ -84,6 +84,20 @@
       overflow: value.length - maxVisibleBadges
     }
   })
+
+  let sortedOptions = $derived.by(() => {
+    const selectedSet = new Set(value)
+    const selected: Option[] = []
+    const unselected: Option[] = []
+    for (const o of options) {
+      if (selectedSet.has(o.id)) {
+        selected.push(o)
+      } else {
+        unselected.push(o)
+      }
+    }
+    return [...selected, ...unselected]
+  })
 </script>
 
 {#snippet popoverContent(props: { name: string })}
@@ -137,7 +151,7 @@
           </Command.Item>
         {/if}
         <Command.Group>
-          {#each options as { id, label } (id)}
+          {#each sortedOptions as { id, label } (id)}
             <Command.Item value={label} onSelect={() => toggle(id)} {disabled}>
               <div
                 class={cn(

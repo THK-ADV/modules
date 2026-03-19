@@ -217,20 +217,23 @@
 /* Styles the "Ganztägig" and week number text in the axis */
 .fc .fc-timegrid-axis-cushion {
   color: var(--muted-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   text-transform: none; /* Prevents uppercase transformation */
   white-space: nowrap; /* Keeps "Ganztägig" on one line */
 }
 
-/* Styles time labels (06 Uhr, 07 Uhr, etc.) in the left column */
+/* Styles time labels (06 Uhr, 07 Uhr, etc.) in the left column.
+   Also acts as the full-hour line on the label grid (border-top),
+   kept here to avoid a duplicate selector further down. */
 .fc .fc-timegrid-slot-label {
   color: var(--muted-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   vertical-align: top; /* Aligns label to top of slot */
   padding-top: 0.125rem;
   border: none;
+  border-top: 1px solid var(--border);
 }
 
 /* Right-aligns time labels so they sit near the grid lines */
@@ -281,38 +284,6 @@
   border-top: 1px dashed hsl(240 3.7% 25%);
 }
 
-/*
- * Overlay full-hour grid lines on top of events so they remain visible
- * even when events span multiple hours. Each slot is 2.25rem tall,
- * so full hours repeat every 4.5rem (2 slots per hour).
- */
-.fc .fc-timegrid-col-frame {
-  position: relative;
-}
-.fc .fc-timegrid-col-frame::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 100;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    hsl(0 0% 0% / 0.15) 0,
-    hsl(0 0% 0% / 0.15) 1px,
-    transparent 1px,
-    transparent 4.5rem
-  );
-}
-.dark .fc .fc-timegrid-col-frame::after {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    hsl(0 0% 100% / 0.18) 0,
-    hsl(0 0% 100% / 0.18) 1px,
-    transparent 1px,
-    transparent 4.5rem
-  );
-}
-
 /* ---- All-Day Section ---- */
 
 /* Adds border below all-day row to separate from time grid */
@@ -341,7 +312,7 @@
 .fc .fc-daygrid-week-number {
   background-color: transparent;
   color: var(--muted-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 0.5rem;
   text-align: center;
@@ -355,8 +326,7 @@
 
 /* Base styles for calendar events with subtle shadow and hover animation */
 .fc .fc-event {
-  border-radius: calc(var(--radius) - 2px); /* Slightly smaller than card radius */
-  border: 1px solid rgba(0, 0, 0, 0.15); /* Small border to distinguish between events */
+  border: none;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -393,6 +363,34 @@
 /* Ensures time grid events have consistent border radius */
 .fc .fc-timegrid-event {
   border-radius: calc(var(--radius) - 2px);
+  margin-right: 2px;
+}
+
+/* Apple Calendar-style left color strip for schedule events in week/day views.
+   The color is passed from event-content-rendering.ts via --event-course-color.
+   Removes left rounding so the strip is a straight vertical line. The strip
+   itself lives on .event-content::before, absolutely positioned to cover the
+   full event height by anchoring to the nearest positioned ancestor
+   (.fc-timegrid-event, which FullCalendar already sets to position:relative).
+
+   NOTE: The [style*='--event-course-color'] attribute selectors below are
+   intentionally fragile — they match the exact inline style string emitted by
+   renderWeekViewEventContent(). If the template changes how it sets the CSS
+   custom property (e.g. whitespace, property order), update these selectors. */
+.fc .fc-timegrid-event:has(.event-content[style*='--event-course-color']) {
+  overflow: hidden;
+}
+
+.fc .fc-timegrid-event .event-content[style*='--event-course-color']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background-color: var(--event-course-color);
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Adds more padding to time grid events (they have more vertical space) */
@@ -415,11 +413,6 @@
 .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-time,
 .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title {
   color: var(--foreground);
-}
-
-.dark .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-time,
-.dark .fc .fc-dayGridMonth-view .fc-daygrid-dot-event .fc-event-title {
-  color: #ffffff;
 }
 
 /* Use tighter Apple-like vertical rhythm in all-day rows (month/week/day)
@@ -494,7 +487,7 @@
 /* Styles the horizontal line showing current time */
 .fc .fc-timegrid-now-indicator-line {
   border-color: var(--fc-now-indicator-color);
-  border-width: 2px; /* Thicker than default for visibility */
+  border-width: 1px;
 }
 
 /* Styles the arrow/dot at the left edge of the now indicator */
@@ -633,5 +626,13 @@
 
   .event-size-minimum {
     display: block;
+  }
+
+  .event-content[style*='--event-course-color'] {
+    padding-left: 0;
+  }
+
+  .event-content[style*='--event-course-color']::before {
+    display: none;
   }
 }

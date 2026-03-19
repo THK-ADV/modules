@@ -73,13 +73,47 @@
   let calendarEl: HTMLDivElement
   let calendar: Calendar | null = null
   let currentTitle = $state('')
+  let copyModifierHeld = false
   let dragStartedWithCopyModifier = false
   let isEventDragging = false
+  let isCopyDragging = $state(false)
+  let draggedEventEl: HTMLElement | null = null
+  let harnessObserver: MutationObserver | null = null
   // svelte-ignore state_referenced_locally
   let currentView = $state<CalendarView>(initialView)
 
+  function showOriginalEventAsCopy(show: boolean) {
+    const harness = draggedEventEl?.closest(
+      '.fc-timegrid-event-harness, .fc-daygrid-event-harness'
+    ) as HTMLElement | null
+    if (!harness) return
+
+    if (show) {
+      harness.style.visibility = 'visible'
+      harness.style.opacity = '0.5'
+      harnessObserver?.disconnect()
+      harnessObserver = new MutationObserver(() => {
+        if (harness.style.visibility === 'hidden') {
+          harnessObserver!.disconnect()
+          harness.style.visibility = 'visible'
+          harnessObserver!.observe(harness, { attributeFilter: ['style'] })
+        }
+      })
+      harnessObserver.observe(harness, { attributeFilter: ['style'] })
+    } else {
+      harnessObserver?.disconnect()
+      harnessObserver = null
+      harness.style.opacity = ''
+    }
+  }
+
   function setCopyCursorIndicator(active: boolean) {
     document.body.classList.toggle('calendar-copy-cursor', active)
+    const wasCopyDragging = isCopyDragging
+    isCopyDragging = active && isEventDragging
+    if (isCopyDragging !== wasCopyDragging) {
+      showOriginalEventAsCopy(isCopyDragging)
+    }
   }
 
   function isMacPlatform() {
@@ -117,18 +151,21 @@
     const startDate = initialDate
     const supportsCopy = Boolean(onEventCopy)
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isEventDragging) return
       if (event.key !== 'Alt' && event.key !== 'Control') return
-      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      copyModifierHeld = isCopyModifierPressed(event)
+      if (!isEventDragging) return
+      dragStartedWithCopyModifier = copyModifierHeld
       setCopyCursorIndicator(dragStartedWithCopyModifier)
     }
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (!isEventDragging) return
       if (event.key !== 'Alt' && event.key !== 'Control') return
-      dragStartedWithCopyModifier = isCopyModifierPressed(event)
+      copyModifierHeld = isCopyModifierPressed(event)
+      if (!isEventDragging) return
+      dragStartedWithCopyModifier = copyModifierHeld
       setCopyCursorIndicator(dragStartedWithCopyModifier)
     }
     const handleWindowBlur = () => {
+      copyModifierHeld = false
       dragStartedWithCopyModifier = false
       setCopyCursorIndicator(false)
     }
@@ -185,6 +222,9 @@
         timeGridWeek: {
           eventContent: renderWeekViewEventContent
         },
+        timeGridDay: {
+          eventContent: renderWeekViewEventContent
+        },
         dayGridMonth: {
           fixedWeekCount: false,
           dayMaxEvents: 6,
@@ -196,7 +236,7 @@
         return { html: `<span>KW ${arg.num}</span>` }
       },
       allDayContent: () => {
-        return { html: '<span>Ganztägig</span>' }
+        return { html: '<span>Tag</span>' }
       },
       buttonText: {
         today: 'Heute',
@@ -230,7 +270,8 @@
           return
         }
         isEventDragging = true
-        dragStartedWithCopyModifier = isCopyModifierPressed(arg.jsEvent)
+        draggedEventEl = arg.el
+        dragStartedWithCopyModifier = copyModifierHeld || isCopyModifierPressed(arg.jsEvent)
         setCopyCursorIndicator(dragStartedWithCopyModifier)
       },
       eventDrop: (arg) => {
@@ -249,7 +290,10 @@
 
         const isCopyGesture = dragStartedWithCopyModifier || isCopyModifierPressed(arg.jsEvent)
 
+        showOriginalEventAsCopy(false)
         isEventDragging = false
+        isCopyDragging = false
+        draggedEventEl = null
         dragStartedWithCopyModifier = false
         setCopyCursorIndicator(false)
 
@@ -271,7 +315,10 @@
         if (arg.event.extendedProps.source !== 'schedule') {
           return
         }
+        showOriginalEventAsCopy(false)
         isEventDragging = false
+        isCopyDragging = false
+        draggedEventEl = null
         dragStartedWithCopyModifier = false
         setCopyCursorIndicator(false)
       },
@@ -342,6 +389,7 @@
         window.removeEventListener('keyup', handleKeyUp)
         window.removeEventListener('blur', handleWindowBlur)
       }
+      harnessObserver?.disconnect()
       setCopyCursorIndicator(false)
       calendar?.destroy()
       calendar = null
@@ -400,7 +448,7 @@
       class="bg-muted rounded-lg p-1"
     >
       <ToggleGroup.Item
-        value="dayGridDay"
+        value="timeGridDay"
         class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
       >
         Tag
@@ -421,12 +469,16 @@
   </div>
 
   <!-- Calendar -->
-  <div bind:this={calendarEl} class="w-full"></div>
+  <div bind:this={calendarEl} class="w-full" class:calendar-copy-dragging={isCopyDragging}></div>
 </div>
 
 <style>
   :global(body.calendar-copy-cursor),
   :global(body.calendar-copy-cursor *) {
     cursor: copy !important;
+  }
+
+  .calendar-copy-dragging :global(.fc-event-mirror) {
+    opacity: 1 !important;
   }
 </style>

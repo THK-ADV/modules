@@ -81,7 +81,8 @@
       lhs.courseType !== rhs.courseType ||
       !posEqual(lhs.props.po, rhs.props.po) ||
       lhs.start.getTime() !== rhs.start.getTime() ||
-      lhs.end.getTime() !== rhs.end.getTime()
+      lhs.end.getTime() !== rhs.end.getTime() ||
+      !arraysEqual(lhs.props.lecturer, rhs.props.lecturer)
     )
   }
 
@@ -109,7 +110,8 @@
         .refine(({ start, end }) => end > start, {
           error: 'Ende der Veranstaltung muss nach dem Beginn liegen',
           path: ['end']
-        })
+        }),
+      lecturer: z.array(z.string())
     })
 
     return superForm(
@@ -126,12 +128,18 @@
         date: {
           start: entry?.start ?? null,
           end: entry?.end ?? null
-        }
+        },
+        lecturer: entry?.props?.lecturer ?? []
       },
       {
         SPA: true,
         dataType: 'json',
-        validators: zod4(schema)
+        validators: zod4(schema),
+        onChange: async (event) => {
+          if (event.paths.includes('module')) {
+            await updateLecturerByModule(event.get('module'))
+          }
+        }
       }
     )
   }
@@ -254,6 +262,12 @@
     deLabel: sp.label
   }))
 
+  const lecturerOptions = schedulePlanningFilter.identities.map((i) => ({
+    id: i.id,
+    label: i.label,
+    abbrev: i.label
+  }))
+
   function createCurrentEntry(): ScheduleEntryCreate {
     return {
       module: $formData.module,
@@ -265,7 +279,8 @@
           recommendedSemester,
           mandatory,
           specialization: null
-        }))
+        })),
+        lecturer: $formData.lecturer
       },
       start: new Date($formData.date.start!),
       end: new Date($formData.date.end!)
@@ -480,7 +495,23 @@
       poDialogOpen = false
     }
   }
+
+  async function updateLecturerByModule(module: string) {
+    const resp = await fetch('/schedule-planning?select=lecturers&module=' + module)
+    if (resp.ok) {
+      $formData.lecturer = await resp.json()
+    }
+  }
 </script>
+
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Delete' && mode.id === 'edit' && !poDialogOpen) {
+      e.preventDefault()
+      mode.onDelete(mode.entry.id)
+    }
+  }}
+/>
 
 <Dialog.Root
   open={true}
@@ -531,7 +562,12 @@
                   <span class="sr-only">Eintrag löschen</span>
                 </Button>
               </Tooltip.Trigger>
-              <Tooltip.Content>Eintrag löschen</Tooltip.Content>
+              <Tooltip.Content
+                >Eintrag löschen <kbd
+                  class="bg-muted text-muted-foreground ml-1 rounded px-1.5 py-0.5 text-xs font-medium"
+                  >Del</kbd
+                ></Tooltip.Content
+              >
             </Tooltip.Root>
           </div>
         {/if}
@@ -552,6 +588,17 @@
         options={moduleOptions}
         bind:value={$formData.module}
         width="w-[450px]"
+      />
+
+      <!-- Lecturer -->
+      <MultiSelectCombobox
+        {form}
+        {errors}
+        name="lecturer"
+        label="Dozierende"
+        options={lecturerOptions}
+        bind:value={$formData.lecturer}
+        maxVisibleBadges={3}
       />
 
       <!-- Date & Time -->
@@ -712,7 +759,7 @@
 
     <Separator class="my-1" />
 
-    <Dialog.Footer>
+    <Dialog.Footer class="gap-2">
       <Dialog.Close class={buttonVariants({ variant: 'outline' })}>Abbrechen</Dialog.Close>
       <Button type="button" onclick={handleSave} disabled={saveButtonDisabled}>Speichern</Button>
     </Dialog.Footer>

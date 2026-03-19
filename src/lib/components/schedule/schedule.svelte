@@ -20,40 +20,9 @@
     onEventResize,
     scheduleFilter,
     sourceEventCounts = $bindable(),
-    scheduleSource
+    scheduleEntries = $bindable([]),
+    scheduleFetcher
   }: ScheduleProps = $props()
-
-  let scheduleEntries: CalendarEvent<ScheduleEventProps>[] = $derived.by(() => {
-    switch (scheduleSource.id) {
-      case 'fetch':
-        return []
-      case 'data':
-        return scheduleSource.entries
-    }
-  })
-
-  // Passed to <Calendar> as the `datesSet` callback. Only produced for the 'fetch' source;
-  // undefined for 'data' (entries are already present). When the visible date range changes,
-  // FullCalendar calls this handler, which fetches the matching entries and writes them back
-  // to scheduleEntries so the calendar re-renders with up-to-date data.
-  const onDateRangeSet: ((info: DateRangeInfo) => void) | undefined = $derived.by(() => {
-    switch (scheduleSource.id) {
-      case 'fetch':
-        return async (info: DateRangeInfo) => {
-          try {
-            const res = await scheduleSource.fetch(info)
-            if (!res.ok) {
-              return
-            }
-            scheduleEntries = await res.json()
-          } catch {
-            // network or parse error — leave current entries in place
-          }
-        }
-      case 'data':
-        return undefined
-    }
-  })
 
   // Single derived function that tracks source toggles and filters
   const [filteredEvents, _sourceEventCounts] = $derived.by(() => {
@@ -119,31 +88,34 @@
       // Pattern: if an entry fails any active filter below, we `continue` and drop it; only entries
       // that never hit `continue` make it through to `allEvents.push(entry)` at the end of the loop.
       for (const entry of scheduleEntries) {
-        const { teachingUnits, courseType, module, moduleManagement, props, rooms } =
-          entry.extendedProps.raw
-
-        // Free-text search is constrained to the title of the event
-        if (searchString && !entry.title.toLowerCase().includes(lowerSearch)) {
+        // Free-text search is constrained to the title and abbreviation of the schedule entry
+        if (
+          searchString &&
+          !entry.title.toLowerCase().includes(lowerSearch) &&
+          !entry.extendedProps.raw.moduleAbbrev.toLowerCase().includes(lowerSearch)
+        ) {
           continue
         }
 
         // Teaching units filter
         if (selectedTeachingUnits.length > 0) {
-          if (!selectedTeachingUnits.some((tu) => teachingUnits.includes(tu))) {
+          if (
+            !selectedTeachingUnits.some((tu) => entry.extendedProps.raw.teachingUnits.includes(tu))
+          ) {
             continue
           }
         }
 
         // Course types filter
         if (selectedCourseTypes.length > 0) {
-          if (!selectedCourseTypes.includes(courseType)) {
+          if (!selectedCourseTypes.includes(entry.extendedProps.raw.courseType)) {
             continue
           }
         }
 
         // Modules filter
         if (selectedModules.length > 0) {
-          if (!selectedModules.includes(module)) {
+          if (!selectedModules.includes(entry.extendedProps.raw.module)) {
             continue
           }
         }
@@ -151,15 +123,17 @@
         // Study programs & semesters filter
         // If both are selected, both must match on the same PO entry.
         if (selectedStudyPrograms.length > 0 || selectedSemesters.length > 0) {
-          const matchingPoEntries = props.po.filter(({ po, recommendedSemester }) => {
-            const matchesProgram =
-              selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
-            const matchesSemester =
-              selectedSemesters.length === 0 ||
-              selectedSemesterNums.some((n) => recommendedSemester.includes(n))
+          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(
+            ({ po, recommendedSemester }) => {
+              const matchesProgram =
+                selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
+              const matchesSemester =
+                selectedSemesters.length === 0 ||
+                selectedSemesterNums.some((n) => recommendedSemester.includes(n))
 
-            return matchesProgram && matchesSemester
-          })
+              return matchesProgram && matchesSemester
+            }
+          )
 
           if (matchingPoEntries.length === 0) {
             continue
@@ -168,14 +142,20 @@
 
         // Identities filter
         if (selectedIdentities.length > 0) {
-          if (!selectedIdentities.some((id) => moduleManagement.some((m) => m.id === id))) {
+          if (
+            !selectedIdentities.some((id) =>
+              entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
+            )
+          ) {
             continue
           }
         }
 
         // Rooms filter
         if (selectedRooms.length > 0) {
-          if (!selectedRooms.some((r) => rooms.some(({ id }) => id === r))) {
+          if (
+            !selectedRooms.some((r) => entry.extendedProps.raw.rooms.some(({ id }) => id === r))
+          ) {
             continue
           }
         }
@@ -183,7 +163,7 @@
         // Module types filter
         // If both module types and study programs are selected, both must match on the same PO entry.
         if (selectedModuleTypes.length > 0) {
-          const matchingPoEntries = props.po.filter(({ po, mandatory }) => {
+          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(({ po, mandatory }) => {
             const matchesProgram =
               selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
             const matchesModuleType = selectedModuleTypes.some(
@@ -214,6 +194,20 @@
     sourceEventCounts.holiday = holiday
     sourceEventCounts.exam = exam
   })
+
+  async function onDateRangeSet(info: DateRangeInfo) {
+    try {
+      const res = await scheduleFetcher(info)
+      if (!res.ok) {
+        return
+      }
+      const entries: CalendarEvent<ScheduleEventProps>[] = await res.json()
+      scheduleEntries.length = 0
+      scheduleEntries.push(...entries)
+    } catch {
+      // network or parse error — leave current entries in place
+    }
+  }
 </script>
 
 <!-- Calendar -->

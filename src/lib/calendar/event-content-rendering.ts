@@ -1,6 +1,6 @@
-import { fmtCourseType, type CourseType, type ScheduleEntry } from '$lib/types/schedule'
+import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
-import { EVENT_SOURCE_COLORS } from './types'
+import { COURSE_TYPE_COLORS } from './types'
 
 /**
  * Create an SVG icon from a path or an array of paths.
@@ -19,31 +19,6 @@ function createIcon(paths: string | string[]): string {
 }
 
 /**
- * Course type color mappings for badge styling.
- * Solid backgrounds with white text for reliable contrast on teal event blocks
- * in both light and dark modes.
- */
-const COURSE_TYPE_COLORS: Record<CourseType, string> = {
-  lecture: 'bg-orange-500 text-white',
-  lab: 'bg-emerald-600 text-white',
-  exercise: 'bg-slate-600 text-white',
-  seminar: 'bg-sky-600 text-white',
-  tutorial: 'bg-violet-600 text-white'
-}
-
-/**
- * Create a distinctive badge for course type with color coding.
- * Uses solid backgrounds with white text for crisp contrast on teal event blocks.
- * @param courseType - The course type.
- * @param shortLabel - The short label to display in the badge.
- * @returns The badge as a string.
- */
-function createCourseTypeBadge(courseType: CourseType, shortLabel: string): string {
-  const styles = COURSE_TYPE_COLORS[courseType]
-  return `<div class="inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 ${styles}"><span class="text-[0.65rem] font-bold uppercase tracking-wider">${shortLabel}</span></div>`
-}
-
-/**
  * Create an info row with muted styling for better visual hierarchy.
  * @param icon - The icon to display.
  * @param text - The text to display.
@@ -55,6 +30,27 @@ function createInfoRow(icon: string, text: string): string {
 
 function createShortInfoRow(text: string): string {
   return `<div class="flex items-center gap-1.5 text-xs opacity-70"><span class="truncate">${text}</span></div>`
+}
+
+/**
+ * Create a short time string from the default time string.
+ */
+function createTimeShort(time: string): string {
+  const [start, end] = time.split(' - ')
+  const [startHour, startMinute] = start.split(':')
+  const [endHour, endMinute] = end.split(':')
+  let timeShort = ''
+  if (startMinute === '00') {
+    timeShort = `${startHour}`
+  } else {
+    timeShort = `${startHour}:${startMinute}`
+  }
+  if (endMinute === '00') {
+    timeShort = `${timeShort} - ${endHour}`
+  } else {
+    timeShort = `${timeShort} - ${endHour}:${endMinute}`
+  }
+  return timeShort
 }
 
 /**
@@ -91,39 +87,34 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   )
   const titleLong = props.moduleTitle
   const titleShort = props.moduleAbbrev
-  const location = props.rooms.map(({ abbrev }) => abbrev).join(', ')
+  const location = props.rooms
+    .map(({ abbrev }) => abbrev)
+    .sort()
+    .join(', ')
   const courseTypeLong = fmtCourseType(props.courseType)
-  const courseTypeShort = courseTypeLong.charAt(0)
+  const courseTypeColor = COURSE_TYPE_COLORS[props.courseType]
 
   if (durationMinutes <= 90) {
     return {
       html: `
-        <div class="event-content flex h-full flex-col dark:text-white">
+        <div class="event-content flex h-full flex-col pl-2 text-white" style="--event-course-color: ${courseTypeColor};">
           <!-- Full view -->
           <div class="event-size-full flex flex-col gap-1.5 p-1.5">
-            <div class="flex min-w-0 items-start gap-1 mb-1">
-              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
-                ${titleLong}
-              </div>
-              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
+              ${titleLong}
             </div>
             ${createInfoRow(ICONS.mapPin, location)}
           </div>
           <!-- Compact view -->
           <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
-            <div class="flex min-w-0 items-start gap-1 mb-1">
-              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
-                ${titleShort}
-              </div>
-              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+            <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
+              ${titleShort}
             </div>
             ${createShortInfoRow(location)}
           </div>
           <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-          <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
-            <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
-              ${titleShort}
-            </span>
+          <div class="event-size-minimum flex h-full items-center justify-center overflow-hidden m-1.5">
+            <span class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
           </div>
         </div>
       `
@@ -131,21 +122,23 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   }
 
   const time = arg.timeText
-  const lecturerLong = props.moduleManagement.map(({ label }) => label).join(', ')
-  const lecturerShort = props.moduleManagement
+  const timeShort = createTimeShort(time)
+  const lecturerLong = props.lecturer
+    .map(({ label }) => label)
+    .sort()
+    .join(', ')
+  const lecturerShort = props.lecturer
     .map(({ abbreviation }) => abbreviation.toUpperCase())
+    .sort()
     .join(', ')
 
   return {
     html: `
-      <div class="event-content flex h-full flex-col dark:text-white">
+      <div class="event-content flex h-full flex-col pl-2 text-white" style="--event-course-color: ${courseTypeColor};">
         <!-- Full view -->
         <div class="event-size-full flex flex-col gap-1.5 p-1.5">
-          <div class="flex min-w-0 items-start gap-1.5 mb-1">
-            <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
-              ${titleLong}
-            </div>
-            ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
+            ${titleLong}
           </div>
           ${createInfoRow(ICONS.clock, time)}
           ${createInfoRow(ICONS.mapPin, location)}
@@ -154,20 +147,16 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
         </div>
         <!-- Compact view -->
         <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
-          <div class="flex min-w-0 items-start gap-1 mb-1">
-              <div class="min-w-0 flex-1 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
-                ${titleShort}
-              </div>
-              ${createCourseTypeBadge(props.courseType, courseTypeShort)}
+          <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
+            ${titleShort}
           </div>
+          ${createShortInfoRow(timeShort)}
           ${createShortInfoRow(location)}
           ${createShortInfoRow(lecturerShort)}
         </div>
         <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-        <div class="event-size-minimum grid h-full place-items-center overflow-hidden">
-          <span class="max-h-full text-[10px] font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">
-            ${titleShort}
-          </span>
+        <div class="event-size-minimum flex h-full items-center justify-center overflow-hidden m-1.5">
+          <span class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
         </div>
       </div>
     `
@@ -179,13 +168,7 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
  * color dot -> time -> truncating title -> course-type badge.
  * Dot, time, and badge are non-shrinking; only the title truncates.
  */
-function createMonthRow(
-  title: string,
-  time: string,
-  color: string,
-  badgeStyles: string,
-  courseType: string
-) {
+function createMonthRow(title: string, time: string, color: string, courseType: string) {
   return `
 <div class="flex h-full w-full min-w-0 items-center gap-0.5 overflow-hidden px-1.5 py-0.5 leading-[1.15]">
   <span
@@ -195,7 +178,8 @@ function createMonthRow(
   <span class="shrink-0 tabular-nums opacity-80">${time}</span>
   <span class="min-w-0 flex-1 truncate">${title}</span>
   <span
-    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 text-[0.65rem] uppercase leading-none ${badgeStyles}"
+    class="ml-0.5 inline-flex shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 text-[0.65rem] font-bold uppercase leading-none tracking-wider"
+    style="background-color: ${color}; color: #fff;"
   >
     ${courseType}
   </span>
@@ -223,11 +207,10 @@ export function renderMonthViewEventContent(arg: EventContentArg) {
   const titleFull = props.moduleTitle
   const titleCompact = props.moduleAbbrev || props.moduleTitle
   const courseType = fmtCourseType(props.courseType).charAt(0)
-  const badgeStyles = COURSE_TYPE_COLORS[props.courseType]
-  const color = EVENT_SOURCE_COLORS.schedule
+  const color = COURSE_TYPE_COLORS[props.courseType]
 
-  const fullRow = createMonthRow(titleFull, time, color, badgeStyles, courseType)
-  const compactRow = createMonthRow(titleCompact, time, color, badgeStyles, courseType)
+  const fullRow = createMonthRow(titleFull, time, color, courseType)
+  const compactRow = createMonthRow(titleCompact, time, color, courseType)
 
   return {
     html: `

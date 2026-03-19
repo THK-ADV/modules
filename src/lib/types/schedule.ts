@@ -23,8 +23,14 @@ export type SemesterPlanType =
   | 'project'
   | 'closed_building'
   | 'self_study'
+  | 'semester_break'
 
 export type CourseType = 'lecture' | 'lab' | 'exercise' | 'seminar' | 'tutorial'
+
+export interface ScheduleEntryProps {
+  po: PO[]
+  lecturer: string[]
+}
 
 export interface PO {
   po: string
@@ -66,8 +72,9 @@ export interface ScheduleEntry {
   moduleTitle: string
   moduleAbbrev: string
   moduleManagement: ModuleManagement[]
+  lecturer: ModuleManagement[]
   teachingUnits: string[]
-  props: { po: PO[] }
+  props: ScheduleEntryProps
 }
 
 // used for the schedule entry dialog to edit data
@@ -78,7 +85,7 @@ export interface ScheduleEntryEdit {
   start: Date
   end: Date
   rooms: string[]
-  props: { po: PO[] }
+  props: ScheduleEntryProps
 }
 
 export type ScheduleEntryCreate = Omit<ScheduleEntryEdit, 'id'>

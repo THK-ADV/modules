@@ -1,7 +1,9 @@
 <script lang="ts">
   import {
+    getDefaultCalendarView,
     type CalendarEvent,
     type CalendarView,
+    type DateRangeInfo,
     type DateSelectInfo,
     type EventClickInfo,
     type EventCopyInfo,
@@ -11,9 +13,9 @@
   } from '$lib/calendar'
   import ErrorMessage from '$lib/components/error-message.svelte'
   import ScheduleDraftPanel from '$lib/components/schedule/schedule-draft-panel.svelte'
-  import ScheduleEntryDialog, {
+  import ScheduleEntryEditDialog, {
     type Mode
-  } from '$lib/components/schedule/schedule-entry-dialog.svelte'
+  } from '$lib/components/schedule/schedule-entry-edit-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -29,7 +31,9 @@
 
   const { data }: PageProps = $props()
 
-  const initialView = $derived((data.selectedCalendarView || 'timeGridWeek') as CalendarView)
+  const initialView = $derived(
+    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
+  )
   const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
   let selectedTab = $state('calendar') // calendar or table
 
@@ -44,32 +48,12 @@
     exam: 0
   })
 
-  // svelte-ignore state_referenced_locally
-  let selectedSemester = $state(data.semesters[0].id)
   let scheduleEntries = $state<CalendarEvent<ScheduleEventProps>[]>([])
 
-  async function fetchScheduleEntries(semesterId: string, signal?: AbortSignal) {
-    try {
-      const resp = await fetch(`/schedule-planning?semester=${semesterId}`, { signal })
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ message: resp.statusText }))
-        errorMessage = err.message ?? 'Fehler beim Laden des Stundenplans'
-        return
-      }
-      scheduleEntries = await resp.json()
-    } catch (e) {
-      if (e instanceof Error && e.name !== 'AbortError') {
-        errorMessage = e.message ?? 'Fehler beim Laden des Stundenplans'
-      }
-    }
+  // Fetch schedule entries when the date range changes
+  function fetchScheduleEntries(info: DateRangeInfo) {
+    return fetch(`/schedule-planning?start=${info.start.getTime()}&end=${info.end.getTime()}`)
   }
-
-  // Update schedule entries when the selected semester changes
-  $effect(() => {
-    const controller = new AbortController()
-    fetchScheduleEntries(selectedSemester, controller.signal)
-    return () => controller.abort()
-  })
 
   // Create, update, delete, duplicate schedule entries
 
@@ -217,8 +201,6 @@
       const idx = scheduleEntries.findIndex((e) => e.id === updatedEntry.id)
       if (idx !== -1) {
         scheduleEntries[idx] = updatedEntry
-      } else {
-        await fetchScheduleEntries(selectedSemester)
       }
     } catch (err) {
       errorMessage = err instanceof Error ? err.message : 'Fehler beim Aktualisieren der Einträge'
@@ -243,8 +225,6 @@
       const idx = scheduleEntries.findIndex((e) => e.id === id)
       if (idx !== -1) {
         scheduleEntries.splice(idx, 1)
-      } else {
-        await fetchScheduleEntries(selectedSemester)
       }
     } catch (err) {
       errorMessage = err instanceof Error ? err.message : 'Fehler beim Löschen der Einträge'
@@ -280,31 +260,7 @@
 <div class="flex h-full flex-1 flex-col space-y-8">
   <ErrorMessage bind:message={errorMessage} />
 
-  <div class="flex items-center justify-between">
-    <h2 class="text-3xl font-bold tracking-tight">Stundenplanung</h2>
-    <div
-      role="radiogroup"
-      aria-label="Semester auswählen"
-      class="bg-muted inline-flex items-center rounded-lg p-1"
-    >
-      {#each data.semesters as semester (semester.id)}
-        {@const selected = selectedSemester === semester.id}
-        <button
-          role="radio"
-          aria-checked={selected}
-          title={`${semester.deLabel} ${semester.year}`}
-          onclick={() => (selectedSemester = semester.id)}
-          class="cursor-pointer rounded-md px-3 py-1.5 text-sm transition-[color,background-color,box-shadow] duration-200 ease-out
-            {selected
-            ? 'bg-background text-foreground font-medium shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'}"
-        >
-          {semester.deLabel}
-          <span class="font-semibold tabular-nums">{semester.year}</span>
-        </button>
-      {/each}
-    </div>
-  </div>
+  <h2 class="text-3xl font-bold tracking-tight">Stundenplanung</h2>
 
   <ScheduleFilter {sourceEventCounts} scheduleFilter={schedulePlanningFilter} />
 
@@ -355,8 +311,9 @@
 
         <Tabs.Content value="calendar">
           <Schedule
-            scheduleSource={{ id: 'data', entries: scheduleEntries }}
+            scheduleFetcher={fetchScheduleEntries}
             bind:sourceEventCounts
+            bind:scheduleEntries
             holidays={data.holidays}
             semesterEntries={data.semesterEntries}
             {initialView}
@@ -390,6 +347,6 @@
   </div>
 
   {#if dialogMode}
-    <ScheduleEntryDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
+    <ScheduleEntryEditDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
   {/if}
 </div>

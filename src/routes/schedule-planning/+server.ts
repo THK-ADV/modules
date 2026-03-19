@@ -1,6 +1,7 @@
 import {
   createScheduleEntries,
-  fetchScheduleEntriesBySemester,
+  fetchLecturerOptions,
+  fetchScheduleEntriesByRange,
   updateScheduleEntry
 } from '$lib/server/calendar'
 import { json } from '@sveltejs/kit'
@@ -32,9 +33,18 @@ function toLocalISOString(date: Date): string {
   )
 }
 
-// Fetches schedule entries for the given semester
+// Supports GET requests for fetching schedule entries and lecturer options
 export const GET: RequestHandler = async ({ fetch, url }) => {
-  const events = await fetchScheduleEntriesBySemester(fetch, url.searchParams.get('semester'), true)
+  if (url.searchParams.get('select') === 'lecturers' && url.searchParams.has('module')) {
+    return json(await fetchLecturerOptions(fetch, url.searchParams.get('module')!), { status: 200 })
+  }
+
+  const events = await fetchScheduleEntriesByRange(
+    fetch,
+    url.searchParams.get('start'),
+    url.searchParams.get('end'),
+    true
+  )
   return json(events, { status: 200 })
 }
 

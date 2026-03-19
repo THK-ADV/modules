@@ -1,17 +1,26 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { resolve } from '$app/paths'
-  import { type CalendarView, type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
+  import {
+    getDefaultCalendarView,
+    type CalendarView,
+    type DateRangeInfo,
+    type EventClickInfo
+  } from '$lib/calendar'
+  import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
+  import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
+  import { scheduleFilter } from '$lib/store.svelte'
+  import type { ScheduleEntry } from '$lib/types/schedule'
   import { TriangleAlert } from '@lucide/svelte'
   import type { PageProps } from './$types'
-  import { scheduleFilter } from '$lib/store.svelte'
-  import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
 
   const { data }: PageProps = $props()
 
-  const initialView = $derived((data.selectedCalendarView || 'timeGridWeek') as CalendarView)
+  const initialView = $derived(
+    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
+  )
   const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
+
+  let selectedScheduleEntry = $state<ScheduleEntry | null>(null)
 
   let sourceEventCounts = $state({
     holiday: 0,
@@ -24,12 +33,12 @@
     if (info.event.extendedProps?.source !== 'schedule') {
       return
     }
-    goto(resolve(`/modules/[id=uuid]`, { id: info.event.extendedProps.raw.module }))
+    selectedScheduleEntry = info.event.extendedProps.raw
   }
 
   // Fetch schedule entries when the date range changes
-  async function fetchScheduleEntries(info: DateRangeInfo) {
-    return await fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
+  function fetchScheduleEntries(info: DateRangeInfo) {
+    return fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
   }
 </script>
 
@@ -96,6 +105,14 @@
     {initialDate}
     {onEventClick}
     {scheduleFilter}
-    scheduleSource={{ id: 'fetch', fetch: fetchScheduleEntries }}
+    scheduleFetcher={fetchScheduleEntries}
   />
+
+  {#if selectedScheduleEntry}
+    <ScheduleEntryDetailsDialog
+      onClose={() => (selectedScheduleEntry = null)}
+      entry={selectedScheduleEntry}
+      studyPrograms={scheduleFilter.studyPrograms}
+    />
+  {/if}
 </div>

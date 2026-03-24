@@ -1,8 +1,6 @@
 <script lang="ts">
   import {
-    getDefaultCalendarView,
     type CalendarEvent,
-    type CalendarView,
     type DateRangeInfo,
     type DateSelectInfo,
     type EventClickInfo,
@@ -23,7 +21,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { schedulePlanningFilter } from '$lib/store.svelte'
+  import { schedulePlanningFilter } from '$lib/stores/store.svelte'
   import type { ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
   import { Calendar, PanelRight, Table2, TriangleAlert } from '@lucide/svelte'
   import type { PageProps } from './$types'
@@ -31,10 +29,6 @@
 
   const { data }: PageProps = $props()
 
-  const initialView = $derived(
-    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
-  )
-  const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
   let selectedTab = $state('calendar') // calendar or table
 
   let isDraftPanelOpen = $state(false)
@@ -316,8 +310,6 @@
             bind:scheduleEntries
             holidays={data.holidays}
             semesterEntries={data.semesterEntries}
-            {initialView}
-            {initialDate}
             onEventClick={onUpdateEntry}
             onDateSelect={onCreateFromSelection}
             onEventDrop={onUpdateByDrop}

@@ -11,8 +11,6 @@
   const {
     holidays,
     semesterEntries,
-    initialView,
-    initialDate,
     onEventClick,
     onDateSelect,
     onEventDrop,
@@ -214,8 +212,6 @@
 <div class="border-border bg-card min-h-[60vh] rounded-lg border">
   <Calendar
     events={filteredEvents}
-    {initialView}
-    {initialDate}
     {onEventClick}
     {onDateRangeSet}
     {onDateSelect}

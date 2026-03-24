@@ -1,24 +1,14 @@
 <script lang="ts">
-  import {
-    getDefaultCalendarView,
-    type CalendarView,
-    type DateRangeInfo,
-    type EventClickInfo
-  } from '$lib/calendar'
+  import { type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
-  import { scheduleFilter } from '$lib/store.svelte'
+  import { scheduleFilter } from '$lib/stores/store.svelte'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { ChevronDown, TriangleAlert, X } from '@lucide/svelte'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
-
-  const initialView = $derived(
-    (data.selectedCalendarView || getDefaultCalendarView()) as CalendarView
-  )
-  const initialDate = $derived(data.selectedCalendarDate || new Date().toISOString())
 
   let selectedScheduleEntry = $state<ScheduleEntry | null>(null)
 
@@ -141,8 +131,6 @@
     bind:sourceEventCounts
     holidays={data.holidays}
     semesterEntries={data.semesterEntries}
-    {initialView}
-    {initialDate}
     {onEventClick}
     {scheduleFilter}
     scheduleFetcher={fetchScheduleEntries}

@@ -12,14 +12,9 @@
     renderWeekViewEventContent
   } from './event-content-rendering.js'
   import {
-    SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE,
-    SELECTED_CALENDAR_DATE_COOKIE_NAME,
-    SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE,
-    SELECTED_CALENDAR_VIEW_COOKIE_NAME,
     type CalendarApi,
     type CalendarEvent,
     type CalendarEventProps,
-    type CalendarView,
     type DateRangeInfo,
     type DateSelectInfo,
     type EventCopyInfo,
@@ -27,6 +22,7 @@
     type EventDropInfo,
     type EventResizeInfo
   } from './types.js'
+  import { uiStore } from '$lib/stores/ui.svelte.js'
 
   interface Props {
     /**
@@ -34,10 +30,6 @@
      * The parent component manages filtering and source toggling.
      */
     events?: CalendarEvent[]
-    /** Initial view mode (week or month) */
-    initialView?: CalendarView
-    /** Initial date to display */
-    initialDate?: Date | string
     /** Callback when a date range is selected */
     onDateSelect?: (info: DateSelectInfo) => void
     /** Callback when an event is clicked */
@@ -58,8 +50,6 @@
 
   let {
     events = [],
-    initialView = 'timeGridWeek',
-    initialDate,
     onDateSelect,
     onEventClick,
     onEventDrop,
@@ -79,8 +69,6 @@
   let isCopyDragging = $state(false)
   let draggedEventEl: HTMLElement | null = null
   let harnessObserver: MutationObserver | null = null
-  // svelte-ignore state_referenced_locally
-  let currentView = $state<CalendarView>(initialView)
 
   function showOriginalEventAsCopy(show: boolean) {
     const harness = draggedEventEl?.closest(
@@ -140,15 +128,7 @@
     calendar?.today()
   }
 
-  function handleViewChange(value: string) {
-    currentView = value as CalendarView
-    document.cookie = `${SELECTED_CALENDAR_VIEW_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE}`
-    calendar?.changeView(value)
-  }
-
   onMount(() => {
-    const startView = initialView
-    const startDate = initialDate
     const supportsCopy = Boolean(onEventCopy)
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Alt' && event.key !== 'Control') return
@@ -178,8 +158,8 @@
 
     calendar = new Calendar(calendarEl, {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-      initialView: startView,
-      initialDate: startDate,
+      initialView: uiStore.selectedCalendarView,
+      initialDate: uiStore.selectedCalendarDate,
       height: 'auto',
       headerToolbar: false,
       editable: onEventDrop || onEventCopy || onEventResize ? true : false,
@@ -346,7 +326,7 @@
         if (calendar) {
           currentTitle = calendar.view.title
           const currentDate = calendar.getDate().toISOString()
-          document.cookie = `${SELECTED_CALENDAR_DATE_COOKIE_NAME}=${currentDate}; path=/; max-age=${SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE}`
+          uiStore.selectedCalendarDate = currentDate
         }
         onDateRangeSet?.({
           start: arg.start,
@@ -377,7 +357,6 @@
       prev: () => calendar?.prev(),
       next: () => calendar?.next(),
       today: () => calendar?.today(),
-      changeView: (view) => calendar?.changeView(view),
       getTitle: () => calendar?.view.title ?? ''
     }
 
@@ -443,8 +422,8 @@
     <!-- Right: View Toggle -->
     <ToggleGroup.Root
       type="single"
-      value={currentView}
-      onValueChange={handleViewChange}
+      bind:value={uiStore.selectedCalendarView}
+      onValueChange={(value) => calendar?.changeView(value)}
       class="bg-muted rounded-lg p-1"
     >
       <ToggleGroup.Item

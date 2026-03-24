@@ -7,9 +7,7 @@ import type {
 import type { EventInput } from '@fullcalendar/core'
 
 export const SELECTED_CALENDAR_VIEW_COOKIE_NAME = 'calendar:selected-view'
-export const SELECTED_CALENDAR_VIEW_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 export const SELECTED_CALENDAR_DATE_COOKIE_NAME = 'calendar:selected-date'
-export const SELECTED_CALENDAR_DATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 /**
  * Calendar view types supported by the calendar component.
@@ -196,8 +194,6 @@ export interface CalendarApi {
   next: () => void
   /** Navigate to today */
   today: () => void
-  /** Change the current view */
-  changeView: (view: CalendarView) => void
   /** Get the current title (e.g., "January 2026") */
   getTitle: () => string
 }

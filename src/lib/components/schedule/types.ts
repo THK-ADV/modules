@@ -1,6 +1,5 @@
 import type {
   CalendarEvent,
-  CalendarView,
   DateRangeInfo,
   DateSelectInfo,
   EventClickInfo,
@@ -12,11 +11,9 @@ import type {
   ScheduleEventProps,
   SemesterPlanEventProps
 } from '$lib/calendar'
-import type { ScheduleFilter } from '$lib/store.svelte'
+import type { ScheduleFilter } from '$lib/stores/store.svelte'
 
 export interface ScheduleProps {
-  initialView: CalendarView
-  initialDate: string
   holidays: CalendarEvent<HolidayEventProps>[]
   semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
   scheduleFetcher: (info: DateRangeInfo) => Promise<Response>

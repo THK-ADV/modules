@@ -1,12 +1,7 @@
 <script lang="ts" module>
   import DataTableTitleButton from '$lib/components/modules-table-title-button.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import type {
-    ModuleType,
-    ModuleView,
-    PersonShort,
-    StudyProgramModuleAssociation
-  } from '$lib/types/module'
+  import type { ModuleView, PersonShort, StudyProgramModuleAssociation } from '$lib/types/module'
   import type { ColumnDef } from '@tanstack/table-core'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
@@ -52,16 +47,6 @@
     }
   }
 
-  function fmtStudyPrograms(xs: ReadonlyArray<StudyProgramModuleAssociation>) {
-    let res: string[] = []
-    for (const { studyProgram } of xs) {
-      if (!res.includes(studyProgram.abbreviation)) {
-        res.push(studyProgram.abbreviation)
-      }
-    }
-    return res.join(', ')
-  }
-
   const columns: ColumnDef<ModuleView>[] = [
     {
       accessorKey: 'title',
@@ -76,38 +61,12 @@
           title: row.original.title,
           status: row.original.status
         })
-      },
-      filterFn: (row, _, filterValue) => {
-        const searchValue = (filterValue as string).toLowerCase()
-        if (!searchValue) return true
-        const title = row.original.title.toLowerCase()
-        const abbrev = row.original.abbrev.toLowerCase()
-        return title.includes(searchValue) || abbrev.includes(searchValue)
       }
     },
     {
       accessorKey: 'moduleManagement',
       header: 'Modulverantwortliche',
-      cell: ({ row }) => fmtModuleManagement(row.original.moduleManagement),
-      filterFn: (row, _, filterValue) => {
-        const ids = filterValue as string[]
-        if (ids.length === 0) {
-          return true
-        }
-        return row.original.moduleManagement.some(({ id }) => ids.includes(id))
-      }
-    },
-    {
-      accessorKey: 'studyProgram',
-      header: 'Studiengänge',
-      cell: ({ row }) => fmtStudyPrograms(row.original.studyProgram),
-      filterFn: (row, _, filterValue) => {
-        const pos = filterValue as string[]
-        if (pos.length === 0) {
-          return true
-        }
-        return row.original.studyProgram.some((s) => pos.includes(s.studyProgram.po.id))
-      }
+      cell: ({ row }) => fmtModuleManagement(row.original.moduleManagement)
     },
     {
       accessorKey: 'moduleType',
@@ -116,19 +75,6 @@
         return renderComponent(DataTableModuleTypeCell, {
           moduleType: row.original.moduleType
         })
-      },
-      filterFn: (row, _, filterValue) => {
-        const ids = filterValue as ModuleType['id'][]
-        // if no or both PM and WM are selected, return true, since every module is either PM, WM or both PM and WM (PWM)
-        if (ids.length === 0 || ids.length === 2) {
-          return true
-        }
-        const moduleType = row.original.moduleType
-        if (moduleType === undefined) {
-          return false
-        }
-        // also select PWM since it is a subset of both PW and WM
-        return moduleType.id === ids[0] || moduleType.id === 'pwm'
       }
     },
     {
@@ -139,16 +85,7 @@
     {
       accessorKey: 'semester',
       header: 'Semester',
-      cell: ({ row }) => fmtSemester(row.original.studyProgram),
-      filterFn: (row, _, filterValue) => {
-        const ids = filterValue as string[]
-        if (ids.length === 0) {
-          return true
-        }
-        return row.original.studyProgram.some(({ recommendedSemester }) =>
-          recommendedSemester.some((s) => ids.some((id) => +id === s))
-        )
-      }
+      cell: ({ row }) => fmtSemester(row.original.studyProgram)
     }
   ]
 </script>

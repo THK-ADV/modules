@@ -3,11 +3,7 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import { moduleFilter } from '$lib/stores/module-filter.svelte'
   import { X, Funnel, Search } from '@lucide/svelte'
-  import type { Table } from '@tanstack/table-core'
   import FilterOption from '$lib/components/filter-option.svelte'
-  import type { ModuleView } from '$lib/types/module'
-
-  let { table }: { table: Table<ModuleView> } = $props()
 
   let showReset = $derived.by(() => {
     const {
@@ -15,6 +11,7 @@
       selectedIdentities,
       selectedSemester,
       selectedModuleTypes,
+      selectedModuleStatus,
       title
     } = moduleFilter
 
@@ -23,61 +20,13 @@
       selectedIdentities.length > 0 ||
       selectedSemester.length > 0 ||
       selectedModuleTypes.length > 0 ||
+      selectedModuleStatus.length > 0 ||
       title.length > 0
     )
   })
 
-  function setFilterValue(value: string) {
-    moduleFilter.title = value
-    table.getColumn('title')?.setFilterValue(value)
-  }
-
-  function selectModuleManagement(id: string) {
-    moduleFilter.selectIdentity(id)
-    table.getColumn('moduleManagement')?.setFilterValue(moduleFilter.selectedIdentities)
-  }
-
-  function selectSemester(id: string) {
-    moduleFilter.selectSemester(id)
-    table.getColumn('semester')?.setFilterValue(moduleFilter.selectedSemester)
-  }
-
-  function selectStudyProgram(id: string) {
-    moduleFilter.selectStudyProgram(id)
-    table.getColumn('studyProgram')?.setFilterValue(moduleFilter.selectedStudyPrograms)
-  }
-
-  function selectModuleType(id: string) {
-    moduleFilter.selectModuleType(id)
-    table.getColumn('moduleType')?.setFilterValue(moduleFilter.selectedModuleTypes)
-  }
-
-  function clearSemester() {
-    moduleFilter.clearSelectedSemester()
-    table.getColumn('semester')?.setFilterValue(undefined)
-  }
-
-  function clearModuleManagement() {
-    moduleFilter.clearSelectedIdentities()
-    table.getColumn('moduleManagement')?.setFilterValue(undefined)
-  }
-
-  function clearStudyProgram() {
-    moduleFilter.clearSelectedStudyPrograms()
-    table.getColumn('studyProgram')?.setFilterValue(undefined)
-  }
-
-  function clearModuleType() {
-    moduleFilter.clearSelectedModuleTypes()
-    table.getColumn('moduleType')?.setFilterValue(undefined)
-  }
-
   function reset() {
-    setFilterValue('')
-    clearSemester()
-    clearModuleManagement()
-    clearStudyProgram()
-    clearModuleType()
+    moduleFilter.clearSelections()
   }
 </script>
 
@@ -93,9 +42,7 @@
         placeholder="Suche nach Modulbezeichnung oder Kürzel…"
         class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full max-w-md border-2 text-sm transition-colors focus-visible:ring-2"
         type="search"
-        value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}
-        onchange={(e) => setFilterValue(e.currentTarget.value)}
-        oninput={(e) => setFilterValue(e.currentTarget.value)}
+        bind:value={moduleFilter.title}
       />
     </div>
   </div>
@@ -110,31 +57,38 @@
     <div class="flex flex-1 flex-nowrap items-center gap-2">
       <FilterOption
         filterValues={moduleFilter.selectedStudyPrograms}
-        handleSelect={selectStudyProgram}
+        handleSelect={moduleFilter.selectStudyProgram}
         title="Studiengang"
         options={moduleFilter.studyPrograms}
-        clearFilters={clearStudyProgram}
+        clearFilters={moduleFilter.clearSelectedStudyPrograms}
       />
       <FilterOption
         filterValues={moduleFilter.selectedSemester}
-        handleSelect={selectSemester}
+        handleSelect={moduleFilter.selectSemester}
         title="Semester"
         options={moduleFilter.semester}
-        clearFilters={clearSemester}
+        clearFilters={moduleFilter.clearSelectedSemester}
       />
       <FilterOption
         filterValues={moduleFilter.selectedIdentities}
-        handleSelect={selectModuleManagement}
+        handleSelect={moduleFilter.selectIdentity}
         title="Modulverantwortliche"
         options={moduleFilter.identities}
-        clearFilters={clearModuleManagement}
+        clearFilters={moduleFilter.clearSelectedIdentities}
       />
       <FilterOption
         filterValues={moduleFilter.selectedModuleTypes}
-        handleSelect={selectModuleType}
+        handleSelect={moduleFilter.selectModuleType}
         title="Modulart"
         options={moduleFilter.moduleTypes}
-        clearFilters={clearModuleType}
+        clearFilters={moduleFilter.clearSelectedModuleTypes}
+      />
+      <FilterOption
+        filterValues={moduleFilter.selectedModuleStatus}
+        handleSelect={moduleFilter.selectModuleStatus}
+        title="Status"
+        options={moduleFilter.moduleStatus}
+        clearFilters={moduleFilter.clearSelectedModuleStatus}
       />
     </div>
   </div>

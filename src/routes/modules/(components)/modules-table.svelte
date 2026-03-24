@@ -2,11 +2,10 @@
   import TablePagination from '$lib/components/table-pagination.svelte'
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import { moduleFilter } from '$lib/stores/module-filter.svelte'
+  import { moduleFilter, showModuleTableRow } from '$lib/stores/module-filter.svelte'
   import type { ModuleView } from '$lib/types/module'
   import {
     type ColumnDef,
-    type ColumnFiltersState,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
@@ -14,28 +13,6 @@
     type SortingState
   } from '@tanstack/table-core'
   import DataTableFilter from './modules-table-filter.svelte'
-
-  function getInitialColumnFilters(): ColumnFiltersState {
-    const filters: ColumnFiltersState = []
-
-    if (moduleFilter.selectedStudyPrograms.length > 0) {
-      filters.push({ id: 'studyProgram', value: moduleFilter.selectedStudyPrograms })
-    }
-    if (moduleFilter.selectedIdentities.length > 0) {
-      filters.push({ id: 'moduleManagement', value: moduleFilter.selectedIdentities })
-    }
-    if (moduleFilter.selectedSemester.length > 0) {
-      filters.push({ id: 'semester', value: moduleFilter.selectedSemester })
-    }
-    if (moduleFilter.selectedModuleTypes.length > 0) {
-      filters.push({ id: 'moduleType', value: moduleFilter.selectedModuleTypes })
-    }
-    if (moduleFilter.title.length > 0) {
-      filters.push({ id: 'title', value: moduleFilter.title })
-    }
-
-    return filters
-  }
 
   type DataTableProps = {
     columns: ColumnDef<ModuleView>[]
@@ -46,12 +23,12 @@
 
   const pages = moduleFilter.pages
 
-  let sorting = $state<SortingState>([])
-  let columnFilters = $state<ColumnFiltersState>(getInitialColumnFilters())
-  let pagination = $derived(moduleFilter.pagination)
+  let sorting = $state<SortingState>([{ id: 'title', desc: false }])
+  let pagination = $state(moduleFilter.pagination)
+
+  const globalFilter = $derived(moduleFilter.changed)
 
   $effect(() => {
-    // keep pagination in sync with store to allow state persistence through navigation
     moduleFilter.pagination = pagination
   })
 
@@ -73,15 +50,8 @@
         sorting = updater
       }
     },
-    // filter
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnFiltersChange: (updater) => {
-      if (typeof updater === 'function') {
-        columnFilters = updater(columnFilters)
-      } else {
-        columnFilters = updater
-      }
-    },
+    globalFilterFn: (row) => showModuleTableRow(row.original),
     // pagination
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: (updater) => {
@@ -96,19 +66,18 @@
       get sorting() {
         return sorting
       },
-      get columnFilters() {
-        return columnFilters
-      },
       get pagination() {
         return pagination
+      },
+      get globalFilter() {
+        return globalFilter
       }
-    },
-    initialState: { columnVisibility: { studyProgram: false } }
+    }
   })
 </script>
 
 <div class="space-y-4">
-  <DataTableFilter {table} />
+  <DataTableFilter />
   <div class="rounded-md border">
     <Table.Root>
       <Table.Header>

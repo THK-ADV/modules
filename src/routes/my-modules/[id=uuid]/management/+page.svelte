@@ -1,6 +1,6 @@
 <script lang="ts">
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
-  import { moduleUpdateState } from '$lib/store.svelte.js'
+  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
   import { getModuleFormContext } from '../context'
   import type { PageProps } from './$types'
 

@@ -5,7 +5,7 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { fmtModule } from '$lib/formats'
-  import { moduleUpdateState } from '$lib/store.svelte'
+  import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'

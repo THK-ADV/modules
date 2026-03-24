@@ -2,7 +2,7 @@
   import AssessmentMethodsForm from '$lib/components/assessment-methods-form.svelte'
   import ComboboxField from '$lib/components/combobox.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
-  import { moduleUpdateState } from '$lib/store.svelte.js'
+  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 

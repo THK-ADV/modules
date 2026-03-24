@@ -2,7 +2,7 @@
   import TablePagination from '$lib/components/table-pagination.svelte'
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import { myModuleFilter } from '$lib/store.svelte'
+  import { myModuleFilter } from '$lib/stores/store.svelte'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import {
     type ColumnDef,

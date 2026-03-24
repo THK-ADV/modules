@@ -16,7 +16,7 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { fmtStudyProgram } from '$lib/formats'
-  import { moduleUpdateState } from '$lib/store.svelte'
+  import { moduleUpdateState } from '$lib/stores/store.svelte'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { POOptional } from '$lib/types/module-protocol'

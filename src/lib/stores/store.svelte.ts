@@ -13,16 +13,16 @@ import type {
 } from '$lib/types/core'
 import type { StudyProgram } from '$lib/types/study-program'
 import type { PaginationState } from '@tanstack/table-core'
-import { type Selection } from '../routes/my-modules/(components)/types'
+import { type Selection } from '../../routes/my-modules/(components)/types'
 import {
   fmtPerson,
   fmtPersonShort,
   fmtStudyProgram,
   fmtStudyProgramShort,
   peopleOrdering
-} from './formats'
-import type { FilterData } from './types/filter-data'
-import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from './types/schedule'
+} from '../formats'
+import type { FilterData } from '../types/filter-data'
+import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from '../types/schedule'
 
 function getSemesterOptions() {
   return [

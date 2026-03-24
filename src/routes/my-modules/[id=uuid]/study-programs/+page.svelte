@@ -1,7 +1,7 @@
 <script lang="ts">
   import StudyProgramElectiveRelationsForm from '$lib/components/forms/study-program-elective-relations-form.svelte'
   import StudyProgramMandatoryRelationsForm from '$lib/components/forms/study-program-mandatory-relations-form.svelte'
-  import { moduleUpdateState } from '$lib/store.svelte'
+  import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getModuleFormContext } from '../context'
   import type { PageProps } from './$types'
 

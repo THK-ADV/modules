@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
-  import { moduleFilter } from '$lib/store.svelte'
+  import { moduleFilter } from '$lib/stores/store.svelte'
   import type { ModuleView } from '$lib/types/module'
   import { X, Funnel, Search } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'

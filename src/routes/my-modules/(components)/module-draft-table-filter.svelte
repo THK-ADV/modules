@@ -3,7 +3,7 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
   import * as RadioGroup from '$lib/components/ui/radio-group/index.js'
-  import { myModuleFilter } from '$lib/store.svelte'
+  import { myModuleFilter } from '$lib/stores/store.svelte'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { X, Funnel, Search } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'

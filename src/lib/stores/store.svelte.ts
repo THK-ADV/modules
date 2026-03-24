@@ -24,7 +24,7 @@ import {
 import type { FilterData } from '../types/filter-data'
 import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from '../types/schedule'
 
-function getSemesterOptions() {
+export function getSemesterOptions() {
   return [
     { id: '1', label: '1', badge: '1' },
     { id: '2', label: '2', badge: '2' },
@@ -37,147 +37,11 @@ function getSemesterOptions() {
 }
 
 // changes to this affect lib/calendar/filter.ts and routes/modules/+page.svelte
-function getModuleTypeOptions() {
+export function getModuleTypeOptions() {
   return [
     { id: 'pm', label: 'Pflichtmodul', badge: 'PM' },
     { id: 'wm', label: 'Wahlmodul', badge: 'WM' }
   ]
-}
-
-function createModuleFilter() {
-  let studyPrograms = $state.raw(new Array<FilterData>())
-  let identities = $state.raw(new Array<FilterData>())
-  let semester = $state.raw(new Array<FilterData>())
-  let moduleTypes = $state.raw(new Array<FilterData>())
-
-  let selectedStudyPrograms = $state(new Array<string>())
-  let selectedIdentities = $state(new Array<string>())
-  let selectedSemester = $state(new Array<string>())
-  let selectedModuleTypes = $state(new Array<string>())
-  let title = $state('')
-
-  const pages = ['15', '30', '45', 'Alle']
-  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
-
-  return {
-    get title() {
-      return title
-    },
-    get studyPrograms() {
-      return studyPrograms
-    },
-    get identities() {
-      return identities
-    },
-    get semester() {
-      return semester
-    },
-    get moduleTypes() {
-      return moduleTypes
-    },
-    get selectedStudyPrograms() {
-      return selectedStudyPrograms
-    },
-    get selectedIdentities() {
-      return selectedIdentities
-    },
-    get selectedSemester() {
-      return selectedSemester
-    },
-    get selectedModuleTypes() {
-      return selectedModuleTypes
-    },
-    get pagination() {
-      return pagination
-    },
-    get pages() {
-      return pages
-    },
-    set pagination(value: PaginationState) {
-      pagination = value
-    },
-    set title(value: string) {
-      title = value
-    },
-    selectStudyProgram(id: string) {
-      if (selectedStudyPrograms.includes(id)) {
-        selectedStudyPrograms = selectedStudyPrograms.filter((x) => x !== id)
-      } else {
-        selectedStudyPrograms.push(id)
-      }
-    },
-    selectSemester(id: string) {
-      if (selectedSemester.includes(id)) {
-        selectedSemester = selectedSemester.filter((x) => x !== id)
-      } else {
-        selectedSemester.push(id)
-      }
-    },
-    selectIdentity(id: string) {
-      if (selectedIdentities.includes(id)) {
-        selectedIdentities = selectedIdentities.filter((x) => x !== id)
-      } else {
-        selectedIdentities.push(id)
-      }
-    },
-    selectModuleType(id: string) {
-      if (selectedModuleTypes.includes(id)) {
-        selectedModuleTypes = selectedModuleTypes.filter((x) => x !== id)
-      } else {
-        selectedModuleTypes.push(id)
-      }
-    },
-    clearSelectedStudyPrograms() {
-      selectedStudyPrograms = []
-    },
-    clearSelectedIdentities() {
-      selectedIdentities = []
-    },
-    clearSelectedSemester() {
-      selectedSemester = []
-    },
-    clearSelectedModuleTypes() {
-      selectedModuleTypes = []
-    },
-    clearSelections() {
-      selectedStudyPrograms = []
-      selectedIdentities = []
-      selectedSemester = []
-      selectedModuleTypes = []
-      title = ''
-    },
-    async init(fetch: typeof globalThis.fetch) {
-      if (semester.length === 0) {
-        semester = getSemesterOptions()
-      }
-      if (moduleTypes.length === 0) {
-        moduleTypes = getModuleTypeOptions()
-      }
-      if (studyPrograms.length === 0 || identities.length === 0) {
-        const [sp, id] = await Promise.allSettled([
-          fetch('/api/studyPrograms?filter=currently-active'),
-          fetch('/api/identities')
-        ])
-        if (sp.status === 'fulfilled' && sp.value.ok) {
-          const xs: StudyProgram[] = await sp.value.json()
-          studyPrograms = xs.map((sp) => ({
-            label: fmtStudyProgram(sp),
-            id: sp.specialization?.id ?? sp.po.id,
-            badge: fmtStudyProgramShort(sp)
-          }))
-        }
-        if (id.status === 'fulfilled' && id.value.ok) {
-          const xs: Identity[] = await id.value.json()
-          xs.sort(peopleOrdering)
-          identities = xs.map((id) => ({
-            label: fmtPerson(id),
-            id: id.id,
-            badge: fmtPersonShort(id)
-          }))
-        }
-      }
-    }
-  }
 }
 
 function createModuleUpdateState() {
@@ -675,8 +539,6 @@ function createScheduleFilter() {
     }
   }
 }
-
-export const moduleFilter = createModuleFilter()
 
 export const moduleUpdateState = createModuleUpdateState()
 

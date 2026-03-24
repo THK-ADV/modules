@@ -1,4 +1,4 @@
-import { moduleFilter } from '$lib/stores/store.svelte'
+import { moduleFilter } from '$lib/stores/module-filter.svelte'
 import type {
   ModuleType,
   ModuleView,

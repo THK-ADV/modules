@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
-  import { moduleFilter } from '$lib/stores/store.svelte'
-  import type { ModuleView } from '$lib/types/module'
+  import { moduleFilter } from '$lib/stores/module-filter.svelte'
   import { X, Funnel, Search } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'
   import FilterOption from '$lib/components/filter-option.svelte'
+  import type { ModuleView } from '$lib/types/module'
 
   let { table }: { table: Table<ModuleView> } = $props()
 

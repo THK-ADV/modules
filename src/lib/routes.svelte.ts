@@ -10,7 +10,8 @@ import {
   Search,
   Signature,
   CalendarCog,
-  type IconProps
+  type IconProps,
+  Settings
 } from '@lucide/svelte'
 import type { Component } from 'svelte'
 
@@ -72,13 +73,6 @@ function createRoutes() {
     }
   }
 
-  const detailRoutes: RoutesMap = {
-    '/assessment-methods': {
-      name: 'Prüfungsformen',
-      icon: FileText
-    }
-  }
-
   const scheduleRoutes: RoutesMap = {
     '/schedule': {
       name: 'Kalender',
@@ -93,11 +87,23 @@ function createRoutes() {
     }
   }
 
+  const nonNavRoutes: RoutesMap = {
+    '/assessment-methods': {
+      name: 'Prüfungsformen',
+      icon: FileText
+    },
+    '/settings': {
+      name: 'Einstellungen',
+      icon: Settings
+    }
+  }
+
   // Protected routes require authentication to access
   const protectedRoutes = [
     ...Object.keys(managerRoutes),
     ...Object.keys(pavRoutes),
-    ...Object.keys(schedulePlanningRoutes)
+    ...Object.keys(schedulePlanningRoutes),
+    '/settings'
   ]
 
   let selectedModule: { id: string; title: string } | undefined = $state(undefined)
@@ -129,7 +135,7 @@ function createRoutes() {
         ...secondaryRoutes,
         ...scheduleRoutes,
         ...schedulePlanningRoutes,
-        ...detailRoutes
+        ...nonNavRoutes
       }
     },
     get protectedRoutes() {

@@ -5,7 +5,7 @@
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-  import { ChevronsUpDown, LogOut, LogIn } from '@lucide/svelte'
+  import { ChevronsUpDown, LogOut, LogIn, Settings } from '@lucide/svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
@@ -22,7 +22,12 @@
   }
 
   async function logout() {
+    localStorage.clear()
     await goto(resolve('/logout'))
+  }
+
+  async function openSettings() {
+    await goto(resolve('/settings'))
   }
 </script>
 
@@ -54,6 +59,11 @@
           align="end"
           sideOffset={4}
         >
+          <DropdownMenu.Item onclick={openSettings}>
+            <Settings />
+            Einstellungen
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
           <DropdownMenu.Item onclick={logout}>
             <LogOut />
             Ausloggen

@@ -17,28 +17,19 @@
     onEventCopy,
     onEventResize,
     scheduleFilter,
-    sourceEventCounts = $bindable(),
     scheduleEntries = $bindable([]),
     scheduleFetcher
   }: ScheduleProps = $props()
 
   // Single derived function that tracks source toggles and filters
-  const [filteredEvents, _sourceEventCounts] = $derived.by(() => {
+  const filteredEvents = $derived.by(() => {
     const { showHolidays, showSemester, showSchedule } = scheduleFilter
     const allEvents: CalendarEvent<CalendarEventProps>[] = []
-
-    const counts = {
-      holiday: 0,
-      semesterPlan: 0,
-      schedule: 0,
-      exam: 0
-    }
 
     // Filter events inline as we collect them
     if (showHolidays) {
       // holidays are always shown
       allEvents.push(...holidays)
-      counts.holiday = holidays.length
     }
 
     if (showSemester) {
@@ -63,7 +54,6 @@
         }
 
         allEvents.push(entry)
-        counts.semesterPlan++
       }
     }
 
@@ -177,20 +167,10 @@
         }
 
         allEvents.push(entry)
-        counts.schedule++
       }
     }
 
-    return [allEvents, counts]
-  })
-
-  // NOTE: this might be inefficient. Maybe we should use a different approach
-  $effect(() => {
-    const { schedule, semesterPlan, holiday, exam } = _sourceEventCounts
-    sourceEventCounts.schedule = schedule
-    sourceEventCounts.semesterPlan = semesterPlan
-    sourceEventCounts.holiday = holiday
-    sourceEventCounts.exam = exam
+    return allEvents
   })
 
   async function onDateRangeSet(info: DateRangeInfo) {

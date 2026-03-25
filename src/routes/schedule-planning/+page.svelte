@@ -35,13 +35,6 @@
 
   let showConflicts = $state(false)
 
-  let sourceEventCounts = $state({
-    holiday: 0,
-    semesterPlan: 0,
-    schedule: 0,
-    exam: 0
-  })
-
   let scheduleEntries = $state<CalendarEvent<ScheduleEventProps>[]>([])
 
   // Fetch schedule entries when the date range changes
@@ -256,7 +249,7 @@
 
   <h2 class="text-3xl font-bold tracking-tight">Stundenplanung</h2>
 
-  <ScheduleFilter {sourceEventCounts} scheduleFilter={schedulePlanningFilter} />
+  <ScheduleFilter scheduleFilter={schedulePlanningFilter} />
 
   <div class="flex min-h-0 flex-1">
     <div class="flex min-w-0 flex-1 flex-col">
@@ -306,7 +299,6 @@
         <Tabs.Content value="calendar">
           <Schedule
             scheduleFetcher={fetchScheduleEntries}
-            bind:sourceEventCounts
             bind:scheduleEntries
             holidays={data.holidays}
             semesterEntries={data.semesterEntries}

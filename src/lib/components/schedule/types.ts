@@ -6,7 +6,6 @@ import type {
   EventCopyInfo,
   EventDropInfo,
   EventResizeInfo,
-  EventSource,
   HolidayEventProps,
   ScheduleEventProps,
   SemesterPlanEventProps
@@ -18,7 +17,6 @@ export interface ScheduleProps {
   semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
   scheduleFetcher: (info: DateRangeInfo) => Promise<Response>
   scheduleFilter: ScheduleFilter
-  sourceEventCounts: Record<EventSource, number>
   scheduleEntries?: CalendarEvent<ScheduleEventProps>[]
   onEventClick?: (info: EventClickInfo) => void
   onDateSelect?: (info: DateSelectInfo) => void

@@ -25,9 +25,21 @@ function getSelectedCalendarDate() {
   }
 }
 
+function getScheduleDisclaimerExpanded() {
+  if (!browser) {
+    return true
+  }
+  const value = localStorage.getItem('schedule-disclaimer-expanded')
+  if (value) {
+    return value === 'true'
+  }
+  return true
+}
+
 function createUiStore() {
   let selectedCalendarView = $state(getSelectedCalendarView())
   let selectedCalendarDate = $state(getSelectedCalendarDate())
+  let scheduleDisclaimerExpanded = $state(getScheduleDisclaimerExpanded())
 
   return {
     get selectedCalendarView() {
@@ -46,6 +58,15 @@ function createUiStore() {
       selectedCalendarDate = date
       if (browser) {
         localStorage.setItem('selectedCalendarDate', date)
+      }
+    },
+    get scheduleDisclaimerExpanded() {
+      return scheduleDisclaimerExpanded
+    },
+    set scheduleDisclaimerExpanded(expanded: boolean) {
+      scheduleDisclaimerExpanded = expanded
+      if (browser) {
+        localStorage.setItem('schedule-disclaimer-expanded', expanded.toString())
       }
     }
   }

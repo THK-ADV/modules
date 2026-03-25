@@ -75,7 +75,28 @@
   function reset() {
     moduleFilter.clearSelections()
   }
+
+  // Quick search
+
+  let searchInputEl: HTMLInputElement | null = $state(null)
+
+  function handleGlobalKeydown(e: KeyboardEvent) {
+    // Press `/` to focus the search input.
+    if (e.key === '/' && document.activeElement !== searchInputEl) {
+      e.preventDefault()
+      searchInputEl?.focus()
+      return
+    }
+    // Press `Esc` to clear search when the input is focused.
+    if (e.key === 'Escape' && document.activeElement === searchInputEl) {
+      e.preventDefault()
+      moduleFilter.title = ''
+      searchInputEl?.blur()
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleGlobalKeydown} />
 
 {#snippet filterOptions()}
   <FilterOption
@@ -130,6 +151,7 @@
         class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
         type="search"
         bind:value={moduleFilter.title}
+        bind:ref={searchInputEl}
       />
     </div>
   </div>

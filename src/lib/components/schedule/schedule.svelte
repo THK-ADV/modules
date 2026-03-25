@@ -189,7 +189,7 @@
 </script>
 
 <!-- Calendar -->
-<div class="border-border bg-card min-h-[60vh] rounded-lg border">
+<div class="min-h-[60vh]">
   <Calendar
     events={filteredEvents}
     {onEventClick}

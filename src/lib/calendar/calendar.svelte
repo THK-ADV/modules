@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button'
   import * as ToggleGroup from '$lib/components/ui/toggle-group'
+  import { uiStore } from '$lib/stores/ui.svelte.js'
   import { Calendar } from '@fullcalendar/core'
   import dayGridPlugin from '@fullcalendar/daygrid'
   import interactionPlugin from '@fullcalendar/interaction'
@@ -17,12 +18,11 @@
     type CalendarEventProps,
     type DateRangeInfo,
     type DateSelectInfo,
-    type EventCopyInfo,
     type EventClickInfo,
+    type EventCopyInfo,
     type EventDropInfo,
     type EventResizeInfo
   } from './types.js'
-  import { uiStore } from '$lib/stores/ui.svelte.js'
 
   interface Props {
     /**
@@ -69,6 +69,7 @@
   let isCopyDragging = $state(false)
   let draggedEventEl: HTMLElement | null = null
   let harnessObserver: MutationObserver | null = null
+  let monthShort = $state('')
 
   function showOriginalEventAsCopy(show: boolean) {
     const harness = draggedEventEl?.closest(
@@ -126,6 +127,12 @@
 
   function handleToday() {
     calendar?.today()
+  }
+
+  function handleViewChange(value: string) {
+    if (!value) return
+    uiStore.selectedCalendarView = value
+    calendar?.changeView(value)
   }
 
   onMount(() => {
@@ -203,7 +210,13 @@
           eventContent: renderWeekViewEventContent
         },
         timeGridDay: {
-          eventContent: renderWeekViewEventContent
+          eventContent: renderWeekViewEventContent,
+          dayHeaderContent: (arg) => {
+            const dateLabel = `${arg.date.getDate().toString().padStart(2, '0')}.${(arg.date.getMonth() + 1).toString().padStart(2, '0')}.`
+            return {
+              html: `<span class="inline sm:hidden">${arg.text}, ${dateLabel}</span><span class="hidden sm:inline">${arg.text}</span>`
+            }
+          }
         },
         dayGridMonth: {
           fixedWeekCount: false,
@@ -327,6 +340,7 @@
           currentTitle = calendar.view.title
           const currentDate = calendar.getDate().toISOString()
           uiStore.selectedCalendarDate = currentDate
+          monthShort = calendar.getDate().toLocaleString('de-DE', { month: 'short' }) + '.'
         }
         onDateRangeSet?.({
           start: arg.start,
@@ -388,14 +402,27 @@
 
 <div class="flex flex-col {className}">
   <!-- Toolbar -->
-  <div class="border-border bg-card flex items-center justify-between border-b px-4 py-3">
-    <!-- Left: Navigation -->
-    <div class="bg-muted flex items-center rounded-lg p-1">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b py-3">
+    <!-- Title: hidden on mobile unless dayGridMonth (abbreviated) -->
+    <h3
+      class="order-first hidden w-full text-center text-lg font-semibold sm:order-2 sm:block sm:w-auto sm:flex-1"
+    >
+      {currentTitle}
+    </h3>
+
+    {#if uiStore.selectedCalendarView === 'dayGridMonth'}
+      <span class="order-2 flex-1 text-center text-lg font-semibold sm:hidden">
+        {monthShort}
+      </span>
+    {/if}
+
+    <!-- Navigation -->
+    <div class="bg-muted order-1 flex items-center rounded-lg p-1">
       <Button
         variant="ghost"
         size="sm"
         onclick={handlePrev}
-        aria-label="Vorherige Woche"
+        aria-label="Zurück"
         class="h-8 w-8 p-0"
       >
         <ChevronLeft class="size-4" />
@@ -409,38 +436,35 @@
         variant="ghost"
         size="sm"
         onclick={handleNext}
-        aria-label="Nächste Woche"
+        aria-label="Weiter"
         class="h-8 w-8 p-0"
       >
         <ChevronRight class="size-4" />
       </Button>
     </div>
 
-    <!-- Center: Title -->
-    <h3 class="text-lg font-semibold">{currentTitle}</h3>
-
-    <!-- Right: View Toggle -->
+    <!-- View Toggle -->
     <ToggleGroup.Root
       type="single"
-      bind:value={uiStore.selectedCalendarView}
-      onValueChange={(value) => calendar?.changeView(value)}
-      class="bg-muted rounded-lg p-1"
+      value={uiStore.selectedCalendarView}
+      onValueChange={handleViewChange}
+      class="bg-muted order-3 rounded-lg p-1"
     >
       <ToggleGroup.Item
         value="timeGridDay"
-        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
+        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-2.5 text-sm font-medium transition-all data-[state=on]:shadow-sm sm:px-3"
       >
         Tag
       </ToggleGroup.Item>
       <ToggleGroup.Item
         value="timeGridWeek"
-        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
+        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-2.5 text-sm font-medium transition-all data-[state=on]:shadow-sm sm:px-3"
       >
         Woche
       </ToggleGroup.Item>
       <ToggleGroup.Item
         value="dayGridMonth"
-        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-3 text-sm font-medium transition-all data-[state=on]:shadow-sm"
+        class="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-8 rounded-md px-2.5 text-sm font-medium transition-all data-[state=on]:shadow-sm sm:px-3"
       >
         Monat
       </ToggleGroup.Item>

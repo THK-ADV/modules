@@ -3,7 +3,7 @@ import { getDefaultCalendarView } from '$lib/calendar'
 
 function getSelectedCalendarView() {
   if (!browser) {
-    return getDefaultCalendarView()
+    return 'timeGridWeek'
   }
   const value = localStorage.getItem('selectedCalendarView')
   if (value) {

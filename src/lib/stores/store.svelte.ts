@@ -12,8 +12,6 @@ import type {
   Status
 } from '$lib/types/core'
 import type { StudyProgram } from '$lib/types/study-program'
-import type { PaginationState } from '@tanstack/table-core'
-import { type Selection } from '../../routes/my-modules/(components)/types'
 import { fmtPerson, peopleOrdering } from '../formats'
 
 export function getSemesterOptions() {
@@ -213,41 +211,4 @@ function createModuleUpdateState() {
   }
 }
 
-function createMyModuleFilter() {
-  let currentSelection = $state<Selection>('my')
-  let searchString = $state('')
-  const pages = ['10', '25', '40', 'Alle']
-  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: +pages[0] })
-
-  return {
-    get searchString() {
-      return searchString
-    },
-    get currentSelection() {
-      return currentSelection
-    },
-    get pagination() {
-      return pagination
-    },
-    get pages() {
-      return pages
-    },
-    set searchString(value: string) {
-      searchString = value
-    },
-    set currentSelection(value: Selection) {
-      currentSelection = value
-    },
-    clearSelections() {
-      searchString = ''
-      currentSelection = 'my'
-    },
-    set pagination(value: PaginationState) {
-      pagination = value
-    }
-  }
-}
-
 export const moduleUpdateState = createModuleUpdateState()
-
-export const myModuleFilter = createMyModuleFilter()

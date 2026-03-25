@@ -14,28 +14,10 @@ import { getSemesterOptions, getModuleTypeOptions } from './store.svelte'
 import {
   clearItemFromLocalStorage,
   getArrayFromLocalStorage,
-  setArrayToLocalStorage
+  setArrayToLocalStorage,
+  getPaginationFromLocalStorage,
+  setPaginationToLocalStorage
 } from './local-storage'
-import { browser } from '$app/environment'
-
-function getPaginationFromLocalStorage(pageSize: number): PaginationState {
-  if (!browser) {
-    return { pageIndex: 0, pageSize: pageSize }
-  }
-  const value = localStorage.getItem('mf-pagination')
-  if (value) {
-    const [pageIndex, pageSize] = value.split(',')
-    return { pageIndex: +pageIndex, pageSize: +pageSize }
-  }
-  return { pageIndex: 0, pageSize: pageSize }
-}
-
-function setPaginationToLocalStorage({ pageIndex, pageSize }: PaginationState) {
-  if (!browser) {
-    return
-  }
-  localStorage.setItem('mf-pagination', `${pageIndex},${pageSize}`)
-}
 
 function createModuleFilter() {
   // Bumps when any filter changes so TanStack re-runs `globalFilterFn`.
@@ -56,7 +38,7 @@ function createModuleFilter() {
   let title = $state('')
 
   const pages = ['15', '30', '45', 'Alle']
-  let pagination = $state(getPaginationFromLocalStorage(+pages[0]))
+  let pagination = $state(getPaginationFromLocalStorage('mf-pagination', +pages[0]))
 
   return {
     get title() {
@@ -103,7 +85,7 @@ function createModuleFilter() {
     },
     set pagination(value: PaginationState) {
       pagination = value
-      setPaginationToLocalStorage(value)
+      setPaginationToLocalStorage('mf-pagination', value)
     },
     set title(value: string) {
       title = value

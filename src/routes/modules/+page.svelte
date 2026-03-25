@@ -32,7 +32,7 @@
           onclick: column.getToggleSortingHandler(),
           sort: column.getIsSorted(),
           fullText: 'Modulbezeichnung',
-          shortText: 'Name'
+          shortText: 'Modulbez.'
         })
       },
       cell: ({ row }) => {

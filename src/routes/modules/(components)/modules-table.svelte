@@ -50,10 +50,6 @@
 
   const globalFilter = $derived(moduleFilter.changed)
 
-  $effect(() => {
-    moduleFilter.pagination = pagination
-  })
-
   const table = createSvelteTable({
     // data
     get data() {
@@ -82,6 +78,7 @@
       } else {
         pagination = updater
       }
+      moduleFilter.pagination = pagination
     },
     // state
     state: {

@@ -236,7 +236,7 @@
 
   {#if isMobile.current}
     <div class="space-y-3">
-      <div class="grid grid-cols-2 gap-1">
+      <div class="grid grid-cols-2 gap-2">
         <!-- Source Button -->
         <Button
           onclick={() => {

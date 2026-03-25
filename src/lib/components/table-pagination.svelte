@@ -8,11 +8,13 @@
   let { table, pages }: { table: Table<any>; pages: string[] } = $props()
 </script>
 
-<div class="flex items-center justify-between">
-  <p class="text-muted-foreground text-sm font-medium">
+<div class="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center md:gap-0">
+  <p class="text-muted-foreground text-left text-sm font-medium md:whitespace-nowrap">
     Anzahl der Einträge: {table.getRowCount()}
   </p>
-  <div class="flex justify-end space-x-6 lg:space-x-8">
+  <div
+    class="flex w-full flex-wrap items-center justify-start gap-3 md:flex-nowrap md:justify-end md:gap-6"
+  >
     <div class="flex items-center space-x-2">
       <p class="text-sm font-medium">Zeilen pro Seite</p>
       <Select.Root
@@ -22,7 +24,7 @@
         }}
         value={table.getState().pagination.pageSize.toString()}
       >
-        <Select.Trigger class="h-8 w-[70px]">
+        <Select.Trigger class="h-8 w-[60px] md:w-[70px]">
           {table.getState().pagination.pageSize}
         </Select.Trigger>
         <Select.Content>
@@ -38,7 +40,7 @@
     <div class="flex items-center space-x-2">
       <Button
         variant="outline"
-        class="hidden size-8 p-0 lg:flex"
+        class="hidden size-8 p-0 md:flex"
         onclick={() => table.firstPage()}
         disabled={!table.getCanPreviousPage()}
       >
@@ -62,7 +64,7 @@
       </Button>
       <Button
         variant="outline"
-        class="hidden size-8 p-0 lg:flex"
+        class="hidden size-8 p-0 md:flex"
         disabled={!table.getCanNextPage()}
         onclick={() => table.lastPage()}
       >

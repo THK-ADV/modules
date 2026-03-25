@@ -135,6 +135,30 @@
     calendar?.changeView(value)
   }
 
+  // Swipe gesture for mobile navigation
+  let touchStartX = 0
+  let touchStartY = 0
+  const SWIPE_THRESHOLD = 50
+
+  function handleTouchStart(e: TouchEvent) {
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+  }
+
+  function handleTouchEnd(e: TouchEvent) {
+    const deltaX = e.changedTouches[0].clientX - touchStartX
+    const deltaY = e.changedTouches[0].clientY - touchStartY
+
+    // Only trigger if horizontal swipe is dominant
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD || Math.abs(deltaX) < Math.abs(deltaY)) return
+
+    if (deltaX > 0) {
+      calendar?.prev()
+    } else {
+      calendar?.next()
+    }
+  }
+
   onMount(() => {
     const supportsCopy = Boolean(onEventCopy)
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -374,6 +398,9 @@
       getTitle: () => calendar?.view.title ?? ''
     }
 
+    calendarEl.addEventListener('touchstart', handleTouchStart, { passive: true })
+    calendarEl.addEventListener('touchend', handleTouchEnd, { passive: true })
+
     return () => {
       clearTimeout(resizeTimeout)
       resizeObserver.disconnect()
@@ -384,6 +411,10 @@
       }
       harnessObserver?.disconnect()
       setCopyCursorIndicator(false)
+
+      calendarEl.removeEventListener('touchstart', handleTouchStart)
+      calendarEl.removeEventListener('touchend', handleTouchEnd)
+
       calendar?.destroy()
       calendar = null
     }

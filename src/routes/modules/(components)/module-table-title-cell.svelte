@@ -1,8 +1,10 @@
 <script lang="ts">
-  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { resolve } from '$app/paths'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { Ban } from '@lucide/svelte'
 
-  let { id, title, status }: { id: string; title: string; status: string } = $props()
+  let { id, title, abbrev, status }: { id: string; title: string; abbrev: string; status: string } =
+    $props()
 </script>
 
 <div class="flex items-center gap-2">
@@ -10,10 +12,8 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <span
-            class="cursor-help rounded border border-red-200 bg-red-100 px-2 py-1 text-xs text-red-800 hover:bg-red-100"
-          >
-            Inaktiv
+          <span title="Inaktiv">
+            <Ban class="text-amber-600 dark:text-amber-400" size={16} aria-label="Inaktiv" />
           </span>
         </Tooltip.Trigger>
         <Tooltip.Content>
@@ -22,5 +22,8 @@
       </Tooltip.Root>
     </Tooltip.Provider>
   {/if}
-  <a href={resolve('/modules/[id=uuid]', { id })}>{title}</a>
+  <a href={resolve('/modules/[id=uuid]', { id })} title={`${title} (${abbrev})`}>
+    <span class="md:hidden">{abbrev}</span>
+    <span class="hidden md:inline">{title} ({abbrev})</span>
+  </a>
 </div>

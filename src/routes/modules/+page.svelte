@@ -1,34 +1,11 @@
 <script lang="ts" module>
   import DataTableTitleButton from '$lib/components/modules-table-title-button.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import type { ModuleView, PersonShort, StudyProgramModuleAssociation } from '$lib/types/module'
+  import type { ModuleView, StudyProgramModuleAssociation } from '$lib/types/module'
   import type { ColumnDef } from '@tanstack/table-core'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
   const fmtCredits = creditsFormatter()
-
-  function fmtModuleManagement(xs: ReadonlyArray<PersonShort>) {
-    let res = ''
-    for (const [i, x] of xs.entries()) {
-      switch (x.kind) {
-        case 'person':
-          if (x.firstname.length > 0) {
-            res += `${x.lastname}, ${x.firstname.charAt(0)}.`
-            if (i < xs.length - 1) {
-              res += ' & '
-            }
-          }
-          break
-        case 'group':
-          res += x.title
-          break
-        case 'unknown':
-          res += x.title
-          break
-      }
-    }
-    return res
-  }
 
   function fmtSemester(xs: ReadonlyArray<StudyProgramModuleAssociation>) {
     let semester: number[]
@@ -52,21 +29,49 @@
       accessorKey: 'title',
       header: ({ column }) => {
         return renderComponent(DataTableTitleButton, {
-          onclick: column.getToggleSortingHandler()
+          onclick: column.getToggleSortingHandler(),
+          sort: column.getIsSorted(),
+          fullText: 'Modulbezeichnung',
+          shortText: 'Name'
         })
       },
       cell: ({ row }) => {
         return renderComponent(ModuleTableTitleCell, {
           id: row.original.id,
           title: row.original.title,
+          abbrev: row.original.abbrev,
           status: row.original.status
         })
-      }
+      },
+      sortingFn: 'alphanumeric'
     },
     {
       accessorKey: 'moduleManagement',
-      header: 'Modulverantwortliche',
-      cell: ({ row }) => fmtModuleManagement(row.original.moduleManagement)
+      header: ({ column }) => {
+        return renderComponent(DataTableTitleButton, {
+          onclick: column.getToggleSortingHandler(),
+          sort: column.getIsSorted(),
+          fullText: 'Modulverantwortliche',
+          shortText: 'MV.'
+        })
+      },
+      cell: ({ row }) => {
+        return renderComponent(ModuleTableManagementCell, {
+          management: row.original.moduleManagement
+        })
+      },
+      sortingFn: (lhs, rhs) => {
+        if (
+          lhs.original.moduleManagement.length === 0 ||
+          rhs.original.moduleManagement.length === 0
+        ) {
+          return 0
+        }
+        return peopleShortOrdering(
+          lhs.original.moduleManagement[0],
+          rhs.original.moduleManagement[0]
+        )
+      }
     },
     {
       accessorKey: 'moduleType',
@@ -95,17 +100,23 @@
   import type { PageProps } from './$types'
   import ModuleTableTitleCell from './(components)/module-table-title-cell.svelte'
   import ModulesTable from './(components)/modules-table.svelte'
-  import { creditsFormatter } from '$lib/formats'
+  import { creditsFormatter, peopleShortOrdering } from '$lib/formats'
+  import ModuleTableManagementCell from './(components)/modules-table-management-cell.svelte'
 
   let { data }: PageProps = $props()
 
-  const latestModuleUpdate = $derived(
-    data.latestModuleUpdate?.toLocaleDateString('de-DE', {
+  const latestModuleUpdate = $derived.by(() => {
+    const latest = data.latestModuleUpdate as Date | null
+    if (!latest) {
+      return null
+    }
+
+    return latest.toLocaleDateString('de-DE', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     })
-  )
+  })
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">

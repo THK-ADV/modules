@@ -10,9 +10,11 @@
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    type SortingState
+    type SortingState,
+    type VisibilityState
   } from '@tanstack/table-core'
   import DataTableFilter from './modules-table-filter.svelte'
+  import { IsMobile } from '$lib/hooks/is-mobile.svelte'
 
   type DataTableProps = {
     columns: ColumnDef<ModuleView>[]
@@ -22,9 +24,29 @@
   let { data, columns }: DataTableProps = $props()
 
   const pages = moduleFilter.pages
+  const isMobile = new IsMobile()
 
   let sorting = $state<SortingState>([{ id: 'title', desc: false }])
   let pagination = $state(moduleFilter.pagination)
+
+  let columnVisibility: VisibilityState = $derived.by(() => {
+    if (isMobile.current) {
+      return {
+        title: true,
+        credits: true,
+        semester: false,
+        moduleManagement: true,
+        moduleType: false
+      }
+    }
+    return {
+      title: true,
+      credits: true,
+      semester: true,
+      moduleManagement: true,
+      moduleType: true
+    }
+  })
 
   const globalFilter = $derived(moduleFilter.changed)
 
@@ -71,12 +93,15 @@
       },
       get globalFilter() {
         return globalFilter
+      },
+      get columnVisibility() {
+        return columnVisibility
       }
     }
   })
 </script>
 
-<div class="space-y-4">
+<div class="min-w-0 space-y-4">
   <DataTableFilter />
   <div class="rounded-md border">
     <Table.Root>

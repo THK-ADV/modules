@@ -29,6 +29,8 @@
     )
   })
 
+  // Mobile handling
+
   let filtersOpen = $state(false)
 
   const isMobile = new IsMobile()
@@ -60,21 +62,6 @@
     }
     return count
   })
-
-  const filterTitle = $derived.by(() => {
-    if (activeFilterDimensions > 0) {
-      return 'Filter aktiv'
-    }
-    if (!filtersOpen) {
-      return 'Filter anzeigen'
-    }
-
-    return 'Filter ausblenden'
-  })
-
-  function reset() {
-    moduleFilter.clearSelections()
-  }
 
   // Quick search
 
@@ -137,54 +124,54 @@
 {/snippet}
 
 <div class="min-w-0 space-y-4">
-  <!-- Search Section -->
-  <div class="flex min-w-0 items-center gap-3">
-    <div
-      class="text-muted-foreground hidden shrink-0 items-center gap-2 text-sm font-medium md:flex md:w-16"
-    >
-      <Search class="size-4" />
-      <span>Suche</span>
-    </div>
-    <div class="w-full min-w-0 flex-1 md:w-auto">
-      <Input
-        placeholder="Suche nach Modulbezeichnung oder Kürzel…"
-        class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
-        type="search"
-        bind:value={moduleFilter.title}
-        bind:ref={searchInputEl}
-      />
-    </div>
-  </div>
-
-  <!-- Filter Section -->
   {#if isMobile.current}
     <Collapsible.Root bind:open={filtersOpen} class="min-w-0">
-      <Collapsible.Trigger>
-        {#snippet child({ props })}
-          <Button
-            {...props}
-            variant="outline"
-            class="border-muted-foreground/25 hover:bg-muted/50 h-11 w-full justify-between gap-2 border-2 border-dashed px-3 font-medium"
-            type="button"
-          >
-            <span class="flex min-w-0 items-center gap-2">
-              <Funnel class="text-muted-foreground size-4 shrink-0" />
-              <span class="truncate">{filterTitle}</span>
-              {#if activeFilterDimensions > 0}
-                <Badge variant="secondary" class="shrink-0 rounded-sm px-1.5 tabular-nums">
-                  {activeFilterDimensions}
-                </Badge>
-              {/if}
-            </span>
-            <ChevronDown
-              class={cn(
-                'text-muted-foreground size-4 shrink-0 transition-transform duration-200',
-                filtersOpen && 'rotate-180'
-              )}
-            />
-          </Button>
-        {/snippet}
-      </Collapsible.Trigger>
+      <!-- Search + Mobile Filter Toggle -->
+      <div class="flex min-w-0 items-center gap-2">
+        <div
+          class="text-muted-foreground hidden shrink-0 items-center gap-2 text-sm font-medium md:flex md:w-16"
+        >
+          <Search class="size-4" />
+          <span>Suche</span>
+        </div>
+        <div class="w-full min-w-0 flex-1 md:w-auto">
+          <Input
+            placeholder="Suche nach Name oder Kürzel…"
+            class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
+            type="search"
+            bind:value={moduleFilter.title}
+            bind:ref={searchInputEl}
+          />
+        </div>
+
+        <Collapsible.Trigger>
+          {#snippet child({ props })}
+            <Button
+              {...props}
+              variant="outline"
+              class="border-muted-foreground/25 hover:bg-muted/50 h-10 w-auto justify-between gap-2 border-2 border-dashed px-2.5 font-medium"
+              type="button"
+            >
+              <span class="flex min-w-0 items-center gap-2">
+                <Funnel class="text-muted-foreground size-4 shrink-0" />
+                <span class="max-w-30 truncate">Filter</span>
+                {#if activeFilterDimensions > 0}
+                  <Badge variant="secondary" class="shrink-0 rounded-sm px-1 tabular-nums">
+                    {activeFilterDimensions}
+                  </Badge>
+                {/if}
+              </span>
+              <ChevronDown
+                class={cn(
+                  'text-muted-foreground size-4 shrink-0 transition-transform duration-200',
+                  filtersOpen && 'rotate-180'
+                )}
+              />
+            </Button>
+          {/snippet}
+        </Collapsible.Trigger>
+      </div>
+
       <Collapsible.Content class="overflow-hidden">
         <div class="border-border/60 flex flex-wrap gap-2 border-t pt-3">
           {@render filterOptions()}
@@ -192,6 +179,25 @@
       </Collapsible.Content>
     </Collapsible.Root>
   {:else}
+    <!-- Search Section -->
+    <div class="flex min-w-0 items-center gap-3">
+      <div
+        class="text-muted-foreground hidden shrink-0 items-center gap-2 text-sm font-medium md:flex md:w-16"
+      >
+        <Search class="size-4" />
+        <span>Suche</span>
+      </div>
+      <div class="w-full min-w-0 flex-1 md:w-auto">
+        <Input
+          placeholder="Suche nach Modulbezeichnung oder Kürzel…"
+          class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
+          type="search"
+          bind:value={moduleFilter.title}
+          bind:ref={searchInputEl}
+        />
+      </div>
+    </div>
+
     <div class="flex min-w-0 items-center gap-3">
       <div
         class="text-muted-foreground flex shrink-0 items-center gap-2 text-sm font-medium md:w-16"
@@ -210,7 +216,7 @@
   {#if showReset}
     <div class="flex items-center gap-3">
       <Button
-        onclick={reset}
+        onclick={() => moduleFilter.clearSelections()}
         variant="outline"
         size="sm"
         class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"

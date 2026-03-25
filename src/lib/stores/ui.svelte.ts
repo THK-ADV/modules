@@ -5,7 +5,7 @@ function getSelectedCalendarView() {
   if (!browser) {
     return 'timeGridWeek'
   }
-  const value = localStorage.getItem('selectedCalendarView')
+  const value = localStorage.getItem('selected-calendar-view')
   if (value) {
     return value
   } else {
@@ -17,7 +17,7 @@ function getSelectedCalendarDate() {
   if (!browser) {
     return new Date().toISOString()
   }
-  const value = localStorage.getItem('selectedCalendarDate')
+  const value = localStorage.getItem('selected-calendar-date')
   if (value) {
     return value
   } else {
@@ -29,11 +29,18 @@ function getScheduleDisclaimerExpanded() {
   if (!browser) {
     return true
   }
-  const value = localStorage.getItem('schedule-disclaimer-expanded')
+  const value = localStorage.getItem('schedule-disclaimer-expanded-state')
   if (value) {
     return value === 'true'
   }
   return true
+}
+
+function setStringToLocalStorage(key: string, value: string) {
+  if (!browser) {
+    return
+  }
+  localStorage.setItem(key, value)
 }
 
 function createUiStore() {
@@ -47,27 +54,21 @@ function createUiStore() {
     },
     set selectedCalendarView(view: string) {
       selectedCalendarView = view
-      if (browser) {
-        localStorage.setItem('selectedCalendarView', view)
-      }
+      setStringToLocalStorage('selected-calendar-view', view)
     },
     get selectedCalendarDate() {
       return selectedCalendarDate
     },
     set selectedCalendarDate(date: string) {
       selectedCalendarDate = date
-      if (browser) {
-        localStorage.setItem('selectedCalendarDate', date)
-      }
+      setStringToLocalStorage('selected-calendar-date', date)
     },
     get scheduleDisclaimerExpanded() {
       return scheduleDisclaimerExpanded
     },
     set scheduleDisclaimerExpanded(expanded: boolean) {
       scheduleDisclaimerExpanded = expanded
-      if (browser) {
-        localStorage.setItem('schedule-disclaimer-expanded', expanded.toString())
-      }
+      setStringToLocalStorage('schedule-disclaimer-expanded-state', expanded.toString())
     }
   }
 }

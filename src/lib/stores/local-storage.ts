@@ -24,3 +24,10 @@ export function clearItemFromLocalStorage(key: string) {
   }
   localStorage.removeItem(key)
 }
+
+export function setBooleanToLocalStorage(key: string, value: boolean) {
+  if (!browser) {
+    return
+  }
+  localStorage.setItem(key, value.toString())
+}

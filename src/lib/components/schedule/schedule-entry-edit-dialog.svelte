@@ -8,7 +8,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { schedulePlanningFilter } from '$lib/stores/store.svelte'
+  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import type { CourseType, PO, ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
   import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date'
   import { Copy, Plus, SquarePen, Trash2 } from '@lucide/svelte'

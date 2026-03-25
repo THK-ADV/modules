@@ -21,7 +21,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { schedulePlanningFilter } from '$lib/stores/store.svelte'
+  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import type { ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
   import { Calendar, PanelRight, Table2, TriangleAlert } from '@lucide/svelte'
   import type { PageProps } from './$types'

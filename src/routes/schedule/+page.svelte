@@ -3,7 +3,7 @@
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
-  import { scheduleFilter } from '$lib/stores/store.svelte'
+  import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
   import { uiStore } from '$lib/stores/ui.svelte'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { ChevronDown, TriangleAlert, X } from '@lucide/svelte'

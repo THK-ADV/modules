@@ -10,7 +10,7 @@ import type {
   ScheduleEventProps,
   SemesterPlanEventProps
 } from '$lib/calendar'
-import type { ScheduleFilter } from '$lib/stores/store.svelte'
+import type { ScheduleFilter } from '$lib/stores/schedule-filter.svelte'
 
 export interface ScheduleProps {
   holidays: CalendarEvent<HolidayEventProps>[]

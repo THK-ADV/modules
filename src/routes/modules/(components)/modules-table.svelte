@@ -2,40 +2,19 @@
   import TablePagination from '$lib/components/table-pagination.svelte'
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import { moduleFilter } from '$lib/store.svelte'
+  import { moduleFilter, showModuleTableRow } from '$lib/stores/module-filter.svelte'
   import type { ModuleView } from '$lib/types/module'
   import {
     type ColumnDef,
-    type ColumnFiltersState,
     getCoreRowModel,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    type SortingState
+    type SortingState,
+    type VisibilityState
   } from '@tanstack/table-core'
   import DataTableFilter from './modules-table-filter.svelte'
-
-  function getInitialColumnFilters(): ColumnFiltersState {
-    const filters: ColumnFiltersState = []
-
-    if (moduleFilter.selectedStudyPrograms.length > 0) {
-      filters.push({ id: 'studyProgram', value: moduleFilter.selectedStudyPrograms })
-    }
-    if (moduleFilter.selectedIdentities.length > 0) {
-      filters.push({ id: 'moduleManagement', value: moduleFilter.selectedIdentities })
-    }
-    if (moduleFilter.selectedSemester.length > 0) {
-      filters.push({ id: 'semester', value: moduleFilter.selectedSemester })
-    }
-    if (moduleFilter.selectedModuleTypes.length > 0) {
-      filters.push({ id: 'moduleType', value: moduleFilter.selectedModuleTypes })
-    }
-    if (moduleFilter.title.length > 0) {
-      filters.push({ id: 'title', value: moduleFilter.title })
-    }
-
-    return filters
-  }
+  import { IsMobile } from '$lib/hooks/is-mobile.svelte'
 
   type DataTableProps = {
     columns: ColumnDef<ModuleView>[]
@@ -45,15 +24,31 @@
   let { data, columns }: DataTableProps = $props()
 
   const pages = moduleFilter.pages
+  const isMobile = new IsMobile()
 
-  let sorting = $state<SortingState>([])
-  let columnFilters = $state<ColumnFiltersState>(getInitialColumnFilters())
-  let pagination = $derived(moduleFilter.pagination)
+  let sorting = $state<SortingState>([{ id: 'title', desc: false }])
+  let pagination = $state(moduleFilter.pagination)
 
-  $effect(() => {
-    // keep pagination in sync with store to allow state persistence through navigation
-    moduleFilter.pagination = pagination
+  let columnVisibility: VisibilityState = $derived.by(() => {
+    if (isMobile.current) {
+      return {
+        title: true,
+        credits: true,
+        semester: false,
+        moduleManagement: true,
+        moduleType: false
+      }
+    }
+    return {
+      title: true,
+      credits: true,
+      semester: true,
+      moduleManagement: true,
+      moduleType: true
+    }
   })
+
+  const globalFilter = $derived(moduleFilter.changed)
 
   const table = createSvelteTable({
     // data
@@ -73,15 +68,8 @@
         sorting = updater
       }
     },
-    // filter
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnFiltersChange: (updater) => {
-      if (typeof updater === 'function') {
-        columnFilters = updater(columnFilters)
-      } else {
-        columnFilters = updater
-      }
-    },
+    globalFilterFn: (row) => showModuleTableRow(row.original),
     // pagination
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: (updater) => {
@@ -90,25 +78,28 @@
       } else {
         pagination = updater
       }
+      moduleFilter.pagination = pagination
     },
     // state
     state: {
       get sorting() {
         return sorting
       },
-      get columnFilters() {
-        return columnFilters
-      },
       get pagination() {
         return pagination
+      },
+      get globalFilter() {
+        return globalFilter
+      },
+      get columnVisibility() {
+        return columnVisibility
       }
-    },
-    initialState: { columnVisibility: { studyProgram: false } }
+    }
   })
 </script>
 
-<div class="space-y-4">
-  <DataTableFilter {table} />
+<div class="min-w-0 space-y-4">
+  <DataTableFilter />
   <div class="rounded-md border">
     <Table.Root>
       <Table.Header>

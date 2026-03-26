@@ -6,7 +6,7 @@
   import { Label } from '$lib/components/ui/label/index.js'
   import { Switch } from '$lib/components/ui/switch/index.js'
   import { fmtModule } from '$lib/formats'
-  import { moduleUpdateState } from '$lib/store.svelte'
+  import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { getModuleFormContext } from '../context'
   import type { PageProps } from './$types'

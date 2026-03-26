@@ -1,7 +1,7 @@
 <script lang="ts">
   import ComboboxField from '$lib/components/combobox.svelte'
   import InputField from '$lib/components/input-field.svelte'
-  import { moduleUpdateState } from '$lib/store.svelte.js'
+  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 

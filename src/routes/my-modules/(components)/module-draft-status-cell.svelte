@@ -69,6 +69,25 @@
         return 'Unbekannt'
     }
   })
+
+  let shortLabel = $derived.by(() => {
+    switch (state) {
+      case 'published':
+        return 'Aktuell'
+      case 'valid_for_publication':
+        return 'Übernahmebereit'
+      case 'waiting_for_changes':
+        return 'Anpassungen'
+      case 'waiting_for_publication':
+        return 'Warte (Backend)'
+      case 'valid_for_review':
+        return 'Reviewbereit'
+      case 'waiting_for_review':
+        return 'Warte (Review)'
+      case 'unknown':
+        return 'Unbekannt'
+    }
+  })
 </script>
 
 <Tooltip.Provider>
@@ -81,7 +100,8 @@
             ? 'text-amber-500 dark:text-amber-400'
             : 'text-muted-foreground'}"
         />
-        <span class="truncate text-sm font-medium">{label}</span>
+        <span class="hidden truncate text-sm font-medium sm:inline">{label}</span>
+        <span class="truncate text-sm font-medium sm:hidden">{shortLabel}</span>
       </div>
     </Tooltip.Trigger>
     <!-- long tooltips will wrap properly by word breaking if needed -->

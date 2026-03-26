@@ -4,7 +4,7 @@ export type IdentityKind = 'person' | 'group' | 'unknown'
 
 export interface PersonShort {
   id: string
-  abbrev: string
+  abbreviation: string
   kind: IdentityKind
   title: string
   firstname: string

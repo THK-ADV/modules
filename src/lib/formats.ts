@@ -1,8 +1,9 @@
 import type { Identity, ModuleCore, ModuleManagement } from './types/core'
+import type { IdentityKind, PersonShort } from './types/module'
 import type { StudyProgram } from './types/study-program'
 
-export function ordinalKind(a: Identity): number {
-  switch (a.kind) {
+export function ordinalKind(kind: IdentityKind): number {
+  switch (kind) {
     case 'person':
       return 0
     case 'group':
@@ -22,7 +23,21 @@ export function peopleOrdering(a: Identity, b: Identity): number {
       return a.id.localeCompare(b.id)
     }
   } else {
-    return ordinalKind(a) - ordinalKind(b)
+    return ordinalKind(a.kind) - ordinalKind(b.kind)
+  }
+}
+
+export function peopleShortOrdering(a: PersonShort, b: PersonShort): number {
+  if (a.kind === b.kind) {
+    if (a.kind === 'person' && b.kind === 'person') {
+      return a.lastname.localeCompare(b.lastname)
+    } else if (a.kind === 'group' && b.kind === 'group') {
+      return a.title.localeCompare(b.title)
+    } else {
+      return a.id.localeCompare(b.id)
+    }
+  } else {
+    return ordinalKind(a.kind) - ordinalKind(b.kind)
   }
 }
 

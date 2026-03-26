@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Separator } from '$lib/components/ui/separator/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+  import { setSidebarState } from '$lib/stores/sidebar-state'
   import { ModeWatcher } from 'mode-watcher'
   import '../app.css'
   import type { LayoutProps } from './$types'
@@ -8,11 +9,15 @@
   import NavBreadcrumb from './(components)/nav-breadcrumb.svelte'
 
   let { children, data }: LayoutProps = $props()
+
+  function sideBarOpenChange(open: boolean) {
+    setSidebarState(open, document)
+  }
 </script>
 
 <ModeWatcher />
 
-<Sidebar.Provider open={data.sidebarOpen}>
+<Sidebar.Provider open={data.sidebarOpen} onOpenChange={sideBarOpenChange}>
   <AppSidebar user={data.user} userInfo={data.userInfo} />
   <Sidebar.Inset>
     <header

@@ -1,4 +1,4 @@
-import { schedulePlanningFilter } from '$lib/store.svelte'
+import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
 import type { PageLoad } from './$types'
 
 export const load: PageLoad = async ({ data, fetch }) => {

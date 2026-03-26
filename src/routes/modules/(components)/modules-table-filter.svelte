@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button/index.js'
-  import { Input } from '$lib/components/ui/input/index.js'
-  import { moduleFilter } from '$lib/store.svelte'
-  import type { ModuleView } from '$lib/types/module'
-  import { X, Funnel, Search } from '@lucide/svelte'
-  import type { Table } from '@tanstack/table-core'
   import FilterOption from '$lib/components/filter-option.svelte'
-
-  let { table }: { table: Table<ModuleView> } = $props()
+  import { Badge } from '$lib/components/ui/badge/index.js'
+  import { Button } from '$lib/components/ui/button/index.js'
+  import * as Collapsible from '$lib/components/ui/collapsible/index.js'
+  import { Input } from '$lib/components/ui/input/index.js'
+  import { IsMobile } from '$lib/hooks/is-mobile.svelte.js'
+  import { moduleFilter } from '$lib/stores/module-filter.svelte'
+  import { cn } from '$lib/utils.js'
+  import { ChevronDown, Funnel, Search, X } from '@lucide/svelte'
 
   let showReset = $derived.by(() => {
     const {
@@ -15,6 +15,7 @@
       selectedIdentities,
       selectedSemester,
       selectedModuleTypes,
+      selectedModuleStatus,
       title
     } = moduleFilter
 
@@ -23,127 +24,214 @@
       selectedIdentities.length > 0 ||
       selectedSemester.length > 0 ||
       selectedModuleTypes.length > 0 ||
+      selectedModuleStatus.length > 0 ||
       title.length > 0
     )
   })
 
-  function setFilterValue(value: string) {
-    moduleFilter.title = value
-    table.getColumn('title')?.setFilterValue(value)
-  }
+  // Mobile handling
 
-  function selectModuleManagement(id: string) {
-    moduleFilter.selectIdentity(id)
-    table.getColumn('moduleManagement')?.setFilterValue(moduleFilter.selectedIdentities)
-  }
+  let filtersOpen = $state(false)
 
-  function selectSemester(id: string) {
-    moduleFilter.selectSemester(id)
-    table.getColumn('semester')?.setFilterValue(moduleFilter.selectedSemester)
-  }
+  const isMobile = new IsMobile()
 
-  function selectStudyProgram(id: string) {
-    moduleFilter.selectStudyProgram(id)
-    table.getColumn('studyProgram')?.setFilterValue(moduleFilter.selectedStudyPrograms)
-  }
+  let activeFilterDimensions = $derived.by(() => {
+    const {
+      selectedStudyPrograms,
+      selectedIdentities,
+      selectedSemester,
+      selectedModuleTypes,
+      selectedModuleStatus
+    } = moduleFilter
 
-  function selectModuleType(id: string) {
-    moduleFilter.selectModuleType(id)
-    table.getColumn('moduleType')?.setFilterValue(moduleFilter.selectedModuleTypes)
-  }
+    let count = 0
+    if (selectedStudyPrograms.length > 0) {
+      count++
+    }
+    if (selectedSemester.length > 0) {
+      count++
+    }
+    if (selectedIdentities.length > 0) {
+      count++
+    }
+    if (selectedModuleTypes.length > 0) {
+      count++
+    }
+    if (selectedModuleStatus.length > 0) {
+      count++
+    }
+    return count
+  })
 
-  function clearSemester() {
-    moduleFilter.clearSelectedSemester()
-    table.getColumn('semester')?.setFilterValue(undefined)
-  }
+  // Quick search
 
-  function clearModuleManagement() {
-    moduleFilter.clearSelectedIdentities()
-    table.getColumn('moduleManagement')?.setFilterValue(undefined)
-  }
+  let searchInputEl: HTMLInputElement | null = $state(null)
 
-  function clearStudyProgram() {
-    moduleFilter.clearSelectedStudyPrograms()
-    table.getColumn('studyProgram')?.setFilterValue(undefined)
-  }
+  function handleGlobalKeydown(e: KeyboardEvent) {
+    // Press `/` to focus the search input.
+    if (e.key === '/') {
+      const target = e.target
+      // Don't hijack typing in inputs/contenteditable elements (e.g. filter popovers).
+      if (target instanceof HTMLElement) {
+        if (
+          target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT'
+        ) {
+          return
+        }
+      }
 
-  function clearModuleType() {
-    moduleFilter.clearSelectedModuleTypes()
-    table.getColumn('moduleType')?.setFilterValue(undefined)
-  }
-
-  function reset() {
-    setFilterValue('')
-    clearSemester()
-    clearModuleManagement()
-    clearStudyProgram()
-    clearModuleType()
+      if (document.activeElement !== searchInputEl) {
+        e.preventDefault()
+        searchInputEl?.focus()
+        return
+      }
+    }
+    // Press `Esc` to clear search when the input is focused.
+    if (e.key === 'Escape' && document.activeElement === searchInputEl) {
+      e.preventDefault()
+      moduleFilter.title = ''
+      searchInputEl?.blur()
+    }
   }
 </script>
 
-<div class="space-y-4">
-  <!-- Search Section -->
-  <div class="flex items-center gap-3">
-    <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
-      <Search class="size-4" />
-      <span class="hidden md:inline">Suche</span>
-    </div>
-    <div class="flex-1">
-      <Input
-        placeholder="Suche nach Modulbezeichnung oder Kürzel…"
-        class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full max-w-md border-2 text-sm transition-colors focus-visible:ring-2"
-        type="search"
-        value={table.getColumn('title')?.getFilterValue()?.toString() ?? ''}
-        onchange={(e) => setFilterValue(e.currentTarget.value)}
-        oninput={(e) => setFilterValue(e.currentTarget.value)}
-      />
-    </div>
-  </div>
+<svelte:window onkeydown={handleGlobalKeydown} />
 
-  <!-- Filter Section -->
-  <div class="flex items-center gap-3">
-    <div class="text-muted-foreground flex items-center gap-2 text-sm font-medium md:w-16">
-      <Funnel class="size-4" />
-      <span class="hidden md:inline">Filter</span>
+{#snippet filterOptions()}
+  <FilterOption
+    filterValues={moduleFilter.selectedStudyPrograms}
+    handleSelect={moduleFilter.selectStudyProgram}
+    title="Studiengang"
+    options={moduleFilter.studyPrograms}
+    clearFilters={moduleFilter.clearSelectedStudyPrograms}
+  />
+  <FilterOption
+    filterValues={moduleFilter.selectedSemester}
+    handleSelect={moduleFilter.selectSemester}
+    title="Semester"
+    options={moduleFilter.semester}
+    clearFilters={moduleFilter.clearSelectedSemester}
+  />
+  <FilterOption
+    filterValues={moduleFilter.selectedIdentities}
+    handleSelect={moduleFilter.selectIdentity}
+    title="Modulverantwortliche"
+    options={moduleFilter.identities}
+    clearFilters={moduleFilter.clearSelectedIdentities}
+  />
+  <FilterOption
+    filterValues={moduleFilter.selectedModuleTypes}
+    handleSelect={moduleFilter.selectModuleType}
+    title="Modulart"
+    options={moduleFilter.moduleTypes}
+    clearFilters={moduleFilter.clearSelectedModuleTypes}
+  />
+  <FilterOption
+    filterValues={moduleFilter.selectedModuleStatus}
+    handleSelect={moduleFilter.selectModuleStatus}
+    title="Status"
+    options={moduleFilter.moduleStatus}
+    clearFilters={moduleFilter.clearSelectedModuleStatus}
+  />
+{/snippet}
+
+<div class="min-w-0 space-y-4">
+  {#if isMobile.current}
+    <Collapsible.Root bind:open={filtersOpen} class="min-w-0">
+      <!-- Search + Mobile Filter Toggle -->
+      <div class="flex min-w-0 items-center gap-2">
+        <div
+          class="text-muted-foreground hidden shrink-0 items-center gap-2 text-sm font-medium md:flex md:w-16"
+        >
+          <Search class="size-4" />
+          <span>Suche</span>
+        </div>
+        <div class="w-full min-w-0 flex-1 md:w-auto">
+          <Input
+            placeholder="Suche nach Name oder Kürzel…"
+            class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
+            type="search"
+            bind:value={moduleFilter.title}
+            bind:ref={searchInputEl}
+          />
+        </div>
+
+        <Collapsible.Trigger>
+          {#snippet child({ props })}
+            <Button
+              {...props}
+              variant="outline"
+              class="border-muted-foreground/25 hover:bg-muted/50 h-10 w-auto justify-between gap-2 border-2 border-dashed px-2.5 font-medium"
+              type="button"
+            >
+              <span class="flex min-w-0 items-center gap-2">
+                <Funnel class="text-muted-foreground size-4 shrink-0" />
+                <span class="max-w-30 truncate">Filter</span>
+                {#if activeFilterDimensions > 0}
+                  <Badge variant="secondary" class="shrink-0 rounded-sm px-1 tabular-nums">
+                    {activeFilterDimensions}
+                  </Badge>
+                {/if}
+              </span>
+              <ChevronDown
+                class={cn(
+                  'text-muted-foreground size-4 shrink-0 transition-transform duration-200',
+                  filtersOpen && 'rotate-180'
+                )}
+              />
+            </Button>
+          {/snippet}
+        </Collapsible.Trigger>
+      </div>
+
+      <Collapsible.Content class="overflow-hidden">
+        <div class="border-border/60 flex flex-wrap gap-2 border-t pt-3">
+          {@render filterOptions()}
+        </div>
+      </Collapsible.Content>
+    </Collapsible.Root>
+  {:else}
+    <!-- Search Section -->
+    <div class="flex min-w-0 items-center gap-3">
+      <div
+        class="text-muted-foreground hidden shrink-0 items-center gap-2 text-sm font-medium md:flex md:w-16"
+      >
+        <Search class="size-4" />
+        <span>Suche</span>
+      </div>
+      <div class="w-full min-w-0 flex-1 md:w-auto">
+        <Input
+          placeholder="Suche nach Modulbezeichnung oder Kürzel…"
+          class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
+          type="search"
+          bind:value={moduleFilter.title}
+          bind:ref={searchInputEl}
+        />
+      </div>
     </div>
 
-    <div class="flex flex-1 flex-nowrap items-center gap-2">
-      <FilterOption
-        filterValues={moduleFilter.selectedStudyPrograms}
-        handleSelect={selectStudyProgram}
-        title="Studiengang"
-        options={moduleFilter.studyPrograms}
-        clearFilters={clearStudyProgram}
-      />
-      <FilterOption
-        filterValues={moduleFilter.selectedSemester}
-        handleSelect={selectSemester}
-        title="Semester"
-        options={moduleFilter.semester}
-        clearFilters={clearSemester}
-      />
-      <FilterOption
-        filterValues={moduleFilter.selectedIdentities}
-        handleSelect={selectModuleManagement}
-        title="Modulverantwortliche"
-        options={moduleFilter.identities}
-        clearFilters={clearModuleManagement}
-      />
-      <FilterOption
-        filterValues={moduleFilter.selectedModuleTypes}
-        handleSelect={selectModuleType}
-        title="Modulart"
-        options={moduleFilter.moduleTypes}
-        clearFilters={clearModuleType}
-      />
+    <div class="flex min-w-0 items-center gap-3">
+      <div
+        class="text-muted-foreground flex shrink-0 items-center gap-2 text-sm font-medium md:w-16"
+      >
+        <Funnel class="size-4" />
+        <span>Filter</span>
+      </div>
+
+      <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        {@render filterOptions()}
+      </div>
     </div>
-  </div>
+  {/if}
 
   <!-- Reset Section -->
   {#if showReset}
     <div class="flex items-center gap-3">
       <Button
-        onclick={reset}
+        onclick={() => moduleFilter.clearSelections()}
         variant="outline"
         size="sm"
         class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"

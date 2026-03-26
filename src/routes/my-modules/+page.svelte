@@ -20,8 +20,7 @@
         const filter = filterValue.toString().toLowerCase()
         const title = (row.original.moduleDraft?.title ?? row.original.module.title).toLowerCase()
         return title.includes(filter)
-      },
-      size: 300
+      }
     },
     {
       accessorKey: 'status',
@@ -29,8 +28,7 @@
       cell: ({ row }) => {
         return renderComponent(ModuleDraftStatusCell, { state: row.original.moduleDraftState })
       },
-      enableColumnFilter: false,
-      size: 280
+      enableColumnFilter: false
     },
     {
       id: 'actions',
@@ -51,11 +49,11 @@
   import { page } from '$app/state'
   import SuccessMessage from '$lib/components/success-message.svelte'
   import { Button } from '$lib/components/ui/button'
+  import * as Empty from '$lib/components/ui/empty/index.js'
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { BookOpen, Plus } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import ModuleDraftTitleCell from './(components)/module-draft-title-cell.svelte'
-  import * as Empty from '$lib/components/ui/empty/index.js'
   let { data }: PageProps = $props()
 
   const canCreateModules = $derived(data.userInfo?.hasExtendedModuleEditPermissions ?? false)
@@ -87,9 +85,16 @@
     <SuccessMessage message={showSuccessMessage} />
   {/if}
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <div class="flex items-start justify-between gap-4">
     <div class="min-w-0 space-y-2">
-      <h2 class="text-3xl font-bold tracking-tight">Meine Module</h2>
+      <div class="flex items-center justify-between">
+        <h2 class="text-3xl font-bold tracking-tight">Meine Module</h2>
+        {#if canCreateModules}
+          <Button onclick={createNewModule} class="shrink-0 sm:hidden" size="icon">
+            <Plus class="size-4" />
+          </Button>
+        {/if}
+      </div>
       <p class="text-muted-foreground text-sm wrap-break-word">
         Sie können die folgenden Module bearbeiten und die Änderungen übernehmen oder zur
         Genehmigung freigeben. Eine Genehmigung ist nur bei <a
@@ -102,7 +107,7 @@
       </p>
     </div>
     {#if canCreateModules}
-      <Button onclick={createNewModule} class="shrink-0 gap-2">
+      <Button onclick={createNewModule} class="hidden shrink-0 gap-2 sm:inline-flex">
         <Plus class="size-4" />
         Neues Modul
       </Button>

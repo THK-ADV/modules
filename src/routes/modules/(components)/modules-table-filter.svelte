@@ -69,10 +69,25 @@
 
   function handleGlobalKeydown(e: KeyboardEvent) {
     // Press `/` to focus the search input.
-    if (e.key === '/' && document.activeElement !== searchInputEl) {
-      e.preventDefault()
-      searchInputEl?.focus()
-      return
+    if (e.key === '/') {
+      const target = e.target
+      // Don't hijack typing in inputs/contenteditable elements (e.g. filter popovers).
+      if (target instanceof HTMLElement) {
+        if (
+          target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT'
+        ) {
+          return
+        }
+      }
+
+      if (document.activeElement !== searchInputEl) {
+        e.preventDefault()
+        searchInputEl?.focus()
+        return
+      }
     }
     // Press `Esc` to clear search when the input is focused.
     if (e.key === 'Escape' && document.activeElement === searchInputEl) {

@@ -61,11 +61,17 @@
         })
       },
       sortingFn: (lhs, rhs) => {
-        if (
-          lhs.original.moduleManagement.length === 0 ||
-          rhs.original.moduleManagement.length === 0
-        ) {
+        const lhsEmpty = lhs.original.moduleManagement.length === 0
+        const rhsEmpty = rhs.original.moduleManagement.length === 0
+
+        if (lhsEmpty && rhsEmpty) {
           return 0
+        }
+        if (lhsEmpty) {
+          return 1
+        }
+        if (rhsEmpty) {
+          return -1
         }
         return peopleShortOrdering(
           lhs.original.moduleManagement[0],

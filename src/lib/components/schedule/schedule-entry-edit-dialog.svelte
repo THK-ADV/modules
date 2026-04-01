@@ -521,8 +521,12 @@
     }
   }}
 >
-  <Dialog.Content class="max-w-2xl" showClose={false} onOpenAutoFocus={(e) => e.preventDefault()}>
-    <Dialog.Header class="space-y-0">
+  <Dialog.Content
+    class="grid max-h-[min(90dvh,920px)] min-h-0 max-w-2xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto] overflow-hidden max-sm:top-4 max-sm:translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
+    showClose={false}
+    onOpenAutoFocus={(e) => e.preventDefault()}
+  >
+    <Dialog.Header class="shrink-0 space-y-0">
       <div class="flex items-start justify-between gap-4">
         <div class="min-w-0 flex-1">
           <Dialog.Title class="text-lg font-semibold">{title}</Dialog.Title>
@@ -574,192 +578,196 @@
       </div>
     </Dialog.Header>
 
-    <Separator class="my-1" />
+    <Separator class="my-1 shrink-0" />
 
-    <div class="space-y-4 py-2">
-      <!-- Module -->
-      <Combobox
-        disabled={mode.id !== 'create'}
-        {form}
-        {errors}
-        name="module"
-        label="Modul"
-        placeholder="Modul auswählen…"
-        options={moduleOptions}
-        bind:value={$formData.module}
-        width="w-[450px]"
-      />
-
-      <!-- Lecturer -->
-      <MultiSelectCombobox
-        {form}
-        {errors}
-        name="lecturer"
-        label="Dozierende"
-        options={lecturerOptions}
-        bind:value={$formData.lecturer}
-        maxVisibleBadges={3}
-      />
-
-      <!-- Date & Time -->
-      <div class="grid gap-2 md:grid-cols-2">
-        <DateTimePicker
+    <div
+      class="dialog-body-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain pr-1"
+    >
+      <div class="space-y-4 py-2">
+        <!-- Module -->
+        <Combobox
+          disabled={mode.id !== 'create'}
           {form}
-          name="date.start"
-          label="Beginn"
-          bind:value={dateStart.value}
-          disabled={mode.id === 'duplicate'}
           {errors}
+          name="module"
+          label="Modul"
+          placeholder="Modul auswählen…"
+          options={moduleOptions}
+          bind:value={$formData.module}
+          width="w-[450px]"
         />
-        <DateTimePicker
-          {form}
-          name="date.end"
-          label="Ende"
-          bind:value={dateEnd.value}
-          disabled={mode.id === 'duplicate'}
-          {errors}
-        />
-      </div>
 
-      <!-- Repeat Entry -->
-      {#if mode.id === 'create' || mode.id === 'duplicate'}
-        <div class="flex flex-col space-y-2">
-          <div class="flex items-center space-x-2">
-            <Switch id="repeat" bind:checked={repeatEntry} />
-            <Label for="repeat">Eintrag duplizieren</Label>
-          </div>
-          {#if repeatEntry}
-            <!-- mark the current entry as selected -->
-            <Calendar
-              placeholder={$formData.date.start
-                ? fromDate($formData.date.start, getLocalTimeZone())
-                : undefined}
-              bind:value={repeatedEntries}
-              type="multiple"
-              numberOfMonths={2}
-              weekStartsOn={1}
-              locale="de"
-              isDateUnavailable={isDateUnavailableForRepeatedEntries}
-            />
-          {/if}
-        </div>
-      {/if}
-
-      <div class="grid gap-2 md:grid-cols-2">
-        <!-- Room -->
+        <!-- Lecturer -->
         <MultiSelectCombobox
           {form}
           {errors}
-          name="rooms"
-          label="Räume"
-          options={roomOptions}
-          bind:value={$formData.rooms}
-          disabled={mode.id === 'duplicate'}
+          name="lecturer"
+          label="Dozierende"
+          options={lecturerOptions}
+          bind:value={$formData.lecturer}
           maxVisibleBadges={3}
         />
 
-        <!-- Course Type -->
-        <Combobox
-          {form}
-          {errors}
-          name="courseType"
-          label="Kursart"
-          placeholder="Kursart auswählen…"
-          options={courseTypeOptions}
-          bind:value={$formData.courseType}
-          disabled={mode.id === 'duplicate'}
-        />
-      </div>
+        <!-- Date & Time -->
+        <div class="grid gap-2 md:grid-cols-2">
+          <DateTimePicker
+            {form}
+            name="date.start"
+            label="Beginn"
+            bind:value={dateStart.value}
+            disabled={mode.id === 'duplicate'}
+            {errors}
+          />
+          <DateTimePicker
+            {form}
+            name="date.end"
+            label="Ende"
+            bind:value={dateEnd.value}
+            disabled={mode.id === 'duplicate'}
+            {errors}
+          />
+        </div>
 
-      <!-- POs -->
-      {#if mode.id !== 'duplicate'}
-        <Form.Field {form} name="pos">
-          <Form.Control>
-            {#snippet children({ props })}
-              <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <Form.Label class="text-sm font-medium"
-                    >Studiengänge und PO-Beziehungen</Form.Label
-                  >
-                  <Button type="button" variant="outline" size="sm" onclick={openAddPODialog}>
-                    <Plus class="size-4" />
-                    Hinzufügen
-                  </Button>
-                </div>
+        <!-- Repeat Entry -->
+        {#if mode.id === 'create' || mode.id === 'duplicate'}
+          <div class="flex flex-col space-y-2">
+            <div class="flex items-center space-x-2">
+              <Switch id="repeat" bind:checked={repeatEntry} />
+              <Label for="repeat">Eintrag duplizieren</Label>
+            </div>
+            {#if repeatEntry}
+              <!-- mark the current entry as selected -->
+              <Calendar
+                placeholder={$formData.date.start
+                  ? fromDate($formData.date.start, getLocalTimeZone())
+                  : undefined}
+                bind:value={repeatedEntries}
+                type="multiple"
+                numberOfMonths={2}
+                weekStartsOn={1}
+                locale="de"
+                isDateUnavailable={isDateUnavailableForRepeatedEntries}
+              />
+            {/if}
+          </div>
+        {/if}
 
-                {#if $formData.pos.length > 0}
-                  <div class="rounded-md border">
-                    <Table.Root>
-                      <Table.Header>
-                        <Table.Row>
-                          <Table.Head>Studiengang und PO</Table.Head>
-                          <Table.Head>Semester</Table.Head>
-                          <Table.Head>Pflicht</Table.Head>
-                          <Table.Head class="w-20">Aktionen</Table.Head>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {#each $formData.pos as entry, index (entry.po)}
+        <div class="grid gap-2 md:grid-cols-2">
+          <!-- Room -->
+          <MultiSelectCombobox
+            {form}
+            {errors}
+            name="rooms"
+            label="Räume"
+            options={roomOptions}
+            bind:value={$formData.rooms}
+            disabled={mode.id === 'duplicate'}
+            maxVisibleBadges={3}
+          />
+
+          <!-- Course Type -->
+          <Combobox
+            {form}
+            {errors}
+            name="courseType"
+            label="Kursart"
+            placeholder="Kursart auswählen…"
+            options={courseTypeOptions}
+            bind:value={$formData.courseType}
+            disabled={mode.id === 'duplicate'}
+          />
+        </div>
+
+        <!-- POs -->
+        {#if mode.id !== 'duplicate'}
+          <Form.Field {form} name="pos">
+            <Form.Control>
+              {#snippet children({ props })}
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <Form.Label class="text-sm font-medium"
+                      >Studiengänge und PO-Beziehungen</Form.Label
+                    >
+                    <Button type="button" variant="outline" size="sm" onclick={openAddPODialog}>
+                      <Plus class="size-4" />
+                      Hinzufügen
+                    </Button>
+                  </div>
+
+                  {#if $formData.pos.length > 0}
+                    <div class="rounded-md border">
+                      <Table.Root>
+                        <Table.Header>
                           <Table.Row>
-                            <Table.Cell class="font-medium">
-                              {getPOLabel(entry.po)}
-                            </Table.Cell>
-                            <Table.Cell>
-                              {showRecommendedSemester(entry.recommendedSemester)}
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Badge variant={entry.mandatory ? 'default' : 'secondary'}>
-                                {entry.mandatory ? 'Pflicht' : 'Wahl'}
-                              </Badge>
-                            </Table.Cell>
-                            <Table.Cell>
-                              <div class="flex gap-1">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onclick={() => openEditPODialog(index)}
-                                >
-                                  <SquarePen class="size-4" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                  onclick={() => deletePO(index)}
-                                >
-                                  <Trash2 class="size-4" />
-                                </Button>
-                              </div>
-                            </Table.Cell>
+                            <Table.Head>Studiengang und PO</Table.Head>
+                            <Table.Head>Semester</Table.Head>
+                            <Table.Head>Pflicht</Table.Head>
+                            <Table.Head class="w-20">Aktionen</Table.Head>
                           </Table.Row>
-                        {/each}
-                      </Table.Body>
-                    </Table.Root>
-                  </div>
-                {:else}
-                  <div
-                    class="border-muted-foreground/25 bg-muted/10 rounded-md border border-dashed px-4 py-6 text-center"
-                  >
-                    <p class="text-muted-foreground text-sm">
-                      Noch keine PO-Zuordnungen vorhanden.
-                    </p>
-                  </div>
-                {/if}
+                        </Table.Header>
+                        <Table.Body>
+                          {#each $formData.pos as entry, index (entry.po)}
+                            <Table.Row>
+                              <Table.Cell class="font-medium">
+                                {getPOLabel(entry.po)}
+                              </Table.Cell>
+                              <Table.Cell>
+                                {showRecommendedSemester(entry.recommendedSemester)}
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Badge variant={entry.mandatory ? 'default' : 'secondary'}>
+                                  {entry.mandatory ? 'Pflicht' : 'Wahl'}
+                                </Badge>
+                              </Table.Cell>
+                              <Table.Cell>
+                                <div class="flex gap-1">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onclick={() => openEditPODialog(index)}
+                                  >
+                                    <SquarePen class="size-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                    onclick={() => deletePO(index)}
+                                  >
+                                    <Trash2 class="size-4" />
+                                  </Button>
+                                </div>
+                              </Table.Cell>
+                            </Table.Row>
+                          {/each}
+                        </Table.Body>
+                      </Table.Root>
+                    </div>
+                  {:else}
+                    <div
+                      class="border-muted-foreground/25 bg-muted/10 rounded-md border border-dashed px-4 py-6 text-center"
+                    >
+                      <p class="text-muted-foreground text-sm">
+                        Noch keine PO-Zuordnungen vorhanden.
+                      </p>
+                    </div>
+                  {/if}
 
-                <input hidden value={JSON.stringify($formData.pos)} name={props.name} />
-              </div>
-            {/snippet}
-          </Form.Control>
-          <Form.FieldErrors />
-        </Form.Field>
-      {/if}
+                  <input hidden value={JSON.stringify($formData.pos)} name={props.name} />
+                </div>
+              {/snippet}
+            </Form.Control>
+            <Form.FieldErrors />
+          </Form.Field>
+        {/if}
+      </div>
     </div>
 
-    <Separator class="my-1" />
+    <Separator class="my-1 shrink-0" />
 
-    <Dialog.Footer class="gap-2">
+    <Dialog.Footer class="shrink-0 gap-2">
       <Dialog.Close class={buttonVariants({ variant: 'outline' })}>Abbrechen</Dialog.Close>
       <Button type="button" onclick={handleSave} disabled={saveButtonDisabled}>Speichern</Button>
     </Dialog.Footer>

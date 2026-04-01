@@ -41,12 +41,25 @@
   function fmtBadge(option: string): string {
     return options.find((o) => o.id === option)?.badge ?? ''
   }
+
+  const hasActiveFilters = $derived(filterValues.length > 0)
+
+  const triggerButtonClass = $derived(
+    cn(
+      'h-8 border-2 transition-[color,box-shadow,background-color,border-color] duration-200',
+      !hasActiveFilters && 'border-dashed',
+      hasActiveFilters && [
+        'border-solid border-primary/28 hover:border-primary/35 dark:border-primary/55',
+        'bg-primary/5 hover:bg-primary/10 dark:bg-primary/15 dark:hover:bg-primary/22'
+      ]
+    )
+  )
 </script>
 
 <Popover.Root bind:open>
   <Popover.Trigger>
     <div>
-      <Button variant="outline" size="sm" class="h-8 border-2 border-dashed">
+      <Button variant="outline" size="sm" class={triggerButtonClass}>
         <CirclePlus class="size-4" />
         {title}
         {#if filterValues.length > 0}

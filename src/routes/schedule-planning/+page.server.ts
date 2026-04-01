@@ -20,8 +20,11 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 
   const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
 
+  const { timeGrid, monthBg } = holidaysRes.value
+
   return {
-    holidays: holidaysRes.value,
+    holidays: timeGrid,
+    holidaysMonth: monthBg,
     semesterEntries: semesterEntriesRes.value,
     selectedCalendarView,
     selectedCalendarDate

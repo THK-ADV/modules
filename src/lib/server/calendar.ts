@@ -5,8 +5,9 @@ import type {
   SemesterPlanEventProps
 } from '$lib/calendar'
 import {
+  CALENDAR_VISIBLE_DAY_END,
+  CALENDAR_VISIBLE_DAY_START,
   COURSE_TYPE_COLORS,
-  HOLIDAY_COLOR,
   SELECTED_CALENDAR_DATE_COOKIE_NAME,
   SELECTED_CALENDAR_VIEW_COOKIE_NAME,
   SEMESTER_PLAN_TYPE_COLORS
@@ -15,9 +16,12 @@ import type { ScheduleEntry, SemesterPlanEntry } from '$lib/types/schedule'
 import type { Cookies } from '@sveltejs/kit'
 import { error } from '@sveltejs/kit'
 
-export async function fetchHolidays(
-  fetch: typeof globalThis.fetch
-): Promise<CalendarEvent<HolidayEventProps>[]> {
+export type HolidaysForCalendar = {
+  timeGrid: CalendarEvent<HolidayEventProps>[]
+  monthBg: CalendarEvent<HolidayEventProps>[]
+}
+
+export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<HolidaysForCalendar> {
   const resp = await fetch('/api/holidays')
 
   if (!resp.ok) {
@@ -27,14 +31,36 @@ export async function fetchHolidays(
 
   const data: { date: string; label: string }[] = await resp.json()
 
-  return data.map(({ date, label }) => ({
-    id: `${date}-${label}`,
-    title: label,
-    start: date,
-    allDay: true,
-    backgroundColor: HOLIDAY_COLOR,
-    extendedProps: { source: 'holiday' }
-  }))
+  const timeGrid: CalendarEvent<HolidayEventProps>[] = []
+  const monthBg: CalendarEvent<HolidayEventProps>[] = []
+
+  for (const { date, label } of data) {
+    const id = `${date}-${label}`
+    const extendedProps: HolidayEventProps = { source: 'holiday' }
+
+    timeGrid.push({
+      id,
+      title: label,
+      start: `${date}T${CALENDAR_VISIBLE_DAY_START}`,
+      end: `${date}T${CALENDAR_VISIBLE_DAY_END}`,
+      allDay: false,
+      display: 'background' as const,
+      classNames: ['holiday-bg-event', 'holiday-bg-event--slots'],
+      extendedProps
+    })
+
+    monthBg.push({
+      id,
+      title: label,
+      start: date,
+      allDay: true,
+      display: 'background' as const,
+      classNames: ['holiday-bg-event', 'holiday-bg-event--slots'],
+      extendedProps
+    })
+  }
+
+  return { timeGrid, monthBg }
 }
 
 export async function fetchSemesterEntries(

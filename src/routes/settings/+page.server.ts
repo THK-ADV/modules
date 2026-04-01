@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types'
 
 function defaultUserSettings(): UserSettings {
   return {
-    calendarSources: ['HOLIDAYS', 'SEMESTER_PLAN', 'SCHEDULE']
+    calendarSources: ['SEMESTER_PLAN', 'SCHEDULE']
   }
 }
 

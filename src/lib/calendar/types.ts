@@ -9,6 +9,10 @@ import type { EventInput } from '@fullcalendar/core'
 export const SELECTED_CALENDAR_VIEW_COOKIE_NAME = 'calendar:selected-view'
 export const SELECTED_CALENDAR_DATE_COOKIE_NAME = 'calendar:selected-date'
 
+/** Must stay in sync with `slotMinTime` / `slotMaxTime` in `calendar.svelte`. */
+export const CALENDAR_VISIBLE_DAY_START = '08:00:00'
+export const CALENDAR_VISIBLE_DAY_END = '21:00:00'
+
 /**
  * Calendar view types supported by the calendar component.
  */

@@ -14,6 +14,7 @@ import type { ScheduleFilter } from '$lib/stores/schedule-filter.svelte'
 
 export interface ScheduleProps {
   holidays: CalendarEvent<HolidayEventProps>[]
+  holidaysMonth: CalendarEvent<HolidayEventProps>[]
   semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
   scheduleFetcher: (info: DateRangeInfo) => Promise<Response>
   scheduleFilter: ScheduleFilter

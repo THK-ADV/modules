@@ -301,6 +301,7 @@
             scheduleFetcher={fetchScheduleEntries}
             bind:scheduleEntries
             holidays={data.holidays}
+            holidaysMonth={data.holidaysMonth}
             semesterEntries={data.semesterEntries}
             onEventClick={onUpdateEntry}
             onDateSelect={onCreateFromSelection}

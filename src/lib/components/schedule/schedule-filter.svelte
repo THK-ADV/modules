@@ -46,9 +46,8 @@
   const isMobile = new IsMobile()
 
   const activeSourceDimensions = $derived.by(() => {
-    const { showHolidays, showSemester, showSchedule, showExams } = scheduleFilter
+    const { showSemester, showSchedule, showExams } = scheduleFilter
     let count = 0
-    if (showHolidays) count++
     if (showSemester) count++
     if (showSchedule) count++
     if (showExams) count++
@@ -193,11 +192,6 @@
 {/snippet}
 
 {#snippet sourceOptions()}
-  <div class="flex items-center gap-2">
-    <Checkbox id="source-holidays" bind:checked={scheduleFilter.showHolidays} />
-    <Label for="source-holidays" class="cursor-pointer text-sm font-normal">Feiertage</Label>
-  </div>
-
   <div class="flex items-center gap-2">
     <Checkbox id="source-semester" bind:checked={scheduleFilter.showSemester} />
     <Label for="source-semester" class="cursor-pointer text-sm font-normal">Semesterplan</Label>

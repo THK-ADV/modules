@@ -20,17 +20,6 @@ import { getSemesterOptions, getModuleTypeOptions } from './store.svelte'
 
 type FilterType = 'sf' | 'spf'
 
-function getShowHolidaysFromLocalStorage(prefix: FilterType): boolean {
-  if (!browser) {
-    return false
-  }
-  const value = localStorage.getItem(`${prefix}-show-holidays`)
-  if (value) {
-    return value === 'true'
-  }
-  return false
-}
-
 function getShowSemesterPlanFromLocalStorage(prefix: FilterType): boolean {
   if (!browser) {
     return true
@@ -57,8 +46,7 @@ export function createScheduleFilter(prefix: FilterType) {
   // Search
   let searchString = $state('')
 
-  // Source toggles
-  let showHolidays = $state(getShowHolidaysFromLocalStorage(prefix))
+  // Source toggles (holidays are always shown; no toggle)
   let showSemester = $state(getShowSemesterPlanFromLocalStorage(prefix))
   let showSchedule = $state(getShowScheduleFromLocalStorage(prefix))
   let showExams = $state(false)
@@ -103,13 +91,6 @@ export function createScheduleFilter(prefix: FilterType) {
     },
 
     // Source toggles
-    get showHolidays() {
-      return showHolidays
-    },
-    set showHolidays(value: boolean) {
-      showHolidays = value
-      setBooleanToLocalStorage(`${prefix}-show-holidays`, value)
-    },
     get showSemester() {
       return showSemester
     },

@@ -125,6 +125,7 @@
 
   <Schedule
     holidays={data.holidays}
+    holidaysMonth={data.holidaysMonth}
     semesterEntries={data.semesterEntries}
     {onEventClick}
     {scheduleFilter}

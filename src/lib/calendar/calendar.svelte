@@ -13,6 +13,8 @@
     renderWeekViewEventContent
   } from './event-content-rendering.js'
   import {
+    CALENDAR_VISIBLE_DAY_END,
+    CALENDAR_VISIBLE_DAY_START,
     type CalendarApi,
     type CalendarEvent,
     type CalendarEventProps,
@@ -204,8 +206,8 @@
       dayMaxEvents: true,
       weekNumbers: true,
       allDaySlot: true,
-      slotMinTime: '08:00:00',
-      slotMaxTime: '21:00:00',
+      slotMinTime: CALENDAR_VISIBLE_DAY_START,
+      slotMaxTime: CALENDAR_VISIBLE_DAY_END,
       expandRows: false,
       stickyHeaderDates: true,
       locale: 'de',

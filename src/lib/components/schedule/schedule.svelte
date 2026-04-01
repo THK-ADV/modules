@@ -7,9 +7,11 @@
     type ScheduleEventProps
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
+  import { uiStore } from '$lib/stores/ui.svelte.js'
 
   const {
     holidays,
+    holidaysMonth,
     semesterEntries,
     onEventClick,
     onDateSelect,
@@ -21,16 +23,14 @@
     scheduleFetcher
   }: ScheduleProps = $props()
 
+  const holidayEventsForView = $derived(
+    uiStore.selectedCalendarView === 'dayGridMonth' ? holidaysMonth : holidays
+  )
+
   // Single derived function that tracks source toggles and filters
   const filteredEvents = $derived.by(() => {
-    const { showHolidays, showSemester, showSchedule } = scheduleFilter
-    const allEvents: CalendarEvent<CalendarEventProps>[] = []
-
-    // Filter events inline as we collect them
-    if (showHolidays) {
-      // holidays are always shown
-      allEvents.push(...holidays)
-    }
+    const { showSemester, showSchedule } = scheduleFilter
+    const allEvents: CalendarEvent<CalendarEventProps>[] = [...holidayEventsForView]
 
     if (showSemester) {
       const { selectedTeachingUnits, selectedSemesters } = scheduleFilter

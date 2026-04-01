@@ -398,9 +398,165 @@
   padding: 0.25rem 0.375rem;
 }
 
-/* Ensure all-day events (block events in daygrid views such as holidays and
-   semester plans) use white text for better contrast on colored backgrounds
-   in both light and dark mode. */
+/*
+ * Holidays: FC renders bg events as .fc-bg-event > .fc-event-title only (no .fc-event-main).
+ * The "Feiertag" label uses ::before on .fc-bg-event. Modifier --slots: time grid uses
+ * .fc-timegrid-bg-harness; month view uses .fc-daygrid-bg-harness (same event payload from API).
+ * Week/day title: 0.875rem semibold - matches schedule module title (event-content-rendering text-sm).
+ * Month title: 0.75rem - matches month dot rows (.event-content-size-container text-xs).
+ */
+.fc .fc-bg-event.holiday-bg-event {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.fc .fc-bg-event.holiday-bg-event:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/*
+ * Week/day: warm wash - intentionally not gray/blue so it reads differently from "today"
+ * (--fc-today-bg-color, bluish).
+ */
+.fc-timeGridWeek-view .fc-bg-event.holiday-bg-event--slots,
+.fc-timeGridDay-view .fc-bg-event.holiday-bg-event--slots {
+  background-color: hsl(32 42% 48% / 0.13) !important;
+}
+
+.dark .fc-timeGridWeek-view .fc-bg-event.holiday-bg-event--slots,
+.dark .fc-timeGridDay-view .fc-bg-event.holiday-bg-event--slots {
+  background-color: hsl(30 36% 52% / 0.22) !important;
+}
+
+/*
+ * Time grid: padding on .fc-bg-event (FC omits .fc-event-main for bg events).
+ * Stack at top-start; padding insets text from top, left, and right edges of the wash.
+ */
+.fc-timeGridWeek-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots,
+.fc-timeGridDay-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 0.25rem;
+  padding: 0.5rem 0.875rem 0.375rem;
+  box-sizing: border-box;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots::before,
+.fc-timeGridDay-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots::before {
+  content: 'Feiertag';
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  opacity: 0.88;
+}
+
+.fc-timeGridWeek-view .fc-bg-event.holiday-bg-event--slots .fc-event-title,
+.fc-timeGridDay-view .fc-bg-event.holiday-bg-event--slots .fc-event-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 !important;
+  font-style: normal !important;
+  color: var(--foreground);
+  max-width: 100%;
+  text-align: left;
+}
+
+/*
+ * Viewport below Tailwind `sm` (640px): vertical text like schedule minimum view
+ * (`event-content-rendering.ts` → `.event-size-minimum` → writing-mode vertical-lr).
+ * Keep `flex-direction: column` so ::before ("Feiertag") stays above `.fc-event-title` (name),
+ * same order as the wide layout; row layout placed the strips side-by-side and read reversed.
+ */
+@media (max-width: 639px) {
+  .fc-timeGridWeek-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots,
+  .fc-timeGridDay-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.2rem;
+  }
+
+  .fc-timeGridWeek-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots::before,
+  .fc-timeGridDay-view .fc-timegrid-bg-harness .fc-bg-event.holiday-bg-event--slots::before {
+    display: block;
+    flex-shrink: 0;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    font-size: 0.65rem;
+  }
+
+  .fc-timeGridWeek-view .fc-bg-event.holiday-bg-event--slots .fc-event-title,
+  .fc-timeGridDay-view .fc-bg-event.holiday-bg-event--slots .fc-event-title {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    line-height: 1.15;
+    max-width: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+/*
+ * Month: timed background holidays render inside .fc-daygrid-bg-harness (absolute band across the cell).
+ * Lighter wash than week so the day cell stays readable; label row matches prior --month layout.
+ */
+.fc-dayGridMonth-view .fc-bg-event.holiday-bg-event--slots {
+  background-color: hsl(32 38% 48% / 0.07) !important;
+}
+
+.dark .fc-dayGridMonth-view .fc-bg-event.holiday-bg-event--slots {
+  background-color: hsl(30 32% 55% / 0.14) !important;
+}
+
+.fc-dayGridMonth-view .fc-daygrid-bg-harness .fc-bg-event.holiday-bg-event--slots {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.375rem 0.625rem 0.25rem;
+  text-align: left;
+  gap: 0.125rem;
+  min-height: 0;
+}
+
+.fc-dayGridMonth-view .fc-daygrid-bg-harness .fc-bg-event.holiday-bg-event--slots::before {
+  content: 'Feiertag:\00a0';
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--muted-foreground);
+}
+
+.fc-dayGridMonth-view .fc-daygrid-bg-harness .fc-bg-event.holiday-bg-event--slots .fc-event-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 !important;
+  font-style: normal !important;
+  color: var(--foreground);
+}
+
+/* All-day block events (e.g. semester plan) use white text on colored backgrounds. */
 .fc .fc-daygrid-block-event .fc-event-main,
 .fc .fc-daygrid-block-event .fc-event-time,
 .fc .fc-daygrid-block-event .fc-event-title {
@@ -416,7 +572,7 @@
 }
 
 /* Use tighter Apple-like vertical rhythm in all-day rows (month/week/day)
-   so holiday and semester-plan block entries stay visually consistent. */
+   so semester-plan block entries stay visually consistent. */
 .fc .fc-dayGridMonth-view .fc-daygrid-day-events,
 .fc .fc-timeGridWeek-view .fc-daygrid-day-events,
 .fc .fc-timeGridDay-view .fc-daygrid-day-events {

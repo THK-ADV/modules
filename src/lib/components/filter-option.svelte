@@ -84,7 +84,7 @@
       </Button>
     </div>
   </Popover.Trigger>
-  <Popover.Content class="w-[350px] p-0" align="start">
+  <Popover.Content class="max-w-md p-0" align="start">
     <Command.Root>
       <Command.Input placeholder={title} class="h-8 border-0 shadow-none focus:ring-0" />
       <Command.List>

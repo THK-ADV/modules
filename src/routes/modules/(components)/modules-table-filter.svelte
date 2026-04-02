@@ -1,5 +1,6 @@
 <script lang="ts">
   import FilterOption from '$lib/components/filter-option.svelte'
+  import { StudyProgramFilter } from '$lib/components/study-program-filter'
   import { Badge } from '$lib/components/ui/badge/index.js'
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Collapsible from '$lib/components/ui/collapsible/index.js'
@@ -101,7 +102,8 @@
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#snippet filterOptions()}
-  <FilterOption
+  <StudyProgramFilter
+    displayVariant={5}
     filterValues={moduleFilter.selectedStudyPrograms}
     handleSelect={moduleFilter.selectStudyProgram}
     title="Studiengang"

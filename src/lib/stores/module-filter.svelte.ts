@@ -1,29 +1,25 @@
-import {
-  fmtStudyProgram,
-  fmtStudyProgramShort,
-  peopleOrdering,
-  fmtPerson,
-  fmtPersonShort
-} from '$lib/formats'
+import type { StudyProgramFilterOption } from '$lib/components/study-program-filter'
+import { toStudyProgramFilterOptions } from '$lib/components/study-program-filter'
+import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
 import type { Identity, Status } from '$lib/types/core'
 import type { FilterData } from '$lib/types/filter-data'
 import type { ModuleView } from '$lib/types/module'
 import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
 import type { PaginationState } from '@tanstack/table-core'
-import { getSemesterOptions, getModuleTypeOptions } from './store.svelte'
 import {
   clearItemFromLocalStorage,
   getArrayFromLocalStorage,
-  setArrayToLocalStorage,
   getPaginationFromLocalStorage,
+  setArrayToLocalStorage,
   setPaginationToLocalStorage
 } from './local-storage'
+import { getModuleTypeOptions, getSemesterOptions } from './store.svelte'
 
 function createModuleFilter() {
   // Bumps when any filter changes so TanStack re-runs `globalFilterFn`.
   let changed = $state(1)
 
-  let studyPrograms = $state.raw(new Array<FilterData>())
+  let studyPrograms = $state.raw(new Array<StudyProgramFilterOption>())
   let identities = $state.raw(new Array<FilterData>())
   let semester = $state.raw(new Array<FilterData>())
   let moduleTypes = $state.raw(new Array<FilterData>())
@@ -184,11 +180,7 @@ function createModuleFilter() {
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()
-          studyPrograms = xs.map((sp) => ({
-            label: fmtStudyProgram(sp),
-            id: sp.specialization?.id ?? sp.po.id,
-            badge: fmtStudyProgramShort(sp)
-          }))
+          studyPrograms = toStudyProgramFilterOptions(xs)
         }
         if (id.status === 'fulfilled' && id.value.ok) {
           const xs: Identity[] = await id.value.json()

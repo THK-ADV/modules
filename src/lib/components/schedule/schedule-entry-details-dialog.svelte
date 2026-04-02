@@ -5,15 +5,15 @@
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { FilterData } from '$lib/types/filter-data'
   import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
+  import type { StudyProgram } from '$lib/types/study-program'
   import { DateFormatter } from '@internationalized/date'
   import { CalendarDays, Clock, ExternalLink, GraduationCap, MapPin, Users } from '@lucide/svelte'
 
   interface Props {
     onClose: () => void
     entry: ScheduleEntry
-    studyPrograms: FilterData[]
+    studyPrograms: StudyProgram[]
   }
 
   let { onClose, entry, studyPrograms }: Props = $props()
@@ -52,8 +52,19 @@
   const studyProgramLabels = entry.props.po
     .sort((a, b) => a.po.localeCompare(b.po))
     .map((po) => {
-      const label = studyPrograms.find((sp) => sp.id === po.po)?.label ?? po.po
-      return [label, po.mandatory]
+      const sp = studyPrograms.find((sp) => {
+        if (po.specialization != null) {
+          return sp.po.id === po.po && sp.specialization?.id === po.specialization
+        }
+        return sp.po.id === po.po && sp.specialization == null
+      })
+      if (!sp) {
+        return [po.po, po.po, po.mandatory]
+      }
+      const id = sp.specialization?.id ?? sp.po.id
+      const name = sp.specialization ? `${sp.deLabel} ${sp.specialization.deLabel}` : sp.deLabel
+      const label = `${name} · ${sp.degree.deLabel} · PO${sp.po.version}`
+      return [id, label, po.mandatory]
     })
 
   function showModuleDetails() {
@@ -145,7 +156,7 @@
             Studiengänge
           </span>
           <div class="flex flex-wrap gap-2">
-            {#each studyProgramLabels as [label, mandatory], i (i)}
+            {#each studyProgramLabels as [id, label, mandatory] (id)}
               <Tooltip.Root>
                 <Tooltip.Trigger>
                   <Badge variant={mandatory ? 'default' : 'secondary'}>

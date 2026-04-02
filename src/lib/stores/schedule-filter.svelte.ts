@@ -1,14 +1,10 @@
 import { browser } from '$app/environment'
-import {
-  fmtStudyProgram,
-  fmtStudyProgramShort,
-  peopleOrdering,
-  fmtPerson,
-  fmtPersonShort
-} from '$lib/formats'
+import { type StudyProgramFilterOption } from '$lib/components/study-program-filter'
+import { toStudyProgramFilterOption } from '$lib/components/study-program-filter/options'
+import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
 import type { Identity } from '$lib/types/core'
 import type { FilterData } from '$lib/types/filter-data'
-import type { TeachingUnit, ModuleCore as ScheduleModuleCore, Room } from '$lib/types/schedule'
+import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from '$lib/types/schedule'
 import type { StudyProgram } from '$lib/types/study-program'
 import {
   clearItemFromLocalStorage,
@@ -16,7 +12,7 @@ import {
   setArrayToLocalStorage,
   setBooleanToLocalStorage
 } from './local-storage'
-import { getSemesterOptions, getModuleTypeOptions } from './store.svelte'
+import { getModuleTypeOptions, getSemesterOptions } from './store.svelte'
 
 type FilterType = 'sf' | 'spf'
 
@@ -46,7 +42,6 @@ export function createScheduleFilter(prefix: FilterType) {
   // Search
   let searchString = $state('')
 
-  // Source toggles (holidays are always shown; no toggle)
   let showSemester = $state(getShowSemesterPlanFromLocalStorage(prefix))
   let showSchedule = $state(getShowScheduleFromLocalStorage(prefix))
   let showExams = $state(false)
@@ -55,7 +50,8 @@ export function createScheduleFilter(prefix: FilterType) {
   let teachingUnits: FilterData[] = $state.raw([])
   let courseTypes: FilterData[] = $state.raw([])
   let modules: FilterData[] = $state.raw([])
-  let studyPrograms: FilterData[] = $state.raw([])
+  const studyPrograms: StudyProgramFilterOption[] = $state.raw([])
+  const studyProgramsWithSpecialization: StudyProgram[] = $state.raw([])
   let semesters: FilterData[] = $state.raw([])
   let identities: FilterData[] = $state.raw([])
   let rooms: FilterData[] = $state.raw([])
@@ -257,6 +253,9 @@ export function createScheduleFilter(prefix: FilterType) {
       selectedModuleTypes = []
       clearItemFromLocalStorage(`${prefix}-selected-module-types`)
     },
+    get studyProgramsWithSpecialization() {
+      return studyProgramsWithSpecialization
+    },
     // Reset
     clearSelections() {
       searchString = ''
@@ -319,13 +318,13 @@ export function createScheduleFilter(prefix: FilterType) {
         }
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()
-          studyPrograms = xs
-            .filter(({ specialization }) => specialization === null)
-            .map((sp) => ({
-              label: fmtStudyProgram(sp),
-              id: sp.po.id,
-              badge: fmtStudyProgramShort(sp)
-            }))
+          for (const sp of xs) {
+            studyProgramsWithSpecialization.push(sp)
+            if (!sp.specialization) {
+              // Remove POs with specialization from UI filter
+              studyPrograms.push(toStudyProgramFilterOption(sp))
+            }
+          }
         }
         if (id.status === 'fulfilled' && id.value.ok) {
           const xs: Identity[] = await id.value.json()

@@ -1,5 +1,5 @@
 import type { StudyProgramFilterOption } from '$lib/components/study-program-filter'
-import { toStudyProgramFilterOptions } from '$lib/components/study-program-filter'
+import { toStudyProgramFilterOption } from '$lib/components/study-program-filter/options'
 import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
 import type { Identity, Status } from '$lib/types/core'
 import type { FilterData } from '$lib/types/filter-data'
@@ -180,7 +180,7 @@ function createModuleFilter() {
         ])
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()
-          studyPrograms = toStudyProgramFilterOptions(xs)
+          studyPrograms = xs.map((sp) => toStudyProgramFilterOption(sp))
         }
         if (id.status === 'fulfilled' && id.value.ok) {
           const xs: Identity[] = await id.value.json()

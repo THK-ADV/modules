@@ -9,11 +9,13 @@ function searchKeywordsFor(sp: StudyProgram): string[] {
   return parts
 }
 
-export function toStudyProgramFilterOptions(programs: StudyProgram[]): StudyProgramFilterOption[] {
-  return programs.map((sp) => ({
-    id: sp.specialization?.id ?? sp.po.id,
-    label: sp.specialization ? `${sp.deLabel} ${sp.specialization.deLabel}` : sp.deLabel,
-    studyProgram: sp,
-    searchKeywords: searchKeywordsFor(sp)
-  }))
+export function toStudyProgramFilterOption(program: StudyProgram): StudyProgramFilterOption {
+  return {
+    id: program.specialization?.id ?? program.po.id,
+    label: program.specialization
+      ? `${program.deLabel} ${program.specialization.deLabel}`
+      : program.deLabel,
+    studyProgram: program,
+    searchKeywords: searchKeywordsFor(program)
+  }
 }

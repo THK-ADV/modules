@@ -136,7 +136,7 @@
     <ScheduleEntryDetailsDialog
       onClose={() => (selectedScheduleEntry = null)}
       entry={selectedScheduleEntry}
-      studyPrograms={scheduleFilter.studyPrograms}
+      studyPrograms={scheduleFilter.studyProgramsWithSpecialization}
     />
   {/if}
 </div>

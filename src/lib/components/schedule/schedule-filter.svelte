@@ -9,6 +9,7 @@
   import { cn } from '$lib/utils.js'
   import { ChevronDown, Funnel, Layers, Search, X } from '@lucide/svelte'
   import type { ScheduleProps } from './types'
+  import { StudyProgramFilter } from '$lib/components/study-program-filter'
 
   let { scheduleFilter }: { scheduleFilter: ScheduleProps['scheduleFilter'] } = $props()
 
@@ -147,7 +148,8 @@
     options={scheduleFilter.semesters}
     clearFilters={scheduleFilter.clearSelectedSemesters}
   />
-  <FilterOption
+  <StudyProgramFilter
+    displayVariant={5}
     filterValues={scheduleFilter.selectedStudyPrograms}
     handleSelect={scheduleFilter.selectStudyProgram}
     title="Studiengang"

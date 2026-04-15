@@ -20,8 +20,8 @@ App für die Verwaltung von Modulbeschreibungen, Modulhandbüchern und Prüfungs
 ## Getting Started
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Kontakt & Support

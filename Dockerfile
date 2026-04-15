@@ -16,11 +16,14 @@ ARG BACKEND_URL_PREFIX
 # Set working directory
 WORKDIR /app
 
+# Enable Corepack to provide pnpm from packageManager field
+RUN corepack enable
+
 # Copy package files
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies (including devDependencies needed for build)
-RUN npm ci --only=production=false
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -35,10 +38,10 @@ ENV KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
 ENV BACKEND_URL_PREFIX=${BACKEND_URL_PREFIX}
 
 # Build the application
-RUN npm run build
+RUN pnpm exec svelte-kit sync && pnpm build
 
 # Prune dev dependencies after build
-RUN npm prune --production
+RUN pnpm prune --prod
 
 # Stage 2: Production runtime
 FROM node:24-alpine3.22 AS runtime
@@ -62,6 +65,9 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Set working directory
 WORKDIR /app
+
+# Enable Corepack to keep runtime image aligned with package manager metadata
+RUN corepack enable
 
 # Copy built application from builder stage
 COPY --from=builder --chown=mocogi:nodejs /app/build build/

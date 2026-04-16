@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
   const sidebarOpen = getSidebarState(cookies)
 
   if (accessToken) {
-    const user = getUser(accessToken)
+    const user = await getUser(accessToken, fetch)
     const userInfo = await getUserInfo(fetch)
     return { accessToken, user, userInfo, sidebarOpen }
   }

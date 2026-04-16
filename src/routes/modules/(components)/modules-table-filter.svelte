@@ -1,5 +1,11 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
+  import { onDestroy } from 'svelte'
   import FilterOption from '$lib/components/filter-option.svelte'
+  import {
+    applyModuleFilterShareStateToSearchParams,
+    clearModuleFilterShareParams
+  } from '$lib/settings/module-filter-share-url'
   import { StudyProgramFilter } from '$lib/components/study-program-filter'
   import { Badge } from '$lib/components/ui/badge/index.js'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -8,7 +14,7 @@
   import { IsMobile } from '$lib/hooks/is-mobile.svelte.js'
   import { moduleFilter } from '$lib/stores/module-filter.svelte'
   import { cn } from '$lib/utils.js'
-  import { ChevronDown, Funnel, Search, X } from '@lucide/svelte'
+  import { Check, ChevronDown, Copy, Funnel, Search, X } from '@lucide/svelte'
 
   let showReset = $derived.by(() => {
     const {
@@ -97,6 +103,80 @@
       searchInputEl?.blur()
     }
   }
+
+  let shareStatus = $state<'idle' | 'copied' | 'error'>('idle')
+  let shareFeedbackTimeout: ReturnType<typeof setTimeout> | null = null
+  let showSearchShortcut = $derived(moduleFilter.title.trim().length === 0)
+
+  function resetShareFeedbackAfterDelay() {
+    if (shareFeedbackTimeout !== null) {
+      clearTimeout(shareFeedbackTimeout)
+    }
+    shareFeedbackTimeout = setTimeout(() => {
+      shareStatus = 'idle'
+      shareFeedbackTimeout = null
+    }, 2000)
+  }
+
+  onDestroy(() => {
+    if (shareFeedbackTimeout !== null) {
+      clearTimeout(shareFeedbackTimeout)
+    }
+  })
+
+  async function shareCurrentSelection() {
+    if (!browser) {
+      return
+    }
+
+    const shareUrl = new URL(window.location.href)
+    applyModuleFilterShareStateToSearchParams(shareUrl.searchParams, moduleFilter.shareState)
+    const shareText = shareUrl.toString()
+
+    try {
+      await navigator.clipboard.writeText(shareText)
+      shareStatus = 'copied'
+    } catch {
+      const helper = document.createElement('textarea')
+      helper.value = shareText
+      helper.setAttribute('readonly', 'true')
+      helper.style.position = 'fixed'
+      helper.style.opacity = '0'
+      helper.style.pointerEvents = 'none'
+      document.body.appendChild(helper)
+      helper.select()
+      helper.setSelectionRange(0, helper.value.length)
+
+      const copiedWithFallback = document.execCommand('copy')
+      document.body.removeChild(helper)
+
+      if (copiedWithFallback) {
+        shareStatus = 'copied'
+      } else {
+        window.prompt('Link manuell kopieren:', shareText)
+        shareStatus = 'error'
+      }
+    }
+
+    resetShareFeedbackAfterDelay()
+  }
+
+  function resetFilters() {
+    if (!browser) {
+      moduleFilter.clearSelections()
+      return
+    }
+
+    if (!moduleFilter.temporaryShareSession) {
+      moduleFilter.clearSelections()
+      return
+    }
+
+    moduleFilter.setTemporaryShareSession(false)
+    const cleanUrl = new URL(window.location.href)
+    clearModuleFilterShareParams(cleanUrl.searchParams)
+    history.replaceState(history.state, '', cleanUrl.toString())
+  }
 </script>
 
 <svelte:window onkeydown={handleGlobalKeydown} />
@@ -152,13 +232,24 @@
           <span>Suche</span>
         </div>
         <div class="w-full min-w-0 flex-1 md:w-auto">
-          <Input
-            placeholder="Suche nach Name oder Kürzel…"
-            class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
-            type="search"
-            bind:value={moduleFilter.title}
-            bind:ref={searchInputEl}
-          />
+          <div class="relative">
+            <Input
+              placeholder="Suche nach Name oder Kürzel…"
+              class={cn(
+                'border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md',
+                showSearchShortcut ? 'pr-10' : 'pr-3'
+              )}
+              type="search"
+              bind:value={moduleFilter.title}
+              bind:ref={searchInputEl}
+            />
+            {#if showSearchShortcut}
+              <kbd
+                class="bg-muted text-muted-foreground pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-medium"
+                >/</kbd
+              >
+            {/if}
+          </div>
         </div>
 
         <Collapsible.Trigger>
@@ -187,6 +278,38 @@
             </Button>
           {/snippet}
         </Collapsible.Trigger>
+
+        {#if showReset}
+          <Button
+            onclick={shareCurrentSelection}
+            variant="outline"
+            size="icon"
+            class={cn(
+              'h-10 w-10 shrink-0 border-2 border-dashed',
+              shareStatus === 'copied'
+                ? 'border-emerald-400/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/30'
+                : shareStatus === 'error'
+                  ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
+                  : 'border-muted-foreground/25 hover:bg-muted/50'
+            )}
+            aria-label={shareStatus === 'copied'
+              ? 'Link kopiert'
+              : shareStatus === 'error'
+                ? 'Kopieren fehlgeschlagen'
+                : 'Filteransicht teilen'}
+            title={shareStatus === 'copied'
+              ? 'Link kopiert'
+              : shareStatus === 'error'
+                ? 'Kopieren fehlgeschlagen'
+                : 'Filteransicht teilen'}
+          >
+            {#if shareStatus === 'copied'}
+              <Check class="size-4" />
+            {:else}
+              <Copy class="size-4" />
+            {/if}
+          </Button>
+        {/if}
       </div>
 
       <Collapsible.Content class="overflow-hidden">
@@ -204,14 +327,52 @@
         <Search class="size-4" />
         <span>Suche</span>
       </div>
-      <div class="w-full min-w-0 flex-1 md:w-auto">
-        <Input
-          placeholder="Suche nach Modulbezeichnung oder Kürzel…"
-          class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
-          type="search"
-          bind:value={moduleFilter.title}
-          bind:ref={searchInputEl}
-        />
+      <div class="flex w-full min-w-0 flex-1 items-center gap-2 md:w-auto md:flex-none">
+        <div class="relative w-full md:w-md">
+          <Input
+            placeholder="Suche nach Modulbezeichnung oder Kürzel…"
+            class={cn(
+              'border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2',
+              showSearchShortcut ? 'pr-10' : 'pr-3'
+            )}
+            type="search"
+            bind:value={moduleFilter.title}
+            bind:ref={searchInputEl}
+          />
+          {#if showSearchShortcut}
+            <kbd
+              class="bg-muted text-muted-foreground pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-medium"
+              >/</kbd
+            >
+          {/if}
+        </div>
+
+        {#if showReset}
+          <Button
+            onclick={shareCurrentSelection}
+            variant="outline"
+            size="sm"
+            class={cn(
+              'h-10 shrink-0 gap-2 border-dashed',
+              shareStatus === 'copied'
+                ? 'border-emerald-400/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/30'
+                : shareStatus === 'error'
+                  ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
+                  : ''
+            )}
+          >
+            {#if shareStatus === 'copied'}
+              <Check class="size-4" />
+              Link kopiert
+            {:else if shareStatus === 'error'}
+              <Copy class="size-4" />
+              Kopieren fehlgeschlagen
+            {:else}
+              <Copy class="size-4" />
+              Filteransicht teilen
+            {/if}
+          </Button>
+        {/if}
       </div>
     </div>
 
@@ -229,18 +390,17 @@
     </div>
   {/if}
 
-  <!-- Reset Section -->
-  {#if showReset}
-    <div class="flex items-center gap-3">
+  <div class="flex flex-wrap items-center gap-3">
+    {#if showReset}
       <Button
-        onclick={() => moduleFilter.clearSelections()}
+        onclick={resetFilters}
         variant="outline"
         size="sm"
         class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
       >
         <X class="size-4" />
-        Alle Filter zurücksetzen
+        {moduleFilter.resetButtonLabel}
       </Button>
-    </div>
-  {/if}
+    {/if}
+  </div>
 </div>

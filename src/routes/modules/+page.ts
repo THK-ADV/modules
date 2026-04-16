@@ -1,4 +1,8 @@
 import { moduleFilter } from '$lib/stores/module-filter.svelte'
+import {
+  hasModuleFilterShareParams,
+  parseModuleFilterShareState
+} from '$lib/settings/module-filter-share-url'
 import type {
   ModuleType,
   ModuleView,
@@ -29,8 +33,14 @@ function getModuleType(studyPrograms: StudyProgramModuleAssociation[]): ModuleTy
   }
 }
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, url }) => {
   await moduleFilter.init(fetch)
+  const hasShareParams = hasModuleFilterShareParams(url.searchParams)
+  moduleFilter.setTemporaryShareSession(hasShareParams)
+  if (hasShareParams) {
+    moduleFilter.applyShareState(parseModuleFilterShareState(url.searchParams))
+  }
+
   const [moduleRes, latestModuleUpdateRes] = await Promise.allSettled([
     fetch('/api/modules?extend=true'),
     fetch('/api/git/latestModuleUpdate')

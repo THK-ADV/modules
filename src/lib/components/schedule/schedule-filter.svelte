@@ -98,6 +98,7 @@
   // Quick search
 
   let searchInputEl: HTMLInputElement | null = $state(null)
+  const showSearchShortcut = $derived(scheduleFilter.searchString.trim().length === 0)
 
   function handleGlobalKeydown(e: KeyboardEvent) {
     // Press `/` to focus the search input.
@@ -220,13 +221,24 @@
       <span>Suche</span>
     </div>
     <div class="w-full min-w-0 flex-1 md:w-auto">
-      <Input
-        placeholder="Suche nach Modulbezeichnung oder Kürzel…"
-        class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
-        type="search"
-        bind:value={scheduleFilter.searchString}
-        bind:ref={searchInputEl}
-      />
+      <div class="relative w-full md:w-md">
+        <Input
+          placeholder="Suche nach Modulbezeichnung oder Kürzel…"
+          class={cn(
+            'border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2',
+            showSearchShortcut ? 'pr-10' : 'pr-3'
+          )}
+          type="search"
+          bind:value={scheduleFilter.searchString}
+          bind:ref={searchInputEl}
+        />
+        {#if showSearchShortcut}
+          <kbd
+            class="bg-muted text-muted-foreground pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-medium"
+            >/</kbd
+          >
+        {/if}
+      </div>
     </div>
   </div>
 

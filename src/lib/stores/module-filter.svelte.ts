@@ -6,6 +6,7 @@ import type { FilterData } from '$lib/types/filter-data'
 import type { ModuleView } from '$lib/types/module'
 import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
 import type { PaginationState } from '@tanstack/table-core'
+import type { ModuleFilterShareState } from '$lib/settings/module-filter-share-url'
 import {
   clearItemFromLocalStorage,
   getArrayFromLocalStorage,
@@ -32,9 +33,56 @@ function createModuleFilter() {
   let selectedModuleStatus = $state(getArrayFromLocalStorage('mf-selected-module-status'))
 
   let title = $state('')
+  let temporaryShareSession = $state(false)
+  let initialShareState: ModuleFilterShareState | null = null
 
   const pages = ['15', '30', '45', 'Alle']
   let pagination = $state(getPaginationFromLocalStorage('mf-pagination', +pages[0]))
+
+  function loadFromLocalStorage() {
+    selectedStudyPrograms = getArrayFromLocalStorage('mf-selected-study-programs')
+    selectedIdentities = getArrayFromLocalStorage('mf-selected-identities')
+    selectedSemester = getArrayFromLocalStorage('mf-selected-semester')
+    selectedModuleTypes = getArrayFromLocalStorage('mf-selected-module-types')
+    selectedModuleStatus = getArrayFromLocalStorage('mf-selected-module-status')
+    pagination = getPaginationFromLocalStorage('mf-pagination', +pages[0])
+  }
+
+  function setArraySelection(
+    next: string[],
+    persistKey: string,
+    allowedValues: string[]
+  ): string[] {
+    const validValues = new Set(allowedValues)
+    const sanitized = next
+      .map((value) => value.trim())
+      .filter((value, index, all) => value.length > 0 && all.indexOf(value) === index)
+      .filter((value) => validValues.has(value))
+
+    if (!temporaryShareSession) {
+      setArrayToLocalStorage(persistKey, sanitized)
+    }
+    return sanitized
+  }
+
+  function hasAddedSelections(current: string[], initial: string[]) {
+    return current.some((value) => !initial.includes(value))
+  }
+
+  function hasAddedFiltersSinceShareLoad() {
+    if (!temporaryShareSession || initialShareState === null) {
+      return false
+    }
+
+    return (
+      hasAddedSelections(selectedStudyPrograms, initialShareState.selectedStudyPrograms) ||
+      hasAddedSelections(selectedIdentities, initialShareState.selectedIdentities) ||
+      hasAddedSelections(selectedSemester, initialShareState.selectedSemester) ||
+      hasAddedSelections(selectedModuleTypes, initialShareState.selectedModuleTypes) ||
+      hasAddedSelections(selectedModuleStatus, initialShareState.selectedModuleStatus) ||
+      (title.trim().length > 0 && title.trim() !== initialShareState.title)
+    )
+  }
 
   return {
     get title() {
@@ -79,9 +127,30 @@ function createModuleFilter() {
     get changed() {
       return changed
     },
+    get temporaryShareSession() {
+      return temporaryShareSession
+    },
+    get shareState(): ModuleFilterShareState {
+      return {
+        selectedStudyPrograms: [...selectedStudyPrograms],
+        selectedIdentities: [...selectedIdentities],
+        selectedSemester: [...selectedSemester],
+        selectedModuleTypes: [...selectedModuleTypes],
+        selectedModuleStatus: [...selectedModuleStatus],
+        title
+      }
+    },
+    get resetButtonLabel() {
+      if (temporaryShareSession && !hasAddedFiltersSinceShareLoad()) {
+        return 'Geteilte Filter zurücksetzen'
+      }
+      return 'Alle Filter zurücksetzen'
+    },
     set pagination(value: PaginationState) {
       pagination = value
-      setPaginationToLocalStorage('mf-pagination', value)
+      if (!temporaryShareSession) {
+        setPaginationToLocalStorage('mf-pagination', value)
+      }
     },
     set title(value: string) {
       title = value
@@ -93,7 +162,9 @@ function createModuleFilter() {
       } else {
         selectedStudyPrograms.push(id)
       }
-      setArrayToLocalStorage('mf-selected-study-programs', selectedStudyPrograms)
+      if (!temporaryShareSession) {
+        setArrayToLocalStorage('mf-selected-study-programs', selectedStudyPrograms)
+      }
       changed++
     },
     selectSemester(id: string) {
@@ -102,7 +173,9 @@ function createModuleFilter() {
       } else {
         selectedSemester.push(id)
       }
-      setArrayToLocalStorage('mf-selected-semester', selectedSemester)
+      if (!temporaryShareSession) {
+        setArrayToLocalStorage('mf-selected-semester', selectedSemester)
+      }
       changed++
     },
     selectIdentity(id: string) {
@@ -111,7 +184,9 @@ function createModuleFilter() {
       } else {
         selectedIdentities.push(id)
       }
-      setArrayToLocalStorage('mf-selected-identities', selectedIdentities)
+      if (!temporaryShareSession) {
+        setArrayToLocalStorage('mf-selected-identities', selectedIdentities)
+      }
       changed++
     },
     selectModuleType(id: string) {
@@ -120,7 +195,9 @@ function createModuleFilter() {
       } else {
         selectedModuleTypes.push(id)
       }
-      setArrayToLocalStorage('mf-selected-module-types', selectedModuleTypes)
+      if (!temporaryShareSession) {
+        setArrayToLocalStorage('mf-selected-module-types', selectedModuleTypes)
+      }
       changed++
     },
     selectModuleStatus(id: string) {
@@ -129,32 +206,44 @@ function createModuleFilter() {
       } else {
         selectedModuleStatus.push(id)
       }
-      setArrayToLocalStorage('mf-selected-module-status', selectedModuleStatus)
+      if (!temporaryShareSession) {
+        setArrayToLocalStorage('mf-selected-module-status', selectedModuleStatus)
+      }
       changed++
     },
     clearSelectedStudyPrograms() {
       selectedStudyPrograms = []
-      clearItemFromLocalStorage('mf-selected-study-programs')
+      if (!temporaryShareSession) {
+        clearItemFromLocalStorage('mf-selected-study-programs')
+      }
       changed++
     },
     clearSelectedIdentities() {
       selectedIdentities = []
-      clearItemFromLocalStorage('mf-selected-identities')
+      if (!temporaryShareSession) {
+        clearItemFromLocalStorage('mf-selected-identities')
+      }
       changed++
     },
     clearSelectedSemester() {
       selectedSemester = []
-      clearItemFromLocalStorage('mf-selected-semester')
+      if (!temporaryShareSession) {
+        clearItemFromLocalStorage('mf-selected-semester')
+      }
       changed++
     },
     clearSelectedModuleTypes() {
       selectedModuleTypes = []
-      clearItemFromLocalStorage('mf-selected-module-types')
+      if (!temporaryShareSession) {
+        clearItemFromLocalStorage('mf-selected-module-types')
+      }
       changed++
     },
     clearSelectedModuleStatus() {
       selectedModuleStatus = []
-      clearItemFromLocalStorage('mf-selected-module-status')
+      if (!temporaryShareSession) {
+        clearItemFromLocalStorage('mf-selected-module-status')
+      }
       changed++
     },
     clearSelections() {
@@ -164,6 +253,56 @@ function createModuleFilter() {
       this.clearSelectedModuleTypes()
       this.clearSelectedModuleStatus()
       title = ''
+    },
+    setTemporaryShareSession(enabled: boolean) {
+      if (temporaryShareSession === enabled) {
+        return
+      }
+      temporaryShareSession = enabled
+      if (!temporaryShareSession) {
+        initialShareState = null
+        loadFromLocalStorage()
+        title = ''
+      }
+      changed++
+    },
+    applyShareState(state: ModuleFilterShareState) {
+      selectedStudyPrograms = setArraySelection(
+        state.selectedStudyPrograms,
+        'mf-selected-study-programs',
+        studyPrograms.map((option) => option.id)
+      )
+      selectedIdentities = setArraySelection(
+        state.selectedIdentities,
+        'mf-selected-identities',
+        identities.map((option) => option.id)
+      )
+      selectedSemester = setArraySelection(
+        state.selectedSemester,
+        'mf-selected-semester',
+        semester.map((option) => option.id)
+      )
+      selectedModuleTypes = setArraySelection(
+        state.selectedModuleTypes,
+        'mf-selected-module-types',
+        moduleTypes.map((option) => option.id)
+      )
+      selectedModuleStatus = setArraySelection(
+        state.selectedModuleStatus,
+        'mf-selected-module-status',
+        moduleStatus.map((option) => option.id)
+      )
+      title = state.title.trim()
+      initialShareState = {
+        selectedStudyPrograms: [...selectedStudyPrograms],
+        selectedIdentities: [...selectedIdentities],
+        selectedSemester: [...selectedSemester],
+        selectedModuleTypes: [...selectedModuleTypes],
+        selectedModuleStatus: [...selectedModuleStatus],
+        title
+      }
+      pagination = { ...pagination, pageIndex: 0 }
+      changed++
     },
     async init(fetch: typeof globalThis.fetch) {
       if (semester.length === 0) {

@@ -136,6 +136,7 @@
         <p class="font-semibold">Anforderungen:</p>
         <ul class="list-disc space-y-1 pl-5">
           <li>Nur <span class="font-semibold">Word-Dateien (.docx)</span> werden akzeptiert</li>
+          <li>Die maximale Dateigröße beträgt <span class="font-semibold">10 MB</span></li>
           <li>Alle enthaltenen Bilder müssen im PNG-Format sein</li>
           <li>Die "Überschrift 1" darf mehrfach vorkommen</li>
         </ul>

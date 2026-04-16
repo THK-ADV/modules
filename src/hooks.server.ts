@@ -35,7 +35,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     if (!accessToken) {
       console.log('[protected] redirecting to login', event.url.pathname)
-      throw redirect(303, `/login?redirectTo=${encodeURIComponent(event.url.pathname)}`)
+      const redirectTo = `${event.url.pathname}${event.url.search}`
+      throw redirect(303, `/login?redirectTo=${encodeURIComponent(redirectTo)}`)
     }
 
     return await resolve(event)
@@ -44,12 +45,22 @@ export const handle: Handle = async ({ event, resolve }) => {
   // handle authenticated requests by setting the access token in the request headers
   if (event.url.pathname.startsWith(AUTH_API_PREFIX)) {
     const accessToken = await getValidAccessToken(event.cookies, event.fetch)
-    console.assert(!!accessToken, 'access token should be defined')
+    if (!accessToken) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+
+    const incomingHeaders = Object.fromEntries(event.request.headers)
+    // Do not forward browser cookies to the backend.
+    delete incomingHeaders.cookie
+    delete incomingHeaders.authorization
+    delete incomingHeaders.host
+    delete incomingHeaders.connection
+    delete incomingHeaders['content-length']
 
     const requestInit: RequestInit & { duplex?: string } = {
       method: event.request.method,
       headers: {
-        ...Object.fromEntries(event.request.headers),
+        ...incomingHeaders,
         Authorization: `Bearer ${accessToken}`
       },
       body: event.request.body

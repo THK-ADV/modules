@@ -10,23 +10,130 @@ const AccessTokenKey = 'kc-access'
 const AccessTokenExpiresAtKey = 'kc-access-exp'
 
 const RefreshTokenKey = 'kc-refresh'
+const AuthStateKey = 'kc-oidc-state'
+const PkceVerifierKey = 'kc-oidc-pkce'
+
+export const authStateCookieName = AuthStateKey
 
 const tokenEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
+const jwksEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs`
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseJwt(token: string): any | undefined {
+const issuer = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}`
+
+function base64UrlToBytes(input: string): Uint8Array {
+  const base64 = input.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+  const bin = atob(padded)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return bytes
+}
+
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  const base64 = btoa(bin)
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+function randomBase64Url(bytes: number): string {
+  const buf = new Uint8Array(bytes)
+  crypto.getRandomValues(buf)
+  return bytesToBase64Url(buf)
+}
+
+async function sha256Base64Url(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input)
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return bytesToBase64Url(new Uint8Array(digest))
+}
+
+type JwksCache = {
+  fetchedAtMs: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jwks: any
+}
+
+let jwksCache: JwksCache | undefined
+
+async function getJwks(fetch: typeof globalThis.fetch) {
+  const ttlMs = 10 * 60 * 1000
+  if (jwksCache && Date.now() - jwksCache.fetchedAtMs < ttlMs) return jwksCache.jwks
+
+  const res = await fetch(jwksEndpoint)
+  if (!res.ok) throw error(res.status, { message: 'Failed to fetch JWKS' })
+  const jwks = await res.json()
+  jwksCache = { fetchedAtMs: Date.now(), jwks }
+  return jwks
+}
+
+async function verifyJwtRs256(
+  token: string,
+  fetch: typeof globalThis.fetch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any | undefined> {
   try {
-    const [, payloadB64] = token.split('.')
-    const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
-    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
-    const json = new TextDecoder().decode(Uint8Array.from(atob(padded), (c) => c.charCodeAt(0)))
-    return JSON.parse(json)
+    const [headerB64, payloadB64, sigB64] = token.split('.')
+    if (!headerB64 || !payloadB64 || !sigB64) return undefined
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const header: any = JSON.parse(new TextDecoder().decode(base64UrlToBytes(headerB64)))
+    const kid = header.kid
+    if (typeof kid !== 'string' || !kid) return undefined
+
+    const findKey = async () => {
+      const jwks = await getJwks(fetch)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (jwks.keys as any[] | undefined)?.find((k) => k.kid === kid)
+    }
+
+    let key = await findKey()
+    if (!key) {
+      // key rotation: retry once with fresh JWKS
+      jwksCache = undefined
+      key = await findKey()
+      if (!key) return undefined
+    }
+
+    const alg = header.alg
+    if (alg !== 'RS256') return undefined
+
+    const cryptoKey = await crypto.subtle.importKey(
+      'jwk',
+      key,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    )
+
+    const signingInput = new TextEncoder().encode(`${headerB64}.${payloadB64}`)
+    const signature = base64UrlToBytes(sigB64)
+    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, signingInput)
+    if (!ok) return undefined
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload: any = JSON.parse(new TextDecoder().decode(base64UrlToBytes(payloadB64)))
+
+    if (payload.iss !== issuer) return undefined
+    if (typeof payload.exp === 'number' && Date.now() / 1000 >= payload.exp) return undefined
+    if (typeof payload.nbf === 'number' && Date.now() / 1000 < payload.nbf) return undefined
+
+    const audOk =
+      payload.azp === KEYCLOAK_CLIENT_ID ||
+      payload.aud === KEYCLOAK_CLIENT_ID ||
+      (Array.isArray(payload.aud) && payload.aud.includes(KEYCLOAK_CLIENT_ID))
+    if (!audOk) return undefined
+
+    return payload
   } catch {
     return undefined
   }
 }
 
-// TODO: the access token expires in 23 hours. make it so that the token is refreshed when the home page is loaded
+export function getExpectedAuthState(cookies: Cookies): string | undefined {
+  return cookies.get(AuthStateKey)
+}
+
 function shouldRefreshToken(cookies: Cookies): boolean {
   const exp = cookies.get(AccessTokenExpiresAtKey)
   if (!exp) {
@@ -37,8 +144,8 @@ function shouldRefreshToken(cookies: Cookies): boolean {
     const currTime = Date.now()
     const timeUntilExpiry = expTime - currTime
 
-    // refresh if token will expire in less than 10 minutes (600 seconds)
-    return timeUntilExpiry < 600
+    // refresh if token will expire in less than 10 minutes
+    return timeUntilExpiry < 10 * 60 * 1000
   } catch {
     // assume refreshing if there is an error
     return true
@@ -51,7 +158,6 @@ async function refreshAccessToken(
   fetch: typeof globalThis.fetch
 ): Promise<string | undefined> {
   const refreshToken = cookies.get(RefreshTokenKey)
-
   if (!refreshToken) {
     return undefined
   }
@@ -100,8 +206,11 @@ export async function getValidAccessToken(
   return accessToken
 }
 
-export function getUser(accessToken: string): User | undefined {
-  const token = parseJwt(accessToken)
+export async function getUser(
+  accessToken: string,
+  fetch: typeof globalThis.fetch
+): Promise<User | undefined> {
+  const token = await verifyJwtRs256(accessToken, fetch)
   if (!token) {
     return undefined
   }
@@ -167,31 +276,15 @@ export function deleteCookies(cookies: Cookies) {
   cookies.delete(RefreshTokenKey, { path: '/' })
 }
 
-export function loginUrl(baseUrl: string, redirectTo: string = '/'): string {
-  const realmUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth`
-  const params = new URLSearchParams()
-  params.append('response_type', 'code')
-  params.append('scope', 'openid profile email')
-  params.append('redirect_uri', `${baseUrl}/auth?redirectTo=${encodeURIComponent(redirectTo)}`)
-  params.append('client_id', KEYCLOAK_CLIENT_ID)
-  return `${realmUrl}?${params.toString()}`
-}
-
-export function logoutUrl(baseUrl: string, redirectTo: string = '/'): string {
-  const realmUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`
-  const params = new URLSearchParams()
-  params.append('client_id', KEYCLOAK_CLIENT_ID)
-  params.append('post_logout_redirect_uri', `${baseUrl}${redirectTo}`)
-  return `${realmUrl}?${params.toString()}`
+export function deleteAuthAttemptCookies(cookies: Cookies) {
+  cookies.delete(AuthStateKey, { path: '/' })
+  cookies.delete(PkceVerifierKey, { path: '/' })
 }
 
 // revoke the refresh token on the Keycloak server (optional but recommended)
 async function revokeRefreshToken(cookies: Cookies, fetch: typeof globalThis.fetch): Promise<void> {
   const refreshToken = cookies.get(RefreshTokenKey)
-
-  if (!refreshToken) {
-    return
-  }
+  if (!refreshToken) return
 
   try {
     const endpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/revoke`
@@ -213,7 +306,7 @@ async function revokeRefreshToken(cookies: Cookies, fetch: typeof globalThis.fet
   }
 }
 
-// perform a complete logout: revoke tokens, clear cookies, and return logout URL
+// perform a local-only logout: revoke refresh token (optional), clear cookies/session, and return local redirect
 export async function performLogout(
   cookies: Cookies,
   fetch: typeof globalThis.fetch,
@@ -222,7 +315,44 @@ export async function performLogout(
 ): Promise<string> {
   await revokeRefreshToken(cookies, fetch)
   deleteCookies(cookies)
-  return logoutUrl(baseUrl, redirectTo)
+  deleteAuthAttemptCookies(cookies)
+  return `${baseUrl}${redirectTo}`
+}
+
+export async function buildLoginRedirect(
+  cookies: Cookies,
+  baseUrl: string,
+  redirectTo: string
+): Promise<string> {
+  const state = randomBase64Url(32)
+  const codeVerifier = randomBase64Url(64)
+  const codeChallenge = await sha256Base64Url(codeVerifier)
+
+  cookies.set(AuthStateKey, state, {
+    path: '/',
+    httpOnly: true,
+    secure: !dev,
+    sameSite: 'lax',
+    maxAge: 10 * 60
+  })
+  cookies.set(PkceVerifierKey, codeVerifier, {
+    path: '/',
+    httpOnly: true,
+    secure: !dev,
+    sameSite: 'lax',
+    maxAge: 10 * 60
+  })
+
+  const realmUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth`
+  const params = new URLSearchParams()
+  params.append('response_type', 'code')
+  params.append('scope', 'openid profile email')
+  params.append('redirect_uri', `${baseUrl}/auth?redirectTo=${encodeURIComponent(redirectTo)}`)
+  params.append('client_id', KEYCLOAK_CLIENT_ID)
+  params.append('state', state)
+  params.append('code_challenge_method', 'S256')
+  params.append('code_challenge', codeChallenge)
+  return `${realmUrl}?${params.toString()}`
 }
 
 // exchanges the auth code for access token
@@ -233,38 +363,40 @@ export async function exchangeToken(
   fetch: typeof globalThis.fetch,
   redirectUri: string | null
 ): Promise<void> {
-  try {
-    const endpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
-    let finalRedirectUri = `${baseUrl}/auth`
-    if (redirectUri) {
-      finalRedirectUri += `?redirectTo=${encodeURIComponent(redirectUri)}`
-    }
-
-    const params = new URLSearchParams()
-    params.append('grant_type', 'authorization_code')
-    params.append('client_id', KEYCLOAK_CLIENT_ID)
-    params.append('code', authCode)
-    params.append('redirect_uri', finalRedirectUri)
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params.toString()
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw error(response.status, {
-        message: `Failed to exchange authorization code: ${errorText}`
-      })
-    }
-
-    const json = await response.json()
-    setCookies(cookies, json)
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    throw error(500, { message })
+  const codeVerifier = cookies.get(PkceVerifierKey)
+  if (!codeVerifier) {
+    throw error(400, { message: 'Missing PKCE verifier for login attempt' })
   }
+
+  const endpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
+  let finalRedirectUri = `${baseUrl}/auth`
+  if (redirectUri) {
+    finalRedirectUri += `?redirectTo=${encodeURIComponent(redirectUri)}`
+  }
+
+  const params = new URLSearchParams()
+  params.append('grant_type', 'authorization_code')
+  params.append('client_id', KEYCLOAK_CLIENT_ID)
+  params.append('code', authCode)
+  params.append('redirect_uri', finalRedirectUri)
+  params.append('code_verifier', codeVerifier)
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: params.toString()
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw error(response.status, {
+      message: `Failed to exchange authorization code: ${errorText}`
+    })
+  }
+
+  const json = await response.json()
+  setCookies(cookies, json)
+  deleteAuthAttemptCookies(cookies)
 }

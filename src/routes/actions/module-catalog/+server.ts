@@ -13,28 +13,29 @@ export const POST: RequestHandler = async ({ request, fetch, url }) => {
     return error(400, { message: 'studyProgramId und poId sind erforderlich' })
   }
 
-  try {
-    const requestInit: RequestInit & { duplex: string } = {
-      method: 'POST',
-      headers: request.headers,
-      body: request.body,
-      duplex: 'half'
-    }
-    const response = await fetch(
-      `/auth-api/moduleCatalogIntros/${studyProgramId}/${poId}`,
-      requestInit
-    )
+  const headers = new Headers()
+  const contentType = request.headers.get('content-type')
+  if (contentType) headers.set('content-type', contentType)
+  const body = await request.arrayBuffer()
 
-    if (!response.ok) {
-      const err = await response.json()
-      return error(response.status, {
-        message: err.message || 'Fehler beim Hochladen der Einleitung'
-      })
-    }
-
-    return json({ success: true }, { status: 200 })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return error(500, { message })
+  const requestInit: RequestInit = {
+    method: 'POST',
+    headers,
+    body
   }
+  const response = await fetch(
+    `/auth-api/moduleCatalogIntros/${studyProgramId}/${poId}`,
+    requestInit
+  )
+
+  if (!response.ok) {
+    const err = await response
+      .json()
+      .catch(() => ({ message: 'Fehler beim Hochladen der Einleitung' }))
+    throw error(response.status, {
+      message: err.message || 'Fehler beim Hochladen der Einleitung'
+    })
+  }
+
+  return json({ success: true }, { status: 200 })
 }

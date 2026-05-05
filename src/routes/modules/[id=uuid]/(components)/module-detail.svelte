@@ -275,7 +275,8 @@
     Info,
     ShieldAlert,
     Users,
-    CircleX
+    CircleX,
+    History
   } from '@lucide/svelte'
   import { marked } from 'marked'
   import { resolve } from '$app/paths'
@@ -283,11 +284,13 @@
   const {
     module,
     genericModuleOptions,
-    isGenericModule
+    isGenericModule,
+    isAuthenticated
   }: {
     module: ModuleDetail
     genericModuleOptions: GenericModuleOption[]
     isGenericModule: boolean
+    isAuthenticated: boolean
   } = $props()
 
   $effect(() => {
@@ -584,9 +587,19 @@
         </Badge>
       {/each}
     </div>
-    <p class="text-muted-foreground text-sm">
-      Letzte Aktualisierung: {lastModified}
-    </p>
+    {#if isAuthenticated}
+      <a
+        href={resolve('/modules/[id=uuid]/history', { id: module.id })}
+        class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm transition-colors"
+      >
+        <History class="size-4 shrink-0" />
+        <span>Letzte Aktualisierung: {lastModified}</span>
+      </a>
+    {:else}
+      <p class="text-muted-foreground text-sm">
+        Letzte Aktualisierung: {lastModified}
+      </p>
+    {/if}
   </div>
 
   <!-- Module Information Card -->

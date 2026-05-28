@@ -59,6 +59,7 @@
     "@internationalized/date": "^3.12.1",
     "@pierre/diffs": "^1.1.20",
     "@tanstack/table-core": "^8.21.3",
+    "isomorphic-dompurify": "^3.14.0",
     "marked": "^17.0.1",
     "mode-watcher": "^1.1.0"
   }

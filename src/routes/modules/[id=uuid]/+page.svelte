@@ -4,11 +4,16 @@
   import ModuleFile from './(components)/module-file.svelte'
 
   let { data }: PageProps = $props()
-  const { file, module, genericModuleOptions, isGenericModule, accessToken } = $derived(data)
+  const { file, module, genericModuleOptions, isGenericModule, isAuthenticated } = $derived(data)
 </script>
 
 {#if file}
   <ModuleFile {file} />
 {:else if module && genericModuleOptions}
-  <ModuleDetail {module} {genericModuleOptions} {isGenericModule} isAuthenticated={!!accessToken} />
+  <ModuleDetail
+    {module}
+    {genericModuleOptions}
+    {isGenericModule}
+    isAuthenticated={isAuthenticated ?? false}
+  />
 {/if}

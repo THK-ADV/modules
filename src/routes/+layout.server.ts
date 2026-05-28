@@ -9,8 +9,8 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
   if (accessToken) {
     const user = await getUser(accessToken, fetch)
     const userInfo = await getUserInfo(fetch)
-    return { accessToken, user, userInfo, sidebarOpen }
+    return { isAuthenticated: true, user, userInfo, sidebarOpen }
   }
 
-  return { accessToken, user: undefined, userInfo: undefined, sidebarOpen }
+  return { isAuthenticated: false, user: undefined, userInfo: undefined, sidebarOpen }
 }

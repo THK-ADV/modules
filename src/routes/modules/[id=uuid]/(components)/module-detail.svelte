@@ -278,7 +278,7 @@
     CircleX,
     History
   } from '@lucide/svelte'
-  import { marked } from 'marked'
+  import { renderMarkdown } from '$lib/markdown'
   import { resolve } from '$app/paths'
 
   const {
@@ -346,7 +346,7 @@
   <h2>{title}</h2>
   {#if body}
     <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    <div>{@html marked.parse(body)}</div>
+    <div>{@html renderMarkdown(body)}</div>
   {:else if selectedLanguage === 'en'}
     <p>No information</p>
   {:else}

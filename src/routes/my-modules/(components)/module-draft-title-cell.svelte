@@ -23,8 +23,7 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <!-- enable link to module detail page once it's implemented -->
-  <!-- <a href="/modules/{moduleDraft.module.id}?source=latest" class="hover:underline">
+  <!-- <a href="/modules/{moduleDraft.module.id}" class="hover:underline">
     {rowTitle}
   </a> -->
   <span>{rowTitle}</span>

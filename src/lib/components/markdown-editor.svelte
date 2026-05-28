@@ -5,7 +5,7 @@
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { Bold, Eye, Italic, Link, List, ListOrdered, Pencil } from '@lucide/svelte'
-  import { marked } from 'marked'
+  import { renderMarkdown } from '$lib/markdown'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Props {
@@ -49,7 +49,7 @@
 
   function renderedMarkdown() {
     return value
-      ? marked.parse(value)
+      ? renderMarkdown(value)
       : '<p class="text-muted-foreground italic">Keine Vorschau verfügbar</p>'
   }
 

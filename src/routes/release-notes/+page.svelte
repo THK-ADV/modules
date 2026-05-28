@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import { Tag } from '@lucide/svelte'
-  import { marked } from 'marked'
+  import { renderMarkdown } from '$lib/markdown'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
@@ -70,7 +70,7 @@
 
               <div class="prose prose-sm dark:prose-invert mt-3 max-w-none">
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-                {@html marked.parse(release.body)}
+                {@html renderMarkdown(release.body)}
               </div>
             </div>
           </div>

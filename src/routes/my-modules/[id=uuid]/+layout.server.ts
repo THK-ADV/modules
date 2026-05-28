@@ -101,7 +101,6 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   if (mode === 'create') {
     const form = await createEmptyForm()
     return {
-      accessToken,
       form,
       mode,
       module: null,
@@ -192,7 +191,6 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
   const fieldStatuses = getFieldModifications(moduleDraftKeys)
 
   return {
-    accessToken,
     form,
     mode,
     module,

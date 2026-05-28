@@ -8,13 +8,13 @@ This is **MOCOGi** — a SvelteKit 5 frontend for managing module descriptions, 
 
 ### Key commands
 
-| Task | Command |
-|------|---------|
-| Install deps | `pnpm install` |
-| Dev server | `pnpm dev` (port 5173) |
-| Lint | `pnpm lint` |
-| Type check | `pnpm check` |
-| Build | `pnpm build` |
+| Task         | Command                |
+| ------------ | ---------------------- |
+| Install deps | `pnpm install`         |
+| Dev server   | `pnpm dev` (port 5173) |
+| Lint         | `pnpm lint`            |
+| Type check   | `pnpm check`           |
+| Build        | `pnpm build`           |
 
 ### Architecture notes
 

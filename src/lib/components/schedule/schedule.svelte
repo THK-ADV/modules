@@ -3,8 +3,7 @@
     Calendar,
     type CalendarEvent,
     type CalendarEventProps,
-    type DateRangeInfo,
-    type ScheduleEventProps
+    type DateRangeInfo
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { uiStore } from '$lib/stores/ui.svelte.js'
@@ -175,11 +174,7 @@
 
   async function onDateRangeSet(info: DateRangeInfo) {
     try {
-      const res = await scheduleFetcher(info)
-      if (!res.ok) {
-        return
-      }
-      const entries: CalendarEvent<ScheduleEventProps>[] = await res.json()
+      const entries = await scheduleFetcher(info)
       scheduleEntries.length = 0
       scheduleEntries.push(...entries)
     } catch {

@@ -20,7 +20,7 @@
   import { createSemesterOptions, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
-  import { getLecturers } from './planning.remote'
+  import { getLecturers } from './schedule.remote'
 
   export interface Create {
     id: 'create'
@@ -329,6 +329,10 @@
     return entries
   }
 
+  /**
+   * Duplicates the given entry for each selected date.
+   * @param origin
+   */
   function duplicateEntries(origin: ScheduleEntryCreate): ScheduleEntryCreate[] {
     if (!repeatEntry || repeatedEntries.length === 0) {
       return []

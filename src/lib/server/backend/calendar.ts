@@ -92,6 +92,7 @@ export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<Hol
   return { timeGrid, monthBg }
 }
 
+/** Fetches the semester plan entries for the current semester */
 export async function fetchSemesterEntries(
   fetch: typeof globalThis.fetch
 ): Promise<CalendarEvent<SemesterPlanEventProps>[]> {
@@ -183,10 +184,11 @@ function createScheduleEvents(entries: ScheduleEntry[]): CalendarEvent<ScheduleE
   return entries.map((entry) => createScheduleEvent(entry))
 }
 
+/** Fetches the schedule entries for a given date range */
 export async function fetchScheduleEntriesByRange(
   fetch: typeof globalThis.fetch,
-  start: string | null,
-  end: string | null,
+  start: number | null,
+  end: number | null,
   bypassCache: boolean
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
   if (!start || !end) {
@@ -206,6 +208,8 @@ export async function fetchScheduleEntriesByRange(
     'Fehler beim Laden des Stundenplans',
     { headers }
   )
+  console.log(entries.length)
+
   return createScheduleEvents(entries)
 }
 
@@ -276,22 +280,14 @@ export async function createScheduleEntriesFromInput(
   fetch: typeof globalThis.fetch,
   entries: ScheduleEntryCreate[]
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  if (!Array.isArray(entries)) {
-    throw error(400, { message: 'Body muss ein Array sein' })
-  }
-
-  const payload = entries.map(scheduleEntryCreateToPayload)
-  return createScheduleEntries(fetch, JSON.stringify(payload))
+  const body = JSON.stringify(entries.map(scheduleEntryCreateToPayload))
+  return createScheduleEntries(fetch, body)
 }
 
 export async function updateScheduleEntryFromInput(
   fetch: typeof globalThis.fetch,
   entry: ScheduleEntryEdit
 ): Promise<CalendarEvent<ScheduleEventProps>> {
-  if (!entry.id || typeof entry.id !== 'string') {
-    throw error(400, { message: 'ID fehlt' })
-  }
-
   return updateScheduleEntry(fetch, entry.id, scheduleEntryEditToPayload(entry))
 }
 
@@ -299,10 +295,6 @@ export async function deleteScheduleEntry(
   fetch: typeof globalThis.fetch,
   id: string
 ): Promise<void> {
-  if (!id || typeof id !== 'string') {
-    throw error(400, { message: 'ID fehlt' })
-  }
-
   await fetchBackend(fetch, `/auth-api/scheduleEntries/${id}`, 'Fehler beim Löschen des Eintrags', {
     method: 'DELETE'
   })

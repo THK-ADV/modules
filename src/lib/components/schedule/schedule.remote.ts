@@ -6,14 +6,16 @@ import {
   updateScheduleEntryFromInput
 } from '$lib/server/backend/calendar'
 import type { ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
-import { command, getRequestEvent } from '$app/server'
+import { command, getRequestEvent, query } from '$app/server'
 import * as v from 'valibot'
 
+/** Timestamp in milliseconds */
 const dateRangeSchema = v.object({
   start: v.number(),
   end: v.number()
 })
 
+// ScheduleEntryCreate schema
 const scheduleEntryCreateSchema = v.object({
   module: v.string(),
   courseType: v.picklist(['lecture', 'lab', 'exercise', 'seminar', 'tutorial']),
@@ -31,36 +33,44 @@ const scheduleEntryCreateSchema = v.object({
     ),
     lecturer: v.array(v.string())
   }),
-  seriesId: v.optional(v.string())
+  seriesId: v.string()
 })
 
+// ScheduleEntryEdit schema
 const scheduleEntryEditSchema = v.object({
   ...scheduleEntryCreateSchema.entries,
   id: v.string()
 })
 
+/** Fetches the lecturers for a given module */
 export const getLecturers = command(v.string(), async (module) => {
   const { fetch } = getRequestEvent()
   return fetchLecturerOptions(fetch, module)
 })
 
-export const fetchLiveScheduleEntries = command(dateRangeSchema, async ({ start, end }) => {
+/** Fetches live schedule entries for a given date range */
+export const fetchLiveScheduleEntries = query(dateRangeSchema, async ({ start, end }) => {
   const { fetch } = getRequestEvent()
-  return fetchScheduleEntriesByRange(fetch, String(start), String(end), true)
+  return fetchScheduleEntriesByRange(fetch, start, end, true)
 })
 
+/** Creates live schedule entries. Returns the created entries. */
 export const createLiveScheduleEntries = command(
   v.array(scheduleEntryCreateSchema),
-  async (entries) => {
+  async (entries: ScheduleEntryCreate[]) => {
     const { fetch } = getRequestEvent()
-    return createScheduleEntriesFromInput(fetch, entries as ScheduleEntryCreate[])
+    return createScheduleEntriesFromInput(fetch, entries)
   }
 )
 
-export const updateLiveScheduleEntry = command(scheduleEntryEditSchema, async (entry) => {
-  const { fetch } = getRequestEvent()
-  return updateScheduleEntryFromInput(fetch, entry as ScheduleEntryEdit)
-})
+/** Updates a live schedule entry. Returns the updated entry. */
+export const updateLiveScheduleEntry = command(
+  scheduleEntryEditSchema,
+  async (entry: ScheduleEntryEdit) => {
+    const { fetch } = getRequestEvent()
+    return updateScheduleEntryFromInput(fetch, entry)
+  }
+)
 
 export const deleteLiveScheduleEntry = command(v.string(), async (id) => {
   const { fetch } = getRequestEvent()

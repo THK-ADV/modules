@@ -75,6 +75,7 @@ export interface ScheduleEntry {
   lecturer: ModuleManagement[]
   teachingUnits: string[]
   props: ScheduleEntryProps
+  seriesId: string
 }
 
 // used for the schedule entry dialog to edit data
@@ -86,6 +87,7 @@ export interface ScheduleEntryEdit {
   end: Date
   rooms: string[]
   props: ScheduleEntryProps
+  seriesId: string
 }
 
 export type ScheduleEntryCreate = Omit<ScheduleEntryEdit, 'id'>

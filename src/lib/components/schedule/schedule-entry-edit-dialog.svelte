@@ -20,6 +20,7 @@
   import { createSemesterOptions, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
+  import { getLecturers } from './planning.remote'
 
   export interface Create {
     id: 'create'
@@ -497,9 +498,10 @@
   }
 
   async function updateLecturerByModule(module: string) {
-    const resp = await fetch('/schedule-planning?select=lecturers&module=' + module)
-    if (resp.ok) {
-      $formData.lecturer = await resp.json()
+    try {
+      $formData.lecturer = await getLecturers(module)
+    } catch (error) {
+      console.error('Failed to load lecturers for module', module, error)
     }
   }
 </script>

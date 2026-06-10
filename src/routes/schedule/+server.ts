@@ -1,4 +1,4 @@
-import { fetchScheduleEntriesByRange } from '$lib/server/calendar'
+import { fetchScheduleEntriesByRange } from '$lib/server/backend/calendar'
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 

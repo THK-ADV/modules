@@ -12,9 +12,41 @@ import {
   SELECTED_CALENDAR_VIEW_COOKIE_NAME,
   SEMESTER_PLAN_TYPE_COLORS
 } from '$lib/calendar/types'
-import type { ScheduleEntry, SemesterPlanEntry } from '$lib/types/schedule'
-import type { Cookies } from '@sveltejs/kit'
+import type {
+  ScheduleEntry,
+  ScheduleEntryCreate,
+  ScheduleEntryEdit,
+  SemesterPlanEntry
+} from '$lib/types/schedule'
 import { error } from '@sveltejs/kit'
+import type { Cookies } from '@sveltejs/kit'
+import { fetchBackend, fetchBackendJson } from './http'
+
+/**
+ * Converts a date string to an ISO 8601 string with the local timezone offset.
+ * Unlike `Date.toISOString()`, which always returns UTC, this preserves
+ * the local wall-clock time (e.g. "2026-04-22T09:00:00+02:00").
+ */
+export function toLocalISOString(date: Date): string {
+  const off = -date.getTimezoneOffset()
+  const sign = off >= 0 ? '+' : '-'
+  const pad = (n: number) => String(Math.abs(n)).padStart(2, '0')
+  const offsetStr = `${sign}${pad(Math.floor(off / 60))}:${pad(off % 60)}`
+
+  return (
+    date.getFullYear() +
+    '-' +
+    pad(date.getMonth() + 1) +
+    '-' +
+    pad(date.getDate()) +
+    'T' +
+    pad(date.getHours()) +
+    ':' +
+    pad(date.getMinutes()) +
+    ':00' +
+    offsetStr
+  )
+}
 
 export type HolidaysForCalendar = {
   timeGrid: CalendarEvent<HolidayEventProps>[]
@@ -22,14 +54,11 @@ export type HolidaysForCalendar = {
 }
 
 export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<HolidaysForCalendar> {
-  const resp = await fetch('/api/holidays')
-
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, { message: `Fehler beim Laden der Feiertage: ${err.message}` })
-  }
-
-  const data: { date: string; label: string }[] = await resp.json()
+  const data = await fetchBackendJson<{ date: string; label: string }[]>(
+    fetch,
+    '/api/holidays',
+    'Fehler beim Laden der Feiertage'
+  )
 
   const timeGrid: CalendarEvent<HolidayEventProps>[] = []
   const monthBg: CalendarEvent<HolidayEventProps>[] = []
@@ -66,14 +95,11 @@ export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<Hol
 export async function fetchSemesterEntries(
   fetch: typeof globalThis.fetch
 ): Promise<CalendarEvent<SemesterPlanEventProps>[]> {
-  const resp = await fetch('/api/semesterPlan')
-
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, { message: `Fehler beim Laden des Semesterplans: ${err.message}` })
-  }
-
-  const entries: SemesterPlanEntry[] = await resp.json()
+  const entries = await fetchBackendJson<SemesterPlanEntry[]>(
+    fetch,
+    '/api/semesterPlan',
+    'Fehler beim Laden des Semesterplans'
+  )
 
   return entries.map((entry) => {
     let title: string
@@ -174,16 +200,12 @@ export async function fetchScheduleEntriesByRange(
     headers['Cache-Control'] = 'no-cache'
   }
 
-  const resp = await fetch(uri, { headers })
-
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, {
-      message: `Fehler beim Laden des Stundenplans: ${err.message}`
-    })
-  }
-
-  const entries: ScheduleEntry[] = await resp.json()
+  const entries = await fetchBackendJson<ScheduleEntry[]>(
+    fetch,
+    uri,
+    'Fehler beim Laden des Stundenplans',
+    { headers }
+  )
   return createScheduleEvents(entries)
 }
 
@@ -201,59 +223,105 @@ export async function fetchScheduleEntriesBySemester(
     headers['Cache-Control'] = 'no-cache'
   }
 
-  const resp = await fetch(`/api/scheduleEntries?semester=${semester}`, { headers })
-
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, {
-      message: `Fehler beim Laden des Stundenplans: ${err.message}`
-    })
-  }
-
-  const entries: ScheduleEntry[] = await resp.json()
+  const entries = await fetchBackendJson<ScheduleEntry[]>(
+    fetch,
+    `/api/scheduleEntries?semester=${semester}`,
+    'Fehler beim Laden des Stundenplans',
+    { headers }
+  )
   return createScheduleEvents(entries)
+}
+
+type ScheduleEntryWritePayload = Omit<ScheduleEntryEdit, 'id' | 'start' | 'end'> & {
+  start: string
+  end: string
+}
+
+function scheduleEntryCreateToPayload(entry: ScheduleEntryCreate): ScheduleEntryWritePayload {
+  return {
+    module: entry.module,
+    courseType: entry.courseType,
+    rooms: entry.rooms,
+    props: entry.props,
+    seriesId: entry.seriesId,
+    start: toLocalISOString(new Date(entry.start)),
+    end: toLocalISOString(new Date(entry.end))
+  }
+}
+
+function scheduleEntryEditToPayload(entry: ScheduleEntryEdit): ScheduleEntryWritePayload {
+  const { id: _id, ...rest } = entry
+  return scheduleEntryCreateToPayload(rest)
 }
 
 export async function updateScheduleEntry(
   fetch: typeof globalThis.fetch,
   id: string,
-  entry: ScheduleEntry
+  entry: ScheduleEntryWritePayload
 ): Promise<CalendarEvent<ScheduleEventProps>> {
-  const resp = await fetch(`/auth-api/scheduleEntries/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(entry)
-  })
+  const updatedEntry = await fetchBackendJson<ScheduleEntry[]>(
+    fetch,
+    `/auth-api/scheduleEntries/${id}`,
+    'Fehler beim Aktualisieren des Stundenplans',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    }
+  )
+  return createScheduleEvent(updatedEntry[0])
+}
 
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, {
-      message: `Fehler beim Aktualisieren des Stundenplans: ${err.message}`
-    })
+export async function createScheduleEntriesFromInput(
+  fetch: typeof globalThis.fetch,
+  entries: ScheduleEntryCreate[]
+): Promise<CalendarEvent<ScheduleEventProps>[]> {
+  if (!Array.isArray(entries)) {
+    throw error(400, { message: 'Body muss ein Array sein' })
   }
 
-  const updatedEntry: ScheduleEntry[] = await resp.json()
-  return createScheduleEvent(updatedEntry[0])
+  const payload = entries.map(scheduleEntryCreateToPayload)
+  return createScheduleEntries(fetch, JSON.stringify(payload))
+}
+
+export async function updateScheduleEntryFromInput(
+  fetch: typeof globalThis.fetch,
+  entry: ScheduleEntryEdit
+): Promise<CalendarEvent<ScheduleEventProps>> {
+  if (!entry.id || typeof entry.id !== 'string') {
+    throw error(400, { message: 'ID fehlt' })
+  }
+
+  return updateScheduleEntry(fetch, entry.id, scheduleEntryEditToPayload(entry))
+}
+
+export async function deleteScheduleEntry(
+  fetch: typeof globalThis.fetch,
+  id: string
+): Promise<void> {
+  if (!id || typeof id !== 'string') {
+    throw error(400, { message: 'ID fehlt' })
+  }
+
+  await fetchBackend(fetch, `/auth-api/scheduleEntries/${id}`, 'Fehler beim Löschen des Eintrags', {
+    method: 'DELETE'
+  })
 }
 
 export async function createScheduleEntries(
   fetch: typeof globalThis.fetch,
   body: string
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  const resp = await fetch('/auth-api/scheduleEntries', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body
-  })
-
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ message: resp.statusText }))
-    throw error(resp.status, {
-      message: `Fehler beim Erstellen der Einträge: ${err.message}`
-    })
-  }
-
-  const createdEntries: ScheduleEntry[] = await resp.json()
+  const createdEntries = await fetchBackendJson<ScheduleEntry[]>(
+    fetch,
+    '/auth-api/scheduleEntries',
+    'Fehler beim Erstellen der Einträge',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body
+    }
+  )
   return createScheduleEvents(createdEntries)
 }
 
@@ -268,11 +336,9 @@ export async function fetchLecturerOptions(
   fetch: typeof globalThis.fetch,
   module: string
 ): Promise<string[]> {
-  const resp = await fetch(`/api/modules/${module}?select=lecturers`)
-  if (!resp.ok) {
-    const err = await resp.json()
-    throw error(resp.status, { message: `Fehler beim Laden der Lehrkräfte: ${err.message}` })
-  }
-  const ids: string[] = await resp.json()
-  return ids
+  return fetchBackendJson(
+    fetch,
+    `/api/modules/${module}?select=lecturers`,
+    'Fehler beim Laden der Lehrkräfte'
+  )
 }

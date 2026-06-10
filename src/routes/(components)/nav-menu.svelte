@@ -1,6 +1,7 @@
 <script lang="ts">
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { routesMap } from '$lib/routes.svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
@@ -11,15 +12,13 @@
     pavRoutes,
     secondaryRoutes,
     scheduleRoutes,
-    schedulePlanningRoutes
+    planningRoutes
   } = routesMap
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
-      // most direct check
       return userInfo.hasModulesToEdit
     }
-    // fallback to user role
     if (!user) return false
     return isProfessor(user)
   })
@@ -32,22 +31,45 @@
 
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 
-  const showSchedulePlanningSection = $derived(userInfo?.hasSchedulePlanningPrivileges)
+  const showPlanningSection = $derived(
+    userInfo?.hasSchedulePlanningPrivileges || userInfo?.hasExamPlanningPrivileges
+  )
+
+  const canAccessSchedulePlanning = $derived(userInfo?.hasSchedulePlanningPrivileges ?? false)
+
+  const canAccessExamPlanning = $derived(userInfo?.hasExamPlanningPrivileges ?? false)
 </script>
 
 <!-- main navigation -->
 <Sidebar.Group>
   <Sidebar.Menu>
     {#each Object.entries(defaultRoutes) as [path, route] (path)}
+      {@const isDisabled = path === '/module-catalogs'}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
-          {#snippet child({ props })}
-            <a href={path} {...props}>
-              <route.icon />
-              <span>{route.name}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
+        {#if isDisabled}
+          <Tooltip.Root>
+            <Tooltip.Trigger class="w-full">
+              <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
+                {#snippet child({ props })}
+                  <span {...props}>
+                    <route.icon />
+                    <span>{route.name}</span>
+                  </span>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
+          </Tooltip.Root>
+        {:else}
+          <Sidebar.MenuButton>
+            {#snippet child({ props })}
+              <a href={path} {...props}>
+                <route.icon />
+                <span>{route.name}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        {/if}
       </Sidebar.MenuItem>
     {/each}
   </Sidebar.Menu>
@@ -70,22 +92,48 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
-    {#if showSchedulePlanningSection}
-      {#each Object.entries(schedulePlanningRoutes) as [path, route] (path)}
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton>
-            {#snippet child({ props })}
-              <a href={path} {...props}>
-                <route.icon />
-                <span>{route.name}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-        </Sidebar.MenuItem>
-      {/each}
-    {/if}
   </Sidebar.Menu>
 </Sidebar.Group>
+
+<!-- planning section -->
+{#if showPlanningSection}
+  <Sidebar.Separator />
+  <Sidebar.Group>
+    <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
+    <Sidebar.Menu>
+      {#each Object.entries(planningRoutes) as [path, route] (path)}
+        {@const isExamPlanning = path === '/planning/exam'}
+        {@const enabled = isExamPlanning ? canAccessExamPlanning : canAccessSchedulePlanning}
+        <Sidebar.MenuItem>
+          {#if enabled}
+            <Sidebar.MenuButton>
+              {#snippet child({ props })}
+                <a href={path} {...props}>
+                  <route.icon />
+                  <span>{route.name}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          {:else}
+            <Tooltip.Root>
+              <Tooltip.Trigger class="w-full">
+                <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
+                  {#snippet child({ props })}
+                    <span {...props}>
+                      <route.icon />
+                      <span>{route.name}</span>
+                    </span>
+                  {/snippet}
+                </Sidebar.MenuButton>
+              </Tooltip.Trigger>
+              <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
+            </Tooltip.Root>
+          {/if}
+        </Sidebar.MenuItem>
+      {/each}
+    </Sidebar.Menu>
+  </Sidebar.Group>
+{/if}
 
 <!-- module management section -->
 {#if showMyModules}
@@ -119,7 +167,6 @@
     <Sidebar.GroupLabel>PAV oder SGL</Sidebar.GroupLabel>
     <Sidebar.Menu>
       {#each Object.entries(pavRoutes) as [path, route] (path)}
-        <!-- show module-approvals if user has module review privileges. always show study program -->
         {#if path === '/module-approvals' ? showModuleReview : true}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton>

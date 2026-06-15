@@ -1,6 +1,5 @@
 import type {
   CalendarEvent,
-  DateRangeInfo,
   DateSelectInfo,
   EventClickInfo,
   EventCopyInfo,

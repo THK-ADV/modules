@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     type CalendarEvent,
-    type DateRangeInfo,
     type DateSelectInfo,
     type EventClickInfo,
     type EventCopyInfo,
@@ -13,6 +12,7 @@
   import ScheduleEntryEditDialog, {
     type Mode
   } from '$lib/components/schedule/schedule-entry-edit-dialog.svelte'
+  import ScheduleEntryUpdateScopeDialog from '$lib/components/schedule/schedule-entry-update-scope-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import ScheduleTable from '$lib/components/schedule/schedule-table.svelte'
@@ -61,6 +61,12 @@
   // Actions: create, update, delete, duplicate entries
   let errorMessage = $state<string | undefined>(undefined)
   let dialogMode: Mode | null = $state(null)
+  // Actions: update entry by mouse
+  let mouseUpdateScopeDialogOpen = $state(false)
+  let mouseUpdateScopeDialog: {
+    requestUpdateScope: (entry: ScheduleEntryEdit) => Promise<void>
+  } | null = $state(null)
+  let mouseUpdateRevert: (() => void) | null = null
 
   // Dialog callbacks specific to ScheduleEntryEdit and ScheduleEntryCreate
 
@@ -95,39 +101,27 @@
     })
   }
 
+  /** Called when a user drags and drops an event on the calendar */
   async function onUpdateByDrop(info: EventDropInfo) {
-    if (
-      info.extendedProps.source !== 'schedule' ||
-      info.newStart === null ||
-      info.newEnd === null
-    ) {
-      return
-    }
-
-    const raw = info.extendedProps.raw
-    await updateEntry({
-      id: raw.id,
-      module: raw.module,
-      courseType: raw.courseType,
-      start: info.newStart,
-      end: info.newEnd,
-      rooms: raw.rooms.map(({ id }) => id),
-      props: raw.props,
-      seriesId: raw.seriesId
-    })
+    await requestUpdateFromCalendar(info)
   }
 
+  /** Called when a user resizes an event on the calendar */
   async function onUpdateByResize(info: EventResizeInfo) {
+    await requestUpdateFromCalendar(info)
+  }
+
+  function createUpdateEntryFromCalendar(info: EventDropInfo | EventResizeInfo) {
     if (
       info.extendedProps.source !== 'schedule' ||
       info.newStart === null ||
       info.newEnd === null
     ) {
-      return
+      return null
     }
 
     const raw = info.extendedProps.raw
-    await updateEntry({
+    return {
       id: raw.id,
       module: raw.module,
       courseType: raw.courseType,
@@ -136,9 +130,50 @@
       rooms: raw.rooms.map(({ id }) => id),
       props: raw.props,
       seriesId: raw.seriesId
-    })
+    }
   }
 
+  async function requestUpdateFromCalendar(info: EventDropInfo | EventResizeInfo) {
+    const entry = createUpdateEntryFromCalendar(info)
+
+    if (entry === null) {
+      info.revert()
+      return
+    }
+
+    mouseUpdateRevert?.()
+    mouseUpdateRevert = info.revert
+
+    if (mouseUpdateScopeDialog === null) {
+      info.revert()
+      mouseUpdateRevert = null
+      return
+    }
+
+    try {
+      await mouseUpdateScopeDialog.requestUpdateScope(entry)
+    } catch (err) {
+      info.revert()
+      mouseUpdateRevert = null
+      errorMessage = getErrorMessage(err)
+    }
+  }
+
+  async function updateEntryFromCalendar(
+    entry: ScheduleEntryEdit,
+    scope: ScheduleEntryUpdateScope
+  ) {
+    const revert = mouseUpdateRevert
+    mouseUpdateRevert = null
+    await updateEntry(entry, scope, { onError: revert ?? undefined })
+  }
+
+  function cancelCalendarUpdate() {
+    mouseUpdateRevert?.()
+    mouseUpdateRevert = null
+  }
+
+  /** Called when a user copies an event on the calendar by alt + drag */
   async function onCreateFromCopy(info: EventCopyInfo) {
     if (
       info.extendedProps.source !== 'schedule' ||
@@ -147,6 +182,7 @@
     ) {
       return
     }
+
     const raw = info.extendedProps.raw
     await createEntry([
       {
@@ -190,7 +226,11 @@
     }
   }
 
-  async function updateEntry(entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope = 'single') {
+  async function updateEntry(
+    entry: ScheduleEntryEdit,
+    scope: ScheduleEntryUpdateScope,
+    options?: { onError?: () => void }
+  ) {
     try {
       if (scope === 'series') {
         const updatedEntries = await updateLiveScheduleEntrySeries(entry)
@@ -200,6 +240,7 @@
         replaceScheduleEntries([updatedEntry])
       }
     } catch (err) {
+      options?.onError?.()
       errorMessage = getErrorMessage(err)
     } finally {
       resetDialog()
@@ -306,4 +347,11 @@
   {#if dialogMode}
     <ScheduleEntryEditDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
   {/if}
+
+  <ScheduleEntryUpdateScopeDialog
+    bind:this={mouseUpdateScopeDialog}
+    bind:open={mouseUpdateScopeDialogOpen}
+    onUpdate={updateEntryFromCalendar}
+    onCancel={cancelCalendarUpdate}
+  />
 </div>

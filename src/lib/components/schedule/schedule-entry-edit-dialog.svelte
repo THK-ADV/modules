@@ -8,6 +8,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { getErrorMessage } from '$lib/errors'
   import { fmtStudyProgram } from '$lib/formats'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import type {
@@ -15,17 +16,11 @@
     PO,
     ScheduleEntryCreate,
     ScheduleEntryEdit,
-    ScheduleEntryUpdateScope,
-    SeriesOccurrence
+    ScheduleEntryUpdateScope
   } from '$lib/types/schedule'
   import { getFullPOId } from '$lib/types/study-program'
-  import {
-    DateFormatter,
-    fromDate,
-    getLocalTimeZone,
-    type DateValue
-  } from '@internationalized/date'
-  import { CalendarDays, Clock, Copy, Plus, SquarePen, Trash2 } from '@lucide/svelte'
+  import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date'
+  import { Copy, Plus, SquarePen, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
   import { z } from 'zod/v4'
@@ -34,7 +29,8 @@
   import { createSemesterOptions, showPO, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
-  import { getLecturers, hasLiveScheduleEntrySeries } from './schedule.remote'
+  import { getLecturers } from './schedule.remote'
+  import ScheduleEntryUpdateScopeDialog from './schedule-entry-update-scope-dialog.svelte'
 
   export interface Create {
     id: 'create'
@@ -294,74 +290,24 @@
     }
   }
 
-  // Series update dialog
-
-  let seriesUpdateDialogOpen = $state(false)
-  let pendingUpdateEntry = $state<ScheduleEntryEdit | null>(null)
-  let pendingUpdateSeries = $state<SeriesOccurrence[] | null>(null)
-
-  const seriesDateFormatter = new DateFormatter('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-
-  const seriesTimeFormatter = new DateFormatter('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
-  function formatSeriesDate(date: Date): string {
-    return seriesDateFormatter.format(date)
-  }
-
-  function formatSeriesTimeRange(start: Date, end: Date): string {
-    return `${seriesTimeFormatter.format(start)} - ${seriesTimeFormatter.format(end)}`
-  }
+  let updateScopeDialogOpen = $state(false)
+  let updateScopeDialog: {
+    requestUpdateScope: (entry: ScheduleEntryEdit) => Promise<void>
+  } | null = $state(null)
+  let updateScopeErrorMessage = $state<string | undefined>(undefined)
 
   async function requestUpdate(entry: ScheduleEntryEdit) {
     if (mode.id !== 'edit') {
       return
     }
 
-    if (entry.seriesId.length === 0) {
-      mode.onUpdate(entry, 'single')
-      return
+    updateScopeErrorMessage = undefined
+
+    try {
+      await updateScopeDialog?.requestUpdateScope(entry)
+    } catch (error) {
+      updateScopeErrorMessage = getErrorMessage(error)
     }
-
-    const series = await hasLiveScheduleEntrySeries(entry.seriesId)
-      .run()
-      .catch((error) => {
-        console.error('Failed to check schedule entry series', error)
-        return null
-      })
-
-    if (!series || series.length === 0) {
-      mode.onUpdate(entry, 'single')
-    } else {
-      series.sort((a, b) => a.start.getTime() - b.start.getTime())
-      pendingUpdateEntry = entry
-      pendingUpdateSeries = series
-      seriesUpdateDialogOpen = true
-    }
-  }
-
-  function handleUpdateScope(scope: ScheduleEntryUpdateScope) {
-    if (mode.id !== 'edit' || pendingUpdateEntry === null) {
-      return
-    }
-
-    mode.onUpdate(pendingUpdateEntry, scope)
-    pendingUpdateEntry = null
-    pendingUpdateSeries = null
-    seriesUpdateDialogOpen = false
-  }
-
-  function closeSeriesUpdateDialog() {
-    pendingUpdateEntry = null
-    pendingUpdateSeries = null
-    seriesUpdateDialogOpen = false
   }
 
   function createRepeatedEntries(current: ScheduleEntryCreate): ScheduleEntryCreate[] {
@@ -545,7 +491,6 @@
       }))
   })
 
-  // svelte-ignore state_referenced_locally
   const showPOEntry = showPO(schedulePlanningFilter.studyProgramsWithSpecialization)
 
   function openAddPODialog() {
@@ -623,7 +568,7 @@
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === 'Delete' && mode.id === 'edit' && !poDialogOpen && !seriesUpdateDialogOpen) {
+    if (e.key === 'Delete' && mode.id === 'edit' && !poDialogOpen && !updateScopeDialogOpen) {
       e.preventDefault()
       mode.onDelete(mode.entry.id)
     }
@@ -639,7 +584,7 @@
   }}
 >
   <Dialog.Content
-    class="grid max-h-[min(90dvh,920px)] min-h-0 max-w-2xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto] overflow-hidden max-sm:top-4 max-sm:translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
+    class="grid max-h-[min(90dvh,920px)] min-h-0 max-w-2xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto_auto] overflow-hidden max-sm:top-4 max-sm:translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
     showClose={false}
     onOpenAutoFocus={(e) => e.preventDefault()}
   >
@@ -890,6 +835,15 @@
 
     <Separator class="my-1 shrink-0" />
 
+    {#if updateScopeErrorMessage}
+      <div
+        class="border-destructive/30 bg-destructive/10 flex shrink-0 gap-2 rounded-md border p-2"
+      >
+        <TriangleAlert class="text-destructive mt-0.5 size-4 shrink-0" />
+        <p class="text-destructive text-sm">{updateScopeErrorMessage}</p>
+      </div>
+    {/if}
+
     <Dialog.Footer class="shrink-0 gap-2">
       <Dialog.Close class={buttonVariants({ variant: 'outline' })}>Abbrechen</Dialog.Close>
       <Button type="button" onclick={handleSave} disabled={saveButtonDisabled}>Speichern</Button>
@@ -897,87 +851,13 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<!-- Series Update Sub-Dialog -->
-<Dialog.Root bind:open={seriesUpdateDialogOpen}>
-  <Dialog.Content class="max-w-xl">
-    <Dialog.Header>
-      <Dialog.Title>Termin aktualisieren</Dialog.Title>
-      <Dialog.Description>
-        Soll die Änderung nur für diesen Termin oder für die gesamte Terminreihe übernommen werden?
-      </Dialog.Description>
-    </Dialog.Header>
-
-    {#if pendingUpdateSeries}
-      <div class="space-y-2 py-2">
-        <div class="flex items-center justify-between gap-3 text-sm">
-          <span class="font-medium">Betroffene Serientermine</span>
-          <Badge variant="secondary">{pendingUpdateSeries.length}</Badge>
-        </div>
-        <div class="max-h-56 overflow-y-auto rounded-md border">
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.Head>Termin</Table.Head>
-                <Table.Head>Zeit</Table.Head>
-                <Table.Head class="w-32 text-right">Status</Table.Head>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {#each pendingUpdateSeries as occurrence (occurrence.id)}
-                {@const isCurrentOccurrence = mode.id === 'edit' && occurrence.id === mode.entry.id}
-                <Table.Row data-state={isCurrentOccurrence ? 'selected' : undefined}>
-                  <Table.Cell class="py-2">
-                    <div class="flex min-w-0 items-center gap-2">
-                      <CalendarDays class="text-muted-foreground size-4 shrink-0" />
-                      <span class="truncate font-medium">{formatSeriesDate(occurrence.start)}</span>
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="py-2">
-                    <div class="text-muted-foreground flex items-center gap-2">
-                      <Clock class="size-4 shrink-0" />
-                      <span class="whitespace-nowrap">
-                        {formatSeriesTimeRange(occurrence.start, occurrence.end)}
-                      </span>
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="py-2 text-right">
-                    {#if isCurrentOccurrence}
-                      <Badge>Aktuell</Badge>
-                    {/if}
-                  </Table.Cell>
-                </Table.Row>
-              {/each}
-            </Table.Body>
-          </Table.Root>
-        </div>
-      </div>
-    {/if}
-
-    <Dialog.Footer
-      class="grid grid-cols-1 gap-2 space-x-0 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:space-x-0"
-    >
-      <Button
-        type="button"
-        variant="destructive"
-        class="sm:justify-self-start"
-        onclick={closeSeriesUpdateDialog}
-      >
-        Abbrechen
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        class="whitespace-nowrap"
-        onclick={() => handleUpdateScope('single')}
-      >
-        Nur diesen Termin
-      </Button>
-      <Button type="button" class="whitespace-nowrap" onclick={() => handleUpdateScope('series')}>
-        Gesamte Terminreihe
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+{#if mode.id === 'edit'}
+  <ScheduleEntryUpdateScopeDialog
+    bind:this={updateScopeDialog}
+    bind:open={updateScopeDialogOpen}
+    onUpdate={mode.onUpdate}
+  />
+{/if}
 
 <!-- PO Add/Edit Sub-Dialog -->
 <Dialog.Root bind:open={poDialogOpen}>

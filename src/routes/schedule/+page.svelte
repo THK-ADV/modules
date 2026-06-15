@@ -1,9 +1,8 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
+  import { type EventClickInfo } from '$lib/calendar'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
-  import { fetchLiveScheduleEntries } from '$lib/components/schedule/schedule.remote'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
   import { uiStore } from '$lib/stores/ui.svelte'

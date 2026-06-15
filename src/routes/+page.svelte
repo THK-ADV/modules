@@ -2,16 +2,7 @@
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Card from '$lib/components/ui/card/index.js'
   import { routesMap } from '$lib/routes.svelte'
-  import {
-    Book,
-    Calendar1,
-    FileText,
-    Github,
-    Mail,
-    Pencil,
-    Search,
-    ArrowRight
-  } from '@lucide/svelte'
+  import { Book, Calendar1, FileText, Code, Mail, Pencil, Search, ArrowRight } from '@lucide/svelte'
   import { resolve } from '$app/paths'
   const defaultRoutes = routesMap.defaultRoutes
 
@@ -394,7 +385,7 @@
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <Github class="text-muted-foreground mt-1 size-5" />
+              <Code class="text-muted-foreground mt-1 size-5" />
               <div>
                 <p class="mb-1 font-medium">Open Source</p>
                 <a

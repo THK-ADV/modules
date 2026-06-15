@@ -12,41 +12,127 @@ import {
   SELECTED_CALENDAR_VIEW_COOKIE_NAME,
   SEMESTER_PLAN_TYPE_COLORS
 } from '$lib/calendar/types'
+import {
+  createNonEmptyStringSchema,
+  createScheduleEntryWritePayloadSchema,
+  createSeriesOccurrenceSchema,
+  createScheduleEntrySchema,
+  type ScheduleEntryWritePayload
+} from '$lib/schemas/schedule'
 import type {
   ScheduleEntry,
   ScheduleEntryCreate,
   ScheduleEntryEdit,
+  SeriesOccurrence,
   SemesterPlanEntry
 } from '$lib/types/schedule'
 import { error } from '@sveltejs/kit'
 import type { Cookies } from '@sveltejs/kit'
+import type { ZodType } from 'zod/v4'
 import { fetchBackend, fetchBackendJson } from './http'
+import { z } from 'zod/v4'
 
-/**
- * Converts a date string to an ISO 8601 string with the local timezone offset.
- * Unlike `Date.toISOString()`, which always returns UTC, this preserves
- * the local wall-clock time (e.g. "2026-04-22T09:00:00+02:00").
- */
-export function toLocalISOString(date: Date): string {
-  const off = -date.getTimezoneOffset()
-  const sign = off >= 0 ? '+' : '-'
-  const pad = (n: number) => String(Math.abs(n)).padStart(2, '0')
-  const offsetStr = `${sign}${pad(Math.floor(off / 60))}:${pad(off % 60)}`
+// Validation schemas
 
-  return (
-    date.getFullYear() +
-    '-' +
-    pad(date.getMonth() + 1) +
-    '-' +
-    pad(date.getDate()) +
-    'T' +
-    pad(date.getHours()) +
-    ':' +
-    pad(date.getMinutes()) +
-    ':00' +
-    offsetStr
+const INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE = 'Backend lieferte ungültige Stundenplan-Daten'
+const INVALID_SCHEDULE_ENTRY_INPUT_MESSAGE = 'Ungültige Eingabe für Stundenplan-Eintrag'
+
+// Invalid backend JSON means the upstream API broke the contract expected by this frontend.
+function parseBackendOutput<T>(schema: ZodType<T>, data: unknown, message: string): T {
+  const result = schema.safeParse(data)
+  if (!result.success) {
+    console.error(message, result.error.issues)
+    throw error(502, { message })
+  }
+
+  return result.data
+}
+
+// Invalid data produced before calling the backend is handled as a bad request to our API layer.
+function parseApiInput<T>(schema: ZodType<T>, data: unknown, message: string): T {
+  const result = schema.safeParse(data)
+  if (!result.success) {
+    console.error(message, result.error.issues)
+    throw error(400, { message })
+  }
+
+  return result.data
+}
+
+function parseScheduleEntries(data: unknown): ScheduleEntry[] {
+  return parseBackendOutput(
+    z.array(createScheduleEntrySchema()),
+    data,
+    INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE
   )
 }
+
+function parseScheduleEntryWritePayload(
+  entry: ScheduleEntryWritePayload
+): ScheduleEntryWritePayload {
+  return parseApiInput(
+    createScheduleEntryWritePayloadSchema(),
+    entry,
+    INVALID_SCHEDULE_ENTRY_INPUT_MESSAGE
+  )
+}
+
+function parseScheduleEntryId(id: string): string {
+  return parseApiInput(createNonEmptyStringSchema(), id, 'Ungültige Stundenplan-ID')
+}
+
+function parseScheduleEntrySeriesId(seriesId: string): string {
+  return parseApiInput(createNonEmptyStringSchema(), seriesId, 'Ungültige Terminreihen-ID')
+}
+
+function parseSeriesOccurrences(data: unknown): SeriesOccurrence[] {
+  return parseBackendOutput(
+    z.array(createSeriesOccurrenceSchema()),
+    data,
+    INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE
+  )
+}
+
+// UI Conversion functions
+
+function toScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventProps> {
+  const extendedProps: ScheduleEventProps = {
+    source: 'schedule',
+    raw: entry
+  }
+  return {
+    id: entry.id,
+    title: entry.moduleTitle,
+    start: new Date(entry.start),
+    end: new Date(entry.end),
+    backgroundColor: COURSE_TYPE_COLORS[entry.courseType] + 'CC',
+    extendedProps
+  }
+}
+
+function toScheduleEvents(entries: ScheduleEntry[]): CalendarEvent<ScheduleEventProps>[] {
+  return entries.map((entry) => toScheduleEvent(entry))
+}
+
+// Payload conversion functions
+
+function scheduleEntryCreateToPayload(entry: ScheduleEntryCreate): ScheduleEntryWritePayload {
+  return parseScheduleEntryWritePayload({
+    module: entry.module,
+    courseType: entry.courseType,
+    rooms: entry.rooms,
+    props: entry.props,
+    seriesId: entry.seriesId,
+    start: new Date(entry.start).toISOString(),
+    end: new Date(entry.end).toISOString()
+  })
+}
+
+function scheduleEntryEditToPayload(entry: ScheduleEntryEdit): ScheduleEntryWritePayload {
+  return scheduleEntryCreateToPayload(entry)
+}
+
+// Backend API functions
 
 export type HolidaysForCalendar = {
   timeGrid: CalendarEvent<HolidayEventProps>[]
@@ -165,25 +251,6 @@ export async function fetchSemesterEntries(
   })
 }
 
-function createScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventProps> {
-  const extendedProps: ScheduleEventProps = {
-    source: 'schedule',
-    raw: entry
-  }
-  return {
-    id: entry.id,
-    title: entry.moduleTitle,
-    start: new Date(entry.start),
-    end: new Date(entry.end),
-    backgroundColor: COURSE_TYPE_COLORS[entry.courseType] + 'CC',
-    extendedProps
-  }
-}
-
-function createScheduleEvents(entries: ScheduleEntry[]): CalendarEvent<ScheduleEventProps>[] {
-  return entries.map((entry) => createScheduleEvent(entry))
-}
-
 /** Fetches the schedule entries for a given date range */
 export async function fetchScheduleEntriesByRange(
   fetch: typeof globalThis.fetch,
@@ -202,15 +269,11 @@ export async function fetchScheduleEntriesByRange(
     headers['Cache-Control'] = 'no-cache'
   }
 
-  const entries = await fetchBackendJson<ScheduleEntry[]>(
-    fetch,
-    uri,
-    'Fehler beim Laden des Stundenplans',
-    { headers }
-  )
-  console.log(entries.length)
-
-  return createScheduleEvents(entries)
+  const data = await fetchBackendJson<unknown>(fetch, uri, 'Fehler beim Laden des Stundenplans', {
+    headers
+  })
+  const entries = parseScheduleEntries(data)
+  return toScheduleEvents(entries)
 }
 
 export async function fetchScheduleEntriesBySemester(
@@ -227,101 +290,109 @@ export async function fetchScheduleEntriesBySemester(
     headers['Cache-Control'] = 'no-cache'
   }
 
-  const entries = await fetchBackendJson<ScheduleEntry[]>(
+  const data = await fetchBackendJson<unknown>(
     fetch,
     `/api/scheduleEntries?semester=${semester}`,
     'Fehler beim Laden des Stundenplans',
     { headers }
   )
-  return createScheduleEvents(entries)
+  const entries = parseScheduleEntries(data)
+  return toScheduleEvents(entries)
 }
 
-type ScheduleEntryWritePayload = Omit<ScheduleEntryEdit, 'id' | 'start' | 'end'> & {
-  start: string
-  end: string
-}
-
-function scheduleEntryCreateToPayload(entry: ScheduleEntryCreate): ScheduleEntryWritePayload {
-  return {
-    module: entry.module,
-    courseType: entry.courseType,
-    rooms: entry.rooms,
-    props: entry.props,
-    seriesId: entry.seriesId,
-    start: toLocalISOString(new Date(entry.start)),
-    end: toLocalISOString(new Date(entry.end))
-  }
-}
-
-function scheduleEntryEditToPayload(entry: ScheduleEntryEdit): ScheduleEntryWritePayload {
-  const { id: _id, ...rest } = entry
-  return scheduleEntryCreateToPayload(rest)
-}
-
-export async function updateScheduleEntry(
+export async function scheduleEntrySeriesExists(
   fetch: typeof globalThis.fetch,
-  id: string,
-  entry: ScheduleEntryWritePayload
-): Promise<CalendarEvent<ScheduleEventProps>> {
-  const updatedEntry = await fetchBackendJson<ScheduleEntry[]>(
-    fetch,
-    `/auth-api/scheduleEntries/${id}`,
-    'Fehler beim Aktualisieren des Stundenplans',
-    {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
+  seriesId: string
+): Promise<SeriesOccurrence[] | null> {
+  const parsedSeriesId = parseScheduleEntrySeriesId(seriesId)
+
+  try {
+    const res = await fetchBackend(
+      fetch,
+      `/auth-api/scheduleEntries/series/${parsedSeriesId}`,
+      'Fehler beim Prüfen der Terminreihe'
+    )
+    return parseSeriesOccurrences(await res.json())
+  } catch (err) {
+    if (typeof err === 'object' && err !== null && 'status' in err && err.status === 404) {
+      return null
     }
-  )
-  return createScheduleEvent(updatedEntry[0])
-}
-
-export async function createScheduleEntriesFromInput(
-  fetch: typeof globalThis.fetch,
-  entries: ScheduleEntryCreate[]
-): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  const body = JSON.stringify(entries.map(scheduleEntryCreateToPayload))
-  return createScheduleEntries(fetch, body)
-}
-
-export async function updateScheduleEntryFromInput(
-  fetch: typeof globalThis.fetch,
-  entry: ScheduleEntryEdit
-): Promise<CalendarEvent<ScheduleEventProps>> {
-  return updateScheduleEntry(fetch, entry.id, scheduleEntryEditToPayload(entry))
+    throw err
+  }
 }
 
 export async function deleteScheduleEntry(
   fetch: typeof globalThis.fetch,
   id: string
 ): Promise<void> {
-  await fetchBackend(fetch, `/auth-api/scheduleEntries/${id}`, 'Fehler beim Löschen des Eintrags', {
-    method: 'DELETE'
-  })
+  const entryId = parseScheduleEntryId(id)
+  await fetchBackend(
+    fetch,
+    `/auth-api/scheduleEntries/${entryId}`,
+    'Fehler beim Löschen des Eintrags',
+    {
+      method: 'DELETE'
+    }
+  )
 }
 
 export async function createScheduleEntries(
   fetch: typeof globalThis.fetch,
-  body: string
+  entries: ScheduleEntryCreate[]
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  const createdEntries = await fetchBackendJson<ScheduleEntry[]>(
+  const payload = entries.map(scheduleEntryCreateToPayload)
+  const data = await fetchBackendJson<unknown>(
     fetch,
     '/auth-api/scheduleEntries',
     'Fehler beim Erstellen der Einträge',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body
+      body: JSON.stringify(payload)
     }
   )
-  return createScheduleEvents(createdEntries)
+  const createdEntries = parseScheduleEntries(data)
+  return toScheduleEvents(createdEntries)
 }
 
-export function getCalendarCookies(cookies: Cookies) {
-  return {
-    selectedCalendarView: cookies.get(SELECTED_CALENDAR_VIEW_COOKIE_NAME),
-    selectedCalendarDate: cookies.get(SELECTED_CALENDAR_DATE_COOKIE_NAME)
-  }
+export async function updateScheduleEntry(
+  fetch: typeof globalThis.fetch,
+  entry: ScheduleEntryEdit
+): Promise<CalendarEvent<ScheduleEventProps>> {
+  const entryId = parseScheduleEntryId(entry.id)
+  const payload = scheduleEntryEditToPayload(entry)
+  const data = await fetchBackendJson<unknown>(
+    fetch,
+    `/auth-api/scheduleEntries/${entryId}`,
+    'Fehler beim Aktualisieren des Eintrags',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }
+  )
+  const updatedEntry = parseScheduleEntries(data)
+  return toScheduleEvent(updatedEntry[0])
+}
+
+export async function updateScheduleEntrySeries(
+  fetch: typeof globalThis.fetch,
+  entry: ScheduleEntryEdit
+): Promise<CalendarEvent<ScheduleEventProps>[]> {
+  const entryId = parseScheduleEntryId(entry.id)
+  const payload = scheduleEntryEditToPayload(entry)
+  const data = await fetchBackendJson<unknown>(
+    fetch,
+    `/auth-api/scheduleEntries/${entryId}/series`,
+    'Fehler beim Aktualisieren der Terminreihe',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }
+  )
+  const updatedEntries = parseScheduleEntries(data)
+  return toScheduleEvents(updatedEntries)
 }
 
 export async function fetchLecturerOptions(
@@ -333,4 +404,11 @@ export async function fetchLecturerOptions(
     `/api/modules/${module}?select=lecturers`,
     'Fehler beim Laden der Lehrkräfte'
   )
+}
+
+export function getCalendarCookies(cookies: Cookies) {
+  return {
+    selectedCalendarView: cookies.get(SELECTED_CALENDAR_VIEW_COOKIE_NAME),
+    selectedCalendarDate: cookies.get(SELECTED_CALENDAR_DATE_COOKIE_NAME)
+  }
 }

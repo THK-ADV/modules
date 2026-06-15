@@ -9,7 +9,6 @@ import type {
 } from '$lib/types/plan-draft'
 import type { CourseType, ScheduleEntry, ScheduleEntryProps } from '$lib/types/schedule'
 import type { Semester } from '$lib/types/semester'
-import { toLocalISOString } from './calendar'
 import { fetchBackend, fetchBackendJson } from './http'
 
 function createScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventProps> {
@@ -68,8 +67,8 @@ export function scheduleEntryToDraftPayload(
     seriesId,
     module: entry.module,
     courseType: entry.courseType,
-    start: toLocalISOString(entry.start),
-    end: toLocalISOString(entry.end),
+    start: entry.start.toISOString(),
+    end: entry.end.toISOString(),
     rooms: entry.rooms,
     lecturer: entry.props.lecturer,
     po: entry.props.po

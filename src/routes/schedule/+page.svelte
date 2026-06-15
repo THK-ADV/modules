@@ -1,14 +1,15 @@
 <script lang="ts">
+  import { browser } from '$app/environment'
   import { type DateRangeInfo, type EventClickInfo } from '$lib/calendar'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
+  import { fetchLiveScheduleEntries } from '$lib/components/schedule/schedule.remote'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
   import { uiStore } from '$lib/stores/ui.svelte'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { ChevronDown, TriangleAlert, X } from '@lucide/svelte'
   import type { PageProps } from './$types'
-  import { browser } from '$app/environment'
 
   const { data }: PageProps = $props()
 
@@ -19,11 +20,6 @@
       return
     }
     selectedScheduleEntry = info.event.extendedProps.raw
-  }
-
-  // Fetch schedule entries when the date range changes
-  function fetchScheduleEntries(info: DateRangeInfo) {
-    return fetch(`/schedule?start=${info.start.getTime()}&end=${info.end.getTime()}`)
   }
 
   // Disclaimer
@@ -129,7 +125,7 @@
     semesterEntries={data.semesterEntries}
     {onEventClick}
     {scheduleFilter}
-    scheduleFetcher={fetchScheduleEntries}
+    bypassCache={false}
   />
 
   {#if selectedScheduleEntry}

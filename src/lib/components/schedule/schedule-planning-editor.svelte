@@ -21,7 +21,11 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
-  import type { ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
+  import type {
+    ScheduleEntryCreate,
+    ScheduleEntryEdit,
+    ScheduleEntryUpdateScope
+  } from '$lib/types/schedule'
   import type {
     CalendarEvent as HolidayCalendarEvent,
     HolidayEventProps,
@@ -31,7 +35,8 @@
     createLiveScheduleEntries,
     deleteLiveScheduleEntry,
     fetchLiveScheduleEntries,
-    updateLiveScheduleEntry
+    updateLiveScheduleEntry,
+    updateLiveScheduleEntrySeries
   } from '$lib/components/schedule/schedule.remote'
   import { Calendar, Table2, TriangleAlert } from '@lucide/svelte'
   import type { Snippet } from 'svelte'
@@ -57,22 +62,6 @@
   // Actions: create, update, delete, duplicate entries
   let errorMessage = $state<string | undefined>(undefined)
   let dialogMode: Mode | null = $state(null)
-
-  function fetchScheduleEntries(info: DateRangeInfo) {
-    // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
-    // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
-    return Promise.resolve()
-      .then(() =>
-        fetchLiveScheduleEntries({
-          start: info.start.getTime(),
-          end: info.end.getTime()
-        }).run()
-      )
-      .catch((err) => {
-        errorMessage = getErrorMessage(err)
-        return []
-      })
-  }
 
   // Dialog callbacks specific to ScheduleEntryEdit and ScheduleEntryCreate
 
@@ -191,13 +180,25 @@
     }
   }
 
-  async function updateEntry(entry: ScheduleEntryEdit) {
-    try {
-      const updatedEntry = await updateLiveScheduleEntry(entry)
-      // prefer optimistic update over server update
+  function replaceScheduleEntries(updatedEntries: CalendarEvent<ScheduleEventProps>[]) {
+    for (const updatedEntry of updatedEntries) {
       const idx = scheduleEntries.findIndex((e) => e.id === updatedEntry.id)
       if (idx !== -1) {
         scheduleEntries[idx] = updatedEntry
+      } else {
+        scheduleEntries.push(updatedEntry)
+      }
+    }
+  }
+
+  async function updateEntry(entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope = 'single') {
+    try {
+      if (scope === 'series') {
+        const updatedEntries = await updateLiveScheduleEntrySeries(entry)
+        replaceScheduleEntries(updatedEntries)
+      } else {
+        const updatedEntry = await updateLiveScheduleEntry(entry)
+        replaceScheduleEntries([updatedEntry])
       }
     } catch (err) {
       errorMessage = getErrorMessage(err)
@@ -284,7 +285,7 @@
 
       <Tabs.Content value="calendar">
         <Schedule
-          scheduleFetcher={fetchScheduleEntries}
+          bypassCache={true}
           bind:scheduleEntries
           holidays={calendarData.holidays}
           holidaysMonth={calendarData.holidaysMonth}

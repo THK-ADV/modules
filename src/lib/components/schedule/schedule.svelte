@@ -7,6 +7,7 @@
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { uiStore } from '$lib/stores/ui.svelte.js'
+  import { fetchLiveScheduleEntries } from './schedule.remote'
 
   const {
     holidays,
@@ -19,7 +20,8 @@
     onEventResize,
     scheduleFilter,
     scheduleEntries = $bindable([]),
-    scheduleFetcher
+    bypassCache
+    // scheduleFetcher
   }: ScheduleProps = $props()
 
   const holidayEventsForView = $derived(
@@ -172,9 +174,22 @@
     return allEvents
   })
 
+  // Fetch schedule entries when the date range changes
   async function onDateRangeSet(info: DateRangeInfo) {
     try {
-      const entries = await scheduleFetcher(info)
+      // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
+      // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
+      const entries = await Promise.resolve()
+        .then(() =>
+          fetchLiveScheduleEntries({
+            start: info.start.getTime(),
+            end: info.end.getTime(),
+            bypassCache
+          }).run()
+        )
+        .catch(() => {
+          return []
+        })
       scheduleEntries.length = 0
       scheduleEntries.push(...entries)
     } catch {

@@ -92,6 +92,14 @@ export interface ScheduleEntryEdit {
 
 export type ScheduleEntryCreate = Omit<ScheduleEntryEdit, 'id'>
 
+export type ScheduleEntryUpdateScope = 'single' | 'series'
+
+export interface SeriesOccurrence {
+  id: string
+  start: Date
+  end: Date
+}
+
 export interface ModuleCore {
   id: string
   title: string

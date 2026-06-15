@@ -16,7 +16,8 @@ export interface ScheduleProps {
   holidays: CalendarEvent<HolidayEventProps>[]
   holidaysMonth: CalendarEvent<HolidayEventProps>[]
   semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
-  scheduleFetcher: (info: DateRangeInfo) => Promise<CalendarEvent<ScheduleEventProps>[]>
+  // scheduleFetcher: (info: DateRangeInfo) => Promise<CalendarEvent<ScheduleEventProps>[]>
+  bypassCache: boolean
   scheduleFilter: ScheduleFilter
   scheduleEntries?: CalendarEvent<ScheduleEventProps>[]
   onEventClick?: (info: EventClickInfo) => void

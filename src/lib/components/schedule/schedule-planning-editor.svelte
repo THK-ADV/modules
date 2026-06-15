@@ -34,7 +34,6 @@
   import {
     createLiveScheduleEntries,
     deleteLiveScheduleEntry,
-    fetchLiveScheduleEntries,
     updateLiveScheduleEntry,
     updateLiveScheduleEntrySeries
   } from '$lib/components/schedule/schedule.remote'

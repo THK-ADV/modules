@@ -8,6 +8,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { fmtStudyProgram } from '$lib/formats'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import type {
     CourseType,
@@ -17,6 +18,7 @@
     ScheduleEntryUpdateScope,
     SeriesOccurrence
   } from '$lib/types/schedule'
+  import { getFullPOId } from '$lib/types/study-program'
   import {
     DateFormatter,
     fromDate,
@@ -29,7 +31,7 @@
   import { z } from 'zod/v4'
   import Combobox from '../combobox.svelte'
   import DateTimePicker from '../forms/date-time-picker.svelte'
-  import { createSemesterOptions, showRecommendedSemester } from '../forms/forms'
+  import { createSemesterOptions, showPO, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
   import { getLecturers, hasLiveScheduleEntrySeries } from './schedule.remote'
@@ -70,9 +72,13 @@
   }
 
   function posEqual(lhs: PO[], rhs: PO[]): boolean {
+    function poKey({ po, specialization }: PO): string {
+      return specialization ?? po
+    }
+
     if (lhs.length !== rhs.length) return false
-    const sortL = [...lhs].sort((a, b) => a.po.localeCompare(b.po))
-    const sortR = [...rhs].sort((a, b) => a.po.localeCompare(b.po))
+    const sortL = [...lhs].sort((a, b) => poKey(a).localeCompare(poKey(b)))
+    const sortR = [...rhs].sort((a, b) => poKey(a).localeCompare(poKey(b)))
     return sortL.every((l, i) => {
       const r = sortR[i]
       return (
@@ -110,6 +116,7 @@
         .array(
           z.object({
             po: z.string().min(1, 'Studiengang erforderlich'),
+            specialization: z.string().nullable(),
             recommendedSemester: z.array(z.number()),
             mandatory: z.boolean()
           })
@@ -132,12 +139,7 @@
         module: entry?.module ?? '',
         rooms: entry?.rooms ?? [],
         courseType: entry?.courseType ?? '',
-        pos:
-          entry?.props?.po.map(({ po, recommendedSemester, mandatory }) => ({
-            po,
-            recommendedSemester,
-            mandatory
-          })) ?? [],
+        pos: entry?.props?.po.map((po) => ({ ...po })) ?? [],
         date: {
           start: entry?.start ?? null,
           end: entry?.end ?? null
@@ -270,11 +272,6 @@
     deLabel: ct.label
   }))
 
-  const poOptions = schedulePlanningFilter.studyPrograms.map((sp) => ({
-    id: sp.id,
-    deLabel: sp.label
-  }))
-
   const lecturerOptions = schedulePlanningFilter.identities.map((i) => ({
     id: i.id,
     label: i.label,
@@ -289,12 +286,7 @@
       rooms: $formData.rooms,
       courseType: $formData.courseType as CourseType,
       props: {
-        po: $formData.pos.map(({ po, recommendedSemester, mandatory }) => ({
-          po,
-          recommendedSemester,
-          mandatory,
-          specialization: null
-        })),
+        po: $formData.pos.map((po) => ({ ...po })),
         lecturer: $formData.lecturer
       },
       start: new Date($formData.date.start!),
@@ -498,7 +490,7 @@
 
   const poDialogForm = superForm(
     {
-      po: '',
+      fullPOId: '',
       recommendedSemester: [] as number[],
       mandatory: false
     },
@@ -507,7 +499,7 @@
       dataType: 'json',
       validators: zod4(
         z.object({
-          po: z.string().min(1, 'Studiengang erforderlich'),
+          fullPOId: z.string().min(1, 'Studiengang erforderlich'),
           recommendedSemester: z.array(z.number()),
           mandatory: z.boolean()
         })
@@ -534,23 +526,32 @@
     }
   }
 
-  const filteredPOOptions = $derived.by(() => {
-    const currentPOs = $formData.pos
-    const editingPO = poEditingIndex !== null ? currentPOs[poEditingIndex]?.po : null
-    return poOptions.filter((opt) => {
-      const isAlreadyUsed = currentPOs.some((p) => p.po === opt.id)
-      return !isAlreadyUsed || opt.id === editingPO
-    })
+  const studyProgramOptions = $derived.by(() => {
+    const current: PO[] = $formData.pos
+    const currentPO = poEditingIndex !== null ? current[poEditingIndex] : null
+
+    return schedulePlanningFilter.studyProgramsWithSpecialization
+      .filter((sp) => {
+        const fullPOId = getFullPOId(sp)
+        const isAlreadyUsed = current.some(
+          ({ specialization, po }) => (specialization ?? po) === fullPOId
+        )
+        // allow if not used, or if editing and this is the current PO
+        return !isAlreadyUsed || fullPOId === (currentPO?.specialization ?? currentPO?.po)
+      })
+      .map((sp) => ({
+        id: getFullPOId(sp),
+        deLabel: fmtStudyProgram(sp)
+      }))
   })
 
-  function getPOLabel(poId: string): string {
-    return poOptions.find((opt) => opt.id === poId)?.deLabel ?? poId
-  }
+  // svelte-ignore state_referenced_locally
+  const showPOEntry = showPO(schedulePlanningFilter.studyProgramsWithSpecialization)
 
   function openAddPODialog() {
     poEditingIndex = null
     resetPODialog({
-      data: { po: '', recommendedSemester: [], mandatory: false }
+      data: { fullPOId: '', recommendedSemester: [], mandatory: false }
     })
     poDialogOpen = true
   }
@@ -558,9 +559,10 @@
   function openEditPODialog(index: number) {
     poEditingIndex = index
     const entry = $formData.pos[index]
+
     resetPODialog({
       data: {
-        po: entry.po,
+        fullPOId: entry.specialization ?? entry.po,
         recommendedSemester: [...entry.recommendedSemester],
         mandatory: entry.mandatory
       }
@@ -569,18 +571,42 @@
   }
 
   async function handlePODialogSave() {
-    const poValid = await validatePODialog('po')
+    const poValid = await validatePODialog('fullPOId')
+
     if (poValid === undefined) {
-      const newEntry = {
-        po: $poDialogFormData.po,
-        recommendedSemester: $poDialogFormData.recommendedSemester,
-        mandatory: $poDialogFormData.mandatory
+      const sp = schedulePlanningFilter.studyProgramsWithSpecialization.find(
+        (sp) => getFullPOId(sp) === $poDialogFormData.fullPOId
+      )
+
+      if (!sp) {
+        console.error(`Study program not found for ID: ${$poDialogFormData.fullPOId}`)
+        return
       }
+
+      let newEntry: PO
+      if (sp?.specialization?.id) {
+        // since the fullPOId is saved in the form, we need to get the po and specialization from the associated study program
+        newEntry = {
+          po: sp.po.id,
+          specialization: sp.specialization.id,
+          recommendedSemester: $poDialogFormData.recommendedSemester,
+          mandatory: $poDialogFormData.mandatory
+        }
+      } else {
+        newEntry = {
+          po: $poDialogFormData.fullPOId,
+          specialization: null,
+          recommendedSemester: $poDialogFormData.recommendedSemester,
+          mandatory: $poDialogFormData.mandatory
+        }
+      }
+
       if (poEditingIndex !== null) {
         $formData.pos = $formData.pos.map((item, i) => (i === poEditingIndex ? newEntry : item))
       } else {
         $formData.pos = [...$formData.pos, newEntry]
       }
+
       form.validate('pos')
       poDialogOpen = false
     }
@@ -803,10 +829,10 @@
                           </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                          {#each $formData.pos as entry, index (entry.po)}
+                          {#each $formData.pos as entry, index (entry.specialization ?? entry.po)}
                             <Table.Row>
                               <Table.Cell class="font-medium">
-                                {getPOLabel(entry.po)}
+                                {showPOEntry(entry)}
                               </Table.Cell>
                               <Table.Cell>
                                 {showRecommendedSemester(entry.recommendedSemester)}
@@ -968,11 +994,11 @@
     <div class="space-y-4 py-4">
       <Combobox
         form={poDialogForm}
-        name="po"
+        name="fullPOId"
         label="Studiengang und PO"
         placeholder="Studiengang auswählen…"
-        options={filteredPOOptions}
-        bind:value={$poDialogFormData.po}
+        options={studyProgramOptions}
+        bind:value={$poDialogFormData.fullPOId}
         errors={$poDialogErrors}
         width="w-[400px]"
       />

@@ -88,7 +88,12 @@
               <Command.Empty>Keine Ergebnisse</Command.Empty>
               <Command.Group>
                 {#each options as { id, deLabel } (id)}
-                  <Command.Item value={deLabel} onSelect={() => onSelect(id)} {disabled}>
+                  <Command.Item
+                    value={id}
+                    keywords={[deLabel]}
+                    onSelect={() => onSelect(id)}
+                    {disabled}
+                  >
                     <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                     <span>{deLabel}</span>
                   </Command.Item>
@@ -138,7 +143,12 @@
             <Command.Empty>Keine Ergebnisse</Command.Empty>
             <Command.Group>
               {#each options as { id, deLabel } (id)}
-                <Command.Item value={deLabel} onSelect={() => onSelect(id)} {disabled}>
+                <Command.Item
+                  value={id}
+                  keywords={[deLabel]}
+                  onSelect={() => onSelect(id)}
+                  {disabled}
+                >
                   <Check class={cn('mr-2 size-4', id === value ? 'opacity-100' : 'opacity-0')} />
                   <span>{deLabel}</span>
                 </Command.Item>

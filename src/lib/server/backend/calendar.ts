@@ -14,23 +14,25 @@ import {
 } from '$lib/calendar/types'
 import {
   createNonEmptyStringSchema,
+  createPoSchema,
+  createScheduleEntrySchema,
   createScheduleEntryWritePayloadSchema,
   createSeriesOccurrenceSchema,
-  createScheduleEntrySchema,
   type ScheduleEntryWritePayload
 } from '$lib/schemas/schedule'
 import type {
+  PO,
   ScheduleEntry,
   ScheduleEntryCreate,
   ScheduleEntryEdit,
-  SeriesOccurrence,
-  SemesterPlanEntry
+  SemesterPlanEntry,
+  SeriesOccurrence
 } from '$lib/types/schedule'
-import { error } from '@sveltejs/kit'
 import type { Cookies } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import type { ZodType } from 'zod/v4'
-import { fetchBackend, fetchBackendJson } from './http'
 import { z } from 'zod/v4'
+import { fetchBackend, fetchBackendJson } from './http'
 
 // Validation schemas
 
@@ -399,10 +401,31 @@ export async function fetchLecturerOptions(
   fetch: typeof globalThis.fetch,
   module: string
 ): Promise<string[]> {
-  return fetchBackendJson(
+  const data = await fetchBackendJson<unknown>(
     fetch,
     `/api/modules/${module}?select=lecturers`,
-    'Fehler beim Laden der Lehrkräfte'
+    'Fehler beim Laden der Lehrkräfte für das Modul'
+  )
+  return parseBackendOutput(
+    z.array(createNonEmptyStringSchema()),
+    data,
+    'Backend lieferte ungültige Lehrkräfte'
+  )
+}
+
+export async function fetchPOOptions(
+  fetch: typeof globalThis.fetch,
+  module: string
+): Promise<PO[]> {
+  const data = await fetchBackendJson<unknown>(
+    fetch,
+    `/api/modules/${module}?select=pos`,
+    'Fehler beim Laden der POs für das Modul'
+  )
+  return parseBackendOutput(
+    z.array(createPoSchema()),
+    data,
+    'Backend lieferte ungültige PO-Optionen'
   )
 }
 

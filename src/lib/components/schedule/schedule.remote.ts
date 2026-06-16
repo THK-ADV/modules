@@ -2,6 +2,7 @@ import {
   createScheduleEntries,
   deleteScheduleEntry,
   fetchLecturerOptions,
+  fetchPOOptions,
   fetchScheduleEntriesByRange,
   scheduleEntrySeriesExists,
   updateScheduleEntry,
@@ -46,9 +47,15 @@ const scheduleEntryEditSchema = v.object({
 })
 
 /** Fetches the lecturers for a given module */
-export const getLecturers = command(v.string(), async (module) => {
+export const getLecturers = query(v.string(), async (module) => {
   const { fetch } = getRequestEvent()
   return fetchLecturerOptions(fetch, module)
+})
+
+/** Fetches the POs for a given module */
+export const getPOs = query(v.string(), async (module) => {
+  const { fetch } = getRequestEvent()
+  return fetchPOOptions(fetch, module)
 })
 
 /** Fetches live schedule entries for a given date range */

@@ -29,7 +29,7 @@
   import { createSemesterOptions, showPO, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
-  import { getLecturers } from './schedule.remote'
+  import { getLecturers, getPOs } from './schedule.remote'
   import ScheduleEntryUpdateScopeDialog from './schedule-entry-update-scope-dialog.svelte'
 
   export interface Create {
@@ -148,7 +148,7 @@
         validators: zod4(schema),
         onChange: async (event) => {
           if (event.paths.includes('module')) {
-            await updateLecturerByModule(event.get('module'))
+            await prefillForm(event.get('module'))
           }
         }
       }
@@ -557,11 +557,24 @@
     }
   }
 
-  async function updateLecturerByModule(module: string) {
+  /** Prefills the form with the lecturers and POs for the given module */
+  async function prefillForm(module: string) {
     try {
-      $formData.lecturer = await getLecturers(module)
-    } catch (error) {
-      console.error('Failed to load lecturers for module', module, error)
+      $formData.lecturer = []
+      $formData.pos = []
+
+      const [lecturer, pos] = await Promise.allSettled([
+        getLecturers(module).run(),
+        getPOs(module).run()
+      ])
+      if (lecturer.status === 'fulfilled' && $formData.module === module) {
+        $formData.lecturer = lecturer.value
+      }
+      if (pos.status === 'fulfilled' && $formData.module === module) {
+        $formData.pos = pos.value
+      }
+    } catch {
+      // Just swallow the error, it's not critical
     }
   }
 </script>

@@ -1,11 +1,10 @@
 <script lang="ts">
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
-  import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
+  import { ModuleMultiSelect } from '$lib/components/module-filter'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
   import { Switch } from '$lib/components/ui/switch/index.js'
-  import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import { getModuleFormContext } from '../context'
@@ -24,15 +23,9 @@
 
   const moduleOptions = $derived.by(() => {
     const module = data.module
-    const modules =
-      module !== null
-        ? moduleUpdateState.modules.filter((m) => m.id !== module.id)
-        : moduleUpdateState.modules
-    return modules.map((m) => ({
-      id: m.id,
-      label: fmtModule(m),
-      abbrev: m.abbreviation
-    }))
+    return module !== null
+      ? moduleUpdateState.modules.filter((m) => m.id !== module.id)
+      : moduleUpdateState.modules
   })
 
   const form = getModuleFormContext()
@@ -240,7 +233,7 @@
         <Form.FieldErrors />
       </Form.Field>
 
-      <MultiSelectCombobox
+      <ModuleMultiSelect
         {form}
         name="recommendedPrerequisites.modules"
         label="Module"
@@ -295,7 +288,7 @@
         <Form.FieldErrors />
       </Form.Field>
 
-      <MultiSelectCombobox
+      <ModuleMultiSelect
         {form}
         name="requiredPrerequisites.modules"
         label="Module"

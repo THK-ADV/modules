@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
+  import { ModuleSingleSelect } from '$lib/components/module-filter'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
@@ -251,11 +252,6 @@
   const { form: formData, errors, validate } = $derived(form)
 
   // Options
-
-  const moduleOptions = schedulePlanningFilter.modules.map((m) => ({
-    id: m.id,
-    deLabel: m.label
-  }))
 
   const roomOptions = schedulePlanningFilter.rooms.map((r) => ({
     id: r.id,
@@ -666,16 +662,15 @@
     >
       <div class="space-y-4 py-2">
         <!-- Module -->
-        <Combobox
+        <ModuleSingleSelect
           disabled={mode.id !== 'create'}
           {form}
           {errors}
           name="module"
           label="Modul"
           placeholder="Modul auswählen…"
-          options={moduleOptions}
+          options={schedulePlanningFilter.modules}
           bind:value={$formData.module}
-          width="w-[450px]"
         />
 
         <!-- Lecturer -->

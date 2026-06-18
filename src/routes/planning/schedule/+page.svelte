@@ -140,8 +140,8 @@
 <div class="flex h-full flex-1 flex-col space-y-8">
   <ErrorMessage bind:message={errorMessage} />
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div class="space-y-2">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0 space-y-2">
       <h2 class="text-3xl font-bold tracking-tight">Stundenplanung</h2>
       <p class="text-muted-foreground text-sm">
         Laufende Planungen verwalten, eine neue beginnen oder die Live-Daten bearbeiten.

@@ -43,7 +43,9 @@
       body: JSON.stringify({
         action,
         comment: comment.trim(),
-        reviews: reviews.filter((_, index) => reviewedStudyPrograms[index])
+        reviews: reviews
+          .filter((_, index) => reviewedStudyPrograms[index])
+          .map(({ reviewId }) => reviewId)
       })
     })
 

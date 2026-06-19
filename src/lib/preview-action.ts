@@ -518,13 +518,13 @@ function htmlCSV(csv: string, studyProgramLabel: string, po: string) {
 export async function previewModuleCatalog(studyProgram: StudyProgram, genericModules: string[]) {
   const action = 'moduleCatalog'
   const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, JSON.stringify(genericModules))
+  await performFileAction(action, actionLabel, studyProgram, genericModules)
 }
 
 export async function createModuleCatalog(studyProgram: StudyProgram, genericModules: string[]) {
   const action = 'moduleCatalog_creation'
   const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, JSON.stringify(genericModules))
+  await performFileAction(action, actionLabel, studyProgram, genericModules)
 }
 
 export async function previewExamList(studyProgram: StudyProgram) {
@@ -543,7 +543,7 @@ async function performFileAction(
   action: 'moduleCatalog' | 'moduleCatalog_creation' | 'examList' | 'examLoad',
   actionLabel: string,
   studyProgram: StudyProgram,
-  body?: string
+  body?: string[]
 ) {
   const newTab = window.open()
   const studyProgramLabel = studyProgram.deLabel

@@ -7,7 +7,6 @@
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { uiStore } from '$lib/stores/ui.svelte.js'
-  import { fetchLiveScheduleEntries } from './schedule.remote'
 
   const {
     holidays,
@@ -20,8 +19,8 @@
     onEventResize,
     scheduleFilter,
     scheduleEntries = $bindable([]),
-    bypassCache
-    // scheduleFetcher
+    bypassCache,
+    loadScheduleEntries
   }: ScheduleProps = $props()
 
   const holidayEventsForView = $derived(
@@ -112,7 +111,7 @@
         // Study programs & semesters filter
         // If both are selected, both must match on the same PO entry.
         if (selectedStudyPrograms.length > 0 || selectedSemesters.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(
+          const matchingPoEntries = entry.extendedProps.raw.po.filter(
             ({ po, recommendedSemester }) => {
               const matchesProgram =
                 selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
@@ -152,7 +151,7 @@
         // Module types filter
         // If both module types and study programs are selected, both must match on the same PO entry.
         if (selectedModuleTypes.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(({ po, mandatory }) => {
+          const matchingPoEntries = entry.extendedProps.raw.po.filter(({ po, mandatory }) => {
             const matchesProgram =
               selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
             const matchesModuleType = selectedModuleTypes.some(
@@ -181,11 +180,11 @@
       // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
       const entries = await Promise.resolve()
         .then(() =>
-          fetchLiveScheduleEntries({
+          loadScheduleEntries({
             start: info.start.getTime(),
             end: info.end.getTime(),
             bypassCache
-          }).run()
+          })
         )
         .catch(() => {
           return []

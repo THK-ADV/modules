@@ -10,18 +10,19 @@
   } from '$lib/types/schedule'
   import { DateFormatter } from '@internationalized/date'
   import { CalendarDays, Clock } from '@lucide/svelte'
-  import { hasLiveScheduleEntrySeries } from './schedule.remote'
 
   interface Props {
     open?: boolean
-    onUpdate: (entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) => void | Promise<void>
+    onUpdate: (entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) => Promise<void>
     onCancel?: () => void
+    getSeries: (seriesId: string) => Promise<SeriesOccurrence[]>
   }
 
-  let { open = $bindable(false), onUpdate, onCancel }: Props = $props()
+  let { open = $bindable(false), onUpdate, onCancel, getSeries }: Props = $props()
 
   let pendingUpdateEntry = $state<ScheduleEntryEdit | null>(null)
   let pendingUpdateSeries = $state<SeriesOccurrence[] | null>(null)
+  let updatingScope = $state<ScheduleEntryUpdateScope | null>(null)
 
   const seriesDateFormatter = new DateFormatter('de-DE', {
     weekday: 'short',
@@ -45,17 +46,19 @@
 
   // Triggers the scope decision flow; opens the dialog when the entry belongs to a series.
   export async function requestUpdateScope(updateEntry: ScheduleEntryEdit) {
+    if (updatingScope !== null) return
+
     clearPendingUpdate()
 
     if (updateEntry.seriesId.length === 0) {
-      updateEntryWithScope(updateEntry, 'single')
+      await updateEntryWithScope(updateEntry, 'single')
       return
     }
 
-    const series = await hasLiveScheduleEntrySeries(updateEntry.seriesId).run()
+    const series = await getSeries(updateEntry.seriesId)
 
-    if (!series || series.length === 0) {
-      updateEntryWithScope(updateEntry, 'single')
+    if (series.length === 0) {
+      await updateEntryWithScope(updateEntry, 'single')
     } else {
       series.sort((a, b) => a.start.getTime() - b.start.getTime())
       pendingUpdateEntry = updateEntry
@@ -70,9 +73,19 @@
     open = false
   }
 
-  function updateEntryWithScope(updateEntry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) {
-    clearPendingUpdate()
-    onUpdate(updateEntry, scope)
+  async function updateEntryWithScope(
+    updateEntry: ScheduleEntryEdit,
+    scope: ScheduleEntryUpdateScope
+  ) {
+    if (updatingScope !== null) return
+
+    updatingScope = scope
+    try {
+      await onUpdate(updateEntry, scope)
+      clearPendingUpdate()
+    } finally {
+      updatingScope = null
+    }
   }
 
   function handleUpdateScope(scope: ScheduleEntryUpdateScope) {
@@ -80,10 +93,12 @@
       return
     }
 
-    updateEntryWithScope(pendingUpdateEntry, scope)
+    void updateEntryWithScope(pendingUpdateEntry, scope)
   }
 
   function cancelUpdate() {
+    if (updatingScope !== null) return
+
     const hadPendingUpdate = pendingUpdateEntry !== null
     clearPendingUpdate()
 
@@ -164,6 +179,7 @@
         type="button"
         variant="destructive"
         class="sm:justify-self-start"
+        disabled={updatingScope !== null}
         onclick={cancelUpdate}
       >
         Abbrechen
@@ -172,12 +188,20 @@
         type="button"
         variant="outline"
         class="whitespace-nowrap"
+        disabled={updatingScope !== null}
+        aria-busy={updatingScope === 'single'}
         onclick={() => handleUpdateScope('single')}
       >
-        Nur diesen Termin
+        {updatingScope === 'single' ? 'Wird aktualisiert…' : 'Nur diesen Termin'}
       </Button>
-      <Button type="button" class="whitespace-nowrap" onclick={() => handleUpdateScope('series')}>
-        Gesamte Terminreihe
+      <Button
+        type="button"
+        class="whitespace-nowrap"
+        disabled={updatingScope !== null}
+        aria-busy={updatingScope === 'series'}
+        onclick={() => handleUpdateScope('series')}
+      >
+        {updatingScope === 'series' ? 'Wird aktualisiert…' : 'Gesamte Terminreihe'}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

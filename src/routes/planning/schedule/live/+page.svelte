@@ -1,5 +1,6 @@
 <script lang="ts">
   import SchedulePlanningEditor from '$lib/components/schedule/schedule-planning-editor.svelte'
+  import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
@@ -14,6 +15,7 @@
   </div>
 
   <SchedulePlanningEditor
+    api={liveScheduleEntryEditorApi}
     calendarData={{
       holidays: data.holidays,
       holidaysMonth: data.holidaysMonth,

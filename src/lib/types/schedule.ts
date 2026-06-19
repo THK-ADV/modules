@@ -16,21 +16,21 @@ export interface SemesterPlanEntry {
   phase: string | null
 }
 
-export type SemesterPlanType =
-  | 'exam'
-  | 'lecture'
-  | 'block'
-  | 'project'
-  | 'closed_building'
-  | 'self_study'
-  | 'semester_break'
+export const SEMESTER_PLAN_TYPES = [
+  'exam',
+  'lecture',
+  'block',
+  'project',
+  'closed_building',
+  'self_study',
+  'semester_break'
+] as const
 
-export type CourseType = 'lecture' | 'lab' | 'exercise' | 'seminar' | 'tutorial'
+export type SemesterPlanType = (typeof SEMESTER_PLAN_TYPES)[number]
 
-export interface ScheduleEntryProps {
-  po: PO[]
-  lecturer: string[]
-}
+export const COURSE_TYPES = ['lecture', 'lab', 'exercise', 'seminar', 'tutorial'] as const
+
+export type CourseType = (typeof COURSE_TYPES)[number]
 
 export interface PO {
   po: string
@@ -61,7 +61,10 @@ export function fmtCourseType(courseType: CourseType): string {
   }
 }
 
-// used for the schedule calendar to show data
+/**
+ * Shared frontend read model for live schedule entries and schedule plan draft entries.
+ * A draft's plan draft ID remains server-side context and is intentionally not part of this model.
+ */
 export interface ScheduleEntry {
   id: string
   start: Date
@@ -74,11 +77,11 @@ export interface ScheduleEntry {
   moduleManagement: ModuleManagement[]
   lecturer: ModuleManagement[]
   teachingUnits: string[]
-  props: ScheduleEntryProps
+  po: PO[]
   seriesId: string
 }
 
-// used for the schedule entry dialog to edit data
+/** Shared frontend edit model for live schedule entries and schedule plan draft entries. */
 export interface ScheduleEntryEdit {
   id: string
   module: string
@@ -86,10 +89,12 @@ export interface ScheduleEntryEdit {
   start: Date
   end: Date
   rooms: string[]
-  props: ScheduleEntryProps
+  po: PO[]
+  lecturer: string[]
   seriesId: string
 }
 
+/** Shared frontend create model for live schedule entries and schedule plan draft entries. */
 export type ScheduleEntryCreate = Omit<ScheduleEntryEdit, 'id'>
 
 export type ScheduleEntryUpdateScope = 'single' | 'series'

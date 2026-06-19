@@ -2,10 +2,12 @@ import { command, form, getRequestEvent } from '$app/server'
 import { resolve } from '$app/paths'
 import { createPlanDraft, deletePlanDraft } from '$lib/server/backend/plan-draft'
 import { redirect } from '@sveltejs/kit'
-import * as v from 'valibot'
+import { z } from 'zod/v4'
 
 export const createSchedulePlanDraft = form(
-  v.object({ semester: v.string() }),
+  z.object({
+    semester: z.string().min(1, 'Semester ist erforderlich')
+  }),
   async ({ semester }) => {
     const { fetch } = getRequestEvent()
     await createPlanDraft(fetch, { kind: 'schedule', semester })
@@ -13,7 +15,7 @@ export const createSchedulePlanDraft = form(
   }
 )
 
-export const deleteSchedulePlanDraft = command(v.string(), async (draftId) => {
+export const deleteSchedulePlanDraft = command(z.string().trim().min(1), async (draftId) => {
   const { fetch } = getRequestEvent()
   await deletePlanDraft(fetch, draftId)
 })

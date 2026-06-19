@@ -10,13 +10,14 @@ import type {
   SemesterPlanEventProps
 } from '$lib/calendar'
 import type { ScheduleFilter } from '$lib/stores/schedule-filter.svelte'
+import type { ScheduleEntryEditorApi } from './schedule-entry-editor-api'
 
 export interface ScheduleProps {
   holidays: CalendarEvent<HolidayEventProps>[]
   holidaysMonth: CalendarEvent<HolidayEventProps>[]
   semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
-  // scheduleFetcher: (info: DateRangeInfo) => Promise<CalendarEvent<ScheduleEventProps>[]>
   bypassCache: boolean
+  loadScheduleEntries: ScheduleEntryEditorApi['load']
   scheduleFilter: ScheduleFilter
   scheduleEntries?: CalendarEvent<ScheduleEventProps>[]
   onEventClick?: (info: EventClickInfo) => void

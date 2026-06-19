@@ -5,134 +5,35 @@ import type {
   SemesterPlanEventProps
 } from '$lib/calendar'
 import {
-  CALENDAR_VISIBLE_DAY_END,
-  CALENDAR_VISIBLE_DAY_START,
-  COURSE_TYPE_COLORS,
   SELECTED_CALENDAR_DATE_COOKIE_NAME,
   SELECTED_CALENDAR_VIEW_COOKIE_NAME,
+  CALENDAR_VISIBLE_DAY_END,
+  CALENDAR_VISIBLE_DAY_START,
   SEMESTER_PLAN_TYPE_COLORS
 } from '$lib/calendar/types'
 import {
-  createNonEmptyStringSchema,
-  createPoSchema,
-  createScheduleEntrySchema,
-  createScheduleEntryWritePayloadSchema,
-  createSeriesOccurrenceSchema,
-  type ScheduleEntryWritePayload
+  calendarHolidayListResponseSchema,
+  createScheduleEntriesInputSchema,
+  nonEmptyScheduleEntryListResponseSchema,
+  scheduleEntriesRangeInputSchema,
+  scheduleEntryListResponseSchema,
+  scheduleLecturerOptionListResponseSchema,
+  schedulePoOptionListResponseSchema,
+  scheduleSeriesOccurrenceListResponseSchema,
+  semesterPlanEntryListResponseSchema,
+  updateScheduleEntryInputSchema
 } from '$lib/schemas/schedule'
 import type {
   PO,
-  ScheduleEntry,
   ScheduleEntryCreate,
   ScheduleEntryEdit,
   SemesterPlanEntry,
   SeriesOccurrence
 } from '$lib/types/schedule'
 import type { Cookies } from '@sveltejs/kit'
-import { error } from '@sveltejs/kit'
-import type { ZodType } from 'zod/v4'
 import { z } from 'zod/v4'
-import { fetchBackend, fetchBackendJson } from './http'
-
-// Validation schemas
-
-const INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE = 'Backend lieferte ungültige Stundenplan-Daten'
-const INVALID_SCHEDULE_ENTRY_INPUT_MESSAGE = 'Ungültige Eingabe für Stundenplan-Eintrag'
-
-// Invalid backend JSON means the upstream API broke the contract expected by this frontend.
-function parseBackendOutput<T>(schema: ZodType<T>, data: unknown, message: string): T {
-  const result = schema.safeParse(data)
-  if (!result.success) {
-    console.error(message, result.error.issues)
-    throw error(502, { message })
-  }
-
-  return result.data
-}
-
-// Invalid data produced before calling the backend is handled as a bad request to our API layer.
-function parseApiInput<T>(schema: ZodType<T>, data: unknown, message: string): T {
-  const result = schema.safeParse(data)
-  if (!result.success) {
-    console.error(message, result.error.issues)
-    throw error(400, { message })
-  }
-
-  return result.data
-}
-
-function parseScheduleEntries(data: unknown): ScheduleEntry[] {
-  return parseBackendOutput(
-    z.array(createScheduleEntrySchema()),
-    data,
-    INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE
-  )
-}
-
-function parseScheduleEntryWritePayload(
-  entry: ScheduleEntryWritePayload
-): ScheduleEntryWritePayload {
-  return parseApiInput(
-    createScheduleEntryWritePayloadSchema(),
-    entry,
-    INVALID_SCHEDULE_ENTRY_INPUT_MESSAGE
-  )
-}
-
-function parseScheduleEntryId(id: string): string {
-  return parseApiInput(createNonEmptyStringSchema(), id, 'Ungültige Stundenplan-ID')
-}
-
-function parseScheduleEntrySeriesId(seriesId: string): string {
-  return parseApiInput(createNonEmptyStringSchema(), seriesId, 'Ungültige Terminreihen-ID')
-}
-
-function parseSeriesOccurrences(data: unknown): SeriesOccurrence[] {
-  return parseBackendOutput(
-    z.array(createSeriesOccurrenceSchema()),
-    data,
-    INVALID_SCHEDULE_ENTRY_RESPONSE_MESSAGE
-  )
-}
-
-// UI Conversion functions
-
-function toScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventProps> {
-  const extendedProps: ScheduleEventProps = {
-    source: 'schedule',
-    raw: entry
-  }
-  return {
-    id: entry.id,
-    title: entry.moduleTitle,
-    start: new Date(entry.start),
-    end: new Date(entry.end),
-    backgroundColor: COURSE_TYPE_COLORS[entry.courseType] + 'CC',
-    extendedProps
-  }
-}
-
-function toScheduleEvents(entries: ScheduleEntry[]): CalendarEvent<ScheduleEventProps>[] {
-  return entries.map((entry) => toScheduleEvent(entry))
-}
-
-// Payload conversion functions
-
-function scheduleEntryCreateToPayload(entry: ScheduleEntryCreate): ScheduleEntryWritePayload {
-  return parseScheduleEntryWritePayload({
-    module: entry.module,
-    courseType: entry.courseType,
-    rooms: entry.rooms,
-    props: entry.props,
-    seriesId: entry.seriesId,
-    start: new Date(entry.start).toISOString(),
-    end: new Date(entry.end).toISOString()
-  })
-}
-
-function scheduleEntryEditToPayload(entry: ScheduleEntryEdit): ScheduleEntryWritePayload {
-  return scheduleEntryCreateToPayload(entry)
-}
+import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
+import { toScheduleEvent, toScheduleEntryWriteRequest, toScheduleEvents } from './schedule-entry'
 
 // Backend API functions
 
@@ -142,9 +43,10 @@ export type HolidaysForCalendar = {
 }
 
 export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<HolidaysForCalendar> {
-  const data = await fetchBackendJson<{ date: string; label: string }[]>(
+  const data = await fetchBackendJson(
     fetch,
     '/api/holidays',
+    calendarHolidayListResponseSchema,
     'Fehler beim Laden der Feiertage'
   )
 
@@ -184,9 +86,10 @@ export async function fetchHolidays(fetch: typeof globalThis.fetch): Promise<Hol
 export async function fetchSemesterEntries(
   fetch: typeof globalThis.fetch
 ): Promise<CalendarEvent<SemesterPlanEventProps>[]> {
-  const entries = await fetchBackendJson<SemesterPlanEntry[]>(
+  const entries: SemesterPlanEntry[] = await fetchBackendJson(
     fetch,
     '/api/semesterPlan',
+    semesterPlanEntryListResponseSchema,
     'Fehler beim Laden des Semesterplans'
   )
 
@@ -256,81 +159,60 @@ export async function fetchSemesterEntries(
 /** Fetches the schedule entries for a given date range */
 export async function fetchScheduleEntriesByRange(
   fetch: typeof globalThis.fetch,
-  start: number | null,
-  end: number | null,
+  start: number,
+  end: number,
   bypassCache: boolean
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  if (!start || !end) {
-    throw error(400, { message: 'Start- und Enddatum sind erforderlich' })
-  }
-
-  const uri = `/api/scheduleEntries?from=${start}&to=${end}`
-
-  const headers: HeadersInit = {}
-  if (bypassCache) {
-    headers['Cache-Control'] = 'no-cache'
-  }
-
-  const data = await fetchBackendJson<unknown>(fetch, uri, 'Fehler beim Laden des Stundenplans', {
-    headers
+  const input = parseBackendRequestInput(
+    scheduleEntriesRangeInputSchema,
+    { start, end, bypassCache },
+    'Ungültiger Stundenplan-Zeitraum'
+  )
+  const params = new URLSearchParams({
+    from: String(input.start),
+    to: String(input.end)
   })
-  const entries = parseScheduleEntries(data)
-  return toScheduleEvents(entries)
-}
-
-export async function fetchScheduleEntriesBySemester(
-  fetch: typeof globalThis.fetch,
-  semester: string | null,
-  bypassCache: boolean
-): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  if (!semester) {
-    throw error(400, { message: 'Semester ist erforderlich' })
-  }
 
   const headers: HeadersInit = {}
-  if (bypassCache) {
+  if (input.bypassCache) {
     headers['Cache-Control'] = 'no-cache'
   }
 
-  const data = await fetchBackendJson<unknown>(
+  const entries = await fetchBackendJson(
     fetch,
-    `/api/scheduleEntries?semester=${semester}`,
+    `/api/scheduleEntries?${params}`,
+    scheduleEntryListResponseSchema,
     'Fehler beim Laden des Stundenplans',
     { headers }
   )
-  const entries = parseScheduleEntries(data)
   return toScheduleEvents(entries)
 }
 
-export async function scheduleEntrySeriesExists(
+export async function fetchScheduleEntrySeriesOccurrences(
   fetch: typeof globalThis.fetch,
   seriesId: string
-): Promise<SeriesOccurrence[] | null> {
-  const parsedSeriesId = parseScheduleEntrySeriesId(seriesId)
-
-  try {
-    const res = await fetchBackend(
-      fetch,
-      `/auth-api/scheduleEntries/series/${parsedSeriesId}`,
-      'Fehler beim Prüfen der Terminreihe'
-    )
-    return parseSeriesOccurrences(await res.json())
-  } catch (err) {
-    if (typeof err === 'object' && err !== null && 'status' in err && err.status === 404) {
-      return null
-    }
-    throw err
-  }
+): Promise<SeriesOccurrence[]> {
+  const parsedSeriesId = parseBackendRequestInput(
+    z.string().trim().min(1),
+    seriesId,
+    'Ungültige Terminreihen-ID'
+  )
+  return fetchBackendJson(
+    fetch,
+    `/auth-api/scheduleEntries/series/${encodeURIComponent(parsedSeriesId)}/occurrences`,
+    scheduleSeriesOccurrenceListResponseSchema,
+    'Fehler beim Laden der Serientermine'
+  )
 }
 
 export async function deleteScheduleEntry(
   fetch: typeof globalThis.fetch,
   id: string
 ): Promise<void> {
-  const entryId = parseScheduleEntryId(id)
+  const entryId = parseBackendRequestInput(z.string().trim().min(1), id, 'Ungültige Stundenplan-ID')
   await fetchBackend(
     fetch,
-    `/auth-api/scheduleEntries/${entryId}`,
+    `/auth-api/scheduleEntries/${encodeURIComponent(entryId)}`,
     'Fehler beim Löschen des Eintrags',
     {
       method: 'DELETE'
@@ -342,10 +224,16 @@ export async function createScheduleEntries(
   fetch: typeof globalThis.fetch,
   entries: ScheduleEntryCreate[]
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  const payload = entries.map(scheduleEntryCreateToPayload)
-  const data = await fetchBackendJson<unknown>(
+  const parsedEntries = parseBackendRequestInput(
+    createScheduleEntriesInputSchema,
+    entries,
+    'Ungültige Stundenplan-Einträge'
+  )
+  const payload = parsedEntries.map(toScheduleEntryWriteRequest)
+  const createdEntries = await fetchBackendJson(
     fetch,
     '/auth-api/scheduleEntries',
+    nonEmptyScheduleEntryListResponseSchema,
     'Fehler beim Erstellen der Einträge',
     {
       method: 'POST',
@@ -353,7 +241,6 @@ export async function createScheduleEntries(
       body: JSON.stringify(payload)
     }
   )
-  const createdEntries = parseScheduleEntries(data)
   return toScheduleEvents(createdEntries)
 }
 
@@ -361,11 +248,16 @@ export async function updateScheduleEntry(
   fetch: typeof globalThis.fetch,
   entry: ScheduleEntryEdit
 ): Promise<CalendarEvent<ScheduleEventProps>> {
-  const entryId = parseScheduleEntryId(entry.id)
-  const payload = scheduleEntryEditToPayload(entry)
-  const data = await fetchBackendJson<unknown>(
+  const parsedEntry = parseBackendRequestInput(
+    updateScheduleEntryInputSchema,
+    entry,
+    'Ungültiger Stundenplan-Eintrag'
+  )
+  const payload = toScheduleEntryWriteRequest(parsedEntry)
+  const updatedEntries = await fetchBackendJson(
     fetch,
-    `/auth-api/scheduleEntries/${entryId}`,
+    `/auth-api/scheduleEntries/${encodeURIComponent(parsedEntry.id)}`,
+    nonEmptyScheduleEntryListResponseSchema,
     'Fehler beim Aktualisieren des Eintrags',
     {
       method: 'PUT',
@@ -373,19 +265,23 @@ export async function updateScheduleEntry(
       body: JSON.stringify(payload)
     }
   )
-  const updatedEntry = parseScheduleEntries(data)
-  return toScheduleEvent(updatedEntry[0])
+  return toScheduleEvent(updatedEntries[0])
 }
 
 export async function updateScheduleEntrySeries(
   fetch: typeof globalThis.fetch,
   entry: ScheduleEntryEdit
 ): Promise<CalendarEvent<ScheduleEventProps>[]> {
-  const entryId = parseScheduleEntryId(entry.id)
-  const payload = scheduleEntryEditToPayload(entry)
-  const data = await fetchBackendJson<unknown>(
+  const parsedEntry = parseBackendRequestInput(
+    updateScheduleEntryInputSchema,
+    entry,
+    'Ungültiger Stundenplan-Eintrag'
+  )
+  const payload = toScheduleEntryWriteRequest(parsedEntry)
+  const updatedEntries = await fetchBackendJson(
     fetch,
-    `/auth-api/scheduleEntries/${entryId}/series`,
+    `/auth-api/scheduleEntries/${encodeURIComponent(parsedEntry.id)}/series`,
+    nonEmptyScheduleEntryListResponseSchema,
     'Fehler beim Aktualisieren der Terminreihe',
     {
       method: 'PUT',
@@ -393,7 +289,6 @@ export async function updateScheduleEntrySeries(
       body: JSON.stringify(payload)
     }
   )
-  const updatedEntries = parseScheduleEntries(data)
   return toScheduleEvents(updatedEntries)
 }
 
@@ -401,15 +296,12 @@ export async function fetchLecturerOptions(
   fetch: typeof globalThis.fetch,
   module: string
 ): Promise<string[]> {
-  const data = await fetchBackendJson<unknown>(
+  const moduleId = parseBackendRequestInput(z.string().trim().min(1), module, 'Ungültige Modul-ID')
+  return fetchBackendJson(
     fetch,
-    `/api/modules/${module}?select=lecturers`,
+    `/api/modules/${encodeURIComponent(moduleId)}?select=lecturers`,
+    scheduleLecturerOptionListResponseSchema,
     'Fehler beim Laden der Lehrkräfte für das Modul'
-  )
-  return parseBackendOutput(
-    z.array(createNonEmptyStringSchema()),
-    data,
-    'Backend lieferte ungültige Lehrkräfte'
   )
 }
 
@@ -417,15 +309,12 @@ export async function fetchPOOptions(
   fetch: typeof globalThis.fetch,
   module: string
 ): Promise<PO[]> {
-  const data = await fetchBackendJson<unknown>(
+  const moduleId = parseBackendRequestInput(z.string().trim().min(1), module, 'Ungültige Modul-ID')
+  return fetchBackendJson(
     fetch,
-    `/api/modules/${module}?select=pos`,
+    `/api/modules/${encodeURIComponent(moduleId)}?select=pos`,
+    schedulePoOptionListResponseSchema,
     'Fehler beim Laden der POs für das Modul'
-  )
-  return parseBackendOutput(
-    z.array(createPoSchema()),
-    data,
-    'Backend lieferte ungültige PO-Optionen'
   )
 }
 

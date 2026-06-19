@@ -12,7 +12,7 @@
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { routesMap } from '$lib/routes.svelte'
-  import { moduleSchema } from '$lib/schemas/module'
+  import { moduleFormSchema } from '$lib/schemas/module'
   import {
     getSectionStatus,
     type FormFieldPath,
@@ -137,7 +137,7 @@
 
   // svelte-ignore state_referenced_locally
   const form = superForm(data.form, {
-    validators: zod4Client(moduleSchema),
+    validators: zod4Client(moduleFormSchema),
     dataType: 'json',
     onError: ({ result }) => {
       console.error('Form submission failed:', result)

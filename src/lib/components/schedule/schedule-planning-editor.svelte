@@ -13,6 +13,7 @@
     type Mode
   } from '$lib/components/schedule/schedule-entry-edit-dialog.svelte'
   import ScheduleEntryUpdateScopeDialog from '$lib/components/schedule/schedule-entry-update-scope-dialog.svelte'
+  import type { ScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import ScheduleTable from '$lib/components/schedule/schedule-table.svelte'
@@ -31,12 +32,6 @@
     HolidayEventProps,
     SemesterPlanEventProps
   } from '$lib/calendar'
-  import {
-    createLiveScheduleEntries,
-    deleteLiveScheduleEntry,
-    updateLiveScheduleEntry,
-    updateLiveScheduleEntrySeries
-  } from '$lib/components/schedule/schedule.remote'
   import { Calendar, Table2, TriangleAlert } from '@lucide/svelte'
   import type { Snippet } from 'svelte'
 
@@ -48,10 +43,11 @@
 
   interface Props {
     calendarData: CalendarData
+    api: ScheduleEntryEditorApi
     toolbar?: Snippet
   }
 
-  let { calendarData, toolbar }: Props = $props()
+  let { calendarData, api, toolbar }: Props = $props()
 
   // UI control
   let selectedTab = $state('calendar')
@@ -85,9 +81,14 @@
         start: new Date(raw.start),
         end: new Date(raw.end),
         rooms: raw.rooms.map(({ id }) => id),
-        props: raw.props,
+        po: raw.po.map((po) => ({
+          ...po,
+          recommendedSemester: [...po.recommendedSemester]
+        })),
+        lecturer: raw.lecturer.map(({ id }) => id),
         seriesId: raw.seriesId
       },
+      getSeries: api.getSeries,
       onUpdate: updateEntry,
       onDuplicate: duplicateEntry,
       onDelete: deleteEntry
@@ -128,7 +129,11 @@
       start: info.newStart,
       end: info.newEnd,
       rooms: raw.rooms.map(({ id }) => id),
-      props: raw.props,
+      po: raw.po.map((po) => ({
+        ...po,
+        recommendedSemester: [...po.recommendedSemester]
+      })),
+      lecturer: raw.lecturer.map(({ id }) => id),
       seriesId: raw.seriesId
     }
   }
@@ -191,7 +196,11 @@
         start: info.newStart,
         end: info.newEnd,
         rooms: raw.rooms.map(({ id }) => id),
-        props: raw.props,
+        po: raw.po.map((po) => ({
+          ...po,
+          recommendedSemester: [...po.recommendedSemester]
+        })),
+        lecturer: raw.lecturer.map(({ id }) => id),
         seriesId: raw.seriesId
       }
     ])
@@ -205,7 +214,7 @@
 
   async function createEntry(entries: ScheduleEntryCreate[]) {
     try {
-      const createdEntries = await createLiveScheduleEntries(entries)
+      const createdEntries = await api.create(entries)
       // prefer optimistic update over server update
       scheduleEntries.push(...createdEntries)
     } catch (err) {
@@ -232,13 +241,8 @@
     options?: { onError?: () => void }
   ) {
     try {
-      if (scope === 'series') {
-        const updatedEntries = await updateLiveScheduleEntrySeries(entry)
-        replaceScheduleEntries(updatedEntries)
-      } else {
-        const updatedEntry = await updateLiveScheduleEntry(entry)
-        replaceScheduleEntries([updatedEntry])
-      }
+      const updatedEntries = await api.update(entry, scope)
+      replaceScheduleEntries(updatedEntries)
     } catch (err) {
       options?.onError?.()
       errorMessage = getErrorMessage(err)
@@ -249,7 +253,7 @@
 
   async function deleteEntry(id: string) {
     try {
-      await deleteLiveScheduleEntry(id)
+      await api.delete(id)
       // prefer optimistic update over server delete
       const idx = scheduleEntries.findIndex((e) => e.id === id)
       if (idx !== -1) {
@@ -326,6 +330,7 @@
       <Tabs.Content value="calendar">
         <Schedule
           bypassCache={true}
+          loadScheduleEntries={api.load}
           bind:scheduleEntries
           holidays={calendarData.holidays}
           holidaysMonth={calendarData.holidaysMonth}
@@ -353,5 +358,6 @@
     bind:open={mouseUpdateScopeDialogOpen}
     onUpdate={updateEntryFromCalendar}
     onCancel={cancelCalendarUpdate}
+    getSeries={api.getSeries}
   />
 </div>

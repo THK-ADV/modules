@@ -1,89 +1,40 @@
 import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
-import { COURSE_TYPE_COLORS } from '$lib/calendar/types'
-import type {
-  PlanDraft,
-  PlanDraftCreate,
-  PlanDraftKind,
-  ScheduleEntryDraft,
-  ScheduleEntryDraftPayload
+import {
+  createPlanDraftInputSchema,
+  planDraftResponseSchema,
+  planDraftWithSemesterResponseSchema,
+  semesterResponseSchema
+} from '$lib/schemas/plan-draft'
+import {
+  createDraftScheduleEntriesInputSchema,
+  deleteDraftScheduleEntryInputSchema,
+  fetchDraftScheduleEntrySeriesInputSchema,
+  fetchDraftScheduleEntriesInputSchema,
+  nonEmptyScheduleEntryListResponseSchema,
+  scheduleEntryListResponseSchema,
+  scheduleSeriesOccurrenceListResponseSchema,
+  updateDraftScheduleEntryInputSchema
+} from '$lib/schemas/schedule'
+import {
+  PLAN_DRAFT_KINDS,
+  type PlanDraft,
+  type PlanDraftCreate,
+  type PlanDraftKind
 } from '$lib/types/plan-draft'
-import type { CourseType, ScheduleEntry, ScheduleEntryProps } from '$lib/types/schedule'
+import type { ScheduleEntryCreate, ScheduleEntryEdit, SeriesOccurrence } from '$lib/types/schedule'
 import type { Semester } from '$lib/types/semester'
-import { fetchBackend, fetchBackendJson } from './http'
-
-function createScheduleEvent(entry: ScheduleEntry): CalendarEvent<ScheduleEventProps> {
-  const extendedProps: ScheduleEventProps = {
-    source: 'schedule',
-    raw: entry
-  }
-  return {
-    id: entry.id,
-    title: entry.moduleTitle,
-    start: new Date(entry.start),
-    end: new Date(entry.end),
-    backgroundColor: COURSE_TYPE_COLORS[entry.courseType] + 'CC',
-    extendedProps
-  }
-}
-
-export function draftRawToScheduleEntry(draft: ScheduleEntryDraft): ScheduleEntry {
-  const props: ScheduleEntryProps = {
-    po: draft.po ?? [],
-    lecturer: draft.lecturer.map(({ id }) => id)
-  }
-
-  return {
-    id: draft.id,
-    start: new Date(draft.start),
-    end: new Date(draft.end),
-    courseType: draft.courseType as CourseType,
-    rooms: draft.rooms,
-    module: draft.module,
-    moduleTitle: draft.moduleTitle,
-    moduleAbbrev: draft.moduleAbbrev,
-    moduleManagement: draft.moduleManagement,
-    lecturer: draft.lecturer,
-    teachingUnits: draft.teachingUnits,
-    props,
-    seriesId: draft.seriesId
-  }
-}
-
-export function scheduleEntryToDraftPayload(
-  entry: {
-    id?: string
-    module: string
-    courseType: CourseType
-    start: Date
-    end: Date
-    rooms: string[]
-    props: ScheduleEntryProps
-  },
-  planDraftId: string,
-  seriesId: string
-): ScheduleEntryDraftPayload {
-  return {
-    planDraft: planDraftId,
-    seriesId,
-    module: entry.module,
-    courseType: entry.courseType,
-    start: entry.start.toISOString(),
-    end: entry.end.toISOString(),
-    rooms: entry.rooms,
-    lecturer: entry.props.lecturer,
-    po: entry.props.po
-  }
-}
-
-export function draftRawToCalendarEvents(
-  drafts: ScheduleEntryDraft[]
-): CalendarEvent<ScheduleEventProps>[] {
-  return drafts.map((draft) => createScheduleEvent(draftRawToScheduleEntry(draft)))
-}
+import { z } from 'zod/v4'
+import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
+import { toScheduleEvent, toScheduleEntryWriteRequest, toScheduleEvents } from './schedule-entry'
 
 /** Fetches the current and next semester */
-export function fetchPlanningSemesters(fetch: typeof globalThis.fetch): Promise<Semester[]> {
-  return fetchBackendJson(fetch, '/api/semesters', 'Fehler beim Laden der Semester')
+export async function fetchPlanningSemesters(fetch: typeof globalThis.fetch): Promise<Semester[]> {
+  return fetchBackendJson(
+    fetch,
+    '/api/semesters',
+    z.array(semesterResponseSchema),
+    'Fehler beim Laden der Semester'
+  )
 }
 
 /** Fetches the active plan drafts for the given kind */
@@ -91,10 +42,42 @@ export function fetchActivePlanDrafts(
   fetch: typeof globalThis.fetch,
   kind: PlanDraftKind
 ): Promise<PlanDraft[]> {
+  const parsedKind = parseBackendRequestInput(
+    z.enum(PLAN_DRAFT_KINDS),
+    kind,
+    'Ungültige Planungsstand-Art'
+  )
+  const params = new URLSearchParams({ activeOnly: 'true', kind: parsedKind })
   return fetchBackendJson(
     fetch,
-    `/auth-api/schedulePlanDrafts?activeOnly=true&kind=${kind}`,
+    `/auth-api/schedulePlanDrafts?${params}`,
+    z.array(planDraftResponseSchema),
     'Fehler beim Laden laufender Planungsstände'
+  )
+}
+
+/** Fetches a plan draft for the given kind */
+export async function fetchPlanDraft(
+  fetch: typeof globalThis.fetch,
+  id: string,
+  kind: PlanDraftKind
+): Promise<{ planDraft: PlanDraft; semester: Semester }> {
+  const planDraftId = parseBackendRequestInput(
+    z.string().trim().min(1),
+    id,
+    'Ungültige Planungsstand-ID'
+  )
+  const parsedKind = parseBackendRequestInput(
+    z.enum(PLAN_DRAFT_KINDS),
+    kind,
+    'Ungültige Planungsstand-Art'
+  )
+  const params = new URLSearchParams({ kind: parsedKind })
+  return fetchBackendJson(
+    fetch,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(planDraftId)}?${params}`,
+    planDraftWithSemesterResponseSchema,
+    'Fehler beim Laden des Planungsstands'
   )
 }
 
@@ -103,6 +86,11 @@ export async function createPlanDraft(
   fetch: typeof globalThis.fetch,
   payload: PlanDraftCreate
 ): Promise<void> {
+  const parsedPayload = parseBackendRequestInput(
+    createPlanDraftInputSchema,
+    payload,
+    'Ungültiger Planungsstand'
+  )
   await fetchBackend(
     fetch,
     '/auth-api/schedulePlanDrafts',
@@ -110,16 +98,21 @@ export async function createPlanDraft(
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(parsedPayload)
     }
   )
 }
 
 /** Deletes a plan draft */
-export function deletePlanDraft(fetch: typeof globalThis.fetch, id: string): Promise<Response> {
-  return fetchBackend(
+export async function deletePlanDraft(fetch: typeof globalThis.fetch, id: string): Promise<void> {
+  const planDraftId = parseBackendRequestInput(
+    z.string().trim().min(1),
+    id,
+    'Ungültige Planungsstand-ID'
+  )
+  await fetchBackend(
     fetch,
-    `/auth-api/schedulePlanDrafts/${id}`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(planDraftId)}`,
     'Fehler beim Löschen des Planungsstands',
     { method: 'DELETE' }
   )
@@ -127,92 +120,163 @@ export function deletePlanDraft(fetch: typeof globalThis.fetch, id: string): Pro
 
 /** Publishes a plan draft */
 export async function publishPlanDraft(fetch: typeof globalThis.fetch, id: string): Promise<void> {
+  const planDraftId = parseBackendRequestInput(
+    z.string().trim().min(1),
+    id,
+    'Ungültige Planungsstand-ID'
+  )
   await fetchBackend(
     fetch,
-    `/auth-api/schedulePlanDrafts/${id}/publish`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(planDraftId)}/publish`,
     'Fehler beim Veröffentlichen des Planungsstands',
     { method: 'POST' }
   )
 }
 
-/** Fetches the schedule entry drafts for a given plan draft */
-export function fetchScheduleEntryDrafts(
+/** Fetches schedule entries for a plan draft and date range. */
+export async function fetchScheduleEntryDraftsByRange(
   fetch: typeof globalThis.fetch,
-  planDraftId: string
-): Promise<ScheduleEntryDraft[]> {
+  planDraftId: string,
+  start: number,
+  end: number,
+  bypassCache: boolean
+): Promise<CalendarEvent<ScheduleEventProps>[]> {
+  const input = parseBackendRequestInput(
+    fetchDraftScheduleEntriesInputSchema,
+    { draftId: planDraftId, range: { start, end, bypassCache } },
+    'Ungültige Abfrage für Planungsstand-Einträge'
+  )
+  const headers: HeadersInit = {}
+  if (input.range.bypassCache) {
+    headers['Cache-Control'] = 'no-cache'
+  }
+
+  const params = new URLSearchParams({
+    from: String(input.range.start),
+    to: String(input.range.end)
+  })
+  const entries = await fetchBackendJson(
+    fetch,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries?${params}`,
+    scheduleEntryListResponseSchema,
+    'Fehler beim Laden der Einträge des Planungsstands',
+    { headers }
+  )
+  return toScheduleEvents(entries)
+}
+
+/** Fetches the occurrences belonging to a series within a plan draft. */
+export async function fetchScheduleEntryDraftSeriesOccurrences(
+  fetch: typeof globalThis.fetch,
+  planDraftId: string,
+  seriesId: string
+): Promise<SeriesOccurrence[]> {
+  const input = parseBackendRequestInput(
+    fetchDraftScheduleEntrySeriesInputSchema,
+    { draftId: planDraftId, seriesId },
+    'Ungültige Abfrage für Planungsstand-Terminreihe'
+  )
   return fetchBackendJson(
     fetch,
-    `/auth-api/schedulePlanDrafts/${planDraftId}/scheduleEntries`,
-    'Fehler beim Laden der Einträge des Planungsstands'
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries/series/${encodeURIComponent(input.seriesId)}/occurrences`,
+    scheduleSeriesOccurrenceListResponseSchema,
+    'Fehler beim Laden der Serientermine des Planungsstands'
   )
 }
 
-/** Creates the schedule entry drafts for a given plan draft */
+/** Creates schedule entries within a plan draft. */
 export async function createScheduleEntryDrafts(
   fetch: typeof globalThis.fetch,
   planDraftId: string,
-  entries: ScheduleEntryDraftPayload[]
-): Promise<void> {
-  await fetchBackend(
+  entries: ScheduleEntryCreate[]
+): Promise<CalendarEvent<ScheduleEventProps>[]> {
+  const input = parseBackendRequestInput(
+    createDraftScheduleEntriesInputSchema,
+    { draftId: planDraftId, entries },
+    'Ungültige Planungsstand-Einträge'
+  )
+  const payload = input.entries.map(toScheduleEntryWriteRequest)
+  const createdEntries = await fetchBackendJson(
     fetch,
-    `/auth-api/schedulePlanDrafts/${planDraftId}/scheduleEntries`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries`,
+    nonEmptyScheduleEntryListResponseSchema,
     'Fehler beim Erstellen der Einträge für den Planungsstand',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entries)
+      body: JSON.stringify(payload)
     }
   )
+  return toScheduleEvents(createdEntries)
 }
 
-/** Updates a schedule entry draft for a given plan draft */
+/** Updates one schedule entry within a plan draft. */
 export async function updateScheduleEntryDraft(
   fetch: typeof globalThis.fetch,
   planDraftId: string,
-  entryId: string,
-  entry: ScheduleEntryDraftPayload
-): Promise<void> {
-  await fetchBackend(
+  entry: ScheduleEntryEdit
+): Promise<CalendarEvent<ScheduleEventProps>> {
+  const input = parseBackendRequestInput(
+    updateDraftScheduleEntryInputSchema,
+    { draftId: planDraftId, entry },
+    'Ungültiger Planungsstand-Eintrag'
+  )
+  const payload = toScheduleEntryWriteRequest(input.entry)
+  const updatedEntries = await fetchBackendJson(
     fetch,
-    `/auth-api/schedulePlanDrafts/${planDraftId}/scheduleEntries/${entryId}`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries/${encodeURIComponent(input.entry.id)}`,
+    nonEmptyScheduleEntryListResponseSchema,
     'Fehler beim Aktualisieren des Eintrags für den Planungsstand',
     {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
+      body: JSON.stringify(payload)
     }
   )
+  return toScheduleEvent(updatedEntries[0])
 }
 
-/** Deletes a schedule entry draft for a given plan draft */
+/** Updates every schedule entry in the same series within a plan draft. */
+export async function updateScheduleEntryDraftSeries(
+  fetch: typeof globalThis.fetch,
+  planDraftId: string,
+  entry: ScheduleEntryEdit
+): Promise<CalendarEvent<ScheduleEventProps>[]> {
+  const input = parseBackendRequestInput(
+    updateDraftScheduleEntryInputSchema,
+    { draftId: planDraftId, entry },
+    'Ungültiger Planungsstand-Eintrag'
+  )
+  const payload = toScheduleEntryWriteRequest(input.entry)
+  const updatedEntries = await fetchBackendJson(
+    fetch,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries/${encodeURIComponent(input.entry.id)}/series`,
+    nonEmptyScheduleEntryListResponseSchema,
+    'Fehler beim Aktualisieren der Terminreihe des Planungsstands',
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }
+  )
+  return toScheduleEvents(updatedEntries)
+}
+
+/** Deletes a schedule entry within a plan draft. */
 export async function deleteScheduleEntryDraft(
   fetch: typeof globalThis.fetch,
   planDraftId: string,
   entryId: string
 ): Promise<void> {
+  const input = parseBackendRequestInput(
+    deleteDraftScheduleEntryInputSchema,
+    { draftId: planDraftId, id: entryId },
+    'Ungültiger Planungsstand-Eintrag'
+  )
   await fetchBackend(
     fetch,
-    `/auth-api/schedulePlanDrafts/${planDraftId}/scheduleEntries/${entryId}`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(input.draftId)}/scheduleEntries/${encodeURIComponent(input.id)}`,
     'Fehler beim Löschen des Eintrags für den Planungsstand',
     { method: 'DELETE' }
   )
-}
-
-/**
- * Filters the schedule entry drafts by range
- * TODO: this should be a backend function
- */
-export function filterDraftEntriesByRange(
-  entries: ScheduleEntryDraft[],
-  startMs: string | null,
-  endMs: string | null
-): ScheduleEntryDraft[] {
-  if (!startMs || !endMs) return entries
-  const start = Number(startMs)
-  const end = Number(endMs)
-  return entries.filter((entry) => {
-    const entryStart = new Date(entry.start).getTime()
-    const entryEnd = new Date(entry.end).getTime()
-    return entryStart < end && entryEnd > start
-  })
 }

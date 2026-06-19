@@ -18,10 +18,10 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import { fetchGenericModules } from '$lib/generic-module'
   import { createModuleCatalog, previewModuleCatalog } from '$lib/preview-action'
+  import { moduleCatalogFormSchema } from '$lib/schemas/study-program'
   import type { StudyProgram } from '$lib/types/study-program'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
-  import { z } from 'zod'
 
   let { showModuleCatalogCreateDialog = $bindable(), isPreview }: Props = $props()
 
@@ -51,17 +51,13 @@
   })
 
   function createDialogForm() {
-    const schema = z.object({
-      genericModules: z.array(z.string()).default([])
-    })
-
     return superForm(
       {
         genericModules: new Array<string>()
       },
       {
         SPA: true,
-        validators: zod4Client(schema)
+        validators: zod4Client(moduleCatalogFormSchema)
       }
     )
   }

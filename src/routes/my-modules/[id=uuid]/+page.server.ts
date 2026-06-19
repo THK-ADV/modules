@@ -1,4 +1,4 @@
-import { moduleSchema, type ModuleForm } from '$lib/schemas/module.js'
+import { moduleFormSchema, type ModuleForm } from '$lib/schemas/module.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { fail } from '@sveltejs/kit'
 import { superValidate, type SuperValidated } from 'sveltekit-superforms'
@@ -93,7 +93,7 @@ function updateModulePermissions(
 
 export const actions: Actions = {
   default: async ({ request, params, fetch, url }) => {
-    const form = await superValidate(request, zod4(moduleSchema))
+    const form = await superValidate(request, zod4(moduleFormSchema))
     const mode = url.searchParams.get('mode')
 
     if (!form.valid || !mode) {

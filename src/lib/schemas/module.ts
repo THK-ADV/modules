@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 const createYamlSafeText = (
   minLength?: number,
@@ -73,7 +73,27 @@ const workloadNumber = z
 // - SERVER_KEY_TO_FORM_FIELD_MAP in /lib/types/module-draft-keys.ts
 // - SECTION_FIELD_MAP in /lib/types/module-draft-keys.ts
 
-export const moduleSchema = z.object({
+export const assessmentMethodFormSchema = z.object({
+  method: z.string().nonempty('Prüfungsform erforderlich'),
+  percentage: z
+    .number()
+    .min(0, { error: 'Prozentsatz muss mindestens 0 sein' })
+    .max(100, { error: 'Prozentsatz muss kleiner als 100 sein' })
+    .nullable(),
+  precondition: z.array(z.string())
+})
+
+export const mandatoryStudyProgramRelationFormSchema = z.object({
+  fullPOId: z.string().nonempty('Studiengang ist erforderlich'),
+  recommendedSemester: z.array(z.number()).optional().default([])
+})
+
+export const electiveStudyProgramRelationFormSchema =
+  mandatoryStudyProgramRelationFormSchema.extend({
+    instanceOf: z.string().nonempty('Modul ist erforderlich')
+  })
+
+export const moduleFormSchema = z.object({
   title: z
     .string()
     .min(1, 'Modulbezeichnung erforderlich')
@@ -104,17 +124,7 @@ export const moduleSchema = z.object({
   firstExaminer: z.string().nonempty('Erstprüfer erforderlich'),
   secondExaminer: z.string().nonempty('Zweitprüfer erforderlich'),
   examPhases: z.array(z.string()).min(1, 'Prüfungsphase erforderlich'),
-  assessmentMethods: z.array(
-    z.object({
-      method: z.string().nonempty('Prüfungsform erforderlich'),
-      percentage: z
-        .number()
-        .min(0, { error: 'Prozentsatz muss mindestens 0 sein' }) // 0 represents an ungraded assessment
-        .max(100, { error: 'Prozentsatz muss kleiner als 100 sein' })
-        .nullable(),
-      precondition: z.array(z.string())
-    })
-  ),
+  assessmentMethods: z.array(assessmentMethodFormSchema),
   workload: z.object({
     lecture: workloadNumber,
     seminar: workloadNumber,
@@ -205,4 +215,4 @@ export const moduleSchema = z.object({
     .nullable()
 })
 
-export type ModuleForm = z.infer<typeof moduleSchema>
+export type ModuleForm = z.infer<typeof moduleFormSchema>

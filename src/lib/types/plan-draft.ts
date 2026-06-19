@@ -1,38 +1,8 @@
-import type { CourseType, ModuleManagement, PO } from './schedule'
 import type { Semester } from './semester'
 
-/** For displaying in the calendar view */
-export interface ScheduleEntryDraft {
-  id: string
-  planDraft: string
-  seriesId: string
-  start: string
-  end: string
-  courseType: CourseType
-  rooms: { id: string; abbrev: string }[]
-  module: string
-  moduleTitle: string
-  moduleAbbrev: string
-  moduleManagement: ModuleManagement[]
-  lecturer: ModuleManagement[]
-  teachingUnits: string[]
-  po: PO[]
-}
+export const PLAN_DRAFT_KINDS = ['schedule', 'exam'] as const
 
-/** For creating/updating */
-export interface ScheduleEntryDraftPayload {
-  planDraft: string
-  seriesId: string
-  module: string
-  courseType: CourseType
-  start: string
-  end: string
-  rooms: string[]
-  lecturer: string[]
-  po: PO[]
-}
-
-export type PlanDraftKind = 'schedule' | 'exam'
+export type PlanDraftKind = (typeof PLAN_DRAFT_KINDS)[number]
 
 export interface PlanDraft {
   id: string

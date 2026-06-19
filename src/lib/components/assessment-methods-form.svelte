@@ -7,7 +7,7 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { moduleSchema } from '$lib/schemas/module'
+  import { assessmentMethodFormSchema } from '$lib/schemas/module'
   import type { AssessmentMethod, Precondition } from '$lib/types/core'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
@@ -28,8 +28,6 @@
     value: AssessmentEntry[]
     modificationStatus?: ModificationStatus // optional modification tracking
   }
-
-  const assessmentEntrySchema = moduleSchema.shape.assessmentMethods.element
 
   let {
     form,
@@ -54,7 +52,7 @@
     },
     {
       SPA: true,
-      validators: zod4Client(assessmentEntrySchema),
+      validators: zod4Client(assessmentMethodFormSchema),
       resetForm: false
     }
   )

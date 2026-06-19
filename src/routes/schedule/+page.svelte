@@ -2,6 +2,7 @@
   import { browser } from '$app/environment'
   import { type EventClickInfo } from '$lib/calendar'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
+  import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
@@ -125,6 +126,7 @@
     {onEventClick}
     {scheduleFilter}
     bypassCache={false}
+    loadScheduleEntries={liveScheduleEntryEditorApi.load}
   />
 
   {#if selectedScheduleEntry}

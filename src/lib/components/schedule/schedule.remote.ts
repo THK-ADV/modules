@@ -4,63 +4,33 @@ import {
   fetchLecturerOptions,
   fetchPOOptions,
   fetchScheduleEntriesByRange,
-  scheduleEntrySeriesExists,
+  fetchScheduleEntrySeriesOccurrences,
   updateScheduleEntry,
   updateScheduleEntrySeries
 } from '$lib/server/backend/calendar'
-import type { ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
+import {
+  createScheduleEntriesInputSchema,
+  scheduleEntriesRangeInputSchema,
+  updateScheduleEntryInputSchema
+} from '$lib/schemas/schedule'
 import { command, getRequestEvent, query } from '$app/server'
-import * as v from 'valibot'
-
-/** Timestamp in milliseconds */
-const dateRangeSchema = v.object({
-  start: v.number(),
-  end: v.number(),
-  bypassCache: v.boolean()
-})
-
-// ScheduleEntryCreate schema
-const scheduleEntryCreateSchema = v.object({
-  module: v.string(),
-  courseType: v.picklist(['lecture', 'lab', 'exercise', 'seminar', 'tutorial']),
-  start: v.date(),
-  end: v.date(),
-  rooms: v.array(v.string()),
-  props: v.object({
-    po: v.array(
-      v.object({
-        po: v.string(),
-        specialization: v.nullable(v.string()),
-        recommendedSemester: v.array(v.number()),
-        mandatory: v.boolean()
-      })
-    ),
-    lecturer: v.array(v.string())
-  }),
-  seriesId: v.string()
-})
-
-// ScheduleEntryEdit schema
-const scheduleEntryEditSchema = v.object({
-  ...scheduleEntryCreateSchema.entries,
-  id: v.string()
-})
+import { z } from 'zod/v4'
 
 /** Fetches the lecturers for a given module */
-export const getLecturers = query(v.string(), async (module) => {
+export const getLecturers = query(z.string().trim().min(1), async (module) => {
   const { fetch } = getRequestEvent()
   return fetchLecturerOptions(fetch, module)
 })
 
 /** Fetches the POs for a given module */
-export const getPOs = query(v.string(), async (module) => {
+export const getPOs = query(z.string().trim().min(1), async (module) => {
   const { fetch } = getRequestEvent()
   return fetchPOOptions(fetch, module)
 })
 
 /** Fetches live schedule entries for a given date range */
 export const fetchLiveScheduleEntries = query(
-  dateRangeSchema,
+  scheduleEntriesRangeInputSchema,
   async ({ start, end, bypassCache }) => {
     const { fetch } = getRequestEvent()
     return fetchScheduleEntriesByRange(fetch, start, end, bypassCache)
@@ -69,38 +39,38 @@ export const fetchLiveScheduleEntries = query(
 
 /** Creates live schedule entries. Returns the created entries. */
 export const createLiveScheduleEntries = command(
-  v.array(scheduleEntryCreateSchema),
-  async (entries: ScheduleEntryCreate[]) => {
+  createScheduleEntriesInputSchema,
+  async (entries) => {
     const { fetch } = getRequestEvent()
     return createScheduleEntries(fetch, entries)
   }
 )
 
 /** Updates a live schedule entry. Returns the updated entry. */
-export const updateLiveScheduleEntry = command(
-  scheduleEntryEditSchema,
-  async (entry: ScheduleEntryEdit) => {
-    const { fetch } = getRequestEvent()
-    return updateScheduleEntry(fetch, entry)
-  }
-)
+export const updateLiveScheduleEntry = command(updateScheduleEntryInputSchema, async (entry) => {
+  const { fetch } = getRequestEvent()
+  return updateScheduleEntry(fetch, entry)
+})
 
 /** Updates every live schedule entry in the same series. Returns the updated entries. */
 export const updateLiveScheduleEntrySeries = command(
-  scheduleEntryEditSchema,
-  async (entry: ScheduleEntryEdit) => {
+  updateScheduleEntryInputSchema,
+  async (entry) => {
     const { fetch } = getRequestEvent()
     return updateScheduleEntrySeries(fetch, entry)
   }
 )
 
-/** Checks whether the series id belongs to an actual live schedule entry series. */
-export const hasLiveScheduleEntrySeries = query(v.string(), async (seriesId) => {
-  const { fetch } = getRequestEvent()
-  return scheduleEntrySeriesExists(fetch, seriesId)
-})
+/** Fetches the occurrences belonging to a live schedule entry series. */
+export const fetchLiveScheduleEntrySeriesOccurrences = query(
+  z.string().trim().min(1),
+  async (seriesId) => {
+    const { fetch } = getRequestEvent()
+    return fetchScheduleEntrySeriesOccurrences(fetch, seriesId)
+  }
+)
 
-export const deleteLiveScheduleEntry = command(v.string(), async (id) => {
+export const deleteLiveScheduleEntry = command(z.string().trim().min(1), async (id) => {
   const { fetch } = getRequestEvent()
   await deleteScheduleEntry(fetch, id)
 })

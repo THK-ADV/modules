@@ -37,8 +37,8 @@ export async function fetchPlanningSemesters(fetch: typeof globalThis.fetch): Pr
   )
 }
 
-/** Fetches the active plan drafts for the given kind */
-export function fetchActivePlanDrafts(
+/** Fetches the plan drafts for the given kind */
+export function fetchPlanDrafts(
   fetch: typeof globalThis.fetch,
   kind: PlanDraftKind
 ): Promise<PlanDraft[]> {
@@ -47,12 +47,12 @@ export function fetchActivePlanDrafts(
     kind,
     'Ungültige Planungsstand-Art'
   )
-  const params = new URLSearchParams({ activeOnly: 'true', kind: parsedKind })
+  const params = new URLSearchParams({ activeOnly: 'false', kind: parsedKind })
   return fetchBackendJson(
     fetch,
     `/auth-api/schedulePlanDrafts?${params}`,
     z.array(planDraftResponseSchema),
-    'Fehler beim Laden laufender Planungsstände'
+    'Fehler beim Laden der Planungsstände'
   )
 }
 

@@ -1,4 +1,4 @@
-import { fetchActivePlanDrafts, fetchPlanningSemesters } from '$lib/server/backend/plan-draft'
+import { fetchPlanDrafts, fetchPlanningSemesters } from '$lib/server/backend/plan-draft'
 import { createPlanDraftViews } from '$lib/types/plan-draft'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
@@ -10,12 +10,12 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
     throw error(403, { message: 'Keine Berechtigung für die Stundenplanung' })
   }
 
-  const [semesters, activeDrafts] = await Promise.all([
+  const [semesters, allDrafts] = await Promise.all([
     fetchPlanningSemesters(fetch),
-    fetchActivePlanDrafts(fetch, 'schedule')
+    fetchPlanDrafts(fetch, 'schedule')
   ])
 
-  const drafts = createPlanDraftViews(activeDrafts, semesters)
+  const drafts = createPlanDraftViews(allDrafts, semesters)
 
   return { semesters, drafts }
 }

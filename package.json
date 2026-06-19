@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.1",
   "packageManager": "pnpm@10.18.3",
+  "pnpm": {
+    "overrides": {
+      "devalue": "5.8.1"
+    }
+  },
   "type": "module",
   "scripts": {
     "dev": "vite dev",

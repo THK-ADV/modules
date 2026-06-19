@@ -1,14 +1,13 @@
 <script lang="ts">
   import Combobox from '$lib/components/combobox.svelte'
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
-  import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
+  import { ModuleMultiSelect, ModuleSingleSelect } from '$lib/components/module-filter'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
-  import { fmtModule } from '$lib/formats'
   import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
+  import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
 
@@ -22,27 +21,12 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
-  const withOutSelf = $derived.by(() => {
+  const moduleOptions = $derived.by(() => {
     const module = data.module
     return module !== null
       ? moduleUpdateState.modules.filter(({ id }) => id !== module.id)
       : moduleUpdateState.modules
   })
-
-  const moduleOptions = $derived(
-    withOutSelf.map((m) => ({
-      id: m.id,
-      label: fmtModule(m),
-      abbrev: m.abbreviation
-    }))
-  )
-
-  const parentOptions = $derived(
-    withOutSelf.map((m) => ({
-      id: m.id,
-      deLabel: fmtModule(m)
-    }))
-  )
 
   const moduleRelationTypeOptions = [
     { id: 'none', deLabel: 'Keine Beziehung' },
@@ -246,7 +230,7 @@
     </div>
 
     <div class="space-y-5">
-      <MultiSelectCombobox
+      <ModuleMultiSelect
         {form}
         name="taughtWith"
         label="Wird gelehrt mit"
@@ -290,13 +274,13 @@
       />
 
       {#if $formData.moduleRelation?.kind === 'child'}
-        <Combobox
+        <ModuleSingleSelect
           {form}
           name="moduleRelation.parent"
           label="Ober-Modul"
           placeholder="Ober-Modul auswählen"
           description="Das übergeordnete Modul, zu dem dieses Modul gehört."
-          options={parentOptions}
+          options={moduleOptions}
           bind:value={moduleRelationParent.value}
           {errors}
           width="w-[500px]"
@@ -304,7 +288,7 @@
       {/if}
 
       {#if $formData.moduleRelation?.kind === 'parent'}
-        <MultiSelectCombobox
+        <ModuleMultiSelect
           {form}
           name="moduleRelation.children"
           label="Kind-Module"

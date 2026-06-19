@@ -49,7 +49,7 @@
     .sort()
     .join(', ')
   // svelte-ignore state_referenced_locally
-  const studyProgramLabels = entry.props.po
+  const studyProgramLabels = entry.po
     .sort((a, b) => a.po.localeCompare(b.po))
     .map((po) => {
       const sp = studyPrograms.find((sp) => {

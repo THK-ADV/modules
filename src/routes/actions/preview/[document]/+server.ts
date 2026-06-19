@@ -1,51 +1,76 @@
+import {
+  documentPreviewKindSchema,
+  documentPreviewQuerySchema,
+  moduleCatalogRequestSchema,
+  type DocumentPreviewKind
+} from '$lib/schemas/study-program'
+import { parseRequestJson } from '$lib/server/request'
 import { error, type RequestHandler } from '@sveltejs/kit'
 
 async function performRequest(
-  kind: 'moduleCatalog' | 'moduleCatalog_creation' | 'examList' | 'examLoad',
+  kind: DocumentPreviewKind,
   sp: string,
   po: string,
   request: Request,
   fetch: typeof globalThis.fetch
 ): Promise<Response> {
+  const encodedStudyProgram = encodeURIComponent(sp)
+  const encodedPo = encodeURIComponent(po)
+  let moduleCatalogBody: string | undefined
+  if (kind === 'moduleCatalog' || kind === 'moduleCatalog_creation') {
+    const data = await parseRequestJson(
+      request,
+      moduleCatalogRequestSchema,
+      'Ungültige Modulhandbuch-Auswahl'
+    )
+    moduleCatalogBody = JSON.stringify(data)
+  }
+
   switch (kind) {
     case 'moduleCatalog': {
       // TODO: this is a temporary solution to preview the module catalog creation
-      const body = await request.json()
-      return fetch(`/auth-api/moduleCatalogs/${sp}/${po}?preview=true`, {
+      return fetch(`/auth-api/moduleCatalogs/${encodedStudyProgram}/${encodedPo}?preview=true`, {
         headers: {
           Accept: 'application/pdf',
           'Content-Type': 'application/json'
         },
         method: 'POST',
-        body
+        body: moduleCatalogBody
       })
     }
     case 'moduleCatalog_creation': {
-      const body = await request.json()
-      return fetch(`/auth-api/moduleCatalogs/${sp}/${po}?preview=false`, {
+      return fetch(`/auth-api/moduleCatalogs/${encodedStudyProgram}/${encodedPo}?preview=false`, {
         headers: {
           Accept: 'application/pdf',
           'Content-Type': 'application/json'
         },
         method: 'POST',
-        body
+        body: moduleCatalogBody
       })
     }
     case 'examList':
-      return fetch(`/auth-api/examLists/preview/${sp}/${po}`, {
+      return fetch(`/auth-api/examLists/preview/${encodedStudyProgram}/${encodedPo}`, {
         headers: {
           Accept: 'application/pdf'
         }
       })
     case 'examLoad':
-      return fetch(`/auth-api/examLoad/${sp}/${po}?preview=true`)
+      return fetch(`/auth-api/examLoad/${encodedStudyProgram}/${encodedPo}?preview=true`)
   }
 }
 
 export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
-  const { document } = params
-  const po = url.searchParams.get('po')
-  const sp = url.searchParams.get('studyProgram')
+  const kindResult = documentPreviewKindSchema.safeParse(params.document)
+  const queryResult = documentPreviewQuerySchema.safeParse({
+    po: url.searchParams.get('po'),
+    studyProgram: url.searchParams.get('studyProgram')
+  })
+  if (!kindResult.success || !queryResult.success) {
+    throw error(400, { message: 'Studiengang, PO und Art der Vorschau sind ungültig' })
+  }
+
+  const document = kindResult.data
+  const { po, studyProgram: sp } = queryResult.data
   const dryRun = url.searchParams.get('dryRun') === 'true'
 
   if (dryRun) {
@@ -59,22 +84,6 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       }, 5000)
     })
   } else {
-    if (!po || !document || !sp) {
-      throw error(400, { message: 'Studiengang, PO und Art der Vorschau sind erforderlich' })
-    }
-
-    if (
-      document !== 'moduleCatalog' &&
-      document !== 'examList' &&
-      document !== 'moduleCatalog_creation' &&
-      document !== 'examLoad'
-    ) {
-      throw error(400, {
-        message:
-          "Vorschau muss entweder 'moduleCatalog' oder 'examList' oder 'moduleCatalog_creation' oder 'examLoad' sein"
-      })
-    }
-
     const response = await performRequest(document, sp, po, request, fetch)
 
     if (!response.ok) {

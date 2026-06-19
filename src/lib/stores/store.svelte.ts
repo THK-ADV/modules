@@ -1,3 +1,4 @@
+import { createModuleFilterOptions, type ModuleFilterOption } from '$lib/components/module-filter'
 import type {
   AssessmentMethod,
   DisplayIdentity,
@@ -34,6 +35,15 @@ export function getModuleTypeOptions() {
   ]
 }
 
+async function fetchModules(fetch: typeof globalThis.fetch): Promise<ModuleFilterOption[] | null> {
+  const res = await fetch(`/api/modules?source=all`)
+  if (!res.ok) {
+    return null
+  }
+  const xs: ModuleCore[] = await res.json()
+  return createModuleFilterOptions(xs)
+}
+
 function createModuleUpdateState() {
   let moduleTypes = $state.raw(new Array<ModuleType>())
   let languages = $state.raw(new Array<Language>())
@@ -43,7 +53,7 @@ function createModuleUpdateState() {
   let identities = $state.raw(new Array<DisplayIdentity>())
   let assessmentMethods = $state.raw(new Array<AssessmentMethod>())
   let examPhases = $state.raw(new Array<ExamPhase>())
-  let modules = $state.raw(new Array<ModuleCore>())
+  let modules = $state.raw(new Array<ModuleFilterOption>())
   let studyPrograms = $state.raw(new Array<StudyProgram>())
   let genericModules = $state.raw(new Array<GenericModule>())
 
@@ -161,12 +171,9 @@ function createModuleUpdateState() {
     },
     async fetchPrerequisitesInfo(fetch: typeof globalThis.fetch) {
       if (modules.length === 0) {
-        const res = await fetch(`/api/modules?source=all`)
-        if (res.ok) {
-          const xs: ModuleCore[] = await res.json()
-          const distinct = Array.from(new Map(xs.map((m) => [m.id, m])).values())
-          distinct.sort((a, b) => a.title.localeCompare(b.title))
-          modules = distinct
+        const res = await fetchModules(fetch)
+        if (res) {
+          modules = res
         }
       }
     },
@@ -200,11 +207,9 @@ function createModuleUpdateState() {
     },
     async fetchMiscInfo(fetch: typeof globalThis.fetch) {
       if (modules.length === 0) {
-        const res = await fetch(`/api/modules?source=all`)
-        if (res.ok) {
-          const xs: ModuleCore[] = await res.json()
-          xs.sort((a, b) => a.title.localeCompare(b.title))
-          modules = xs
+        const res = await fetchModules(fetch)
+        if (res) {
+          modules = res
         }
       }
     }

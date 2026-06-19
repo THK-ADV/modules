@@ -1,12 +1,13 @@
+import { examListReleaseRequestSchema } from '$lib/schemas/study-program'
+import { parseRequestJson } from '$lib/server/request'
 import { error, json, type RequestHandler } from '@sveltejs/kit'
 
 export const PUT: RequestHandler = async ({ request, fetch, url }) => {
-  const {
-    semester,
-    date,
-    studyProgram,
-    po
-  }: { semester: string; date: string; studyProgram: string; po: string } = await request.json()
+  const { semester, date, studyProgram, po } = await parseRequestJson(
+    request,
+    examListReleaseRequestSchema,
+    'Ungültige Daten für die Prüfungslistenfreigabe'
+  )
   const dryRun = url.searchParams.get('dryRun') === 'true'
 
   if (dryRun) {

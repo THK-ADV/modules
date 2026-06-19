@@ -16,7 +16,7 @@
   import { cn } from '$lib/utils'
   import { SquarePen, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
-  import type { ModuleDraftTableAction } from '../../actions/module-actions/[moduleId]/+server'
+  import type { ModuleDraftTableAction } from '$lib/schemas/module-actions'
 
   type ActionKey = ModuleDraftTableAction | 'edit'
 

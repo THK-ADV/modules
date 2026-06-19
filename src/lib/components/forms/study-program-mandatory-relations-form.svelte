@@ -16,6 +16,7 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { fmtStudyProgram } from '$lib/formats'
+  import { mandatoryStudyProgramRelationFormSchema } from '$lib/schemas/module'
   import type { POMandatory } from '$lib/types/module-protocol'
   import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
@@ -24,13 +25,7 @@
   import { SquarePen, Plus, Trash2 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
-  import { z } from 'zod'
   import { createSemesterOptions, showPO, showRecommendedSemester } from './forms'
-
-  const schema = z.object({
-    fullPOId: z.string().nonempty('Studiengang ist erforderlich'),
-    recommendedSemester: z.array(z.number()).optional().default([])
-  })
 
   let { form, name, studyPrograms, value = $bindable(), modificationStatus }: Props = $props()
 
@@ -46,7 +41,7 @@
     },
     {
       SPA: true,
-      validators: zod4Client(schema),
+      validators: zod4Client(mandatoryStudyProgramRelationFormSchema),
       resetForm: false
     }
   )

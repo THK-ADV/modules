@@ -10,6 +10,7 @@ import {
   Search,
   Signature,
   CalendarCog,
+  CalendarClock,
   type IconProps,
   Settings
 } from '@lucide/svelte'
@@ -80,9 +81,20 @@ function createRoutes() {
     }
   }
 
-  const schedulePlanningRoutes: RoutesMap = {
-    '/schedule-planning': {
+  const planningRoutes: RoutesMap = {
+    '/planning/schedule': {
       name: 'Stundenplanung',
+      icon: CalendarCog
+    },
+    '/planning/exam': {
+      name: 'Prüfungsplanung',
+      icon: CalendarClock
+    }
+  }
+
+  const planningSubRoutes: RoutesMap = {
+    '/planning/schedule/live': {
+      name: 'Live-Daten bearbeiten',
       icon: CalendarCog
     }
   }
@@ -102,7 +114,8 @@ function createRoutes() {
   const protectedRoutes = [
     ...Object.keys(managerRoutes),
     ...Object.keys(pavRoutes),
-    ...Object.keys(schedulePlanningRoutes),
+    ...Object.keys(planningRoutes),
+    ...Object.keys(planningSubRoutes),
     '/settings'
   ]
 
@@ -124,8 +137,8 @@ function createRoutes() {
     get scheduleRoutes() {
       return scheduleRoutes
     },
-    get schedulePlanningRoutes() {
-      return schedulePlanningRoutes
+    get planningRoutes() {
+      return planningRoutes
     },
     get allRoutes() {
       return {
@@ -134,7 +147,8 @@ function createRoutes() {
         ...pavRoutes,
         ...secondaryRoutes,
         ...scheduleRoutes,
-        ...schedulePlanningRoutes,
+        ...planningRoutes,
+        ...planningSubRoutes,
         ...nonNavRoutes
       }
     },

@@ -81,13 +81,16 @@ export function fmtPersonShort(p: Identity): string {
 }
 
 export function fmtManagement(m: ModuleManagement): string {
+  const lastname = m.lastname?.trim() ?? ''
+  const firstname = m.firstname?.trim() ?? ''
+
   switch (m.kind) {
     case 'person':
-      return m.lastname
+      return lastname || firstname || m.id
     case 'group':
-      return m.id
+      return lastname || m.id
     case 'unknown':
-      return m.id
+      return 'N.N.'
   }
 }
 

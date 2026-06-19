@@ -1,3 +1,5 @@
+<!-- TODO: This component is not being used anymore. Consider removing it. -->
+
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button'
@@ -99,10 +101,10 @@
                   </span>
                 </div>
               {/if}
-              {#if draft.props.po}
+              {#if draft.po}
                 <div class="flex items-center gap-1">
                   <BookOpen class="size-3" />
-                  <span>{draft.props.po.length} Studiengänge</span>
+                  <span>{draft.po.length} Studiengänge</span>
                 </div>
               {/if}
             </div>

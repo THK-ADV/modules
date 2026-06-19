@@ -22,7 +22,7 @@ This is **MOCOGi** — a SvelteKit 5 frontend for managing module descriptions, 
 - **API proxy** in `src/hooks.server.ts`: `/api/*` routes proxy unauthenticated to the backend; `/auth-api/*` proxies with a Bearer token.
 - **Authentication** uses Keycloak OIDC (server-side authorization code flow with PKCE). Tokens stored as httpOnly cookies (`kc-access`, `kc-refresh`).
 - **Public routes** (no auth needed): `/`, `/modules`, `/module-catalogs`, `/exam-lists`, `/schedule`, `/help`, `/release-notes`, `/assessment-methods`.
-- **Protected routes** (require Keycloak login): `/my-modules`, `/module-approvals`, `/studyprogram`, `/schedule-planning`, `/settings`.
+- **Protected routes** (require Keycloak login): `/my-modules`, `/module-approvals`, `/studyprogram`, `/planning/schedule`, `/settings`.
 
 ### Known issues (pre-existing)
 

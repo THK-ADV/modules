@@ -151,8 +151,13 @@
           </Command.Item>
         {/if}
         <Command.Group>
-          {#each sortedOptions as { id, label } (id)}
-            <Command.Item value={label} onSelect={() => toggle(id)} {disabled}>
+          {#each sortedOptions as { id, label, abbrev } (id)}
+            <Command.Item
+              value={id}
+              keywords={abbrev ? [label, abbrev] : [label]}
+              onSelect={() => toggle(id)}
+              {disabled}
+            >
               <div
                 class={cn(
                   'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',

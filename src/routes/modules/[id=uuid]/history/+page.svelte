@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { PageProps } from './$types'
-  import { routesMap } from '$lib/routes.svelte'
   import {
     TimelineSection,
     VersionMetadata,
@@ -32,10 +31,6 @@
 
   let { data }: PageProps = $props()
   const { history, module } = $derived(data)
-
-  $effect(() => {
-    routesMap.selectedModule = { id: module.id, title: module.title }
-  })
 
   const parsedVersions = $derived(history.filter(isParsed))
   const latestParsedVersion = $derived(parsedVersions[parsedVersions.length - 1])

@@ -258,7 +258,6 @@
   import { Separator } from '$lib/components/ui/separator'
   import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { routesMap } from '$lib/routes.svelte'
   import type { Person } from '$lib/types/core'
   import type { Other } from '$lib/types/module-details'
   import type { AssessmentPrerequisite, AttendanceRequirement } from '$lib/types/module-protocol'
@@ -292,10 +291,6 @@
     isGenericModule: boolean
     isAuthenticated: boolean
   } = $props()
-
-  $effect(() => {
-    routesMap.selectedModule = { id: module.id, title: module.title }
-  })
 
   const ectsFactors = $derived(createECTSFactors(module))
   const examPhases = $derived(createExamPhases(module))

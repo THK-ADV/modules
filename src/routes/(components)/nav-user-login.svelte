@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { resolve } from '$app/paths'
+  import { routeLabels } from '$lib/routes'
   import type { User, UserInfo } from '$lib/auth'
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
@@ -61,7 +62,7 @@
         >
           <DropdownMenu.Item onclick={openSettings}>
             <Settings />
-            Einstellungen
+            {routeLabels['/settings']}
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item onclick={logout}>

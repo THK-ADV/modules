@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Card from '$lib/components/ui/card/index.js'
-  import { routesMap } from '$lib/routes.svelte'
+  import { routeLabels } from '$lib/routes'
   import {
     Book,
     Calendar1,
@@ -13,7 +13,6 @@
     ArrowRight
   } from '@lucide/svelte'
   import { resolve } from '$app/paths'
-  const defaultRoutes = routesMap.defaultRoutes
 
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -71,7 +70,7 @@
           >
             <div class="flex items-center gap-3">
               <Search class="text-muted-foreground size-5" />
-              <span class="font-medium">{defaultRoutes['/modules'].name}</span>
+              <span class="font-medium">{routeLabels['/modules']}</span>
             </div>
             <ArrowRight
               class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
@@ -83,7 +82,7 @@
           >
             <div class="flex items-center gap-3">
               <Book class="text-muted-foreground size-5" />
-              <span class="font-medium">{defaultRoutes['/module-catalogs'].name}</span>
+              <span class="font-medium">{routeLabels['/module-catalogs']}</span>
             </div>
             <ArrowRight
               class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
@@ -95,7 +94,7 @@
           >
             <div class="flex items-center gap-3">
               <FileText class="text-muted-foreground size-5" />
-              <span class="font-medium">Prüfungslisten</span>
+              <span class="font-medium">{routeLabels['/exam-lists']}</span>
             </div>
             <ArrowRight
               class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
@@ -107,7 +106,7 @@
           >
             <div class="flex items-center gap-3">
               <Pencil class="text-muted-foreground size-5" />
-              <span class="font-medium">Meine Module</span>
+              <span class="font-medium">{routeLabels['/my-modules']}</span>
             </div>
             <ArrowRight
               class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
@@ -254,7 +253,7 @@
                   class="text-muted-foreground size-4 opacity-60 transition-transform group-hover:translate-x-0.5"
                 />
               </div>
-              <Card.Title>{defaultRoutes['/modules'].name}</Card.Title>
+              <Card.Title>{routeLabels['/modules']}</Card.Title>
             </Card.Header>
             <Card.Content>
               <p class="text-muted-foreground text-sm leading-relaxed">
@@ -276,7 +275,7 @@
                   class="text-muted-foreground size-4 opacity-60 transition-transform group-hover:translate-x-0.5"
                 />
               </div>
-              <Card.Title>{defaultRoutes['/module-catalogs'].name}</Card.Title>
+              <Card.Title>{routeLabels['/module-catalogs']}</Card.Title>
             </Card.Header>
             <Card.Content>
               <p class="text-muted-foreground text-sm leading-relaxed">
@@ -297,7 +296,7 @@
                   class="text-muted-foreground size-4 opacity-60 transition-transform group-hover:translate-x-0.5"
                 />
               </div>
-              <Card.Title>Prüfungslisten</Card.Title>
+              <Card.Title>{routeLabels['/exam-lists']}</Card.Title>
             </Card.Header>
             <Card.Content>
               <p class="text-muted-foreground text-sm leading-relaxed">

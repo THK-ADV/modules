@@ -1,6 +1,6 @@
 import { dev } from '$app/environment'
+import type { RouteId } from '$app/types'
 import { BACKEND_URL_PREFIX } from '$env/static/private'
-import { routesMap } from '$lib/routes.svelte'
 import { getValidAccessToken } from '$lib/server/auth'
 import { redirect, type Handle } from '@sveltejs/kit'
 
@@ -26,11 +26,26 @@ const AUTH_API_PREFIX = '/auth-api'
  */
 const API_PREFIX = '/api'
 
-export const handle: Handle = async ({ event, resolve }) => {
-  const protectedRoutes = routesMap.protectedRoutes
+const protectedRoutePrefixes = [
+  '/modules/[id=uuid]/history',
+  '/my-modules',
+  '/module-approvals',
+  '/studyprogram',
+  '/schedule-planning',
+  '/settings'
+] as const satisfies readonly RouteId[]
 
+function isProtectedRoute(routeId: RouteId | null): boolean {
+  if (!routeId) return false
+
+  return protectedRoutePrefixes.some(
+    (prefix) => routeId === prefix || routeId.startsWith(`${prefix}/`)
+  )
+}
+
+export const handle: Handle = async ({ event, resolve }) => {
   // check if current route is protected. redirect to login if not authenticated
-  if (protectedRoutes.some((route) => event.url.pathname.startsWith(route))) {
+  if (isProtectedRoute(event.route.id)) {
     const accessToken = await getValidAccessToken(event.cookies, event.fetch)
 
     if (!accessToken) {

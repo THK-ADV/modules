@@ -1,4 +1,5 @@
 import { isParsed, type ModuleVersion } from '$lib/types/module-version'
+import { MODULE_ROUTE_ID } from '$lib/routes'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
@@ -21,5 +22,9 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 
   const latestModule = latestVersion.content.module
 
-  return { history, module: latestModule }
+  return {
+    history,
+    module: latestModule,
+    breadcrumbLabels: { [MODULE_ROUTE_ID]: latestModule.title }
+  }
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
+  import { ModuleSingleSelect } from '$lib/components/module-filter'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
@@ -8,37 +9,56 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { getErrorMessage } from '$lib/errors'
+  import { fmtStudyProgram } from '$lib/formats'
+  import {
+    scheduleEntryFormSchema,
+    scheduleEntryPoFormSchema,
+    type ScheduleEntryFormData
+  } from '$lib/schemas/schedule'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
-  import type { CourseType, PO, ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
+  import type {
+    PO,
+    ScheduleEntryCreate,
+    ScheduleEntryEdit,
+    ScheduleEntryUpdateScope,
+    SeriesOccurrence
+  } from '$lib/types/schedule'
+  import { getFullPOId } from '$lib/types/study-program'
   import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date'
-  import { Copy, Plus, SquarePen, Trash2 } from '@lucide/svelte'
+  import { Copy, Plus, SquarePen, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4 } from 'sveltekit-superforms/adapters'
-  import { z } from 'zod/v4'
   import Combobox from '../combobox.svelte'
   import DateTimePicker from '../forms/date-time-picker.svelte'
-  import { createSemesterOptions, showRecommendedSemester } from '../forms/forms'
+  import { createSemesterOptions, showPO, showRecommendedSemester } from '../forms/forms'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
+  import { getLecturers, getPOs } from './schedule.remote'
+  import ScheduleEntryUpdateScopeDialog from './schedule-entry-update-scope-dialog.svelte'
+
+  type PendingAction = 'save' | 'delete'
+  type SaveIntent = 'save' | 'duplicate'
 
   export interface Create {
     id: 'create'
-    onCreate: (entries: ScheduleEntryCreate[]) => void
+    onCreate: (entries: ScheduleEntryCreate[]) => Promise<void>
     prefilled?: Partial<ScheduleEntryCreate>
   }
 
   export interface Edit {
     id: 'edit'
     entry: ScheduleEntryEdit
-    onUpdate: (entry: ScheduleEntryEdit) => void
+    getSeries: (seriesId: string) => Promise<SeriesOccurrence[]>
+    onUpdate: (entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) => Promise<void>
     onDuplicate: (entry: ScheduleEntryCreate) => void
-    onDelete: (id: string) => void
+    onDelete: (id: string) => Promise<void>
   }
 
   export interface Duplicate {
     id: 'duplicate'
     entry: ScheduleEntryCreate
-    onCreate: (entries: ScheduleEntryCreate[]) => void
+    onCreate: (entries: ScheduleEntryCreate[]) => Promise<void>
   }
 
   export type Mode = Create | Edit | Duplicate
@@ -57,9 +77,13 @@
   }
 
   function posEqual(lhs: PO[], rhs: PO[]): boolean {
+    function poKey({ po, specialization }: PO): string {
+      return specialization ?? po
+    }
+
     if (lhs.length !== rhs.length) return false
-    const sortL = [...lhs].sort((a, b) => a.po.localeCompare(b.po))
-    const sortR = [...rhs].sort((a, b) => a.po.localeCompare(b.po))
+    const sortL = [...lhs].sort((a, b) => poKey(a).localeCompare(poKey(b)))
+    const sortR = [...rhs].sort((a, b) => poKey(a).localeCompare(poKey(b)))
     return sortL.every((l, i) => {
       const r = sortR[i]
       return (
@@ -79,65 +103,42 @@
       lhs.module !== rhs.module ||
       !arraysEqual(lhs.rooms, rhs.rooms) ||
       lhs.courseType !== rhs.courseType ||
-      !posEqual(lhs.props.po, rhs.props.po) ||
+      !posEqual(lhs.po, rhs.po) ||
       lhs.start.getTime() !== rhs.start.getTime() ||
       lhs.end.getTime() !== rhs.end.getTime() ||
-      !arraysEqual(lhs.props.lecturer, rhs.props.lecturer)
+      !arraysEqual(lhs.lecturer, rhs.lecturer)
     )
+  }
+
+  function clonePOs(pos: PO[]): PO[] {
+    return pos.map((po) => ({
+      ...po,
+      recommendedSemester: [...po.recommendedSemester]
+    }))
   }
 
   function createformData(
     entry: ScheduleEntryEdit | ScheduleEntryCreate | Partial<ScheduleEntryCreate> | null
   ) {
-    const schema = z.object({
-      module: z.string().min(1, 'Modulbezeichnung erforderlich'),
-      rooms: z.array(z.string()).min(1, 'Mindestens ein Raum erforderlich'),
-      courseType: z.string().min(1, 'Kursart ist erforderlich'),
-      pos: z
-        .array(
-          z.object({
-            po: z.string().min(1, 'Studiengang erforderlich'),
-            recommendedSemester: z.array(z.number()),
-            mandatory: z.boolean()
-          })
-        )
-        .min(1, 'Mindestens eine PO Beziehung erforderlich'),
-      date: z
-        .object({
-          start: z.date({ error: 'Beginn der Veranstaltung erforderlich' }),
-          end: z.date({ error: 'Ende der Veranstaltung erforderlich' })
-        })
-        .refine(({ start, end }) => end > start, {
-          error: 'Ende der Veranstaltung muss nach dem Beginn liegen',
-          path: ['end']
-        }),
-      lecturer: z.array(z.string())
-    })
-
     return superForm(
       {
         module: entry?.module ?? '',
         rooms: entry?.rooms ?? [],
         courseType: entry?.courseType ?? '',
-        pos:
-          entry?.props?.po.map(({ po, recommendedSemester, mandatory }) => ({
-            po,
-            recommendedSemester,
-            mandatory
-          })) ?? [],
+        pos: entry?.po ?? [],
         date: {
           start: entry?.start ?? null,
           end: entry?.end ?? null
         },
-        lecturer: entry?.props?.lecturer ?? []
+        lecturer: entry?.lecturer ?? []
       },
       {
         SPA: true,
         dataType: 'json',
-        validators: zod4(schema),
+        validators: zod4(scheduleEntryFormSchema),
         onChange: async (event) => {
           if (event.paths.includes('module')) {
-            await updateLecturerByModule(event.get('module'))
+            await prefillForm(event.get('module'))
           }
         }
       }
@@ -149,9 +150,12 @@
   // Repeated date entries
   let repeatEntry = $derived(mode != null && mode.id === 'duplicate')
   let repeatedEntries = $state<DateValue[]>([])
+  let pendingAction = $state<PendingAction | null>(null)
+  let dialogContentRef = $state<HTMLElement | null>(null)
 
   const saveButtonDisabled = $derived(
-    mode != null && mode.id === 'duplicate' && repeatedEntries.length === 0
+    pendingAction !== null ||
+      (mode != null && mode.id === 'duplicate' && repeatedEntries.length === 0)
   )
 
   // Proxy for the date.start field
@@ -237,14 +241,9 @@
     }
   })
 
-  const { form: formData, errors, validate } = $derived(form)
+  const { form: formData, errors, validateForm } = $derived(form)
 
   // Options
-
-  const moduleOptions = schedulePlanningFilter.modules.map((m) => ({
-    id: m.id,
-    deLabel: m.label
-  }))
 
   const roomOptions = schedulePlanningFilter.rooms.map((r) => ({
     id: r.id,
@@ -257,33 +256,45 @@
     deLabel: ct.label
   }))
 
-  const poOptions = schedulePlanningFilter.studyPrograms.map((sp) => ({
-    id: sp.id,
-    deLabel: sp.label
-  }))
-
   const lecturerOptions = schedulePlanningFilter.identities.map((i) => ({
     id: i.id,
     label: i.label,
     abbrev: i.label
   }))
 
-  function createCurrentEntry(): ScheduleEntryCreate {
+  function createCurrentEntry(
+    seriesId: string,
+    formData: ScheduleEntryFormData
+  ): ScheduleEntryCreate {
     return {
-      module: $formData.module,
-      rooms: $formData.rooms,
-      courseType: $formData.courseType as CourseType,
-      props: {
-        po: $formData.pos.map(({ po, recommendedSemester, mandatory }) => ({
-          po,
-          recommendedSemester,
-          mandatory,
-          specialization: null
-        })),
-        lecturer: $formData.lecturer
-      },
-      start: new Date($formData.date.start!),
-      end: new Date($formData.date.end!)
+      seriesId,
+      module: formData.module,
+      rooms: [...formData.rooms],
+      courseType: formData.courseType,
+      po: clonePOs(formData.pos),
+      lecturer: [...formData.lecturer],
+      start: new Date(formData.date.start),
+      end: new Date(formData.date.end)
+    }
+  }
+
+  let updateScopeDialogOpen = $state(false)
+  let updateScopeDialog: {
+    requestUpdateScope: (entry: ScheduleEntryEdit) => Promise<void>
+  } | null = $state(null)
+  let updateScopeErrorMessage = $state<string | undefined>(undefined)
+
+  async function requestUpdate(entry: ScheduleEntryEdit) {
+    if (mode.id !== 'edit') {
+      return
+    }
+
+    updateScopeErrorMessage = undefined
+
+    try {
+      await updateScopeDialog?.requestUpdateScope(entry)
+    } catch (error) {
+      updateScopeErrorMessage = getErrorMessage(error)
     }
   }
 
@@ -307,6 +318,9 @@
 
       const newEntry = {
         ...current,
+        rooms: [...current.rooms],
+        po: clonePOs(current.po),
+        lecturer: [...current.lecturer],
         start: new Date(
           date.year,
           date.month - 1,
@@ -328,6 +342,10 @@
     return entries
   }
 
+  /**
+   * Duplicates the given entry for each selected date.
+   * @param origin
+   */
   function duplicateEntries(origin: ScheduleEntryCreate): ScheduleEntryCreate[] {
     if (!repeatEntry || repeatedEntries.length === 0) {
       return []
@@ -335,6 +353,9 @@
     return repeatedEntries.map((date) => {
       return {
         ...origin,
+        rooms: [...origin.rooms],
+        po: clonePOs(origin.po),
+        lecturer: [...origin.lecturer],
         start: new Date(
           date.year,
           date.month - 1,
@@ -353,28 +374,41 @@
     })
   }
 
-  async function handleSave() {
-    const moduleErr = await validate('module')
-    const startErr = await validate('date.start')
-    const endErr = await validate('date.end')
-    const poErr = await validate('pos')
-    const courseTypeErr = await validate('courseType')
-    const roomsErr = await validate('rooms')
+  async function handleSave(intent: SaveIntent = 'save') {
+    if (pendingAction !== null) return
 
-    if (!moduleErr && !startErr && !endErr && !poErr && !courseTypeErr && !roomsErr) {
-      const current = createCurrentEntry()
+    pendingAction = 'save'
+    try {
+      const validation = await validateForm({ update: true })
+      if (!validation.valid) return
+
+      // Superforms keeps the broad initialization type even after successful validation.
+      const validatedFormData = validation.data as ScheduleEntryFormData
+
+      if (intent === 'duplicate') {
+        if (mode.id === 'edit') {
+          const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
+          mode.onDuplicate(current)
+        }
+        return
+      }
 
       switch (mode.id) {
         case 'create': {
           // creating new entry
-          mode.onCreate(createRepeatedEntries(current))
+          const current = createCurrentEntry(
+            mode.prefilled?.seriesId ?? crypto.randomUUID(),
+            validatedFormData
+          )
+          await mode.onCreate(createRepeatedEntries(current))
           break
         }
         case 'edit': {
           // editing existing entry
+          const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
           if (hasActualChanges(current, $state.snapshot(mode.entry))) {
             // did changes, update new entry
-            mode.onUpdate({ id: mode.entry.id, ...current })
+            await requestUpdate({ id: mode.entry.id, ...current })
           } else {
             // no changes, close dialog
             onClose()
@@ -383,9 +417,10 @@
         }
         case 'duplicate': {
           // creating new entry
+          const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
           const duplicates = duplicateEntries(current)
           if (duplicates.length > 0) {
-            mode.onCreate(duplicates)
+            await mode.onCreate(duplicates)
           } else {
             // no duplicates, close dialog
             onClose()
@@ -393,14 +428,41 @@
           break
         }
       }
+    } finally {
+      pendingAction = null
     }
+  }
+
+  async function handleDelete() {
+    if (mode.id !== 'edit' || pendingAction !== null) return
+
+    pendingAction = 'delete'
+    try {
+      await mode.onDelete(mode.entry.id)
+    } finally {
+      pendingAction = null
+    }
+  }
+
+  function hasFocusedControl(): boolean {
+    const activeElement = document.activeElement
+    return (
+      activeElement instanceof HTMLElement &&
+      activeElement !== document.body &&
+      activeElement !== dialogContentRef
+    )
   }
 
   // PO dialog
 
   function deletePO(index: number) {
     $formData.pos = $formData.pos.filter((_, i) => i !== index)
-    form.validate('pos')
+    void updatePOErrors()
+  }
+
+  async function updatePOErrors() {
+    const validation = await validateForm()
+    errors.update((currentErrors) => ({ ...currentErrors, pos: validation.errors.pos }))
   }
 
   let poDialogOpen = $state(false)
@@ -408,20 +470,14 @@
 
   const poDialogForm = superForm(
     {
-      po: '',
+      fullPOId: '',
       recommendedSemester: [] as number[],
       mandatory: false
     },
     {
       SPA: true,
       dataType: 'json',
-      validators: zod4(
-        z.object({
-          po: z.string().min(1, 'Studiengang erforderlich'),
-          recommendedSemester: z.array(z.number()),
-          mandatory: z.boolean()
-        })
-      ),
+      validators: zod4(scheduleEntryPoFormSchema),
       resetForm: false
     }
   )
@@ -444,23 +500,31 @@
     }
   }
 
-  const filteredPOOptions = $derived.by(() => {
-    const currentPOs = $formData.pos
-    const editingPO = poEditingIndex !== null ? currentPOs[poEditingIndex]?.po : null
-    return poOptions.filter((opt) => {
-      const isAlreadyUsed = currentPOs.some((p) => p.po === opt.id)
-      return !isAlreadyUsed || opt.id === editingPO
-    })
+  const studyProgramOptions = $derived.by(() => {
+    const current: PO[] = $formData.pos
+    const currentPO = poEditingIndex !== null ? current[poEditingIndex] : null
+
+    return schedulePlanningFilter.studyProgramsWithSpecialization
+      .filter((sp) => {
+        const fullPOId = getFullPOId(sp)
+        const isAlreadyUsed = current.some(
+          ({ specialization, po }) => (specialization ?? po) === fullPOId
+        )
+        // allow if not used, or if editing and this is the current PO
+        return !isAlreadyUsed || fullPOId === (currentPO?.specialization ?? currentPO?.po)
+      })
+      .map((sp) => ({
+        id: getFullPOId(sp),
+        deLabel: fmtStudyProgram(sp)
+      }))
   })
 
-  function getPOLabel(poId: string): string {
-    return poOptions.find((opt) => opt.id === poId)?.deLabel ?? poId
-  }
+  const showPOEntry = showPO(schedulePlanningFilter.studyProgramsWithSpecialization)
 
   function openAddPODialog() {
     poEditingIndex = null
     resetPODialog({
-      data: { po: '', recommendedSemester: [], mandatory: false }
+      data: { fullPOId: '', recommendedSemester: [], mandatory: false }
     })
     poDialogOpen = true
   }
@@ -468,9 +532,10 @@
   function openEditPODialog(index: number) {
     poEditingIndex = index
     const entry = $formData.pos[index]
+
     resetPODialog({
       data: {
-        po: entry.po,
+        fullPOId: entry.specialization ?? entry.po,
         recommendedSemester: [...entry.recommendedSemester],
         mandatory: entry.mandatory
       }
@@ -479,36 +544,81 @@
   }
 
   async function handlePODialogSave() {
-    const poValid = await validatePODialog('po')
+    const poValid = await validatePODialog('fullPOId')
+
     if (poValid === undefined) {
-      const newEntry = {
-        po: $poDialogFormData.po,
-        recommendedSemester: $poDialogFormData.recommendedSemester,
-        mandatory: $poDialogFormData.mandatory
+      const sp = schedulePlanningFilter.studyProgramsWithSpecialization.find(
+        (sp) => getFullPOId(sp) === $poDialogFormData.fullPOId
+      )
+
+      if (!sp) {
+        console.error(`Study program not found for ID: ${$poDialogFormData.fullPOId}`)
+        return
       }
+
+      let newEntry: PO
+      if (sp?.specialization?.id) {
+        // since the fullPOId is saved in the form, we need to get the po and specialization from the associated study program
+        newEntry = {
+          po: sp.po.id,
+          specialization: sp.specialization.id,
+          recommendedSemester: [...$poDialogFormData.recommendedSemester],
+          mandatory: $poDialogFormData.mandatory
+        }
+      } else {
+        newEntry = {
+          po: $poDialogFormData.fullPOId,
+          specialization: null,
+          recommendedSemester: [...$poDialogFormData.recommendedSemester],
+          mandatory: $poDialogFormData.mandatory
+        }
+      }
+
       if (poEditingIndex !== null) {
         $formData.pos = $formData.pos.map((item, i) => (i === poEditingIndex ? newEntry : item))
       } else {
         $formData.pos = [...$formData.pos, newEntry]
       }
-      form.validate('pos')
+
+      void updatePOErrors()
       poDialogOpen = false
     }
   }
 
-  async function updateLecturerByModule(module: string) {
-    const resp = await fetch('/schedule-planning?select=lecturers&module=' + module)
-    if (resp.ok) {
-      $formData.lecturer = await resp.json()
+  /** Prefills the form with the lecturers and POs for the given module */
+  async function prefillForm(module: string) {
+    try {
+      $formData.lecturer = []
+      $formData.pos = []
+
+      const [lecturer, pos] = await Promise.allSettled([
+        getLecturers(module).run(),
+        getPOs(module).run()
+      ])
+      if (lecturer.status === 'fulfilled' && $formData.module === module) {
+        $formData.lecturer = lecturer.value
+      }
+      if (pos.status === 'fulfilled' && $formData.module === module) {
+        $formData.pos = pos.value
+      }
+    } catch {
+      // Just swallow the error, it's not critical
     }
   }
 </script>
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === 'Delete' && mode.id === 'edit' && !poDialogOpen) {
+    if (
+      e.key === 'Delete' &&
+      !e.repeat &&
+      mode.id === 'edit' &&
+      !hasFocusedControl() &&
+      !poDialogOpen &&
+      !updateScopeDialogOpen
+    ) {
       e.preventDefault()
-      mode.onDelete(mode.entry.id)
+      void handleDelete()
     }
   }}
 />
@@ -522,9 +632,14 @@
   }}
 >
   <Dialog.Content
-    class="grid max-h-[min(90dvh,920px)] min-h-0 max-w-2xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto] overflow-hidden max-sm:top-4 max-sm:translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
+    bind:ref={dialogContentRef}
+    tabindex={-1}
+    class="grid max-h-[min(90dvh,920px)] min-h-0 max-w-2xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto_auto] overflow-hidden max-sm:top-4 max-sm:translate-y-0 sm:top-[50%] sm:translate-y-[-50%]"
     showClose={false}
-    onOpenAutoFocus={(e) => e.preventDefault()}
+    onOpenAutoFocus={(e) => {
+      e.preventDefault()
+      dialogContentRef?.focus()
+    }}
   >
     <Dialog.Header class="shrink-0 space-y-0">
       <div class="flex items-start justify-between gap-4">
@@ -539,32 +654,40 @@
           <div class="flex items-center gap-0.5">
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  class="text-muted-foreground hover:text-foreground size-8"
-                  onclick={() => mode.onDuplicate(createCurrentEntry())}
-                >
-                  <Copy class="size-4" />
-                  <span class="sr-only">Eintrag duplizieren</span>
-                </Button>
+                {#snippet child({ props })}
+                  <Button
+                    {...props}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    class="text-muted-foreground hover:text-foreground size-8"
+                    disabled={pendingAction !== null}
+                    onclick={() => handleSave('duplicate')}
+                  >
+                    <Copy class="size-4" />
+                    <span class="sr-only">Eintrag duplizieren</span>
+                  </Button>
+                {/snippet}
               </Tooltip.Trigger>
               <Tooltip.Content>Eintrag duplizieren</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>
               <Tooltip.Trigger>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  class="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-8"
-                  onclick={() => mode.onDelete(mode.entry.id)}
-                >
-                  <Trash2 class="size-4" />
-                  <span class="sr-only">Eintrag löschen</span>
-                </Button>
+                {#snippet child({ props })}
+                  <Button
+                    {...props}
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    class="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-8"
+                    disabled={pendingAction !== null}
+                    onclick={handleDelete}
+                  >
+                    <Trash2 class="size-4" />
+                    <span class="sr-only">Eintrag löschen</span>
+                  </Button>
+                {/snippet}
               </Tooltip.Trigger>
               <Tooltip.Content
                 >Eintrag löschen <kbd
@@ -585,16 +708,15 @@
     >
       <div class="space-y-4 py-2">
         <!-- Module -->
-        <Combobox
+        <ModuleSingleSelect
           disabled={mode.id !== 'create'}
           {form}
           {errors}
           name="module"
           label="Modul"
           placeholder="Modul auswählen…"
-          options={moduleOptions}
+          options={schedulePlanningFilter.modules}
           bind:value={$formData.module}
-          width="w-[450px]"
         />
 
         <!-- Lecturer -->
@@ -706,10 +828,10 @@
                           </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                          {#each $formData.pos as entry, index (entry.po)}
+                          {#each $formData.pos as entry, index (entry.specialization ?? entry.po)}
                             <Table.Row>
                               <Table.Cell class="font-medium">
-                                {getPOLabel(entry.po)}
+                                {showPOEntry(entry)}
                               </Table.Cell>
                               <Table.Cell>
                                 {showRecommendedSemester(entry.recommendedSemester)}
@@ -725,6 +847,7 @@
                                     type="button"
                                     variant="ghost"
                                     size="sm"
+                                    aria-label="PO-Zuordnung bearbeiten"
                                     onclick={() => openEditPODialog(index)}
                                   >
                                     <SquarePen class="size-4" />
@@ -733,6 +856,7 @@
                                     type="button"
                                     variant="ghost"
                                     size="sm"
+                                    aria-label="PO-Zuordnung löschen"
                                     class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                                     onclick={() => deletePO(index)}
                                   >
@@ -767,12 +891,42 @@
 
     <Separator class="my-1 shrink-0" />
 
+    {#if updateScopeErrorMessage}
+      <div
+        class="border-destructive/30 bg-destructive/10 flex shrink-0 gap-2 rounded-md border p-2"
+      >
+        <TriangleAlert class="text-destructive mt-0.5 size-4 shrink-0" />
+        <p class="text-destructive text-sm">{updateScopeErrorMessage}</p>
+      </div>
+    {/if}
+
     <Dialog.Footer class="shrink-0 gap-2">
-      <Dialog.Close class={buttonVariants({ variant: 'outline' })}>Abbrechen</Dialog.Close>
-      <Button type="button" onclick={handleSave} disabled={saveButtonDisabled}>Speichern</Button>
+      <Dialog.Close
+        disabled={pendingAction !== null}
+        class={buttonVariants({ variant: 'outline' })}
+      >
+        Abbrechen
+      </Dialog.Close>
+      <Button
+        type="button"
+        onclick={() => handleSave()}
+        disabled={saveButtonDisabled}
+        aria-busy={pendingAction === 'save'}
+      >
+        {pendingAction === 'save' ? 'Speichert…' : 'Speichern'}
+      </Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
+
+{#if mode.id === 'edit'}
+  <ScheduleEntryUpdateScopeDialog
+    bind:this={updateScopeDialog}
+    bind:open={updateScopeDialogOpen}
+    onUpdate={mode.onUpdate}
+    getSeries={mode.getSeries}
+  />
+{/if}
 
 <!-- PO Add/Edit Sub-Dialog -->
 <Dialog.Root bind:open={poDialogOpen}>
@@ -789,11 +943,11 @@
     <div class="space-y-4 py-4">
       <Combobox
         form={poDialogForm}
-        name="po"
+        name="fullPOId"
         label="Studiengang und PO"
         placeholder="Studiengang auswählen…"
-        options={filteredPOOptions}
-        bind:value={$poDialogFormData.po}
+        options={studyProgramOptions}
+        bind:value={$poDialogFormData.fullPOId}
         errors={$poDialogErrors}
         width="w-[400px]"
       />

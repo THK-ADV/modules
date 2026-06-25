@@ -22,6 +22,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
+  import { examListReleaseFormSchema } from '$lib/schemas/study-program'
   import type { Semester } from '$lib/types/semester'
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
@@ -29,7 +30,6 @@
   import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
-  import { z } from 'zod'
 
   let {
     semesters,
@@ -52,11 +52,6 @@
   )
 
   function createDialogForm() {
-    const schema = z.object({
-      semester: z.string().nonempty('Semester ist erforderlich'),
-      releaseDate: z.date({ error: 'Datum ist erforderlich' })
-    })
-
     return superForm(
       {
         semester: semesters[0].id,
@@ -64,13 +59,13 @@
       },
       {
         SPA: true,
-        validators: zod4Client(schema)
+        validators: zod4Client(examListReleaseFormSchema)
       }
     )
   }
 
   const dialogForm = createDialogForm()
-  const { form: dialogFormData, errors: dialogErrors, reset, validate } = dialogForm
+  const { form: dialogFormData, errors: dialogErrors, reset, validateForm } = dialogForm
 
   function closeDialog() {
     showExamListReleaseDialog = undefined
@@ -79,18 +74,14 @@
 
   async function handleSubmit() {
     const sp = showExamListReleaseDialog
-    const semester = $dialogFormData.semester
-    const date = $dialogFormData.releaseDate
+    const validation = await validateForm({ update: true })
 
-    closeDialog()
-
-    const semesterErr = await validate('semester')
-    const releaseDateErr = await validate('releaseDate')
-
-    if (!sp || semesterErr !== undefined || releaseDateErr !== undefined) {
+    if (!sp || !validation.valid) {
       return
     }
 
+    const { semester, releaseDate: date } = validation.data
+    closeDialog()
     isPublishing = true
 
     const response = await fetch(`/actions/publish`, {

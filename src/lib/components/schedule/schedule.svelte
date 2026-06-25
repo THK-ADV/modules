@@ -3,8 +3,7 @@
     Calendar,
     type CalendarEvent,
     type CalendarEventProps,
-    type DateRangeInfo,
-    type ScheduleEventProps
+    type DateRangeInfo
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { uiStore } from '$lib/stores/ui.svelte.js'
@@ -20,7 +19,8 @@
     onEventResize,
     scheduleFilter,
     scheduleEntries = $bindable([]),
-    scheduleFetcher
+    bypassCache,
+    loadScheduleEntries
   }: ScheduleProps = $props()
 
   const holidayEventsForView = $derived(
@@ -111,7 +111,7 @@
         // Study programs & semesters filter
         // If both are selected, both must match on the same PO entry.
         if (selectedStudyPrograms.length > 0 || selectedSemesters.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(
+          const matchingPoEntries = entry.extendedProps.raw.po.filter(
             ({ po, recommendedSemester }) => {
               const matchesProgram =
                 selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
@@ -151,7 +151,7 @@
         // Module types filter
         // If both module types and study programs are selected, both must match on the same PO entry.
         if (selectedModuleTypes.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.props.po.filter(({ po, mandatory }) => {
+          const matchingPoEntries = entry.extendedProps.raw.po.filter(({ po, mandatory }) => {
             const matchesProgram =
               selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
             const matchesModuleType = selectedModuleTypes.some(
@@ -173,13 +173,22 @@
     return allEvents
   })
 
+  // Fetch schedule entries when the date range changes
   async function onDateRangeSet(info: DateRangeInfo) {
     try {
-      const res = await scheduleFetcher(info)
-      if (!res.ok) {
-        return
-      }
-      const entries: CalendarEvent<ScheduleEventProps>[] = await res.json()
+      // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
+      // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
+      const entries = await Promise.resolve()
+        .then(() =>
+          loadScheduleEntries({
+            start: info.start.getTime(),
+            end: info.end.getTime(),
+            bypassCache
+          })
+        )
+        .catch(() => {
+          return []
+        })
       scheduleEntries.length = 0
       scheduleEntries.push(...entries)
     } catch {

@@ -1,4 +1,4 @@
-import { moduleSchema } from '$lib/schemas/module.js'
+import { moduleFormSchema } from '$lib/schemas/module.js'
 import { MY_MODULE_ROUTE_ID } from '$lib/routes.js'
 import { getValidAccessToken } from '$lib/server/auth.js'
 import type { Approval } from '$lib/types/module-approval.js'
@@ -26,7 +26,7 @@ function parseMode(searchParams: URLSearchParams): MyModulesMode {
 }
 
 function createEmptyForm() {
-  return superValidate({}, zod4(moduleSchema))
+  return superValidate({}, zod4(moduleFormSchema))
 }
 
 function createForm(module: ModuleProtocol, userWithUpdatePermissions: string[]) {
@@ -86,7 +86,7 @@ function createForm(module: ModuleProtocol, userWithUpdatePermissions: string[])
       attendanceRequirement: module.metadata.attendanceRequirement,
       assessmentPrerequisite: module.metadata.assessmentPrerequisite
     },
-    zod4(moduleSchema)
+    zod4(moduleFormSchema)
   )
 }
 

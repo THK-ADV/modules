@@ -1,5 +1,6 @@
 <script lang="ts">
   import FilterOption from '$lib/components/filter-option.svelte'
+  import { ModuleMultiSelect } from '$lib/components/module-filter'
   import { Badge } from '$lib/components/ui/badge/index.js'
   import { Button } from '$lib/components/ui/button/index.js'
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
@@ -157,12 +158,13 @@
     options={scheduleFilter.studyPrograms}
     clearFilters={scheduleFilter.clearSelectedStudyPrograms}
   />
-  <FilterOption
-    filterValues={scheduleFilter.selectedModules}
+  <ModuleMultiSelect
+    value={scheduleFilter.selectedModules}
     handleSelect={scheduleFilter.selectModule}
-    title="Modul"
+    label="Modul"
     options={scheduleFilter.modules}
     clearFilters={scheduleFilter.clearSelectedModules}
+    maxVisibleBadges={2}
   />
   <FilterOption
     filterValues={scheduleFilter.selectedModuleTypes}

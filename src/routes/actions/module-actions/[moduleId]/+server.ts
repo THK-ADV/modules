@@ -1,15 +1,12 @@
+import { moduleDraftActionRequestSchema } from '$lib/schemas/module-actions'
+import { parseRequestJson } from '$lib/server/request'
 import { error, json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
 
-export type ModuleDraftTableAction =
-  | 'delete'
-  | 'publish'
-  | 'requestReview'
-  | 'cancelReview'
-  | 'requestFastForwardReview'
-
 async function deleteModuleDraft(moduleId: string, fetch: typeof globalThis.fetch) {
-  const response = await fetch(`/auth-api/moduleDrafts/${moduleId}`, { method: 'DELETE' })
+  const response = await fetch(`/auth-api/moduleDrafts/${encodeURIComponent(moduleId)}`, {
+    method: 'DELETE'
+  })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -28,7 +25,9 @@ async function createReview(
   needsApproval: boolean,
   fetch: typeof globalThis.fetch
 ) {
-  const response = await fetch(`/auth-api/moduleReviews/${moduleId}`, { method: 'POST' })
+  const response = await fetch(`/auth-api/moduleReviews/${encodeURIComponent(moduleId)}`, {
+    method: 'POST'
+  })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -45,7 +44,7 @@ async function createReview(
 }
 
 async function createFastForwardReview(moduleId: string, fetch: typeof globalThis.fetch) {
-  const response = await fetch(`/auth-api/moduleReviews/${moduleId}/ff`, {
+  const response = await fetch(`/auth-api/moduleReviews/${encodeURIComponent(moduleId)}/ff`, {
     method: 'POST'
   })
 
@@ -62,7 +61,9 @@ async function createFastForwardReview(moduleId: string, fetch: typeof globalThi
 }
 
 async function cancelReview(moduleId: string, fetch: typeof globalThis.fetch) {
-  const response = await fetch(`/auth-api/moduleReviews/${moduleId}`, { method: 'DELETE' })
+  const response = await fetch(`/auth-api/moduleReviews/${encodeURIComponent(moduleId)}`, {
+    method: 'DELETE'
+  })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -78,7 +79,11 @@ async function cancelReview(moduleId: string, fetch: typeof globalThis.fetch) {
 
 export const POST: RequestHandler = async ({ params, request, fetch }) => {
   const { moduleId } = params
-  const { action }: { action: ModuleDraftTableAction } = await request.json()
+  const { action } = await parseRequestJson(
+    request,
+    moduleDraftActionRequestSchema,
+    'Ungültige Modulaktion'
+  )
 
   switch (action) {
     case 'delete':

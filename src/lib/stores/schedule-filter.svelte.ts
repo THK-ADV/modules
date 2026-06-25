@@ -1,10 +1,14 @@
 import { browser } from '$app/environment'
+import {
+  createModuleFilterOptions,
+  type ModuleFilterOption
+} from '$lib/components/module-filter/types'
 import { type StudyProgramFilterOption } from '$lib/components/study-program-filter'
 import { toStudyProgramFilterOption } from '$lib/components/study-program-filter/options'
 import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
-import type { Identity } from '$lib/types/core'
+import type { Identity, ModuleCore } from '$lib/types/core'
 import type { FilterData } from '$lib/types/filter-data'
-import type { Room, ModuleCore as ScheduleModuleCore, TeachingUnit } from '$lib/types/schedule'
+import type { Room, TeachingUnit } from '$lib/types/schedule'
 import type { StudyProgram } from '$lib/types/study-program'
 import {
   clearItemFromLocalStorage,
@@ -49,7 +53,7 @@ export function createScheduleFilter(prefix: FilterType) {
   // Filter options
   let teachingUnits: FilterData[] = $state.raw([])
   let courseTypes: FilterData[] = $state.raw([])
-  let modules: FilterData[] = $state.raw([])
+  let modules: ModuleFilterOption[] = $state.raw([])
   const studyPrograms: StudyProgramFilterOption[] = $state.raw([])
   const studyProgramsWithSpecialization: StudyProgram[] = $state.raw([])
   let semesters: FilterData[] = $state.raw([])
@@ -308,13 +312,8 @@ export function createScheduleFilter(prefix: FilterType) {
           }))
         }
         if (m.status === 'fulfilled' && m.value.ok) {
-          const xs: ScheduleModuleCore[] = await m.value.json()
-          xs.sort((a, b) => a.title.localeCompare(b.title))
-          modules = xs.map((m) => ({
-            id: m.id,
-            label: m.title,
-            badge: m.abbrev
-          }))
+          const xs: ModuleCore[] = await m.value.json()
+          modules = createModuleFilterOptions(xs)
         }
         if (sp.status === 'fulfilled' && sp.value.ok) {
           const xs: StudyProgram[] = await sp.value.json()

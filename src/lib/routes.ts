@@ -4,6 +4,7 @@ import type { RouteId } from '$app/types'
 // breadcrumbLabels: { [MODULE_ROUTE_ID]: module.title }
 export const MODULE_ROUTE_ID = '/modules/[id=uuid]' satisfies RouteId
 export const MY_MODULE_ROUTE_ID = '/my-modules/[id=uuid]' satisfies RouteId
+export const PLAN_ROUTE_ID = '/planning/schedule/[draftId]' satisfies RouteId
 
 /**
  * Breadcrumb labels for every rendered page route. Add the exact SvelteKit route ID here whenever
@@ -34,8 +35,11 @@ export const routeLabels = {
   '/module-approvals': 'Änderungsfreigaben',
   '/module-approvals/[id=uuid]': 'Modul',
   '/studyprogram': 'Studiengang',
-  '/schedule': 'Kalender',
-  '/schedule-planning': 'Stundenplanung',
+  '/schedule': 'Semesterkalender',
+  '/planning/schedule': 'Stundenplanung',
+  '/planning/exam': 'Prüfungsplanung',
+  '/planning/schedule/live': 'Veröffentlichter Stundenplan',
+  [PLAN_ROUTE_ID]: 'Stundenplanung',
   '/help': 'Hilfe und Dokumentation',
   '/release-notes': 'Release Notes',
   '/assessment-methods': 'Prüfungsformen',

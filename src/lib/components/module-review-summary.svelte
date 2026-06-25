@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation'
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
-  import { CircleCheck, CircleX, Eye, Gitlab, SquarePen } from '@lucide/svelte'
+  import { CircleCheck, CircleX, Eye, FileDiff, SquarePen } from '@lucide/svelte'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
@@ -43,7 +43,9 @@
       body: JSON.stringify({
         action,
         comment: comment.trim(),
-        reviews: reviews.filter((_, index) => reviewedStudyPrograms[index])
+        reviews: reviews
+          .filter((_, index) => reviewedStudyPrograms[index])
+          .map(({ reviewId }) => reviewId)
       })
     })
 
@@ -104,7 +106,7 @@
           <Spinner size="sm" class="mr-1" />
           Lädt…
         {:else}
-          <Gitlab class="mr-1 size-4" />
+          <FileDiff class="mr-1 size-4" />
           Änderungen auf GitLab anzeigen
         {/if}
       </Button>

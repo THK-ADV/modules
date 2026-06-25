@@ -10,6 +10,7 @@ export type UserInfo = {
   reviewsToApprove: number
   fastForwardApprovalPOs: string[] | undefined
   hasSchedulePlanningPrivileges: boolean
+  hasExamPlanningPrivileges: boolean
 }
 
 export interface User {

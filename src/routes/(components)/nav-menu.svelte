@@ -11,14 +11,16 @@
     Megaphone,
     Pencil,
     Search,
-    Signature
+    Signature,
+    CalendarClock
   } from '@lucide/svelte'
 
   const mainRoutes = [
     { path: '/', icon: House },
     { path: '/modules', icon: Search },
     { path: '/module-catalogs', icon: Book },
-    { path: '/exam-lists', icon: FileText }
+    { path: '/exam-lists', icon: FileText },
+    { path: '/schedule', icon: Calendar1 }
   ] as const
 
   const secondaryRoutes = [
@@ -30,15 +32,14 @@
 <script lang="ts">
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
-      // most direct check
       return userInfo.hasModulesToEdit
     }
-    // fallback to user role
     if (!user) return false
     return isProfessor(user)
   })
@@ -51,7 +52,9 @@
 
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 
-  const showSchedulePlanningSection = $derived(userInfo?.hasSchedulePlanningPrivileges)
+  const showPlanningSection = $derived(
+    userInfo?.hasSchedulePlanningPrivileges || userInfo?.hasExamPlanningPrivileges
+  )
 </script>
 
 <!-- main navigation -->
@@ -72,35 +75,40 @@
   </Sidebar.Menu>
 </Sidebar.Group>
 
-<!-- schedule section -->
-<Sidebar.Separator />
-<Sidebar.Group>
-  <Sidebar.GroupLabel>Stundenplan (Experimentell)</Sidebar.GroupLabel>
-  <Sidebar.Menu>
-    <Sidebar.MenuItem>
-      <Sidebar.MenuButton>
-        {#snippet child({ props })}
-          <a href="/schedule" {...props}>
-            <Calendar1 />
-            <span>{routeLabels['/schedule']}</span>
-          </a>
-        {/snippet}
-      </Sidebar.MenuButton>
-    </Sidebar.MenuItem>
-    {#if showSchedulePlanningSection}
+<!-- planning section -->
+{#if showPlanningSection}
+  <Sidebar.Separator />
+  <Sidebar.Group>
+    <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
+    <Sidebar.Menu>
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}
-            <a href="/schedule-planning" {...props}>
+            <a href="/planning/schedule" {...props}>
               <CalendarCog />
-              <span>{routeLabels['/schedule-planning']}</span>
+              <span>{routeLabels['/planning/schedule']}</span>
             </a>
           {/snippet}
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
-    {/if}
-  </Sidebar.Menu>
-</Sidebar.Group>
+      <Sidebar.MenuItem>
+        <Tooltip.Root>
+          <Tooltip.Trigger class="w-full">
+            <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
+              {#snippet child({ props })}
+                <span {...props}>
+                  <CalendarClock />
+                  <span>{routeLabels['/planning/exam']}</span>
+                </span>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Tooltip.Trigger>
+          <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
+        </Tooltip.Root>
+      </Sidebar.MenuItem>
+    </Sidebar.Menu>
+  </Sidebar.Group>
+{/if}
 
 <!-- module management section -->
 {#if showMyModules}

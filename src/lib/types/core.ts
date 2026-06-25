@@ -107,8 +107,8 @@ export interface Precondition {
 export interface ModuleManagement {
   id: string
   kind: IdentityKind
-  lastname: string
-  firstname: string
+  lastname: string | null
+  firstname: string | null
 }
 
 export interface ModuleCore {

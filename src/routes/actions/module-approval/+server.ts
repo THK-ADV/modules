@@ -1,15 +1,13 @@
+import { moduleReviewActionRequestSchema } from '$lib/schemas/module-actions'
+import { parseRequestJson } from '$lib/server/request'
 import { error, json, text, type RequestHandler } from '@sveltejs/kit'
 
 export const PUT: RequestHandler = async ({ request, fetch }) => {
-  const {
-    action,
-    comment,
-    reviews
-  }: {
-    action: 'approve' | 'reject'
-    comment: string
-    reviews: { reviewId: string; role: string; studyProgram: string }[]
-  } = await request.json()
+  const { action, comment, reviews } = await parseRequestJson(
+    request,
+    moduleReviewActionRequestSchema,
+    'Ungültige Review-Aktion'
+  )
 
   const res = await fetch('/auth-api/moduleReviews', {
     method: 'PUT',
@@ -19,7 +17,7 @@ export const PUT: RequestHandler = async ({ request, fetch }) => {
     body: JSON.stringify({
       action,
       comment: comment || null,
-      reviews: reviews.map(({ reviewId }) => reviewId)
+      reviews
     })
   })
 
@@ -39,7 +37,7 @@ export const GET: RequestHandler = async ({ fetch, url }) => {
   if (!moduleId) {
     return error(400, { message: 'Modul-ID ist erforderlich' })
   }
-  const res = await fetch(`/auth-api/moduleDrafts/${moduleId}/mrurl`)
+  const res = await fetch(`/auth-api/moduleDrafts/${encodeURIComponent(moduleId)}/mrurl`)
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Fehler beim Abrufen der GitLab URL' }))
     return error(400, { message: err.message })

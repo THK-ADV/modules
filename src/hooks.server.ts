@@ -31,7 +31,7 @@ const protectedRoutePrefixes = [
   '/my-modules',
   '/module-approvals',
   '/studyprogram',
-  '/schedule-planning',
+  '/planning',
   '/settings'
 ] as const satisfies readonly RouteId[]
 

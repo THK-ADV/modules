@@ -591,10 +591,7 @@
       $formData.lecturer = []
       $formData.pos = []
 
-      const [lecturer, pos] = await Promise.allSettled([
-        getLecturers(module).run(),
-        getPOs(module).run()
-      ])
+      const [lecturer, pos] = await Promise.allSettled([getLecturers(module), getPOs(module)])
       if (lecturer.status === 'fulfilled' && $formData.module === module) {
         $formData.lecturer = lecturer.value
       }

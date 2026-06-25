@@ -296,7 +296,7 @@
                 class="h-9 px-2"
               >
                 {#if showPreview}
-                  s<Pencil class="mr-1 size-3" />
+                  <Pencil class="mr-1 size-3" />
                   Bearbeiten
                 {:else}
                   <Eye class="mr-1 size-3" />

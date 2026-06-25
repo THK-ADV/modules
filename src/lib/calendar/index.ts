@@ -3,7 +3,6 @@ export { getDefaultCalendarView } from './default-view.js'
 export type {
   CalendarEvent,
   CalendarView,
-  CalendarApi,
   DateSelectInfo,
   EventClickInfo,
   EventDropInfo,

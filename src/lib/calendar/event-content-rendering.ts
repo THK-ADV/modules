@@ -39,18 +39,9 @@ function createTimeShort(time: string): string {
   const [start, end] = time.split(' - ')
   const [startHour, startMinute] = start.split(':')
   const [endHour, endMinute] = end.split(':')
-  let timeShort = ''
-  if (startMinute === '00') {
-    timeShort = `${startHour}`
-  } else {
-    timeShort = `${startHour}:${startMinute}`
-  }
-  if (endMinute === '00') {
-    timeShort = `${timeShort} - ${endHour}`
-  } else {
-    timeShort = `${timeShort} - ${endHour}:${endMinute}`
-  }
-  return timeShort
+  const startShort = startMinute === '00' ? startHour : `${startHour}:${startMinute}`
+  const endShort = endMinute === '00' ? endHour : `${endHour}:${endMinute}`
+  return `${startShort} - ${endShort}`
 }
 
 /**

@@ -8,9 +8,9 @@
 
   let { data }: PageProps = $props()
 
-  const assessmentMethods = moduleUpdateState.assessmentMethods
-  // TODO: get from backend
-  const preconditions = [{ id: 'practical', label: 'Praktikum' }]
+  const modulePermittedAssessmentMethodOptions = moduleUpdateState.assessmentMethods
+    .filter(({ isRPO }) => isRPO)
+    .map(({ id, deLabel }) => ({ id, label: deLabel }))
 
   const identityOptions = moduleUpdateState.identities.map(({ identity, label }) => ({
     id: identity.id,
@@ -19,6 +19,12 @@
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form
+
+  // ensure that module assessment methods are a subset of permitted assessment methods
+  function validateAssessmentMethods() {
+    // Superforms supports array-root paths at runtime, but excludes them from FormPathLeaves.
+    void form.validate('assessmentMethods' as never)
+  }
 
   // svelte-ignore state_referenced_locally
   const firstExaminerStatus = data.fieldStatuses?.firstExaminer
@@ -41,15 +47,37 @@
   </div>
 
   <div class="space-y-5">
-    <AssessmentMethodsForm
-      {form}
-      name="assessmentMethods"
-      label="Prüfungsformen"
-      {assessmentMethods}
-      {preconditions}
-      bind:value={$formData.assessmentMethods}
-      modificationStatus={assessmentMethodsStatus}
-    />
+    <div class="space-y-2 border-b pb-4">
+      <h4 class="text-foreground text-base font-medium">Prüfungsformen</h4>
+      <p class="text-muted-foreground text-sm">
+        Festlegung der grundsätzlich zulässigen und der im kommenden Semester verwendeten
+        Prüfungsformen.
+      </p>
+    </div>
+
+    <div class="space-y-6">
+      <MultiSelectCombobox
+        {form}
+        name="permittedAssessmentMethods"
+        label="Zulässige Prüfungsformen"
+        description="Legt fest, welche Prüfungsformen grundsätzlich für dieses Modul verwendet werden dürfen. Diese Auswahl bildet die Grundlage für die Prüfungsformen im kommenden Semester."
+        options={modulePermittedAssessmentMethodOptions}
+        bind:value={$formData.permittedAssessmentMethods}
+        maxVisibleBadges={5}
+        {errors}
+        onValueChange={validateAssessmentMethods}
+      />
+
+      <AssessmentMethodsForm
+        {form}
+        name="assessmentMethods"
+        label="Prüfungsformen im kommenden Semester"
+        assessmentMethods={moduleUpdateState.assessmentMethods}
+        permittedAssessmentMethods={$formData.permittedAssessmentMethods}
+        bind:value={$formData.assessmentMethods}
+        modificationStatus={assessmentMethodsStatus}
+      />
+    </div>
   </div>
 
   <div class="space-y-5">

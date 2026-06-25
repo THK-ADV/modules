@@ -1,6 +1,5 @@
 <script lang="ts">
   import Combobox from '$lib/components/combobox.svelte'
-  import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
@@ -8,7 +7,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { assessmentMethodFormSchema } from '$lib/schemas/module'
-  import type { AssessmentMethod, Precondition } from '$lib/types/core'
+  import type { AssessmentMethod } from '$lib/types/core'
   import type { ModificationStatus } from '$lib/types/module-draft-keys'
   import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
   import type { AssessmentEntry } from '$lib/types/module-protocol'
@@ -24,7 +23,7 @@
     name: string // name of the field in the form
     label: string
     assessmentMethods: AssessmentMethod[]
-    preconditions: Precondition[]
+    permittedAssessmentMethods: string[]
     value: AssessmentEntry[]
     modificationStatus?: ModificationStatus // optional modification tracking
   }
@@ -34,7 +33,7 @@
     name,
     label,
     assessmentMethods,
-    preconditions,
+    permittedAssessmentMethods,
     value = $bindable(),
     modificationStatus
   }: Props = $props()
@@ -63,7 +62,7 @@
     const errors = $dialogErrors
     return (
       !Object.keys(errors).some((k) => errors[k as keyof typeof errors]) &&
-      $dialogFormData.method !== ''
+      permittedAssessmentMethods.includes($dialogFormData.method)
     )
   })
 
@@ -108,20 +107,29 @@
     if (editingIndex === null) {
       // create new entry
       return assessmentMethods
-        .filter(({ id, isRPO }) => isRPO && !current.some(({ method }) => method === id))
+        .filter(
+          ({ id }) =>
+            permittedAssessmentMethods.includes(id) && !current.some(({ method }) => method === id)
+        )
         .map(({ id, deLabel }) => ({ id, deLabel }))
     }
 
     const currentMethod = current[editingIndex].method
     return assessmentMethods
       .filter(
-        ({ id, isRPO }) =>
-          (isRPO && !current.some(({ method }) => method === id)) || id === currentMethod
+        ({ id }) =>
+          permittedAssessmentMethods.includes(id) &&
+          (!current.some(({ method }) => method === id) || id === currentMethod)
       )
       .map(({ id, deLabel }) => ({ id, deLabel }))
   })
 
-  const preconditionOptions = $derived(preconditions.map(({ id, label }) => ({ id, label })))
+  const canAddAssessmentMethod = $derived.by(() => {
+    return assessmentMethods.some(
+      ({ id }) =>
+        permittedAssessmentMethods.includes(id) && !value.some(({ method }) => method === id)
+    )
+  })
 
   // updates
 
@@ -152,22 +160,6 @@
     return assessmentMethods.find((a) => a.id === id)?.deLabel ?? id
   }
 
-  function showPreconditions(xs: string[]) {
-    let res = ''
-    let i = 0
-    for (const id of xs) {
-      const p = preconditions.find((p) => p.id === id)
-      if (p) {
-        res += p.label
-        if (i < xs.length - 1) {
-          res += ', '
-        }
-        i++
-      }
-    }
-    return res
-  }
-
   function isRPO(id: string) {
     return assessmentMethods.find((a) => a.id === id)?.isRPO ?? false
   }
@@ -178,7 +170,13 @@
     {#if value.length > 0}
       <div class="space-y-4">
         <!-- Add Button -->
-        <Button type="button" variant="outline" onclick={openAddDialog} class="w-full sm:w-auto">
+        <Button
+          type="button"
+          variant="outline"
+          onclick={openAddDialog}
+          disabled={!canAddAssessmentMethod}
+          class="w-full sm:w-auto"
+        >
           <Plus class="mr-2 size-4" />
           Prüfungsform hinzufügen
         </Button>
@@ -190,7 +188,6 @@
               <Table.Row>
                 <Table.Head>Prüfungsform</Table.Head>
                 <Table.Head>Prozentuale Gewichtung</Table.Head>
-                <Table.Head>Voraussetzung</Table.Head>
                 <Table.Head class="w-24">Aktionen</Table.Head>
               </Table.Row>
             </Table.Header>
@@ -219,9 +216,6 @@
                   </Table.Cell>
                   <Table.Cell>
                     {entry.percentage !== null ? `${entry.percentage} %` : '-'}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {entry.precondition.length > 0 ? showPreconditions(entry.precondition) : '-'}
                   </Table.Cell>
                   <Table.Cell>
                     <div class="flex gap-1">
@@ -274,7 +268,12 @@
           <p class="text-muted-foreground mb-4 max-w-sm text-sm">
             Es wurden noch keine Prüfungsformen für dieses Modul festgelegt.
           </p>
-          <Button type="button" variant="outline" onclick={openAddDialog}>
+          <Button
+            type="button"
+            variant="outline"
+            onclick={openAddDialog}
+            disabled={!canAddAssessmentMethod}
+          >
             <Plus class="mr-2 size-4" />
             Prüfungsform hinzufügen
           </Button>
@@ -291,7 +290,7 @@
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">
-      <span class="text-foreground text-base font-medium">{label}</span>
+      <span class="text-foreground text-sm font-medium">{label}</span>
       <ModificationIndicator status={modificationStatus} iconOnly={false} inline={true} />
     </div>
     <p class="text-muted-foreground text-sm">
@@ -311,13 +310,15 @@
           rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">PAV geprüft</a
         >
-        werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+        werden. Es können nur Prüfungsformen aus den zulässigen Prüfungsformen des Moduls gewählt werden.
+        Die
         <a
           href={resolve('/assessment-methods')}
           target="_blank"
           rel="noopener noreferrer"
           class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a
-        > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
+        > enthält eine Übersicht der Prüfungsformen. Bei mehreren Prüfungsformen bietet es sich an, die
+        prozentuale Aufteilung aufzuschlüsseln.
       </Form.Description>
     </Form.Field>
   </div>
@@ -327,14 +328,14 @@
     <Form.Control>
       {#snippet children({ props })}
         <div class="space-y-4">
-          <div class="border-b pb-2">
-            <Form.Label class="text-foreground text-base font-medium">{label}</Form.Label>
-            <Form.Description class="text-muted-foreground mt-1 text-sm">
+          <div class="space-y-2">
+            <Form.Label>{label}</Form.Label>
+            <Form.Description>
               Hier werden Prüfungsformen festgelegt, die im kommenden Semester für das Modul gelten.
             </Form.Description>
           </div>
+          {@render assessmentContent(props)}
         </div>
-        {@render assessmentContent(props)}
       {/snippet}
     </Form.Control>
     <Form.FieldErrors />
@@ -345,13 +346,15 @@
         rel="noopener noreferrer"
         class="text-primary underline hover:no-underline">PAV geprüft</a
       >
-      werden. Zudem dürfen nur valide Prüfungsformen gemäß der
+      werden. Es können nur Prüfungsformen aus den zulässigen Prüfungsformen des Moduls gewählt werden.
+      Die
       <a
         href={resolve('/assessment-methods')}
         target="_blank"
         rel="noopener noreferrer"
         class="text-primary underline hover:no-underline">Rahmenprüfungsordnung (RPO)</a
-      > gewählt werden. Bei mehreren Prüfungsformen bietet es sich an, die prozentuale Aufteilung aufzuschlüsseln.
+      > enthält eine Übersicht der Prüfungsformen. Bei mehreren Prüfungsformen bietet es sich an, die
+      prozentuale Aufteilung aufzuschlüsseln.
     </Form.Description>
   </Form.Field>
 {/if}
@@ -397,19 +400,6 @@
         <Form.Description>Prozentuale Gewichtung bei mehreren Prüfungsformen</Form.Description>
         <Form.FieldErrors />
       </Form.Field>
-
-      <!-- Precondition Selection -->
-      {#if editingIndex !== null}
-        <MultiSelectCombobox
-          form={dialogForm}
-          name="precondition"
-          label="Voraussetzungen (optional)"
-          description="Prüfungsvoraussetzungen laut Prüfungsordnung. z.B. Praktikum."
-          options={preconditionOptions}
-          bind:value={$dialogFormData.precondition}
-          errors={$dialogErrors}
-        />
-      {/if}
     </div>
 
     <Dialog.Footer class="gap-2">

@@ -93,7 +93,7 @@ export const electiveStudyProgramRelationFormSchema =
     instanceOf: z.string().nonempty('Modul ist erforderlich')
   })
 
-export const moduleFormSchema = z.object({
+const moduleFormBaseSchema = z.object({
   title: z
     .string()
     .min(1, 'Modulbezeichnung erforderlich')
@@ -125,6 +125,7 @@ export const moduleFormSchema = z.object({
   secondExaminer: z.string().nonempty('Zweitprüfer erforderlich'),
   examPhases: z.array(z.string()).min(1, 'Prüfungsphase erforderlich'),
   assessmentMethods: z.array(assessmentMethodFormSchema),
+  permittedAssessmentMethods: z.array(z.string()).min(1, 'Prüfungsleistungen erforderlich'),
   workload: z.object({
     lecture: workloadNumber,
     seminar: workloadNumber,
@@ -214,5 +215,15 @@ export const moduleFormSchema = z.object({
     })
     .nullable()
 })
+
+export const moduleFormSchema = moduleFormBaseSchema.refine(
+  ({ assessmentMethods, permittedAssessmentMethods }) =>
+    assessmentMethods.every(({ method }) => permittedAssessmentMethods.includes(method)),
+  {
+    error:
+      'Alle Prüfungsformen im kommenden Semester müssen in den zulässigen Prüfungsformen enthalten sein.',
+    path: ['assessmentMethods']
+  }
+)
 
 export type ModuleForm = z.infer<typeof moduleFormSchema>

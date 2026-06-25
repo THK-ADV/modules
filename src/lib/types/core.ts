@@ -99,11 +99,6 @@ export interface ExamPhase {
   abbrev: string
 }
 
-export interface Precondition {
-  id: string
-  label: string
-}
-
 export interface ModuleManagement {
   id: string
   kind: IdentityKind

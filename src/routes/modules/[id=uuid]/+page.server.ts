@@ -1,4 +1,5 @@
 import { parseErrorMessage } from '$lib/http'
+import { MODULE_ROUTE_ID } from '$lib/routes'
 import type { GenericModuleOption, ModuleDetail } from '$lib/types/module-details'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
@@ -20,7 +21,12 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
       }
     }
 
-    return { module, genericModuleOptions, isGenericModule }
+    return {
+      module,
+      genericModuleOptions,
+      isGenericModule,
+      breadcrumbLabels: { [MODULE_ROUTE_ID]: module.title }
+    }
   }
 
   if (res.status === 404) {

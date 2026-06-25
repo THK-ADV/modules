@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser, dev } from '$app/environment'
   import { beforeNavigate, goto } from '$app/navigation'
+  import { resolve } from '$app/paths'
   import { page } from '$app/state'
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import ModuleApprovalStatus from '$lib/components/module-approval-status.svelte'
@@ -11,7 +12,7 @@
   import Separator from '$lib/components/ui/separator/separator.svelte'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { routesMap } from '$lib/routes.svelte'
+  import { routeLabels } from '$lib/routes'
   import { moduleFormSchema } from '$lib/schemas/module'
   import {
     getSectionStatus,
@@ -28,13 +29,6 @@
   let { children, data, params }: LayoutProps = $props()
 
   const id = $derived(params.id)
-
-  // svelte-ignore state_referenced_locally
-  if (data.mode === 'edit' || data.mode === 'review') {
-    routesMap.selectedModule = { id: id, title: data.module.metadata.title }
-  } else {
-    routesMap.selectedModule = { id: id, title: 'Neues Modul' }
-  }
 
   const isReviewMode = $derived(data.mode === 'review')
 
@@ -75,65 +69,65 @@
   const sections: Section[] = $derived([
     {
       id: 'general',
-      label: 'Allgemeine Informationen',
-      href: `/my-modules/${id}/general`
+      label: routeLabels['/my-modules/[id=uuid]/general'],
+      href: resolve('/my-modules/[id=uuid]/general', { id })
     },
     {
       id: 'management',
-      label: 'Verantwortliche',
-      href: `/my-modules/${id}/management`
+      label: routeLabels['/my-modules/[id=uuid]/management'],
+      href: resolve('/my-modules/[id=uuid]/management', { id })
     },
     {
       id: 'examination',
-      label: 'Prüfungsleistungen',
-      href: `/my-modules/${id}/examination`
+      label: routeLabels['/my-modules/[id=uuid]/examination'],
+      href: resolve('/my-modules/[id=uuid]/examination', { id })
     },
     {
       id: 'workload',
-      label: 'Workload',
-      href: `/my-modules/${id}/workload`
+      label: routeLabels['/my-modules/[id=uuid]/workload'],
+      href: resolve('/my-modules/[id=uuid]/workload', { id })
     },
     {
       id: 'study-programs',
-      label: 'Zuordnung zu Studiengängen',
-      href: `/my-modules/${id}/study-programs`
+      label: routeLabels['/my-modules/[id=uuid]/study-programs'],
+      href: resolve('/my-modules/[id=uuid]/study-programs', { id })
     },
     {
       id: 'learning-outcomes',
-      label: 'Learning Outcomes',
-      href: `/my-modules/${id}/learning-outcomes`
+      label: routeLabels['/my-modules/[id=uuid]/learning-outcomes'],
+      href: resolve('/my-modules/[id=uuid]/learning-outcomes', { id })
     },
     {
       id: 'module-content',
-      label: 'Modulinhalte',
-      href: `/my-modules/${id}/module-content`
+      label: routeLabels['/my-modules/[id=uuid]/module-content'],
+      href: resolve('/my-modules/[id=uuid]/module-content', { id })
     },
     {
       id: 'teaching-methods',
-      label: 'Lehr- und Lernmethoden',
-      href: `/my-modules/${id}/teaching-methods`
+      label: routeLabels['/my-modules/[id=uuid]/teaching-methods'],
+      href: resolve('/my-modules/[id=uuid]/teaching-methods', { id })
     },
     {
       id: 'literature',
-      label: 'Empfohlene Literatur',
-      href: `/my-modules/${id}/literature`
+      label: routeLabels['/my-modules/[id=uuid]/literature'],
+      href: resolve('/my-modules/[id=uuid]/literature', { id })
     },
     {
       id: 'particularities',
-      label: 'Besonderheiten',
-      href: `/my-modules/${id}/particularities`
+      label: routeLabels['/my-modules/[id=uuid]/particularities'],
+      href: resolve('/my-modules/[id=uuid]/particularities', { id })
     },
     {
       id: 'prerequisites',
-      label: 'Voraussetzungen',
-      href: `/my-modules/${id}/prerequisites`
+      label: routeLabels['/my-modules/[id=uuid]/prerequisites'],
+      href: resolve('/my-modules/[id=uuid]/prerequisites', { id })
     },
     {
       id: 'misc',
-      label: 'Sonstige Informationen',
-      href: `/my-modules/${id}/misc`
+      label: routeLabels['/my-modules/[id=uuid]/misc'],
+      href: resolve('/my-modules/[id=uuid]/misc', { id })
     }
-  ] as const)
+  ])
 
   // svelte-ignore state_referenced_locally
   const form = superForm(data.form, {

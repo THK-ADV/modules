@@ -1,4 +1,5 @@
 import { moduleFormSchema } from '$lib/schemas/module.js'
+import { MY_MODULE_ROUTE_ID } from '$lib/routes.js'
 import { getValidAccessToken } from '$lib/server/auth.js'
 import type { Approval } from '$lib/types/module-approval.js'
 import type { ModuleDraftKeys } from '$lib/types/module-draft-keys.js'
@@ -108,7 +109,8 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
       approvals: [],
       fieldStatuses: undefined,
       userWithUpdatePermissions: [],
-      reviews: []
+      reviews: [],
+      breadcrumbLabels: { [MY_MODULE_ROUTE_ID]: 'Neues Modul' }
     }
   }
 
@@ -198,6 +200,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     approvals,
     fieldStatuses,
     userWithUpdatePermissions,
-    reviews
+    reviews,
+    breadcrumbLabels: { [MY_MODULE_ROUTE_ID]: module.metadata.title }
   }
 }

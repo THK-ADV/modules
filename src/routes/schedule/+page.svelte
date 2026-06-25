@@ -111,7 +111,7 @@
   {/if}
 
   <div class="space-y-2">
-    <h2 class="text-3xl font-bold tracking-tight">Kalender</h2>
+    <h2 class="text-3xl font-bold tracking-tight">Semesterkalender</h2>
     <p class="text-muted-foreground text-sm">
       Kalender mit Einträgen zum Stundenplan, Prüfungen, Semesterplan und Feiertagen.
     </p>

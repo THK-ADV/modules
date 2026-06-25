@@ -1,3 +1,4 @@
+import { PLAN_ROUTE_ID } from '$lib/routes'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -34,6 +35,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
     selectedCalendarView,
     selectedCalendarDate,
     planDraft: draft.planDraft,
-    semester: draft.semester
+    semester: draft.semester,
+    breadcrumbLabels: { [PLAN_ROUTE_ID]: `${draft.semester.deLabel} ${draft.semester.year}` }
   }
 }

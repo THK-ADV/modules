@@ -1,19 +1,40 @@
+<script lang="ts" module>
+  import { routeLabels } from '$lib/routes'
+  import {
+    Book,
+    Calendar1,
+    CalendarCog,
+    FileText,
+    GraduationCap,
+    House,
+    LifeBuoy,
+    Megaphone,
+    Pencil,
+    Search,
+    Signature,
+    CalendarClock
+  } from '@lucide/svelte'
+
+  const mainRoutes = [
+    { path: '/', icon: House },
+    { path: '/modules', icon: Search },
+    { path: '/module-catalogs', icon: Book },
+    { path: '/exam-lists', icon: FileText },
+    { path: '/schedule', icon: Calendar1 }
+  ] as const
+
+  const secondaryRoutes = [
+    { path: '/help', icon: LifeBuoy },
+    { path: '/release-notes', icon: Megaphone }
+  ] as const
+</script>
+
 <script lang="ts">
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { routesMap } from '$lib/routes.svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
-
-  const {
-    defaultRoutes,
-    managerRoutes,
-    pavRoutes,
-    secondaryRoutes,
-    scheduleRoutes,
-    planningRoutes
-  } = routesMap
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
@@ -34,59 +55,18 @@
   const showPlanningSection = $derived(
     userInfo?.hasSchedulePlanningPrivileges || userInfo?.hasExamPlanningPrivileges
   )
-
-  const canAccessSchedulePlanning = $derived(userInfo?.hasSchedulePlanningPrivileges ?? false)
-
-  const canAccessExamPlanning = $derived(userInfo?.hasExamPlanningPrivileges ?? false)
 </script>
 
 <!-- main navigation -->
 <Sidebar.Group>
   <Sidebar.Menu>
-    {#each Object.entries(defaultRoutes) as [path, route] (path)}
-      {@const isDisabled = path === '/module-catalogs'}
-      <Sidebar.MenuItem>
-        {#if isDisabled}
-          <Tooltip.Root>
-            <Tooltip.Trigger class="w-full">
-              <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
-                {#snippet child({ props })}
-                  <span {...props}>
-                    <route.icon />
-                    <span>{route.name}</span>
-                  </span>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Tooltip.Trigger>
-            <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
-          </Tooltip.Root>
-        {:else}
-          <Sidebar.MenuButton>
-            {#snippet child({ props })}
-              <a href={path} {...props}>
-                <route.icon />
-                <span>{route.name}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-        {/if}
-      </Sidebar.MenuItem>
-    {/each}
-  </Sidebar.Menu>
-</Sidebar.Group>
-
-<!-- schedule section -->
-<Sidebar.Separator />
-<Sidebar.Group>
-  <Sidebar.GroupLabel>Stundenplan (Experimentell)</Sidebar.GroupLabel>
-  <Sidebar.Menu>
-    {#each Object.entries(scheduleRoutes) as [path, route] (path)}
+    {#each mainRoutes as route (route.path)}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}
-            <a href={path} {...props}>
+            <a href={route.path} {...props}>
               <route.icon />
-              <span>{route.name}</span>
+              <span>{routeLabels[route.path]}</span>
             </a>
           {/snippet}
         </Sidebar.MenuButton>
@@ -101,36 +81,31 @@
   <Sidebar.Group>
     <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
     <Sidebar.Menu>
-      {#each Object.entries(planningRoutes) as [path, route] (path)}
-        {@const isExamPlanning = path === '/planning/exam'}
-        {@const enabled = isExamPlanning ? canAccessExamPlanning : canAccessSchedulePlanning}
-        <Sidebar.MenuItem>
-          {#if enabled}
-            <Sidebar.MenuButton>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton>
+          {#snippet child({ props })}
+            <a href="/planning/schedule" {...props}>
+              <CalendarCog />
+              <span>{routeLabels['/planning/schedule']}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+      <Sidebar.MenuItem>
+        <Tooltip.Root>
+          <Tooltip.Trigger class="w-full">
+            <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
               {#snippet child({ props })}
-                <a href={path} {...props}>
-                  <route.icon />
-                  <span>{route.name}</span>
-                </a>
+                <span {...props}>
+                  <CalendarClock />
+                  <span>{routeLabels['/planning/exam']}</span>
+                </span>
               {/snippet}
             </Sidebar.MenuButton>
-          {:else}
-            <Tooltip.Root>
-              <Tooltip.Trigger class="w-full">
-                <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
-                  {#snippet child({ props })}
-                    <span {...props}>
-                      <route.icon />
-                      <span>{route.name}</span>
-                    </span>
-                  {/snippet}
-                </Sidebar.MenuButton>
-              </Tooltip.Trigger>
-              <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
-            </Tooltip.Root>
-          {/if}
-        </Sidebar.MenuItem>
-      {/each}
+          </Tooltip.Trigger>
+          <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
+        </Tooltip.Root>
+      </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
@@ -141,21 +116,19 @@
   <Sidebar.Group>
     <Sidebar.GroupLabel>Dozent:in</Sidebar.GroupLabel>
     <Sidebar.Menu>
-      {#each Object.entries(managerRoutes) as [path, route] (path)}
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton>
-            {#snippet child({ props })}
-              <a href={path} {...props}>
-                <route.icon />
-                <span>{route.name}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-          {#if rejectedReviews}
-            <Sidebar.MenuBadge>{rejectedReviews}</Sidebar.MenuBadge>
-          {/if}
-        </Sidebar.MenuItem>
-      {/each}
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton>
+          {#snippet child({ props })}
+            <a href="/my-modules" {...props}>
+              <Pencil />
+              <span>{routeLabels['/my-modules']}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+        {#if rejectedReviews}
+          <Sidebar.MenuBadge>{rejectedReviews}</Sidebar.MenuBadge>
+        {/if}
+      </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
@@ -166,23 +139,31 @@
   <Sidebar.Group>
     <Sidebar.GroupLabel>PAV oder SGL</Sidebar.GroupLabel>
     <Sidebar.Menu>
-      {#each Object.entries(pavRoutes) as [path, route] (path)}
-        {#if path === '/module-approvals' ? showModuleReview : true}
-          <Sidebar.MenuItem>
-            <Sidebar.MenuButton>
-              {#snippet child({ props })}
-                <a href={path} {...props}>
-                  <route.icon />
-                  <span>{route.name}</span>
-                </a>
-              {/snippet}
-            </Sidebar.MenuButton>
-            {#if path === '/module-approvals' && reviewsToApprove}
-              <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
-            {/if}
-          </Sidebar.MenuItem>
-        {/if}
-      {/each}
+      {#if showModuleReview}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton>
+            {#snippet child({ props })}
+              <a href="/module-approvals" {...props}>
+                <Signature />
+                <span>{routeLabels['/module-approvals']}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+          {#if reviewsToApprove}
+            <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
+          {/if}
+        </Sidebar.MenuItem>
+      {/if}
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton>
+          {#snippet child({ props })}
+            <a href="/studyprogram" {...props}>
+              <GraduationCap />
+              <span>{routeLabels['/studyprogram']}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
@@ -191,13 +172,13 @@
 <Sidebar.Group class="mt-auto">
   <Sidebar.GroupLabel>Information</Sidebar.GroupLabel>
   <Sidebar.Menu>
-    {#each Object.entries(secondaryRoutes) as [path, route] (path)}
+    {#each secondaryRoutes as route (route.path)}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}
-            <a href={path} {...props}>
+            <a href={route.path} {...props}>
               <route.icon />
-              <span>{route.name}</span>
+              <span>{routeLabels[route.path]}</span>
             </a>
           {/snippet}
         </Sidebar.MenuButton>

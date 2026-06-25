@@ -29,6 +29,7 @@
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
     disabled?: boolean
+    onValueChange?: (value: string[]) => void
   }
 
   let {
@@ -42,7 +43,8 @@
     maxVisibleBadges = 4,
     width = 'w-[350px]', // Default width
     modificationStatus,
-    disabled = false
+    disabled = false,
+    onValueChange
   }: Props = $props()
 
   let open = $state(false)
@@ -58,11 +60,13 @@
     }
 
     value = currentSelection
+    onValueChange?.(currentSelection)
     form.validate(name)
   }
 
   function clear() {
     value = []
+    onValueChange?.([])
     form.validate(name)
     open = false
   }

@@ -147,7 +147,6 @@ function createModuleUpdateState() {
           rpo.status === 'fulfilled' &&
           rpo.value.ok
         ) {
-          // TODO: remove this merge if the backend returns the source
           const allMethods: AssessmentMethod[] = await all.value.json()
           const rpoMethods: AssessmentMethod[] = await rpo.value.json()
           const mergedMethods = allMethods.map((m) => {

@@ -29,7 +29,11 @@ function createEmptyForm() {
   return superValidate({}, zod4(moduleFormSchema))
 }
 
-function createForm(module: ModuleProtocol, userWithUpdatePermissions: string[]) {
+function createForm(
+  module: ModuleProtocol,
+  updatePermissions: string[],
+  permittedAssessmentMethods: string[]
+) {
   let recommendedPrerequisites = null
   if (module.metadata.prerequisites.recommended) {
     recommendedPrerequisites = {
@@ -59,11 +63,12 @@ function createForm(module: ModuleProtocol, userWithUpdatePermissions: string[])
       status: module.metadata.status,
       management: module.metadata.moduleManagement,
       lecturers: module.metadata.lecturers,
-      updatePermissions: userWithUpdatePermissions,
+      updatePermissions,
       firstExaminer: module.metadata.examiner.first,
       secondExaminer: module.metadata.examiner.second,
       examPhases: module.metadata.examPhases,
       assessmentMethods: module.metadata.assessmentMethods.mandatory,
+      permittedAssessmentMethods,
       workload: {
         lecture: module.metadata.workload.lecture,
         seminar: module.metadata.workload.seminar,
@@ -129,14 +134,21 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw error(403, { message: 'Das Modul kann nicht bearbeitet werden.' })
   }
 
-  const [moduleRes, moduleDraftKeysRes, approvalsRes, userWithUpdatePermissionsRes, reviewsRes] =
-    await Promise.allSettled([
-      fetch(`/auth-api/modules/${params.id}/latest`),
-      fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
-      fetch(`/auth-api/moduleReviews/${params.id}`),
-      fetch(`/auth-api/moduleUpdatePermissions/${params.id}`),
-      isReview ? fetch(`/auth-api/moduleReviews`) : null
-    ])
+  const [
+    moduleRes,
+    moduleDraftKeysRes,
+    approvalsRes,
+    userWithUpdatePermissionsRes,
+    reviewsRes,
+    permittedAssessmentMethodsRes
+  ] = await Promise.allSettled([
+    fetch(`/auth-api/modules/${params.id}/latest`),
+    fetch(`/auth-api/moduleDrafts/${params.id}/keys`),
+    fetch(`/auth-api/moduleReviews/${params.id}`),
+    fetch(`/auth-api/moduleUpdatePermissions/${params.id}`),
+    isReview ? fetch(`/auth-api/moduleReviews`) : null,
+    fetch(`/api/modules/${params.id}/assessmentMethods`)
+  ])
 
   if (moduleRes.status === 'rejected') {
     const err = moduleRes.reason
@@ -150,7 +162,20 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     throw error(moduleRes.value.status, { message })
   }
 
+  if (permittedAssessmentMethodsRes.status === 'rejected') {
+    const err = permittedAssessmentMethodsRes.reason
+    const message = `Prüfungsformen konnten nicht geladen werden: ${err}`
+    throw error(500, { message })
+  }
+
+  if (!permittedAssessmentMethodsRes.value.ok) {
+    const err = await permittedAssessmentMethodsRes.value.json()
+    const message = `Prüfungsformen konnten nicht geladen werden: ${err.message}`
+    throw error(permittedAssessmentMethodsRes.value.status, { message })
+  }
+
   const module: ModuleProtocol = await moduleRes.value.json()
+  const permittedAssessmentMethods: string[] = await permittedAssessmentMethodsRes.value.json()
   let moduleDraftKeys: ModuleDraftKeys | null = null
   let approvals: Approval[] = []
   let userWithUpdatePermissions: string[] = []
@@ -189,7 +214,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     module.id = params.id
   }
 
-  const form = await createForm(module, userWithUpdatePermissions)
+  const form = await createForm(module, userWithUpdatePermissions, permittedAssessmentMethods)
   const fieldStatuses = getFieldModifications(moduleDraftKeys)
 
   return {
@@ -199,7 +224,6 @@ export const load: LayoutServerLoad = async ({ fetch, params, cookies, url }) =>
     moduleDraftKeys,
     approvals,
     fieldStatuses,
-    userWithUpdatePermissions,
     reviews,
     breadcrumbLabels: { [MY_MODULE_ROUTE_ID]: module.metadata.title }
   }

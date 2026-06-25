@@ -98,7 +98,6 @@
         bind:value={$formData.updatePermissions}
         {errors}
         modificationStatus={updatePermissionsStatus}
-        disabled={data.mode === 'create'}
       />
     </div>
   </div>

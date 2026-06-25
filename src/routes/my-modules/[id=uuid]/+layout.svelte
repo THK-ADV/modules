@@ -178,6 +178,7 @@
     secondExaminer: 'examination',
     examPhases: 'examination',
     assessmentMethods: 'examination',
+    permittedAssessmentMethods: 'examination',
 
     // Workload section
     workload: 'workload',

@@ -186,18 +186,3 @@ export interface DateRangeInfo {
   /** ISO string of the end date */
   endStr: string
 }
-
-/**
- * API exposed by the Calendar component for external control.
- * Provides methods for navigation and view changes.
- */
-export interface CalendarApi {
-  /** Navigate to the previous period (week/month depending on view) */
-  prev: () => void
-  /** Navigate to the next period */
-  next: () => void
-  /** Navigate to today */
-  today: () => void
-  /** Get the current title (e.g., "January 2026") */
-  getTitle: () => string
-}

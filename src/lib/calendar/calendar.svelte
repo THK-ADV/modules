@@ -15,7 +15,6 @@
   import {
     CALENDAR_VISIBLE_DAY_END,
     CALENDAR_VISIBLE_DAY_START,
-    type CalendarApi,
     type CalendarEvent,
     type CalendarEventProps,
     type DateRangeInfo,
@@ -44,8 +43,6 @@
     onEventResize?: (info: EventResizeInfo) => void
     /** Callback when the date range is set */
     onDateRangeSet?: (info: DateRangeInfo) => void
-    /** Exposed calendar API for external control */
-    api?: CalendarApi
     /** Additional CSS classes for the container */
     class?: string
   }
@@ -58,7 +55,6 @@
     onEventCopy,
     onEventResize,
     onDateRangeSet,
-    api = $bindable(),
     class: className
   }: Props = $props()
 
@@ -391,14 +387,6 @@
     })
 
     resizeObserver.observe(calendarEl)
-
-    // Expose a simple API
-    api = {
-      prev: () => calendar?.prev(),
-      next: () => calendar?.next(),
-      today: () => calendar?.today(),
-      getTitle: () => calendar?.view.title ?? ''
-    }
 
     calendarEl.addEventListener('touchstart', handleTouchStart, { passive: true })
     calendarEl.addEventListener('touchend', handleTouchEnd, { passive: true })

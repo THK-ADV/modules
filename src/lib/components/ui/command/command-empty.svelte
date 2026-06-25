@@ -3,6 +3,7 @@
   import { cn } from '$lib/utils.js'
 
   let {
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     ref = $bindable(null),
     class: className,
     ...restProps

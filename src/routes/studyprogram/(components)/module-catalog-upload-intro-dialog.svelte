@@ -24,7 +24,9 @@
 
   let {
     showModuleCatalogIntroductionUploadDialog = $bindable(),
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     showSuccessMessage = $bindable(),
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     showErrorMessage = $bindable()
   }: Props = $props()
 

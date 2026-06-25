@@ -41,7 +41,7 @@ export interface ScheduleEntryEditorApi {
 
 export const liveScheduleEntryEditorApi: ScheduleEntryEditorApi = {
   async load(options) {
-    return await fetchLiveScheduleEntries(options).run()
+    return await fetchLiveScheduleEntries(options)
   },
   async create(entries) {
     return await createLiveScheduleEntries(entries)
@@ -56,14 +56,14 @@ export const liveScheduleEntryEditorApi: ScheduleEntryEditorApi = {
     await deleteLiveScheduleEntry(id)
   },
   async getSeries(seriesId) {
-    return await fetchLiveScheduleEntrySeriesOccurrences(seriesId).run()
+    return await fetchLiveScheduleEntrySeriesOccurrences(seriesId)
   }
 }
 
 export function createDraftScheduleEntryEditorApi(draftId: string): ScheduleEntryEditorApi {
   return {
     async load(options) {
-      return await fetchDraftScheduleEntries({ draftId, range: options }).run()
+      return await fetchDraftScheduleEntries({ draftId, range: options })
     },
     async create(entries) {
       return await createDraftScheduleEntries({ draftId, entries })
@@ -78,7 +78,7 @@ export function createDraftScheduleEntryEditorApi(draftId: string): ScheduleEntr
       await deleteDraftScheduleEntry({ draftId, id })
     },
     async getSeries(seriesId) {
-      return await fetchDraftScheduleEntrySeriesOccurrences({ draftId, seriesId }).run()
+      return await fetchDraftScheduleEntrySeriesOccurrences({ draftId, seriesId })
     }
   }
 }

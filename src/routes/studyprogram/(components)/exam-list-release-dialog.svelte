@@ -34,7 +34,9 @@
   let {
     semesters,
     showExamListReleaseDialog = $bindable(),
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     isPublishing = $bindable(),
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     showErrorMessage = $bindable()
   }: Props = $props()
 

@@ -10,6 +10,7 @@
 
   let {
     reviews,
+    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     reviewInProgress = $bindable(),
     moduleId
   }: {

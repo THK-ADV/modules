@@ -61,6 +61,7 @@
 
   function updateDateTime(date: Date | null) {
     if (!date) return null
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const newDate = new Date(date)
     newDate.setHours(selectedHour, selectedMinute, 0, 0)
     value = newDate

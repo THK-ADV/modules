@@ -3,6 +3,7 @@
   import ComboboxField from '$lib/components/combobox.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
   import { moduleUpdateState } from '$lib/stores/store.svelte.js'
+  import { Info } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
@@ -56,17 +57,44 @@
     </div>
 
     <div class="space-y-6">
-      <MultiSelectCombobox
-        {form}
-        name="permittedAssessmentMethods"
-        label="Zulässige Prüfungsformen"
-        description="Legt fest, welche Prüfungsformen grundsätzlich für dieses Modul verwendet werden dürfen. Diese Auswahl bildet die Grundlage für die Prüfungsformen im kommenden Semester."
-        options={modulePermittedAssessmentMethodOptions}
-        bind:value={$formData.permittedAssessmentMethods}
-        maxVisibleBadges={5}
-        {errors}
-        onValueChange={validateAssessmentMethods}
-      />
+      <div class="space-y-2">
+        <div
+          class="relative border-2 border-dotted border-stone-400/80 p-3 pr-11 dark:border-stone-500/70"
+        >
+          <span
+            class="absolute top-2 right-3 text-base leading-none"
+            role="img"
+            aria-label="Funktion in Bearbeitung">🚧</span
+          >
+          <MultiSelectCombobox
+            {form}
+            name="permittedAssessmentMethods"
+            label="Zulässige Prüfungsformen"
+            description="Legt fest, welche Prüfungsformen laut Prüfungsordnung grundsätzlich für dieses Modul verwendet werden dürfen. Diese Auswahl bildet die Grundlage für die Prüfungsformen im kommenden Semester."
+            options={modulePermittedAssessmentMethodOptions}
+            bind:value={$formData.permittedAssessmentMethods}
+            maxVisibleBadges={5}
+            {errors}
+            onValueChange={validateAssessmentMethods}
+            disabled={true}
+          />
+
+          <div
+            class="mt-2 flex items-start gap-2 border-l-2 border-stone-300 py-0.5 pl-3 text-xs leading-5 text-muted-foreground dark:border-stone-600"
+            role="status"
+          >
+            <Info
+              class="mt-0.5 size-3.5 shrink-0 text-stone-500 dark:text-stone-400"
+              aria-hidden="true"
+            />
+            <p>
+              <span class="font-medium text-foreground/85">Noch nicht verfügbar.</span>
+              Die Bearbeitung der zulässigen Prüfungsformen wird derzeit überarbeitet. Die Prüfungsformen
+              für das kommende Semester können Sie weiterhin unten festlegen.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <AssessmentMethodsForm
         {form}

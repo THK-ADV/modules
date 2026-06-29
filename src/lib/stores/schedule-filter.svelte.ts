@@ -296,10 +296,15 @@ export function createScheduleFilter(prefix: FilterType) {
         identities.length === 0 ||
         rooms.length === 0
       ) {
+        // fetch all study programs for planning mode
+        const studyProgramFetch =
+          prefix === 'spf'
+            ? fetch('/api/studyPrograms?filter=not-expired')
+            : fetch('/api/studyPrograms?filter=currently-active')
         const [tu, m, sp, id, ro] = await Promise.allSettled([
           fetch('/api/teachingUnits'),
           fetch('/api/modules?source=live'),
-          fetch('/api/studyPrograms?filter=currently-active'),
+          studyProgramFetch,
           fetch('/api/identities'),
           fetch('/api/rooms')
         ])

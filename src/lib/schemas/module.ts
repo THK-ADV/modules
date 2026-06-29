@@ -125,7 +125,7 @@ const moduleFormBaseSchema = z.object({
   secondExaminer: z.string().nonempty('Zweitprüfer erforderlich'),
   examPhases: z.array(z.string()).min(1, 'Prüfungsphase erforderlich'),
   assessmentMethods: z.array(assessmentMethodFormSchema),
-  permittedAssessmentMethods: z.array(z.string()).min(1, 'Prüfungsleistungen erforderlich'),
+  permittedAssessmentMethods: z.array(z.string()),
   workload: z.object({
     lecture: workloadNumber,
     seminar: workloadNumber,

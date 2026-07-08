@@ -9,13 +9,13 @@
 </script>
 
 <Breadcrumb.Root>
-  <Breadcrumb.List>
+  <Breadcrumb.List class="text-base md:text-sm">
     {#each breadcrumbItems as item, i (item.href)}
       <Breadcrumb.Item>
         {#if i === breadcrumbItems.length - 1}
           <Breadcrumb.Page>{item.label}</Breadcrumb.Page>
         {:else}
-          <Breadcrumb.Link href={item.href}>{item.label}</Breadcrumb.Link>
+          <Breadcrumb.Link class="py-1 md:py-0" href={item.href}>{item.label}</Breadcrumb.Link>
         {/if}
       </Breadcrumb.Item>
       {#if i < breadcrumbItems.length - 1}

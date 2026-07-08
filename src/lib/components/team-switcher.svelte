@@ -9,11 +9,17 @@
 
   const sidebar = useSidebar()
   const isSidebarCollapsed = $derived(sidebar.state === 'collapsed')
+
+  function closeMobileSidebar() {
+    if (sidebar.isMobile) {
+      sidebar.setOpenMobile(false)
+    }
+  }
 </script>
 
 <Sidebar.Menu>
   <Sidebar.MenuItem>
-    <a href="/">
+    <a href="/" onclick={closeMobileSidebar}>
       <Sidebar.MenuButton
         size="lg"
         class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"

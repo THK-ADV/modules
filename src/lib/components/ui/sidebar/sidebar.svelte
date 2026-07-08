@@ -43,7 +43,7 @@
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
       {side}
     >
-      <div class="flex h-full w-full flex-col">
+      <div class="flex max-h-svh h-svh w-full flex-col overflow-hidden">
         {@render children?.()}
       </div>
     </Sheet.Content>

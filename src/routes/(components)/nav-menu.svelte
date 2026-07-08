@@ -30,11 +30,27 @@
 </script>
 
 <script lang="ts">
+  import { page } from '$app/state'
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
+
+  const sidebar = useSidebar()
+
+  function closeMobileSidebar() {
+    if (sidebar.isMobile) {
+      sidebar.setOpenMobile(false)
+    }
+  }
+
+  function isActive(path: string): boolean {
+    const pathname = page.url.pathname
+    if (path === '/') return pathname === '/'
+    return pathname === path || pathname.startsWith(path + '/')
+  }
 
   const showMyModules = $derived.by(() => {
     if (userInfo) {
@@ -62,9 +78,9 @@
   <Sidebar.Menu>
     {#each mainRoutes as route (route.path)}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
+        <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} {...props}>
+            <a href={route.path} onclick={closeMobileSidebar} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>
@@ -82,9 +98,9 @@
     <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
     <Sidebar.Menu>
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
+        <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
           {#snippet child({ props })}
-            <a href="/planning/schedule" {...props}>
+            <a href="/planning/schedule" onclick={closeMobileSidebar} {...props}>
               <CalendarCog />
               <span>{routeLabels['/planning/schedule']}</span>
             </a>
@@ -117,9 +133,9 @@
     <Sidebar.GroupLabel>Dozent:in</Sidebar.GroupLabel>
     <Sidebar.Menu>
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
+        <Sidebar.MenuButton isActive={isActive('/my-modules')}>
           {#snippet child({ props })}
-            <a href="/my-modules" {...props}>
+            <a href="/my-modules" onclick={closeMobileSidebar} {...props}>
               <Pencil />
               <span>{routeLabels['/my-modules']}</span>
             </a>
@@ -141,9 +157,9 @@
     <Sidebar.Menu>
       {#if showModuleReview}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton>
+          <Sidebar.MenuButton isActive={isActive('/module-approvals')}>
             {#snippet child({ props })}
-              <a href="/module-approvals" {...props}>
+              <a href="/module-approvals" onclick={closeMobileSidebar} {...props}>
                 <Signature />
                 <span>{routeLabels['/module-approvals']}</span>
               </a>
@@ -155,9 +171,9 @@
         </Sidebar.MenuItem>
       {/if}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
+        <Sidebar.MenuButton isActive={isActive('/studyprogram')}>
           {#snippet child({ props })}
-            <a href="/studyprogram" {...props}>
+            <a href="/studyprogram" onclick={closeMobileSidebar} {...props}>
               <GraduationCap />
               <span>{routeLabels['/studyprogram']}</span>
             </a>
@@ -174,9 +190,9 @@
   <Sidebar.Menu>
     {#each secondaryRoutes as route (route.path)}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
+        <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} {...props}>
+            <a href={route.path} onclick={closeMobileSidebar} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>

@@ -6,9 +6,18 @@
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
+  import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
   import { ChevronsUpDown, LogOut, LogIn, Settings } from '@lucide/svelte'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
+
+  const sidebar = useSidebar()
+
+  function closeMobileSidebar() {
+    if (sidebar.isMobile) {
+      sidebar.setOpenMobile(false)
+    }
+  }
 
   const abbreviation = $derived.by(() => {
     if (!user) return ''
@@ -19,15 +28,18 @@
   })
 
   async function login() {
+    closeMobileSidebar()
     await goto(resolve('/login'))
   }
 
   async function logout() {
+    closeMobileSidebar()
     localStorage.clear()
     await goto(resolve('/logout'))
   }
 
   async function openSettings() {
+    closeMobileSidebar()
     await goto(resolve('/settings'))
   }
 </script>

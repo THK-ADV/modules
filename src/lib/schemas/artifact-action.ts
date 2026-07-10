@@ -9,7 +9,4 @@ export const artifactActionSchema = z.enum([
 
 export type ArtifactAction = z.infer<typeof artifactActionSchema>
 
-export const artifactTargetSchema = z.object({
-  po: z.string().trim().min(1),
-  studyProgram: z.string().trim().min(1)
-})
+export const artifactTargetSchema = z.string().trim().min(1)

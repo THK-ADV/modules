@@ -94,7 +94,7 @@
 
     try {
       const response = await fetch(
-        `/actions/module-catalog?studyProgramId=${sp.id}&poId=${sp.po.id}&action=upload`,
+        `/actions/module-catalog?poId=${encodeURIComponent(sp.po.id)}&action=upload`,
         {
           method: 'POST',
           headers: {

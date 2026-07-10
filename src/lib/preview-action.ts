@@ -563,8 +563,7 @@ async function performFileAction(
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
     const po = studyProgram.po.id
-    const sp = studyProgram.id
-    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}&studyProgram=${encodeURIComponent(sp)}`
+    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}`
     const response = await fetch(url, {
       signal: controller.signal,
       body: body !== undefined ? JSON.stringify(body) : undefined,

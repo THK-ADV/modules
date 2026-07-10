@@ -3,7 +3,7 @@ import { parseRequestJson } from '$lib/server/request'
 import { error, json, type RequestHandler } from '@sveltejs/kit'
 
 export const PUT: RequestHandler = async ({ request, fetch, url }) => {
-  const { semester, date, studyProgram, po } = await parseRequestJson(
+  const { semester, date, po } = await parseRequestJson(
     request,
     examListReleaseRequestSchema,
     'Ungültige Daten für die Prüfungslistenfreigabe'
@@ -24,7 +24,7 @@ export const PUT: RequestHandler = async ({ request, fetch, url }) => {
       }, 1000)
     })
   } else {
-    const res = await fetch(`/auth-api/examLists/${studyProgram}/${po}`, {
+    const res = await fetch(`/auth-api/examLists/${encodeURIComponent(po)}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

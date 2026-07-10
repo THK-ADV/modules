@@ -91,7 +91,7 @@
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ semester, date, po: sp.po.id, studyProgram: sp.id })
+      body: JSON.stringify({ semester, date, po: sp.po.id })
     })
 
     isPublishing = false

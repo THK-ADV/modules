@@ -9,12 +9,10 @@ import { error, type RequestHandler } from '@sveltejs/kit'
 
 async function performRequest(
   action: ArtifactAction,
-  sp: string,
   po: string,
   request: Request,
   fetch: typeof globalThis.fetch
 ): Promise<Response> {
-  const encodedStudyProgram = encodeURIComponent(sp)
   const encodedPo = encodeURIComponent(po)
   let moduleCatalogBody: string | undefined
   if (action === 'moduleCatalog' || action === 'moduleCatalog_creation') {
@@ -29,7 +27,7 @@ async function performRequest(
   switch (action) {
     case 'moduleCatalog': {
       // TODO: this is a temporary solution to preview the module catalog creation
-      return fetch(`/auth-api/moduleCatalogs/${encodedStudyProgram}/${encodedPo}?preview=true`, {
+      return fetch(`/auth-api/moduleCatalogs/${encodedPo}?preview=true`, {
         headers: {
           Accept: 'application/pdf',
           'Content-Type': 'application/json'
@@ -39,7 +37,7 @@ async function performRequest(
       })
     }
     case 'moduleCatalog_creation': {
-      return fetch(`/auth-api/moduleCatalogs/${encodedStudyProgram}/${encodedPo}?preview=false`, {
+      return fetch(`/auth-api/moduleCatalogs/${encodedPo}?preview=false`, {
         headers: {
           Accept: 'application/pdf',
           'Content-Type': 'application/json'
@@ -49,28 +47,25 @@ async function performRequest(
       })
     }
     case 'examList':
-      return fetch(`/auth-api/examLists/preview/${encodedStudyProgram}/${encodedPo}`, {
+      return fetch(`/auth-api/examLists/preview/${encodedPo}`, {
         headers: {
           Accept: 'application/pdf'
         }
       })
     case 'examLoad':
-      return fetch(`/auth-api/examLoad/${encodedStudyProgram}/${encodedPo}?preview=true`)
+      return fetch(`/auth-api/examLoad/${encodedPo}?preview=true`)
   }
 }
 
 export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
   const kindResult = artifactActionSchema.safeParse(params.document)
-  const queryResult = artifactTargetSchema.safeParse({
-    po: url.searchParams.get('po'),
-    studyProgram: url.searchParams.get('studyProgram')
-  })
+  const queryResult = artifactTargetSchema.safeParse(url.searchParams.get('po'))
   if (!kindResult.success || !queryResult.success) {
-    throw error(400, { message: 'Studiengang, PO und Art der Vorschau sind ungültig' })
+    throw error(400, { message: 'PO und Art der Vorschau sind ungültig' })
   }
 
   const action = kindResult.data
-  const { po, studyProgram: sp } = queryResult.data
+  const po = queryResult.data
   const dryRun = url.searchParams.get('dryRun') === 'true'
 
   if (dryRun) {
@@ -84,7 +79,7 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       }, 5000)
     })
   } else {
-    const response = await performRequest(action, sp, po, request, fetch)
+    const response = await performRequest(action, po, request, fetch)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unbekannter Latex Fehler' }))
@@ -100,7 +95,7 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       return new Response(blob, {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `inline; filename="${action}-${sp}-${po}.pdf"`
+          'Content-Disposition': `inline; filename="${action}-${po}.pdf"`
         }
       })
     }

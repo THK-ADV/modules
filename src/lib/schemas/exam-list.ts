@@ -8,6 +8,5 @@ export const examListReleaseFormSchema = z.object({
 export const examListReleaseRequestSchema = z.object({
   semester: z.string().trim().min(1),
   date: z.iso.datetime({ offset: true }),
-  studyProgram: z.string().trim().min(1),
   po: z.string().trim().min(1)
 })

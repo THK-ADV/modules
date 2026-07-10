@@ -25,7 +25,7 @@
       <p class="text-muted-foreground text-sm">
         Zuordnung des Moduls zu Studiengängen, in denen es als Pflicht- oder Wahlmodul gelehrt wird.
         Die Beziehungen werden in der Modulsuche, im Modulhandbuch, in den Prüfungslisten und im
-        Studienplan verwendet.
+        Studienverlaufsplan verwendet.
       </p>
     </div>
   </div>

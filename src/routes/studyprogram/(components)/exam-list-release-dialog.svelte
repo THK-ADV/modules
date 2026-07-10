@@ -22,7 +22,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
-  import { examListReleaseFormSchema } from '$lib/schemas/study-program'
+  import { examListReleaseFormSchema } from '$lib/schemas/exam-list'
   import type { Semester } from '$lib/types/semester'
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'

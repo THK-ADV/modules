@@ -1,4 +1,4 @@
-import { examListReleaseRequestSchema } from '$lib/schemas/study-program'
+import { examListReleaseRequestSchema } from '$lib/schemas/exam-list'
 import { parseRequestJson } from '$lib/server/request'
 import { error, json, type RequestHandler } from '@sveltejs/kit'
 

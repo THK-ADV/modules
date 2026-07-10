@@ -1,14 +1,14 @@
 import {
-  documentPreviewKindSchema,
-  documentPreviewQuerySchema,
-  moduleCatalogRequestSchema,
-  type DocumentPreviewKind
-} from '$lib/schemas/study-program'
+  artifactActionSchema,
+  artifactTargetSchema,
+  type ArtifactAction
+} from '$lib/schemas/artifact-action'
+import { moduleCatalogConfigSchema } from '$lib/schemas/module-catalog'
 import { parseRequestJson } from '$lib/server/request'
 import { error, type RequestHandler } from '@sveltejs/kit'
 
 async function performRequest(
-  kind: DocumentPreviewKind,
+  action: ArtifactAction,
   sp: string,
   po: string,
   request: Request,
@@ -17,16 +17,16 @@ async function performRequest(
   const encodedStudyProgram = encodeURIComponent(sp)
   const encodedPo = encodeURIComponent(po)
   let moduleCatalogBody: string | undefined
-  if (kind === 'moduleCatalog' || kind === 'moduleCatalog_creation') {
+  if (action === 'moduleCatalog' || action === 'moduleCatalog_creation') {
     const data = await parseRequestJson(
       request,
-      moduleCatalogRequestSchema,
+      moduleCatalogConfigSchema,
       'Ungültige Modulhandbuch-Auswahl'
     )
     moduleCatalogBody = JSON.stringify(data)
   }
 
-  switch (kind) {
+  switch (action) {
     case 'moduleCatalog': {
       // TODO: this is a temporary solution to preview the module catalog creation
       return fetch(`/auth-api/moduleCatalogs/${encodedStudyProgram}/${encodedPo}?preview=true`, {
@@ -60,8 +60,8 @@ async function performRequest(
 }
 
 export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
-  const kindResult = documentPreviewKindSchema.safeParse(params.document)
-  const queryResult = documentPreviewQuerySchema.safeParse({
+  const kindResult = artifactActionSchema.safeParse(params.document)
+  const queryResult = artifactTargetSchema.safeParse({
     po: url.searchParams.get('po'),
     studyProgram: url.searchParams.get('studyProgram')
   })
@@ -69,7 +69,7 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
     throw error(400, { message: 'Studiengang, PO und Art der Vorschau sind ungültig' })
   }
 
-  const document = kindResult.data
+  const action = kindResult.data
   const { po, studyProgram: sp } = queryResult.data
   const dryRun = url.searchParams.get('dryRun') === 'true'
 
@@ -77,14 +77,14 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
     return new Promise<Response>((resolve) => {
       setTimeout(() => {
         resolve(
-          new Response(`[DRY RUN] PDF preview of ${document} generated for ${po}`, {
+          new Response(`[DRY RUN] PDF preview of ${action} generated for ${po}`, {
             status: 200
           })
         )
       }, 5000)
     })
   } else {
-    const response = await performRequest(document, sp, po, request, fetch)
+    const response = await performRequest(action, sp, po, request, fetch)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: 'Unbekannter Latex Fehler' }))
@@ -92,7 +92,7 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       throw error(response.status, { message })
     }
 
-    if (document === 'examLoad') {
+    if (action === 'examLoad') {
       const csv = await response.text()
       return new Response(csv, { headers: response.headers })
     } else {
@@ -100,7 +100,7 @@ export const POST: RequestHandler = async ({ params, url, fetch, request }) => {
       return new Response(blob, {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `inline; filename="${document}-${sp}-${po}.pdf"`
+          'Content-Disposition': `inline; filename="${action}-${sp}-${po}.pdf"`
         }
       })
     }

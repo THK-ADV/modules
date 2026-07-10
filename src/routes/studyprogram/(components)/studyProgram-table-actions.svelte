@@ -1,9 +1,5 @@
 <script lang="ts" module>
-  export type PreviewActionKey =
-    | 'previewModuleCatalog'
-    | 'previewExamList'
-    | 'createModuleCatalog'
-    | 'previewExamLoad'
+  export type PreviewActionKey = 'previewExamList' | 'previewExamLoad'
   export type ActionKey = PreviewActionKey | 'releaseExamList' | 'uploadModuleCatalogIntroduction'
 
   export interface Action {
@@ -42,8 +38,6 @@
   <DropdownMenu.Item
     class={cn(
       'flex cursor-pointer items-center gap-2 font-medium',
-      key === 'previewModuleCatalog' && 'text-gray-600 focus:text-gray-700',
-      key === 'createModuleCatalog' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamList' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamLoad' && 'text-gray-600 focus:text-gray-700',
       key === 'uploadModuleCatalogIntroduction' && 'text-gray-600 focus:text-gray-700',

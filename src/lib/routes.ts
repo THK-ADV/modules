@@ -5,6 +5,7 @@ import type { RouteId } from '$app/types'
 export const MODULE_ROUTE_ID = '/modules/[id=uuid]' satisfies RouteId
 export const MY_MODULE_ROUTE_ID = '/my-modules/[id=uuid]' satisfies RouteId
 export const PLAN_ROUTE_ID = '/planning/schedule/[draftId]' satisfies RouteId
+export const STUDYPROGRAM_ROUTE_ID = '/studyprogram/[poId]' satisfies RouteId
 
 /**
  * Breadcrumb labels for every rendered page route. Add the exact SvelteKit route ID here whenever
@@ -35,6 +36,7 @@ export const routeLabels = {
   '/module-approvals': 'Änderungsfreigaben',
   '/module-approvals/[id=uuid]': 'Modul',
   '/studyprogram': 'Studiengang',
+  [STUDYPROGRAM_ROUTE_ID]: 'Modulhandbuch konfigurieren',
   '/schedule': 'Semesterkalender',
   '/planning/schedule': 'Stundenplanung',
   '/planning/exam': 'Prüfungsplanung',

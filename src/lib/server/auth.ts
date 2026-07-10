@@ -20,7 +20,7 @@ const jwksEndpoint = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-c
 
 const issuer = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}`
 
-function base64UrlToBytes(input: string): Uint8Array {
+function base64UrlToBytes(input: string): Uint8Array<ArrayBuffer> {
   const base64 = input.replace(/-/g, '+').replace(/_/g, '/')
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
   const bin = atob(padded)

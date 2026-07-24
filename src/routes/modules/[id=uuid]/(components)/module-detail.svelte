@@ -600,7 +600,7 @@
   <!-- Module Information Card -->
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-    <!-- general information + (module relations) -->
+    <!-- general information + submodules -->
     <Card.Root>
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -627,13 +627,8 @@
         </div>
         {#if module.moduleRelation}
           <div class="flex items-center justify-between">
-            {#if module.moduleRelation.relationType === 'parent'}
-              <span class="text-muted-foreground text-sm">Hat Teilmodule</span>
-              <div>{@render moduleLinks(module.moduleRelation.modules)}</div>
-            {:else if module.moduleRelation.relationType === 'child'}
-              <span class="text-muted-foreground text-sm">Teil von Obermodul</span>
-              <div>{@render moduleLinks([module.moduleRelation.module])}</div>
-            {/if}
+            <span class="text-muted-foreground text-sm">Teilmodule</span>
+            <div>{@render moduleLinks(module.moduleRelation.modules)}</div>
           </div>
         {/if}
         {#if isGenericModule && genericModuleOptions.length > 0}

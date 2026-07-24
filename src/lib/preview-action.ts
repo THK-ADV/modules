@@ -578,6 +578,7 @@ async function performFileAction(
       const mimeType = contentType.split(';')[0].trim()
 
       switch (mimeType) {
+        case 'text/csv':
         case 'text/plain': {
           const csv = await response.text()
           newTab.document.writeln(htmlCSV(csv, studyProgramLabel, po))

@@ -1,16 +1,9 @@
 import type { Participants, Workload } from './core'
 
-export interface Parent {
+export interface ModuleRelation {
   kind: 'parent'
   children: string[]
 }
-
-export interface Child {
-  kind: 'child'
-  parent: string
-}
-
-export type ModuleRelation = Parent | Child
 
 export interface AssessmentEntry {
   method: string

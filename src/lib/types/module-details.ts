@@ -73,17 +73,10 @@ export interface Assessment {
   preconditions: string[]
 }
 
-export interface Parent {
+export interface ModuleRelation {
   relationType: 'parent'
   modules: ModuleShort[]
 }
-
-export interface Child {
-  relationType: 'child'
-  module: ModuleShort
-}
-
-export type ModuleRelation = Parent | Child
 
 export interface Workload extends CoreWorkload {
   total: number
@@ -126,7 +119,7 @@ export interface ModuleDetail {
   recommendedPrerequisites: Prerequisite | null
   deContent: Content
   enContent: Content
-  moduleRelation?: ModuleRelation
+  moduleRelation: ModuleRelation | null
   assessmentPrerequisite: AssessmentPrerequisite | null
   attendanceRequirement: AttendanceRequirement | null
 }

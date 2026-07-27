@@ -77,8 +77,8 @@
   }
 
   function posEqual(lhs: PO[], rhs: PO[]): boolean {
-    function poKey({ po, specialization }: PO): string {
-      return specialization ?? po
+    function poKey({ po, specialization, mandatory }: PO): string {
+      return `${specialization ?? po}-${mandatory}`
     }
 
     if (lhs.length !== rhs.length) return false
@@ -103,7 +103,7 @@
       lhs.module !== rhs.module ||
       !arraysEqual(lhs.rooms, rhs.rooms) ||
       lhs.courseType !== rhs.courseType ||
-      !posEqual(lhs.po, rhs.po) ||
+      !posEqual(lhs.po, mergePOs(rhs.po)) ||
       lhs.start.getTime() !== rhs.start.getTime() ||
       lhs.end.getTime() !== rhs.end.getTime() ||
       !arraysEqual(lhs.lecturer, rhs.lecturer)
@@ -117,6 +117,35 @@
     }))
   }
 
+  /**
+   * Collapses PO entries that share study program, PO, specialization and mandatory flag into a
+   * single entry with the union of their recommended semesters. The backend reports one entry per
+   * generic module option, so a module chosen by several generic modules of the same PO arrives
+   * multiple times.
+   */
+  function mergePOs(pos: PO[]): PO[] {
+    const merged: PO[] = []
+    for (const { po, specialization, mandatory, recommendedSemester } of pos) {
+      let entry = merged.find(
+        (m) => m.po === po && m.specialization === specialization && m.mandatory === mandatory
+      )
+      if (!entry) {
+        entry = { po, specialization, mandatory, recommendedSemester: [] }
+        merged.push(entry)
+      }
+      for (const semester of recommendedSemester) {
+        // 0 carries no recommendation and cannot be selected in the picker
+        if (semester > 0 && !entry.recommendedSemester.includes(semester)) {
+          entry.recommendedSemester.push(semester)
+        }
+      }
+    }
+    for (const entry of merged) {
+      entry.recommendedSemester.sort((a, b) => a - b)
+    }
+    return merged
+  }
+
   function createformData(
     entry: ScheduleEntryEdit | ScheduleEntryCreate | Partial<ScheduleEntryCreate> | null
   ) {
@@ -125,7 +154,7 @@
         module: entry?.module ?? '',
         rooms: entry?.rooms ?? [],
         courseType: entry?.courseType ?? '',
-        pos: entry?.po ?? [],
+        pos: mergePOs(entry?.po ?? []),
         date: {
           start: entry?.start ?? null,
           end: entry?.end ?? null
@@ -574,11 +603,11 @@
         }
       }
 
-      if (poEditingIndex !== null) {
-        $formData.pos = $formData.pos.map((item, i) => (i === poEditingIndex ? newEntry : item))
-      } else {
-        $formData.pos = [...$formData.pos, newEntry]
-      }
+      $formData.pos = mergePOs(
+        poEditingIndex !== null
+          ? $formData.pos.map((item, i) => (i === poEditingIndex ? newEntry : item))
+          : [...$formData.pos, newEntry]
+      )
 
       void updatePOErrors()
       poDialogOpen = false
@@ -596,7 +625,7 @@
         $formData.lecturer = lecturer.value
       }
       if (pos.status === 'fulfilled' && $formData.module === module) {
-        $formData.pos = pos.value
+        $formData.pos = mergePOs(pos.value)
       }
     } catch {
       // Just swallow the error, it's not critical
@@ -825,7 +854,7 @@
                           </Table.Row>
                         </Table.Header>
                         <Table.Body>
-                          {#each $formData.pos as entry, index (entry.specialization ?? entry.po)}
+                          {#each $formData.pos as entry, index (`${entry.specialization ?? entry.po}-${entry.mandatory}`)}
                             <Table.Row>
                               <Table.Cell class="font-medium">
                                 {showPOEntry(entry)}

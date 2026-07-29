@@ -1,3 +1,5 @@
+import type { ArtifactAction } from './schemas/artifact-action'
+import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
 function htmlPlaceholder(actionLabel: string, studyProgramLabel: string) {
@@ -515,16 +517,19 @@ function htmlCSV(csv: string, studyProgramLabel: string, po: string) {
   `
 }
 
-export async function previewModuleCatalog(studyProgram: StudyProgram, genericModules: string[]) {
+export async function previewModuleCatalog(
+  studyProgram: StudyProgram,
+  config: ModuleCatalogConfig
+) {
   const action = 'moduleCatalog'
   const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, genericModules)
+  await performFileAction(action, actionLabel, studyProgram, config)
 }
 
-export async function createModuleCatalog(studyProgram: StudyProgram, genericModules: string[]) {
+export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
   const action = 'moduleCatalog_creation'
   const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, genericModules)
+  await performFileAction(action, actionLabel, studyProgram, config)
 }
 
 export async function previewExamList(studyProgram: StudyProgram) {
@@ -540,10 +545,10 @@ export async function previewExamLoad(studyProgram: StudyProgram) {
 }
 
 async function performFileAction(
-  action: 'moduleCatalog' | 'moduleCatalog_creation' | 'examList' | 'examLoad',
+  action: ArtifactAction,
   actionLabel: string,
   studyProgram: StudyProgram,
-  body?: string[]
+  body?: ModuleCatalogConfig
 ) {
   const newTab = window.open()
   const studyProgramLabel = studyProgram.deLabel
@@ -558,11 +563,10 @@ async function performFileAction(
     const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
     const po = studyProgram.po.id
-    const sp = studyProgram.id
-    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}&studyProgram=${encodeURIComponent(sp)}`
+    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}`
     const response = await fetch(url, {
       signal: controller.signal,
-      body: JSON.stringify(body ?? []),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     })

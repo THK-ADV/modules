@@ -4,13 +4,6 @@
   export const SELECTED_TAB_COOKIE_NAME = 'studyprogram:selected-tab'
   export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
-  function fmtStudyProgram(studyProgram: StudyProgram) {
-    if (studyProgram.specialization) {
-      return `${studyProgram.deLabel} ${studyProgram.specialization.deLabel} (${studyProgram.degree.deLabel})`
-    }
-    return `${studyProgram.deLabel} (${studyProgram.degree.deLabel})`
-  }
-
   const dateFormatter = new DateFormatter('de-DE', {
     day: '2-digit',
     month: '2-digit',
@@ -52,23 +45,21 @@
   import ExamListReleaseDialog from './(components)/exam-list-release-dialog.svelte'
   import ExamListTableActions from './(components)/exam-list-table-actions.svelte'
   import ExamLoadTableActions from './(components)/exam-load-table-actions.svelte'
-  import ModuleCatalogCreateDialog from './(components)/module-catalog-create-dialog.svelte'
   import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
   import ModuleCatalogUploadIntroDialog from './(components)/module-catalog-upload-intro-dialog.svelte'
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
   import StudyProgramTable from './(components)/studyProgram-table.svelte'
   import type { StudyProgramMangerInfo } from './+page.server'
   import { resolve } from '$app/paths'
+  import StudyProgramTableTitleCell from './(components)/study-program-table-title-cell.svelte'
 
   let { data }: PageProps = $props()
 
   let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
-  let showModuleCatalogCreateDialog: StudyProgram | undefined = $state(undefined)
   let showModuleCatalogIntroductionUploadDialog: StudyProgram | undefined = $state(undefined)
   let showErrorMessage: string | undefined = $state(undefined)
   let showSuccessMessage: string | undefined = $state(undefined)
   let isPublishing = $state(false)
-  let isPreviewing = $state(false)
   // Tab handling
 
   let selectedTab: Tab = $derived((data.selectedTab || 'module-catalog') as Tab)
@@ -82,7 +73,10 @@
       {
         accessorKey: 'title',
         header: 'Studiengang',
-        cell: ({ row }) => fmtStudyProgram(row.original.studyProgram)
+        cell: ({ row }) =>
+          renderComponent(StudyProgramTableTitleCell, {
+            studyProgram: row.original.studyProgram
+          })
       },
       {
         accessorKey: 'po',
@@ -117,17 +111,8 @@
               return renderComponent(ModuleCatalogTableActions, {
                 studyProgram: row.original.studyProgram,
                 canCreate: row.original.canCreate,
-                onClickModuleCreate: (sp: StudyProgram) => {
-                  showModuleCatalogCreateDialog = sp
-                  isPreviewing = false
-                },
-                onClickModulePreview: (sp: StudyProgram) => {
-                  showModuleCatalogCreateDialog = sp
-                  isPreviewing = true
-                },
                 onClickModuleIntroductionUpload: (sp: StudyProgram) => {
                   showModuleCatalogIntroductionUploadDialog = sp
-                  isPreviewing = false
                 }
               })
             }
@@ -160,10 +145,8 @@
                 canCreate: row.original.canCreate,
                 onClickExamListRelease: (sp: StudyProgram) => {
                   showExamListReleaseDialog = sp
-                  isPreviewing = false
                 },
                 onClickExamListPreview: async (sp: StudyProgram) => {
-                  isPreviewing = true
                   await previewExamList(sp)
                 }
               })
@@ -179,7 +162,6 @@
               return renderComponent(ExamLoadTableActions, {
                 studyProgram: row.original.studyProgram,
                 onClickExamLoadPreview: async (sp: StudyProgram) => {
-                  isPreviewing = true
                   await previewExamLoad(sp)
                 }
               })
@@ -202,8 +184,6 @@
   bind:isPublishing
   bind:showErrorMessage
 />
-
-<ModuleCatalogCreateDialog bind:showModuleCatalogCreateDialog isPreview={isPreviewing} />
 
 <ModuleCatalogUploadIntroDialog
   bind:showModuleCatalogIntroductionUploadDialog
@@ -261,8 +241,8 @@
       </Tabs.Content>
       <Tabs.Content value="module-catalog" class="ml-1">
         <p class="text-muted-foreground text-sm">
-          Für die Vorschau und Erstellung von Modulhandbüchern können bestimmte Module
-          <span class="font-bold">ausgeschlossen</span> werden.
+          Über den jeweiligen Studiengang kann das Modulhandbuch konfiguriert, als Vorschau geöffnet
+          und erstellt werden.
         </p>
       </Tabs.Content>
       <Tabs.Content value="exam-load" class="ml-1">

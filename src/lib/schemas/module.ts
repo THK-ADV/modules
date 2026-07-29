@@ -175,16 +175,10 @@ const moduleFormBaseSchema = z.object({
     })
     .nullable(),
   moduleRelation: z
-    .discriminatedUnion('kind', [
-      z.object({
-        kind: z.literal('parent'),
-        children: z.array(z.string()).min(1, 'Mindestens ein Kind-Modul erforderlich')
-      }),
-      z.object({
-        kind: z.literal('child'),
-        parent: z.string().nonempty('Parent-Modul erforderlich')
-      })
-    ])
+    .object({
+      kind: z.literal('parent'),
+      children: z.array(z.string()).min(1, 'Mindestens ein Teilmodul erforderlich')
+    })
     .nullable(),
   taughtWith: z.array(z.string()).nullable(),
   deContent: z.object({

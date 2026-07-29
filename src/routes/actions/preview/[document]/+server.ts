@@ -53,7 +53,11 @@ async function performRequest(
         }
       })
     case 'examLoad':
-      return fetch(`/auth-api/examLoad/${encodedPo}?preview=true`)
+      return fetch(`/auth-api/examLoad/${encodedPo}?preview=true`, {
+        headers: {
+          Accept: 'text/csv'
+        }
+      })
   }
 }
 

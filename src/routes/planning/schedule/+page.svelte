@@ -14,6 +14,7 @@
     CalendarPlus,
     ChevronDown,
     Ellipsis,
+    Eye,
     Plus,
     Radio,
     SquarePen,
@@ -31,6 +32,7 @@
   } from './planning.remote'
   import ErrorMessage from '$lib/components/error-message.svelte'
   import { getErrorMessage } from '$lib/errors'
+  import { cn } from '$lib/utils'
 
   const { data }: PageProps = $props()
 
@@ -49,6 +51,7 @@
   let runningAction = $state<DraftAction | null>(null)
   let errorMessage = $state<string | undefined>(undefined)
 
+  const canEdit = $derived(data.userInfo?.hasSchedulePlanningPrivileges ?? false)
   const isMutatingDraft = $derived(runningAction !== null)
 
   function openConfirmation(action: DraftAction, id: string, label: string) {
@@ -175,41 +178,47 @@
     <div class="min-w-0 space-y-2">
       <h2 class="text-3xl font-bold tracking-tight">Stundenplanung</h2>
       <p class="text-muted-foreground text-sm">
-        Planungen verwalten, eine neue Planung beginnen oder die Live-Daten bearbeiten.
+        {#if canEdit}
+          Planungen verwalten, eine neue Planung beginnen oder die Live-Daten bearbeiten.
+        {:else}
+          Bestehende Planungen einsehen.
+        {/if}
       </p>
     </div>
 
-    <div class="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
-      <Button href={resolve('/planning/schedule/live')} variant="outline">
-        <Radio class="size-4" />
-        Live-Daten bearbeiten
-      </Button>
+    {#if canEdit}
+      <div class="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
+        <Button href={resolve('/planning/schedule/live')} variant="outline">
+          <Radio class="size-4" />
+          Live-Daten bearbeiten
+        </Button>
 
-      <Tooltip.Provider>
-        <Tooltip.Root disabled={!unavailablePlanningMessage}>
-          <Tooltip.Trigger class="inline-flex">
-            {#snippet child({ props })}
-              <span {...props} class="inline-flex w-full">
-                <Popover.Root bind:open={createPlanDraftDialogOpen}>
-                  <Popover.Trigger
-                    class={buttonVariants({ variant: 'default', class: 'w-full' })}
-                    disabled={!selectedSemester}
-                  >
-                    <Plus class="size-4" />
-                    Neue Planung
-                    <ChevronDown class="size-4 opacity-70" />
-                  </Popover.Trigger>
-                  {@render createPlanDraftContent(() => (createPlanDraftDialogOpen = false))}
-                </Popover.Root>
-              </span>
-            {/snippet}
-          </Tooltip.Trigger>
-          {#if unavailablePlanningMessage}
-            <Tooltip.Content>{unavailablePlanningMessage}</Tooltip.Content>
-          {/if}
-        </Tooltip.Root>
-      </Tooltip.Provider>
-    </div>
+        <Tooltip.Provider>
+          <Tooltip.Root disabled={!unavailablePlanningMessage}>
+            <Tooltip.Trigger class="inline-flex">
+              {#snippet child({ props })}
+                <span {...props} class="inline-flex w-full">
+                  <Popover.Root bind:open={createPlanDraftDialogOpen}>
+                    <Popover.Trigger
+                      class={buttonVariants({ variant: 'default', class: 'w-full' })}
+                      disabled={!selectedSemester}
+                    >
+                      <Plus class="size-4" />
+                      Neue Planung
+                      <ChevronDown class="size-4 opacity-70" />
+                    </Popover.Trigger>
+                    {@render createPlanDraftContent(() => (createPlanDraftDialogOpen = false))}
+                  </Popover.Root>
+                </span>
+              {/snippet}
+            </Tooltip.Trigger>
+            {#if unavailablePlanningMessage}
+              <Tooltip.Content>{unavailablePlanningMessage}</Tooltip.Content>
+            {/if}
+          </Tooltip.Root>
+        </Tooltip.Provider>
+      </div>
+    {/if}
   </div>
 
   <!-- Plan drafts -->
@@ -262,98 +271,111 @@
                 </Table.Cell>
                 <Table.Cell class="w-0 text-right">
                   {#if draft.publishedAt === null}
-                    <div class="hidden items-center justify-end gap-2 lg:flex">
+                    {@const draftHref = resolve('/planning/schedule/[draftId]', {
+                      draftId: draft.id
+                    })}
+                    <div class="flex items-center justify-end gap-2">
                       <Button
-                        href={resolve('/planning/schedule/[draftId]', { draftId: draft.id })}
+                        href={draftHref}
                         variant="outline"
                         size="sm"
-                        class="border-blue-400 font-medium text-blue-600 shadow-sm transition-colors hover:bg-blue-50 hover:text-blue-700 dark:border-blue-500/50 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
+                        class={cn(
+                          'border-blue-400 font-medium text-blue-600 shadow-sm transition-colors hover:bg-blue-50 hover:text-blue-700 dark:border-blue-500/50 dark:text-blue-400 dark:hover:bg-blue-950/40 dark:hover:text-blue-300',
+                          canEdit && 'hidden lg:inline-flex'
+                        )}
                       >
-                        <SquarePen class="size-4" />
-                        Planung fortsetzen
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        class="border-green-400 font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50 hover:text-green-700 dark:border-green-500/50 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300"
-                        disabled={isMutatingDraft}
-                        onclick={() => openConfirmation('publish', draft.id, draft.semesterLabel)}
-                      >
-                        {#if runningAction === 'publish' && actionTarget?.id === draft.id}
-                          <Spinner size="sm" />
+                        {#if canEdit}
+                          <SquarePen class="size-4" />
+                          Planung fortsetzen
                         {:else}
-                          <Upload class="size-4" />
+                          <Eye class="size-4" />
+                          Planung einsehen
                         {/if}
-                        Planung veröffentlichen
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        class="border-red-300 font-medium text-red-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-800 dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300"
-                        disabled={isMutatingDraft}
-                        onclick={() => openConfirmation('delete', draft.id, draft.semesterLabel)}
-                      >
-                        {#if runningAction === 'delete' && actionTarget?.id === draft.id}
-                          <Spinner size="sm" />
-                        {:else}
-                          <Trash2 class="size-4" />
-                        {/if}
-                        Planung löschen
-                      </Button>
-                    </div>
 
-                    <div class="flex justify-end lg:hidden">
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger>
-                          {#snippet child({ props })}
-                            <Button
-                              {...props}
-                              variant="outline"
-                              size="sm"
-                              class="size-8 p-0 shadow-sm"
-                              disabled={isMutatingDraft}
-                            >
-                              <span class="sr-only">Aktionen für {draft.semesterLabel} öffnen</span>
-                              <Ellipsis class="size-4" />
-                            </Button>
-                          {/snippet}
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Content align="end" class="w-60">
-                          <DropdownMenu.Group>
-                            <DropdownMenu.GroupHeading>Planungsaktionen</DropdownMenu.GroupHeading>
-                            <DropdownMenu.Item
-                              class="font-medium text-blue-600 focus:text-blue-700 dark:text-blue-400 dark:focus:text-blue-300"
-                              onclick={() =>
-                                goto(
-                                  resolve('/planning/schedule/[draftId]', {
-                                    draftId: draft.id
-                                  })
-                                )}
-                            >
-                              <SquarePen class="size-4" />
-                              Planung fortsetzen
-                            </DropdownMenu.Item>
-                            <DropdownMenu.Item
-                              class="font-medium text-green-600 focus:text-green-700 dark:text-green-400 dark:focus:text-green-300"
-                              disabled={isMutatingDraft}
-                              onclick={() =>
-                                openConfirmation('publish', draft.id, draft.semesterLabel)}
-                            >
-                              <Upload class="size-4" />
-                              Planung veröffentlichen
-                            </DropdownMenu.Item>
-                            <DropdownMenu.Item
-                              class="font-medium text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300"
-                              disabled={isMutatingDraft}
-                              onclick={() =>
-                                openConfirmation('delete', draft.id, draft.semesterLabel)}
-                            >
-                              <Trash2 class="size-4" />
-                              Planung löschen
-                            </DropdownMenu.Item>
-                          </DropdownMenu.Group>
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
+                      {#if canEdit}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class="hidden border-green-400 font-medium text-green-600 shadow-sm transition-colors hover:bg-green-50 hover:text-green-700 lg:inline-flex dark:border-green-500/50 dark:text-green-400 dark:hover:bg-green-950/40 dark:hover:text-green-300"
+                          disabled={isMutatingDraft}
+                          onclick={() => openConfirmation('publish', draft.id, draft.semesterLabel)}
+                        >
+                          {#if runningAction === 'publish' && actionTarget?.id === draft.id}
+                            <Spinner size="sm" />
+                          {:else}
+                            <Upload class="size-4" />
+                          {/if}
+                          Planung veröffentlichen
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class="hidden border-red-300 font-medium text-red-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-800 lg:inline-flex dark:border-red-500/50 dark:text-red-400 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+                          disabled={isMutatingDraft}
+                          onclick={() => openConfirmation('delete', draft.id, draft.semesterLabel)}
+                        >
+                          {#if runningAction === 'delete' && actionTarget?.id === draft.id}
+                            <Spinner size="sm" />
+                          {:else}
+                            <Trash2 class="size-4" />
+                          {/if}
+                          Planung löschen
+                        </Button>
+
+                        <div class="lg:hidden">
+                          <DropdownMenu.Root>
+                            <DropdownMenu.Trigger>
+                              {#snippet child({ props })}
+                                <Button
+                                  {...props}
+                                  variant="outline"
+                                  size="sm"
+                                  class="size-8 p-0 shadow-sm"
+                                  disabled={isMutatingDraft}
+                                >
+                                  <span class="sr-only"
+                                    >Aktionen für {draft.semesterLabel} öffnen</span
+                                  >
+                                  <Ellipsis class="size-4" />
+                                </Button>
+                              {/snippet}
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content align="end" class="w-60">
+                              <DropdownMenu.Group>
+                                <DropdownMenu.GroupHeading
+                                  >Planungsaktionen</DropdownMenu.GroupHeading
+                                >
+                                <DropdownMenu.Item
+                                  class="font-medium text-blue-600 focus:text-blue-700 dark:text-blue-400 dark:focus:text-blue-300"
+                                  onclick={() => goto(draftHref)}
+                                >
+                                  <SquarePen class="size-4" />
+                                  Planung fortsetzen
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item
+                                  class="font-medium text-green-600 focus:text-green-700 dark:text-green-400 dark:focus:text-green-300"
+                                  disabled={isMutatingDraft}
+                                  onclick={() =>
+                                    openConfirmation('publish', draft.id, draft.semesterLabel)}
+                                >
+                                  <Upload class="size-4" />
+                                  Planung veröffentlichen
+                                </DropdownMenu.Item>
+                                <DropdownMenu.Item
+                                  class="font-medium text-red-600 focus:text-red-700 dark:text-red-400 dark:focus:text-red-300"
+                                  disabled={isMutatingDraft}
+                                  onclick={() =>
+                                    openConfirmation('delete', draft.id, draft.semesterLabel)}
+                                >
+                                  <Trash2 class="size-4" />
+                                  Planung löschen
+                                </DropdownMenu.Item>
+                              </DropdownMenu.Group>
+                            </DropdownMenu.Content>
+                          </DropdownMenu.Root>
+                        </div>
+                      {/if}
                     </div>
                   {:else}
                     <span

@@ -16,6 +16,7 @@
 
   <SchedulePlanningEditor
     api={liveScheduleEntryEditorApi}
+    canEdit={true}
     calendarData={{
       holidays: data.holidays,
       holidaysMonth: data.holidaysMonth,

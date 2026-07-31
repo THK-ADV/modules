@@ -21,11 +21,11 @@
   <AppSidebar user={data.user} userInfo={data.userInfo} />
   <Sidebar.Inset>
     <header
-      class="flex h-14 shrink-0 items-center gap-2 pt-2 transition-[width,height] ease-linear md:h-16 md:pt-0 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+      class="flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear md:h-16 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >
       <div class="flex items-center gap-2 px-3 md:px-4">
         <Sidebar.Trigger class="-ml-1 size-10 [&>svg]:size-5 md:size-7 md:[&>svg]:size-4" />
-        <Separator orientation="vertical" class="mr-2 h-4 md:h-4" />
+        <Separator orientation="vertical" class="mr-2 h-4" />
         <NavBreadcrumb />
       </div>
     </header>

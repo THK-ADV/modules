@@ -30,21 +30,22 @@
 </script>
 
 <script lang="ts">
+  import { afterNavigate } from '$app/navigation'
   import { page } from '$app/state'
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
-  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
   const sidebar = useSidebar()
 
-  function closeMobileSidebar() {
+  afterNavigate(() => {
     if (sidebar.isMobile) {
       sidebar.setOpenMobile(false)
     }
-  }
+  })
 
   function isActive(path: string): boolean {
     const pathname = page.url.pathname
@@ -80,7 +81,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} onclick={closeMobileSidebar} {...props}>
+            <a href={route.path} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>
@@ -100,7 +101,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
           {#snippet child({ props })}
-            <a href="/planning/schedule" onclick={closeMobileSidebar} {...props}>
+            <a href="/planning/schedule" {...props}>
               <CalendarCog />
               <span>{routeLabels['/planning/schedule']}</span>
             </a>
@@ -135,7 +136,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive('/my-modules')}>
           {#snippet child({ props })}
-            <a href="/my-modules" onclick={closeMobileSidebar} {...props}>
+            <a href="/my-modules" {...props}>
               <Pencil />
               <span>{routeLabels['/my-modules']}</span>
             </a>
@@ -159,7 +160,7 @@
         <Sidebar.MenuItem>
           <Sidebar.MenuButton isActive={isActive('/module-approvals')}>
             {#snippet child({ props })}
-              <a href="/module-approvals" onclick={closeMobileSidebar} {...props}>
+              <a href="/module-approvals" {...props}>
                 <Signature />
                 <span>{routeLabels['/module-approvals']}</span>
               </a>
@@ -173,7 +174,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive('/studyprogram')}>
           {#snippet child({ props })}
-            <a href="/studyprogram" onclick={closeMobileSidebar} {...props}>
+            <a href="/studyprogram" {...props}>
               <GraduationCap />
               <span>{routeLabels['/studyprogram']}</span>
             </a>
@@ -192,7 +193,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} onclick={closeMobileSidebar} {...props}>
+            <a href={route.path} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>

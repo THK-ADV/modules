@@ -39,11 +39,11 @@
     <Sheet.Content
       data-sidebar="sidebar"
       data-mobile="true"
-      class="bg-sidebar text-sidebar-foreground w-[var(--sidebar-width)] p-0 [&>button]:hidden"
+      class="bg-sidebar text-sidebar-foreground w-[var(--sidebar-width)] p-0 sm:max-w-none [&>button]:hidden"
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
       {side}
     >
-      <div class="flex h-full w-full flex-col">
+      <div class="flex h-svh max-h-svh w-full flex-col overflow-hidden">
         {@render children?.()}
       </div>
     </Sheet.Content>

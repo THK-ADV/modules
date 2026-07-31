@@ -21,15 +21,15 @@
   <AppSidebar user={data.user} userInfo={data.userInfo} />
   <Sidebar.Inset>
     <header
-      class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+      class="flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear md:h-16 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >
-      <div class="flex items-center gap-2 px-4">
-        <Sidebar.Trigger class="-ml-1" />
+      <div class="flex items-center gap-2 px-3 md:px-4">
+        <Sidebar.Trigger class="-ml-1 size-10 [&>svg]:size-5 md:size-7 md:[&>svg]:size-4" />
         <Separator orientation="vertical" class="mr-2 h-4" />
         <NavBreadcrumb />
       </div>
     </header>
-    <main class="flex-1 px-4 py-6">
+    <main class="flex-1 px-3 py-4 md:px-4 md:py-6">
       {@render children?.()}
     </main>
   </Sidebar.Inset>

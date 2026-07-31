@@ -9,6 +9,7 @@
     type ScheduleEventProps
   } from '$lib/calendar'
   import ErrorMessage from '$lib/components/error-message.svelte'
+  import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import ScheduleEntryEditDialog, {
     type Mode
   } from '$lib/components/schedule/schedule-entry-edit-dialog.svelte'
@@ -23,6 +24,7 @@
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import type {
+    ScheduleEntry,
     ScheduleEntryCreate,
     ScheduleEntryEdit,
     ScheduleEntryUpdateScope
@@ -44,10 +46,11 @@
   interface Props {
     calendarData: CalendarData
     api: ScheduleEntryEditorApi
+    canEdit: boolean
     toolbar?: Snippet
   }
 
-  let { calendarData, api, toolbar }: Props = $props()
+  let { calendarData, api, canEdit, toolbar }: Props = $props()
 
   // UI control
   let selectedTab = $state('calendar')
@@ -57,6 +60,7 @@
   // Actions: create, update, delete, duplicate entries
   let errorMessage = $state<string | undefined>(undefined)
   let dialogMode: Mode | null = $state(null)
+  let selectedScheduleEntry = $state<ScheduleEntry | null>(null)
   // Actions: update entry by mouse
   let mouseUpdateScopeDialogOpen = $state(false)
   let mouseUpdateScopeDialog: {
@@ -93,6 +97,13 @@
       onDuplicate: duplicateEntry,
       onDelete: deleteEntry
     }
+  }
+
+  function onViewEntry(info: EventClickInfo) {
+    if (info.event.extendedProps?.source !== 'schedule') {
+      return
+    }
+    selectedScheduleEntry = info.event.extendedProps.raw
   }
 
   function onCreateFromSelection(info: DateSelectInfo) {
@@ -335,11 +346,11 @@
           holidays={calendarData.holidays}
           holidaysMonth={calendarData.holidaysMonth}
           semesterEntries={calendarData.semesterEntries}
-          onEventClick={onUpdateEntry}
-          onDateSelect={onCreateFromSelection}
-          onEventDrop={onUpdateByDrop}
-          onEventCopy={onCreateFromCopy}
-          onEventResize={onUpdateByResize}
+          onEventClick={canEdit ? onUpdateEntry : onViewEntry}
+          onDateSelect={canEdit ? onCreateFromSelection : undefined}
+          onEventDrop={canEdit ? onUpdateByDrop : undefined}
+          onEventCopy={canEdit ? onCreateFromCopy : undefined}
+          onEventResize={canEdit ? onUpdateByResize : undefined}
           scheduleFilter={schedulePlanningFilter}
         />
       </Tabs.Content>
@@ -351,6 +362,14 @@
 
   {#if dialogMode}
     <ScheduleEntryEditDialog mode={dialogMode} onClose={resetDialog} holidays={getHolidays()} />
+  {/if}
+
+  {#if selectedScheduleEntry}
+    <ScheduleEntryDetailsDialog
+      entry={selectedScheduleEntry}
+      studyPrograms={schedulePlanningFilter.studyProgramsWithSpecialization}
+      onClose={() => (selectedScheduleEntry = null)}
+    />
   {/if}
 
   <ScheduleEntryUpdateScopeDialog

@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types'
 export const load: PageServerLoad = async ({ fetch, parent }) => {
   const { userInfo } = await parent()
 
-  if (!userInfo?.hasSchedulePlanningPrivileges) {
+  if (!userInfo?.hasSchedulePlanningViewPrivileges) {
     throw error(403, { message: 'Keine Berechtigung für die Stundenplanung' })
   }
 

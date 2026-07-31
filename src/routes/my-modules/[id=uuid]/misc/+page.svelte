@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Combobox from '$lib/components/combobox.svelte'
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
-  import { ModuleMultiSelect, ModuleSingleSelect } from '$lib/components/module-filter'
+  import { ModuleMultiSelect } from '$lib/components/module-filter'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { moduleUpdateState } from '$lib/stores/store.svelte'
@@ -27,12 +26,6 @@
       ? moduleUpdateState.modules.filter(({ id }) => id !== module.id)
       : moduleUpdateState.modules
   })
-
-  const moduleRelationTypeOptions = [
-    { id: 'none', deLabel: 'Keine Beziehung' },
-    { id: 'parent', deLabel: 'Ober-Modul' },
-    { id: 'child', deLabel: 'Kind-Modul' }
-  ]
 
   let participantsMin = {
     get value() {
@@ -77,81 +70,12 @@
     }
   }
 
-  let moduleRelation = {
-    get value() {
-      return $formData.moduleRelation?.kind || 'none'
-    },
-    set value(newValue: string) {
-      switch (newValue) {
-        case 'parent':
-          $formData.moduleRelation = { kind: 'parent', children: [] }
-          break
-        case 'child':
-          $formData.moduleRelation = { kind: 'child', parent: '' }
-          break
-        case 'none':
-        default:
-          $formData.moduleRelation = null
-          break
-      }
-    }
-  }
-
-  let moduleRelationParent = {
-    get value() {
-      const relation = $formData.moduleRelation
-      if (!relation) {
-        return ''
-      }
-      if (relation.kind === 'child') {
-        return relation.parent
-      } else {
-        throw new Error(
-          'module relation must be a child since this function is only called for child relations'
-        )
-      }
-    },
-    set value(newValue: string) {
-      if (!$formData.moduleRelation) {
-        $formData.moduleRelation = { kind: 'child', parent: newValue }
-      } else {
-        if ($formData.moduleRelation.kind === 'child') {
-          $formData.moduleRelation.parent = newValue
-        } else {
-          throw new Error(
-            'module relation must be a child since this function is only called for child relations'
-          )
-        }
-      }
-    }
-  }
-
   let moduleRelationChildren = {
     get value() {
-      const relation = $formData.moduleRelation
-      if (!relation) {
-        return []
-      }
-      if (relation.kind === 'parent') {
-        return relation.children
-      } else {
-        throw new Error(
-          'module relation must be a parent since this function is only called for parent relations'
-        )
-      }
+      return $formData.moduleRelation?.children ?? []
     },
     set value(newValue: string[]) {
-      if (!$formData.moduleRelation) {
-        $formData.moduleRelation = { kind: 'parent', children: newValue }
-      } else {
-        if ($formData.moduleRelation.kind === 'parent') {
-          $formData.moduleRelation.children = newValue
-        } else {
-          throw new Error(
-            'module relation must be a parent since this function is only called for parent relations'
-          )
-        }
-      }
+      $formData.moduleRelation = newValue.length > 0 ? { kind: 'parent', children: newValue } : null
     }
   }
 </script>
@@ -162,7 +86,7 @@
       <h3 class="text-foreground text-lg font-medium">Sonstige Informationen</h3>
       <p class="text-muted-foreground text-sm">
         Zusätzliche organisatorische Informationen wie Teilnehmerbegrenzungen, gemeinsame
-        Veranstaltungen und Modulbeziehungen.
+        Veranstaltungen und Teilmodule.
       </p>
     </div>
   </div>
@@ -248,57 +172,28 @@
   >
     <div class="space-y-2 border-b pb-4">
       <div class="flex items-center justify-between">
-        <h4 class="text-foreground text-base font-medium">Modulbeziehung (optional)</h4>
+        <h4 class="text-foreground text-base font-medium">Teilmodule (optional)</h4>
         {#if moduleRelationStatus}
           <ModificationIndicator status={moduleRelationStatus} iconOnly={false} inline={true} />
         {/if}
       </div>
       <p class="text-muted-foreground text-sm">
-        Ein Modul kann ein Ober- oder Kind-Modul sein. Wird häufig verwendet, um mehrere Module zu
-        einem Ober-Modul zusammenzufassen. Das Ober-Modul taucht dabei nicht im Stundenplan auf.
-        Ober- und Kind-Module werden zusammen im Modulhandbuch und in den Prüfungslisten angezeigt.
+        Ein Modul kann Teilmodule enthalten. Diese werden zusammen mit dem Obermodul im
+        Modulhandbuch und in den Prüfungslisten angezeigt.
       </p>
     </div>
 
     <div class="space-y-5">
-      <Combobox
+      <ModuleMultiSelect
         {form}
-        name="moduleRelation"
-        label="Art der Beziehung"
-        placeholder="Wählen Sie eine Option"
-        description="Legt die <span class='text-primary underline'>Rolle des aktuellen Moduls</span> fest. Ein Ober-Modul enthält Kind-Module, ein Kind-Modul gehört zu einem Ober-Modul."
-        options={moduleRelationTypeOptions}
-        bind:value={moduleRelation.value}
+        name="moduleRelation.children"
+        label="Teilmodule"
+        description="Wählen Sie die Module aus, die diesem Obermodul untergeordnet sind."
+        options={moduleOptions}
+        bind:value={moduleRelationChildren.value}
         {errors}
         width="w-[500px]"
       />
-
-      {#if $formData.moduleRelation?.kind === 'child'}
-        <ModuleSingleSelect
-          {form}
-          name="moduleRelation.parent"
-          label="Ober-Modul"
-          placeholder="Ober-Modul auswählen"
-          description="Das übergeordnete Modul, zu dem dieses Modul gehört."
-          options={moduleOptions}
-          bind:value={moduleRelationParent.value}
-          {errors}
-          width="w-[500px]"
-        />
-      {/if}
-
-      {#if $formData.moduleRelation?.kind === 'parent'}
-        <ModuleMultiSelect
-          {form}
-          name="moduleRelation.children"
-          label="Kind-Module"
-          description="Die untergeordneten Module, die zu diesem Modul gehören. Mindestens ein Modul muss ausgewählt werden."
-          options={moduleOptions}
-          bind:value={moduleRelationChildren.value}
-          {errors}
-          width="w-[500px]"
-        />
-      {/if}
     </div>
   </div>
 </div>

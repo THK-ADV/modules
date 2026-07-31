@@ -70,7 +70,7 @@
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 
   const showPlanningSection = $derived(
-    userInfo?.hasSchedulePlanningPrivileges || userInfo?.hasExamPlanningPrivileges
+    userInfo?.hasSchedulePlanningViewPrivileges || userInfo?.hasExamPlanningPrivileges
   )
 </script>
 
@@ -98,31 +98,39 @@
   <Sidebar.Group>
     <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
     <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
-          {#snippet child({ props })}
-            <a href="/planning/schedule" {...props}>
-              <CalendarCog />
-              <span>{routeLabels['/planning/schedule']}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
-      <Sidebar.MenuItem>
-        <Tooltip.Root>
-          <Tooltip.Trigger class="w-full">
-            <Sidebar.MenuButton aria-disabled="true" class="opacity-50">
-              {#snippet child({ props })}
-                <span {...props}>
-                  <CalendarClock />
-                  <span>{routeLabels['/planning/exam']}</span>
-                </span>
-              {/snippet}
-            </Sidebar.MenuButton>
-          </Tooltip.Trigger>
-          <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
-        </Tooltip.Root>
-      </Sidebar.MenuItem>
+      {#if userInfo?.hasSchedulePlanningViewPrivileges}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
+            {#snippet child({ props })}
+              <a href="/planning/schedule" {...props}>
+                <CalendarCog />
+                <span>{routeLabels['/planning/schedule']}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      {/if}
+      {#if userInfo?.hasExamPlanningPrivileges}
+        <Sidebar.MenuItem>
+          <Tooltip.Root>
+            <Tooltip.Trigger class="w-full">
+              <Sidebar.MenuButton
+                aria-disabled="true"
+                class="opacity-50"
+                isActive={isActive('/planning/exam')}
+              >
+                {#snippet child({ props })}
+                  <span {...props}>
+                    <CalendarClock />
+                    <span>{routeLabels['/planning/exam']}</span>
+                  </span>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Tooltip.Trigger>
+            <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
+          </Tooltip.Root>
+        </Sidebar.MenuItem>
+      {/if}
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}

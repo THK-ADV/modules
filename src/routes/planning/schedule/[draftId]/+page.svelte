@@ -5,6 +5,7 @@
 
   let { data }: PageProps = $props()
 
+  const canEdit = $derived(data.userInfo?.hasSchedulePlanningPrivileges ?? false)
   const scheduleEntryApi = $derived(createDraftScheduleEntryEditorApi(data.planDraft.id))
 </script>
 
@@ -22,6 +23,7 @@
 
   <SchedulePlanningEditor
     api={scheduleEntryApi}
+    {canEdit}
     calendarData={{
       holidays: data.holidays,
       holidaysMonth: data.holidaysMonth,

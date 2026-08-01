@@ -1,4 +1,10 @@
-import type { ArtifactAction } from './schemas/artifact-action'
+import {
+  createModuleCatalog as createModuleCatalogRemote,
+  previewExamList as previewExamListRemote,
+  previewExamLoad as previewExamLoadRemote,
+  previewModuleCatalog as previewModuleCatalogRemote
+} from '$lib/preview.remote'
+import { getErrorMessage } from '$lib/errors'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
@@ -517,104 +523,46 @@ function htmlCSV(csv: string, studyProgramLabel: string, po: string) {
   `
 }
 
-export async function previewModuleCatalog(
-  studyProgram: StudyProgram,
-  config: ModuleCatalogConfig
-) {
-  const action = 'moduleCatalog'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
-}
+type PreviewFetcher = (
+  po: string
+) => Promise<{ type: 'pdf'; data: Uint8Array } | { type: 'csv'; data: string }>
 
-export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
-  const action = 'moduleCatalog_creation'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
-}
-
-export async function previewExamList(studyProgram: StudyProgram) {
-  const action = 'examList'
-  const actionLabel = 'Prüfungsliste'
-  await performFileAction(action, actionLabel, studyProgram)
-}
-
-export async function previewExamLoad(studyProgram: StudyProgram) {
-  const action = 'examLoad'
-  const actionLabel = 'Prüfungslast'
-  await performFileAction(action, actionLabel, studyProgram)
-}
-
-async function performFileAction(
-  action: ArtifactAction,
+async function openArtifactPreview(
   actionLabel: string,
   studyProgram: StudyProgram,
-  body?: ModuleCatalogConfig
+  fetchPreview: PreviewFetcher
 ) {
   const newTab = window.open()
   const studyProgramLabel = studyProgram.deLabel
+  const po = studyProgram.po.id
 
   newTab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
   newTab?.document.close()
 
   try {
-    // Use a longer timeout for large programs
-    const timeoutDuration = 180000 // 3 min
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
+    const result = await fetchPreview(po)
 
-    const po = studyProgram.po.id
-    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}`
-    const response = await fetch(url, {
-      signal: controller.signal,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    clearTimeout(timeoutId)
+    if (!newTab || newTab.closed) return
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }))
-      throw new Error(error.message || `${action} failed`)
+    if (result.type === 'csv') {
+      newTab.document.writeln(htmlCSV(result.data, studyProgramLabel, po))
+      newTab.document.close()
+      return
     }
 
-    if (newTab && !newTab.closed) {
-      const contentType = response.headers.get('Content-Type') || ''
-      const mimeType = contentType.split(';')[0].trim()
-
-      switch (mimeType) {
-        case 'text/csv':
-        case 'text/plain': {
-          const csv = await response.text()
-          newTab.document.writeln(htmlCSV(csv, studyProgramLabel, po))
-          newTab.document.close()
-          break
-        }
-        case 'application/pdf': {
-          const blob = await response.blob()
-          const blobUrl = URL.createObjectURL(blob)
-
-          const contentDisposition = response.headers.get('Content-Disposition')
-          const filename =
-            contentDisposition?.match(/filename="(.+?)"/)?.[1] ||
-            `${actionLabel}_${studyProgram.po.id}.pdf`
-
-          newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
-          newTab.document.close()
-
-          // Clean up blob URL after a longer delay to ensure PDF loads
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-          break
-        }
-        default: {
-          newTab.close()
-          break
-        }
-      }
-    }
+    const blobUrl = URL.createObjectURL(
+      new Blob([Uint8Array.from(result.data)], { type: 'application/pdf' })
+    )
+    const filename = `${actionLabel}_${po}.pdf`
+    newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
+    newTab.document.close()
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
   } catch (error) {
     if (newTab && !newTab.closed) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unbekannter Fehler beim Generieren des Dokuments'
+      const errorMessage = getErrorMessage(
+        error,
+        'Unbekannter Fehler beim Generieren des Dokuments'
+      )
       const isTimeoutError =
         errorMessage.includes('Server Timeout') || errorMessage.includes('aborted')
 
@@ -622,4 +570,27 @@ async function performFileAction(
       newTab.document.close()
     }
   }
+}
+
+export async function previewModuleCatalog(
+  studyProgram: StudyProgram,
+  config: ModuleCatalogConfig
+) {
+  await openArtifactPreview('Modulhandbuch', studyProgram, (po) =>
+    previewModuleCatalogRemote({ po, config })
+  )
+}
+
+export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
+  await openArtifactPreview('Modulhandbuch', studyProgram, (po) =>
+    createModuleCatalogRemote({ po, config })
+  )
+}
+
+export async function previewExamList(studyProgram: StudyProgram) {
+  await openArtifactPreview('Prüfungsliste', studyProgram, (po) => previewExamListRemote({ po }))
+}
+
+export async function previewExamLoad(studyProgram: StudyProgram) {
+  await openArtifactPreview('Prüfungslast', studyProgram, (po) => previewExamLoadRemote({ po }))
 }

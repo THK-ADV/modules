@@ -20,7 +20,9 @@
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import Input from '$lib/components/ui/input/input.svelte'
+  import { getErrorMessage } from '$lib/errors'
   import { invalidate } from '$app/navigation'
+  import { uploadModuleCatalogIntro } from '../studyprogram.remote'
 
   let {
     showModuleCatalogIntroductionUploadDialog = $bindable(),
@@ -93,28 +95,11 @@
     closeDialog()
 
     try {
-      const response = await fetch(
-        `/actions/module-catalog?poId=${encodeURIComponent(sp.po.id)}&action=upload`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': ACCEPTED_FILE_TYPE
-          },
-          body: file
-        }
-      )
-
-      if (!response.ok) {
-        const error = await response
-          .json()
-          .catch(() => ({ message: 'Fehler beim Hochladen der Datei' }))
-        showErrorMessage = error.message || String(error)
-      } else {
-        showSuccessMessage = 'Datei erfolgreich hochgeladen'
-        await invalidate('preview:studyProgram')
-      }
+      await uploadModuleCatalogIntro({ poId: sp.po.id, file })
+      showSuccessMessage = 'Datei erfolgreich hochgeladen'
+      await invalidate('preview:studyProgram')
     } catch (error) {
-      showErrorMessage = error instanceof Error ? error.message : String(error)
+      showErrorMessage = getErrorMessage(error, 'Fehler beim Hochladen der Datei')
     }
   }
 </script>

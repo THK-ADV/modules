@@ -1,12 +1,13 @@
+import { moduleCatalogConfigSchema } from '$lib/schemas/module-catalog'
 import { z } from 'zod/v4'
 
-export const artifactActionSchema = z.enum([
-  'moduleCatalog',
-  'moduleCatalog_creation',
-  'examList',
-  'examLoad'
-])
+export const artifactPoSchema = z.string().trim().min(1)
 
-export type ArtifactAction = z.infer<typeof artifactActionSchema>
+export const moduleCatalogArtifactInputSchema = z.object({
+  po: artifactPoSchema,
+  config: moduleCatalogConfigSchema
+})
 
-export const artifactTargetSchema = z.string().trim().min(1)
+export const artifactPoInputSchema = z.object({
+  po: artifactPoSchema
+})

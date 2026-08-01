@@ -183,7 +183,7 @@
   <FilterOption
     filterValues={scheduleFilter.selectedIdentities}
     handleSelect={scheduleFilter.selectIdentity}
-    title="Modulverantwortliche"
+    title="Dozierende"
     options={scheduleFilter.identities}
     clearFilters={scheduleFilter.clearSelectedIdentities}
   />

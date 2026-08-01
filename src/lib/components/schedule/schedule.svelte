@@ -128,11 +128,11 @@
           }
         }
 
-        // Identities filter
+        // Lecturers filter
         if (selectedIdentities.length > 0) {
           if (
             !selectedIdentities.some((id) =>
-              entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
+              entry.extendedProps.raw.lecturer.some((m) => m.id === id)
             )
           ) {
             continue

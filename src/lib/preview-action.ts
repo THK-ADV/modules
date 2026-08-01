@@ -1,10 +1,3 @@
-import {
-  createModuleCatalog as createModuleCatalogRemote,
-  previewExamList as previewExamListRemote,
-  previewExamLoad as previewExamLoadRemote,
-  previewModuleCatalog as previewModuleCatalogRemote
-} from '$lib/preview.remote'
-import { getErrorMessage } from '$lib/errors'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
@@ -523,74 +516,109 @@ function htmlCSV(csv: string, studyProgramLabel: string, po: string) {
   `
 }
 
-type PreviewFetcher = (
-  po: string
-) => Promise<{ type: 'pdf'; data: Uint8Array } | { type: 'csv'; data: string }>
+/** Authenticated binary/text fetch via the /auth-api proxy (streams; no devalue hop). */
+async function fetchArtifact(url: string, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 180_000)
 
-async function openArtifactPreview(
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal })
+    if (!response.ok) {
+      const err = await response.json().catch(() => null)
+      throw new Error(
+        (typeof err?.message === 'string' && err.message) ||
+          `Fehler beim Erzeugen (${response.status})`
+      )
+    }
+    return response
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+async function openPreviewTab(
   actionLabel: string,
   studyProgram: StudyProgram,
-  fetchPreview: PreviewFetcher
+  render: (tab: Window, po: string, studyProgramLabel: string) => Promise<void>
 ) {
-  const newTab = window.open()
+  const tab = window.open()
   const studyProgramLabel = studyProgram.deLabel
   const po = studyProgram.po.id
 
-  newTab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
-  newTab?.document.close()
+  tab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
+  tab?.document.close()
 
   try {
-    const result = await fetchPreview(po)
-
-    if (!newTab || newTab.closed) return
-
-    if (result.type === 'csv') {
-      newTab.document.writeln(htmlCSV(result.data, studyProgramLabel, po))
-      newTab.document.close()
-      return
-    }
-
-    const blobUrl = URL.createObjectURL(
-      new Blob([Uint8Array.from(result.data)], { type: 'application/pdf' })
-    )
-    const filename = `${actionLabel}_${po}.pdf`
-    newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
-    newTab.document.close()
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+    if (!tab || tab.closed) return
+    await render(tab, po, studyProgramLabel)
   } catch (error) {
-    if (newTab && !newTab.closed) {
-      const errorMessage = getErrorMessage(
-        error,
-        'Unbekannter Fehler beim Generieren des Dokuments'
-      )
+    if (tab && !tab.closed) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unbekannter Fehler beim Generieren des Dokuments'
       const isTimeoutError =
-        errorMessage.includes('Server Timeout') || errorMessage.includes('aborted')
+        errorMessage.includes('Server Timeout') ||
+        errorMessage.includes('aborted') ||
+        (error instanceof DOMException && error.name === 'AbortError')
 
-      newTab.document.writeln(htmlError(actionLabel, errorMessage, isTimeoutError))
-      newTab.document.close()
+      tab.document.writeln(htmlError(actionLabel, errorMessage, isTimeoutError))
+      tab.document.close()
     }
   }
 }
 
-export async function previewModuleCatalog(
+async function showPdf(
+  actionLabel: string,
   studyProgram: StudyProgram,
-  config: ModuleCatalogConfig
+  request: (po: string) => Promise<Response>
 ) {
-  await openArtifactPreview('Modulhandbuch', studyProgram, (po) =>
-    previewModuleCatalogRemote({ po, config })
+  await openPreviewTab(actionLabel, studyProgram, async (tab, po, studyProgramLabel) => {
+    const blob = await (await request(po)).blob()
+    const blobUrl = URL.createObjectURL(blob)
+    tab.document.writeln(
+      htmlPDF(blobUrl, `${actionLabel}_${po}.pdf`, actionLabel, studyProgramLabel)
+    )
+    tab.document.close()
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+  })
+}
+
+function moduleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig, preview: boolean) {
+  return showPdf('Modulhandbuch', studyProgram, (po) =>
+    fetchArtifact(`/auth-api/moduleCatalogs/${encodeURIComponent(po)}?preview=${preview}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/pdf',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(config)
+    })
   )
 }
 
-export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
-  await openArtifactPreview('Modulhandbuch', studyProgram, (po) =>
-    createModuleCatalogRemote({ po, config })
+export function previewModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
+  return moduleCatalog(studyProgram, config, true)
+}
+
+export function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
+  return moduleCatalog(studyProgram, config, false)
+}
+
+export function previewExamList(studyProgram: StudyProgram) {
+  return showPdf('Prüfungsliste', studyProgram, (po) =>
+    fetchArtifact(`/auth-api/examLists/preview/${encodeURIComponent(po)}`, {
+      headers: { Accept: 'application/pdf' }
+    })
   )
 }
 
-export async function previewExamList(studyProgram: StudyProgram) {
-  await openArtifactPreview('Prüfungsliste', studyProgram, (po) => previewExamListRemote({ po }))
-}
-
-export async function previewExamLoad(studyProgram: StudyProgram) {
-  await openArtifactPreview('Prüfungslast', studyProgram, (po) => previewExamLoadRemote({ po }))
+export function previewExamLoad(studyProgram: StudyProgram) {
+  return openPreviewTab('Prüfungslast', studyProgram, async (tab, po, studyProgramLabel) => {
+    const csv = await (
+      await fetchArtifact(`/auth-api/examLoad/${encodeURIComponent(po)}?preview=true`, {
+        headers: { Accept: 'text/csv' }
+      })
+    ).text()
+    tab.document.writeln(htmlCSV(csv, studyProgramLabel, po))
+    tab.document.close()
+  })
 }

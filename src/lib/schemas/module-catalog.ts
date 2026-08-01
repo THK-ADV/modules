@@ -113,12 +113,3 @@ export function createEmptyModuleCatalogConfig(): ModuleCatalogConfig {
     }
   }
 }
-
-export const MODULE_CATALOG_INTRO_MIME =
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-
-export const uploadModuleCatalogIntroInputSchema = z.object({
-  poId: nonEmptyStringSchema,
-  // Client validates .docx; browsers sometimes omit File.type for this mime
-  file: z.file().max(10 * 1024 * 1024)
-})

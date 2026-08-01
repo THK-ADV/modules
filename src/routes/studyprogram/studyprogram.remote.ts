@@ -1,10 +1,10 @@
 import { command, getRequestEvent } from '$app/server'
 import { examListReleaseRequestSchema } from '$lib/schemas/exam-list'
-import {
-  MODULE_CATALOG_INTRO_MIME,
-  uploadModuleCatalogIntroInputSchema
-} from '$lib/schemas/module-catalog'
 import { fetchBackend } from '$lib/server/backend/http'
+import { z } from 'zod/v4'
+
+const MODULE_CATALOG_INTRO_MIME =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 export const publishExamList = command(
   examListReleaseRequestSchema,
@@ -24,7 +24,10 @@ export const publishExamList = command(
 )
 
 export const uploadModuleCatalogIntro = command(
-  uploadModuleCatalogIntroInputSchema,
+  z.object({
+    poId: z.string().trim().min(1),
+    file: z.file().max(10 * 1024 * 1024)
+  }),
   async ({ poId, file }) => {
     const { fetch } = getRequestEvent()
     await fetchBackend(

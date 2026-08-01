@@ -74,7 +74,7 @@ export function createScheduleFilter(prefix: FilterType) {
   )
   let selectedSemesters: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-semesters`))
   let selectedIdentities: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-identities`)
+    getArrayFromLocalStorage(`${prefix}-selected-lecturers`)
   )
   let selectedRooms: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-rooms`))
   let selectedModuleTypes: string[] = $state(
@@ -215,11 +215,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedIdentities = [...selectedIdentities, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-identities`, selectedIdentities)
+      setArrayToLocalStorage(`${prefix}-selected-lecturers`, selectedIdentities)
     },
     clearSelectedIdentities() {
       selectedIdentities = []
-      clearItemFromLocalStorage(`${prefix}-selected-identities`)
+      clearItemFromLocalStorage(`${prefix}-selected-lecturers`)
     },
     get rooms() {
       return rooms

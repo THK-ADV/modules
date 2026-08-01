@@ -1,6 +1,9 @@
 import { command, getRequestEvent } from '$app/server'
 import { examListReleaseRequestSchema } from '$lib/schemas/exam-list'
-import { uploadModuleCatalogIntroInputSchema } from '$lib/schemas/module-catalog'
+import {
+  MODULE_CATALOG_INTRO_MIME,
+  uploadModuleCatalogIntroInputSchema
+} from '$lib/schemas/module-catalog'
 import { fetchBackend } from '$lib/server/backend/http'
 
 export const publishExamList = command(
@@ -30,7 +33,7 @@ export const uploadModuleCatalogIntro = command(
       'Fehler beim Hochladen der Einleitung',
       {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
+        headers: { 'Content-Type': MODULE_CATALOG_INTRO_MIME },
         body: await file.arrayBuffer()
       }
     )

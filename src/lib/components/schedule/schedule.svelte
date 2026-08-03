@@ -64,8 +64,9 @@
         selectedModules,
         selectedStudyPrograms,
         selectedSemesters,
-        selectedIdentities,
+        selectedLecturers,
         selectedModuleManagers,
+        showModuleManagementFilter,
         selectedRooms,
         selectedModuleTypes,
         searchString
@@ -129,8 +130,8 @@
           }
         }
 
-        // Module managers filter (schedule view only; planning keeps this empty)
-        if (selectedModuleManagers.length > 0) {
+        // Module managers filter
+        if (showModuleManagementFilter && selectedModuleManagers.length > 0) {
           if (
             !selectedModuleManagers.some((id) =>
               entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
@@ -141,9 +142,9 @@
         }
 
         // Lecturers filter
-        if (selectedIdentities.length > 0) {
+        if (selectedLecturers.length > 0) {
           if (
-            !selectedIdentities.some((id) =>
+            !selectedLecturers.some((id) =>
               entry.extendedProps.raw.lecturer.some((m) => m.id === id)
             )
           ) {

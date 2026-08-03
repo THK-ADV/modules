@@ -22,8 +22,9 @@
       selectedModules,
       selectedStudyPrograms,
       selectedSemesters,
-      selectedIdentities,
+      selectedLecturers,
       selectedModuleManagers,
+      showModuleManagementFilter,
       selectedRooms,
       selectedModuleTypes
     } = scheduleFilter
@@ -35,8 +36,8 @@
       selectedModules.length > 0 ||
       selectedStudyPrograms.length > 0 ||
       selectedSemesters.length > 0 ||
-      selectedIdentities.length > 0 ||
-      selectedModuleManagers.length > 0 ||
+      selectedLecturers.length > 0 ||
+      (showModuleManagementFilter && selectedModuleManagers.length > 0) ||
       selectedRooms.length > 0 ||
       selectedModuleTypes.length > 0
     )
@@ -65,8 +66,9 @@
       selectedModules,
       selectedStudyPrograms,
       selectedSemesters,
-      selectedIdentities,
+      selectedLecturers,
       selectedModuleManagers,
+      showModuleManagementFilter,
       selectedRooms,
       selectedModuleTypes
     } = scheduleFilter
@@ -87,10 +89,10 @@
     if (selectedSemesters.length > 0) {
       count++
     }
-    if (selectedIdentities.length > 0) {
+    if (selectedLecturers.length > 0) {
       count++
     }
-    if (selectedModuleManagers.length > 0) {
+    if (showModuleManagementFilter && selectedModuleManagers.length > 0) {
       count++
     }
     if (selectedRooms.length > 0) {
@@ -196,11 +198,11 @@
     />
   {/if}
   <FilterOption
-    filterValues={scheduleFilter.selectedIdentities}
-    handleSelect={scheduleFilter.selectIdentity}
+    filterValues={scheduleFilter.selectedLecturers}
+    handleSelect={scheduleFilter.selectLecturer}
     title="Dozierende"
     options={scheduleFilter.identities}
-    clearFilters={scheduleFilter.clearSelectedIdentities}
+    clearFilters={scheduleFilter.clearSelectedLecturers}
   />
   <FilterOption
     filterValues={scheduleFilter.selectedRooms}

@@ -64,7 +64,9 @@
         selectedModules,
         selectedStudyPrograms,
         selectedSemesters,
-        selectedIdentities,
+        selectedLecturers,
+        selectedModuleManagers,
+        showModuleManagementFilter,
         selectedRooms,
         selectedModuleTypes,
         searchString
@@ -128,11 +130,22 @@
           }
         }
 
-        // Identities filter
-        if (selectedIdentities.length > 0) {
+        // Module managers filter
+        if (showModuleManagementFilter && selectedModuleManagers.length > 0) {
           if (
-            !selectedIdentities.some((id) =>
+            !selectedModuleManagers.some((id) =>
               entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
+            )
+          ) {
+            continue
+          }
+        }
+
+        // Lecturers filter
+        if (selectedLecturers.length > 0) {
+          if (
+            !selectedLecturers.some((id) =>
+              entry.extendedProps.raw.lecturer.some((m) => m.id === id)
             )
           ) {
             continue

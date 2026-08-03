@@ -49,6 +49,7 @@ export function createScheduleFilter(prefix: FilterType) {
   let showSemester = $state(getShowSemesterPlanFromLocalStorage(prefix))
   let showSchedule = $state(getShowScheduleFromLocalStorage(prefix))
   let showExams = $state(false)
+  const showModuleManagementFilter = prefix === 'sf'
 
   // Filter options
   let teachingUnits: FilterData[] = $state.raw([])
@@ -73,8 +74,13 @@ export function createScheduleFilter(prefix: FilterType) {
     getArrayFromLocalStorage(`${prefix}-selected-study-programs`)
   )
   let selectedSemesters: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-semesters`))
-  let selectedIdentities: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-identities`)
+  let selectedLecturers: string[] = $state(
+    getArrayFromLocalStorage(`${prefix}-selected-lecturers`)
+  )
+  let selectedModuleManagers: string[] = $state(
+    showModuleManagementFilter
+      ? getArrayFromLocalStorage(`${prefix}-selected-module-managers`)
+      : []
   )
   let selectedRooms: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-rooms`))
   let selectedModuleTypes: string[] = $state(
@@ -206,20 +212,40 @@ export function createScheduleFilter(prefix: FilterType) {
     get identities() {
       return identities
     },
-    get selectedIdentities() {
-      return selectedIdentities
+    get selectedLecturers() {
+      return selectedLecturers
     },
-    selectIdentity(id: string) {
-      if (selectedIdentities.includes(id)) {
-        selectedIdentities = selectedIdentities.filter((x) => x !== id)
+    selectLecturer(id: string) {
+      if (selectedLecturers.includes(id)) {
+        selectedLecturers = selectedLecturers.filter((x) => x !== id)
       } else {
-        selectedIdentities = [...selectedIdentities, id]
+        selectedLecturers = [...selectedLecturers, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-identities`, selectedIdentities)
+      setArrayToLocalStorage(`${prefix}-selected-lecturers`, selectedLecturers)
     },
-    clearSelectedIdentities() {
-      selectedIdentities = []
-      clearItemFromLocalStorage(`${prefix}-selected-identities`)
+    clearSelectedLecturers() {
+      selectedLecturers = []
+      clearItemFromLocalStorage(`${prefix}-selected-lecturers`)
+    },
+    get selectedModuleManagers() {
+      return selectedModuleManagers
+    },
+    selectModuleManager(id: string) {
+      if (!showModuleManagementFilter) return
+      if (selectedModuleManagers.includes(id)) {
+        selectedModuleManagers = selectedModuleManagers.filter((x) => x !== id)
+      } else {
+        selectedModuleManagers = [...selectedModuleManagers, id]
+      }
+      setArrayToLocalStorage(`${prefix}-selected-module-managers`, selectedModuleManagers)
+    },
+    clearSelectedModuleManagers() {
+      if (!showModuleManagementFilter) return
+      selectedModuleManagers = []
+      clearItemFromLocalStorage(`${prefix}-selected-module-managers`)
+    },
+    get showModuleManagementFilter() {
+      return showModuleManagementFilter
     },
     get rooms() {
       return rooms
@@ -268,7 +294,8 @@ export function createScheduleFilter(prefix: FilterType) {
       this.clearSelectedModules()
       this.clearSelectedStudyPrograms()
       this.clearSelectedSemesters()
-      this.clearSelectedIdentities()
+      this.clearSelectedLecturers()
+      this.clearSelectedModuleManagers()
       this.clearSelectedRooms()
       this.clearSelectedModuleTypes()
     },

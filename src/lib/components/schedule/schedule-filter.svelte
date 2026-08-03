@@ -23,6 +23,7 @@
       selectedStudyPrograms,
       selectedSemesters,
       selectedIdentities,
+      selectedModuleManagers,
       selectedRooms,
       selectedModuleTypes
     } = scheduleFilter
@@ -35,6 +36,7 @@
       selectedStudyPrograms.length > 0 ||
       selectedSemesters.length > 0 ||
       selectedIdentities.length > 0 ||
+      selectedModuleManagers.length > 0 ||
       selectedRooms.length > 0 ||
       selectedModuleTypes.length > 0
     )
@@ -64,6 +66,7 @@
       selectedStudyPrograms,
       selectedSemesters,
       selectedIdentities,
+      selectedModuleManagers,
       selectedRooms,
       selectedModuleTypes
     } = scheduleFilter
@@ -85,6 +88,9 @@
       count++
     }
     if (selectedIdentities.length > 0) {
+      count++
+    }
+    if (selectedModuleManagers.length > 0) {
       count++
     }
     if (selectedRooms.length > 0) {
@@ -180,6 +186,15 @@
     options={scheduleFilter.courseTypes}
     clearFilters={scheduleFilter.clearSelectedCourseTypes}
   />
+  {#if scheduleFilter.showModuleManagementFilter}
+    <FilterOption
+      filterValues={scheduleFilter.selectedModuleManagers}
+      handleSelect={scheduleFilter.selectModuleManager}
+      title="Modulverantwortliche"
+      options={scheduleFilter.identities}
+      clearFilters={scheduleFilter.clearSelectedModuleManagers}
+    />
+  {/if}
   <FilterOption
     filterValues={scheduleFilter.selectedIdentities}
     handleSelect={scheduleFilter.selectIdentity}

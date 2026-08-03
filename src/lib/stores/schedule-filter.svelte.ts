@@ -76,6 +76,10 @@ export function createScheduleFilter(prefix: FilterType) {
   let selectedIdentities: string[] = $state(
     getArrayFromLocalStorage(`${prefix}-selected-lecturers`)
   )
+  // Only used on the public schedule view (`sf`); planning keeps this empty.
+  let selectedModuleManagers: string[] = $state(
+    prefix === 'sf' ? getArrayFromLocalStorage(`${prefix}-selected-module-managers`) : []
+  )
   let selectedRooms: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-rooms`))
   let selectedModuleTypes: string[] = $state(
     getArrayFromLocalStorage(`${prefix}-selected-module-types`)
@@ -221,6 +225,24 @@ export function createScheduleFilter(prefix: FilterType) {
       selectedIdentities = []
       clearItemFromLocalStorage(`${prefix}-selected-lecturers`)
     },
+    get selectedModuleManagers() {
+      return selectedModuleManagers
+    },
+    selectModuleManager(id: string) {
+      if (selectedModuleManagers.includes(id)) {
+        selectedModuleManagers = selectedModuleManagers.filter((x) => x !== id)
+      } else {
+        selectedModuleManagers = [...selectedModuleManagers, id]
+      }
+      setArrayToLocalStorage(`${prefix}-selected-module-managers`, selectedModuleManagers)
+    },
+    clearSelectedModuleManagers() {
+      selectedModuleManagers = []
+      clearItemFromLocalStorage(`${prefix}-selected-module-managers`)
+    },
+    get showModuleManagementFilter() {
+      return prefix === 'sf'
+    },
     get rooms() {
       return rooms
     },
@@ -269,6 +291,7 @@ export function createScheduleFilter(prefix: FilterType) {
       this.clearSelectedStudyPrograms()
       this.clearSelectedSemesters()
       this.clearSelectedIdentities()
+      this.clearSelectedModuleManagers()
       this.clearSelectedRooms()
       this.clearSelectedModuleTypes()
     },

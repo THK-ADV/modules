@@ -65,6 +65,7 @@
         selectedStudyPrograms,
         selectedSemesters,
         selectedIdentities,
+        selectedModuleManagers,
         selectedRooms,
         selectedModuleTypes,
         searchString
@@ -124,6 +125,17 @@
           )
 
           if (matchingPoEntries.length === 0) {
+            continue
+          }
+        }
+
+        // Module managers filter (schedule view only; planning keeps this empty)
+        if (selectedModuleManagers.length > 0) {
+          if (
+            !selectedModuleManagers.some((id) =>
+              entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
+            )
+          ) {
             continue
           }
         }

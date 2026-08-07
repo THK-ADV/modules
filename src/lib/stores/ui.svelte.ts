@@ -25,17 +25,6 @@ function getSelectedCalendarDate() {
   }
 }
 
-function getScheduleDisclaimerExpanded() {
-  if (!browser) {
-    return true
-  }
-  const value = localStorage.getItem('schedule-disclaimer-expanded-state')
-  if (value) {
-    return value === 'true'
-  }
-  return true
-}
-
 function setStringToLocalStorage(key: string, value: string) {
   if (!browser) {
     return
@@ -46,7 +35,6 @@ function setStringToLocalStorage(key: string, value: string) {
 function createUiStore() {
   let selectedCalendarView = $state(getSelectedCalendarView())
   let selectedCalendarDate = $state(getSelectedCalendarDate())
-  let scheduleDisclaimerExpanded = $state(getScheduleDisclaimerExpanded())
 
   return {
     get selectedCalendarView() {
@@ -62,13 +50,6 @@ function createUiStore() {
     set selectedCalendarDate(date: string) {
       selectedCalendarDate = date
       setStringToLocalStorage('selected-calendar-date', date)
-    },
-    get scheduleDisclaimerExpanded() {
-      return scheduleDisclaimerExpanded
-    },
-    set scheduleDisclaimerExpanded(expanded: boolean) {
-      scheduleDisclaimerExpanded = expanded
-      setStringToLocalStorage('schedule-disclaimer-expanded-state', expanded.toString())
     }
   }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
-  import { Button } from '$lib/components/ui/button'
+  import { buttonVariants } from '$lib/components/ui/button'
   import * as Command from '$lib/components/ui/command'
   import * as Popover from '$lib/components/ui/popover'
   import { Separator } from '$lib/components/ui/separator'
@@ -57,32 +57,31 @@
 </script>
 
 <Popover.Root bind:open>
-  <Popover.Trigger>
-    <div>
-      <Button variant="outline" size="sm" class={triggerButtonClass}>
-        <CirclePlus class="size-4" />
-        {title}
-        {#if filterValues.length > 0}
-          <Separator orientation="vertical" class="mx-1 h-4" />
-          <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
-            {filterValues.length}
+  <Popover.Trigger
+    type="button"
+    class={cn(buttonVariants({ variant: 'outline', size: 'sm' }), triggerButtonClass)}
+  >
+    <CirclePlus class="size-4" />
+    {title}
+    {#if filterValues.length > 0}
+      <Separator orientation="vertical" class="mx-1 h-4" />
+      <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
+        {filterValues.length}
+      </Badge>
+      <div class="hidden space-x-1 lg:flex">
+        {#if filterValues.length > 2}
+          <Badge variant="secondary" class="rounded-sm px-1 font-normal">
+            {filterValues.length} Ausgewählt
           </Badge>
-          <div class="hidden space-x-1 lg:flex">
-            {#if filterValues.length > 2}
-              <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-                {filterValues.length} Ausgewählt
-              </Badge>
-            {:else}
-              {#each filterValues as option (option)}
-                <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-                  {fmtBadge(option)}
-                </Badge>
-              {/each}
-            {/if}
-          </div>
+        {:else}
+          {#each filterValues as option (option)}
+            <Badge variant="secondary" class="rounded-sm px-1 font-normal">
+              {fmtBadge(option)}
+            </Badge>
+          {/each}
         {/if}
-      </Button>
-    </div>
+      </div>
+    {/if}
   </Popover.Trigger>
   <Popover.Content class="max-w-md p-0" align="start">
     <Command.Root>

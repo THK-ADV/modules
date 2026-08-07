@@ -491,18 +491,11 @@
         {#each sections as section (section.id)}
           {@const sectionStatus = getSectionStatus(section.id, data.fieldStatuses)}
           {#if sectionsWithErrors?.includes(section.id)}
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <option value={`${section.href}${page.url.search}`} class="text-destructive"
-                    >⚠️ {section.label}</option
-                  >
-                </Tooltip.Trigger>
-                <Tooltip.Content class="z-100 max-w-xs wrap-break-word"
-                  >{ERROR_TOOLTIP_TEXT}</Tooltip.Content
-                >
-              </Tooltip.Root>
-            </Tooltip.Provider>
+            <option
+              value={`${section.href}${page.url.search}`}
+              class="text-destructive"
+              title={ERROR_TOOLTIP_TEXT}>⚠️ {section.label}</option
+            >
           {:else}
             <option value={`${section.href}${page.url.search}`}>
               {section.label}{sectionStatus === 'needs-review'

@@ -33,7 +33,6 @@
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
-  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { previewExamList, previewExamLoad } from '$lib/preview-action'
   import type { ExamList } from '$lib/types/exam-list'
   import type { Semester } from '$lib/types/semester'
@@ -213,16 +212,7 @@
         <Tabs.Trigger value="exam-load">
           <span class="flex items-center gap-1.5">
             Prüfungslast
-            <Tooltip.Provider>
-              <Tooltip.Root>
-                <Tooltip.Trigger>
-                  <FlaskConical class="text-muted-foreground size-4" />
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p class="text-sm">Experimentell</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
-            </Tooltip.Provider>
+            <FlaskConical class="text-muted-foreground size-4" title="Experimentell" />
           </span>
         </Tabs.Trigger>
       </Tabs.List>

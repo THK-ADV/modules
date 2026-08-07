@@ -95,16 +95,19 @@
           </div>
           <Tooltip.Root>
             <Tooltip.Trigger>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                class="text-muted-foreground hover:text-foreground size-8 shrink-0"
-                onclick={showModuleDetails}
-              >
-                <ExternalLink class="size-4" />
-                <span class="sr-only">Modul-Details anzeigen</span>
-              </Button>
+              {#snippet child({ props })}
+                <Button
+                  {...props}
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  class="text-muted-foreground hover:text-foreground size-8 shrink-0"
+                  onclick={showModuleDetails}
+                >
+                  <ExternalLink class="size-4" />
+                  <span class="sr-only">Modul-Details anzeigen</span>
+                </Button>
+              {/snippet}
             </Tooltip.Trigger>
             <Tooltip.Content>Modul-Details anzeigen</Tooltip.Content>
           </Tooltip.Root>

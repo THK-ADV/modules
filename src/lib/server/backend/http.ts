@@ -25,7 +25,7 @@ export async function fetchBackend(
   }
 
   if (!resp.ok) {
-    const message = (await readBackendErrorMessage(resp)) || resp.statusText || fallbackMessage
+    const message = (await readBackendErrorMessage(resp)) || fallbackMessage
     throw error(resp.status, { message })
   }
 

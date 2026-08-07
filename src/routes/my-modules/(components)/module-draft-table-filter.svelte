@@ -107,7 +107,7 @@
         </div>
         <div class="w-full min-w-0 flex-1 md:w-auto">
           <Input
-            placeholder="Suche nach Modulbezeichnung…"
+            placeholder="Suche nach Modulbezeichnung oder Kürzel…"
             class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
             type="search"
             value={myModuleFilter.searchString}
@@ -159,7 +159,7 @@
       </div>
       <div class="w-full min-w-0 flex-1 md:w-auto">
         <Input
-          placeholder="Suche nach Modulbezeichnung…"
+          placeholder="Suche nach Modulbezeichnung oder Kürzel…"
           class="border-muted-foreground/20 focus-visible:border-primary focus-visible:ring-primary/20 h-10 w-full border-2 text-sm transition-colors focus-visible:ring-2 md:max-w-md"
           type="search"
           value={myModuleFilter.searchString}

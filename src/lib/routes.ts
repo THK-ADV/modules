@@ -20,6 +20,7 @@ export const routeLabels = {
   '/module-catalogs': 'Modulhandbücher',
   '/exam-lists': 'Prüfungslisten',
   '/my-modules': 'Meine Module',
+  '/my-modules/preview/[id=uuid]': 'Modulvorschau',
   [MY_MODULE_ROUTE_ID]: 'Modul',
   '/my-modules/[id=uuid]/general': 'Allgemeine Informationen',
   '/my-modules/[id=uuid]/management': 'Verantwortliche',

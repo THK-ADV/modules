@@ -1,13 +1,16 @@
-import type { ModuleShort } from './module-details'
+import type { ModuleShort } from '$lib/schemas/module-details'
 
-export type ModuleDraftState =
-  | 'published'
-  | 'valid_for_review'
-  | 'valid_for_publication'
-  | 'waiting_for_changes'
-  | 'waiting_for_review'
-  | 'waiting_for_publication'
-  | 'unknown'
+export const MODULE_DRAFT_STATES = [
+  'published',
+  'valid_for_review',
+  'valid_for_publication',
+  'waiting_for_changes',
+  'waiting_for_review',
+  'waiting_for_publication',
+  'unknown'
+] as const
+
+export type ModuleDraftState = (typeof MODULE_DRAFT_STATES)[number]
 
 export interface ModuleDraft {
   module: ModuleShort

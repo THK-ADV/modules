@@ -24,6 +24,7 @@
     moduleId: string
     moduleDraftState: ModuleDraftState
     canBeFastForwardApproved: boolean
+    onActionComplete: () => void
   }
 
   interface Action {
@@ -36,7 +37,7 @@
     disabled?: boolean
   }
 
-  let { moduleId, moduleDraftState, canBeFastForwardApproved }: Props = $props()
+  let { moduleId, moduleDraftState, canBeFastForwardApproved, onActionComplete }: Props = $props()
 
   let isDeleting = $state(false)
   let isPublishing = $state(false)
@@ -89,6 +90,7 @@
 
       // refresh the page data
       await invalidateAll()
+      onActionComplete()
     } catch (error) {
       console.error(`${action} failed:`, error)
       alert(`Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
@@ -289,7 +291,7 @@
     class:opacity-75={isPerformingAction}
   >
     <!-- Desktop: Show all actions inline -->
-    <div class="hidden items-center gap-1 lg:flex">
+    <div class="hidden items-center gap-1 lg:flex group-data-[preview=true]/module-table:lg:hidden">
       <div class="flex items-center gap-1">
         {#each moduleActions as action (action.key)}
           {@render buttonRow(action)}
@@ -298,7 +300,7 @@
     </div>
 
     <!-- Mobile: Dropdown menu -->
-    <div class="lg:hidden">
+    <div class="lg:hidden group-data-[preview=true]/module-table:lg:block">
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           {#snippet child({ props })}

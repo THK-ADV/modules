@@ -1,13 +1,16 @@
 <script lang="ts" module>
   import type {
     Assessment,
+    AssessmentPrerequisite,
+    AttendanceRequirement,
     GenericModuleOption,
     Identity,
     ModuleDetail,
     ModuleShort,
+    Person,
     POMandatory,
     Prerequisite
-  } from '$lib/types/module-details'
+  } from '$lib/schemas/module-details'
 
   function createWorkloadContactHours({ workload }: ModuleDetail) {
     return (
@@ -190,7 +193,7 @@
   }
 
   function formatPerson(person: Person) {
-    let label = `${person.firstname} ${person.lastname}`
+    let label = [person.firstname, person.lastname].filter(Boolean).join(' ') || person.title
     const hasOtherFaculties = person.faculties.some((f) => !f.startsWith('f10'))
     if (hasOtherFaculties) {
       const faculties = person.faculties.map((f) => f.toUpperCase()).join(', ')
@@ -252,15 +255,14 @@
 </script>
 
 <script lang="ts">
+  import type { Snippet } from 'svelte'
   import * as Avatar from '$lib/components/ui/avatar/index.js'
   import { Badge } from '$lib/components/ui/badge'
   import * as Card from '$lib/components/ui/card/index.js'
   import { Separator } from '$lib/components/ui/separator'
   import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { Person } from '$lib/types/core'
-  import type { Other } from '$lib/types/module-details'
-  import type { AssessmentPrerequisite, AttendanceRequirement } from '$lib/types/module-protocol'
+  import type { Other } from '$lib/schemas/module-details'
   import { cn } from '$lib/utils'
   import {
     Award,
@@ -283,15 +285,18 @@
   const {
     module,
     genericModuleOptions,
-    isGenericModule,
-    isAuthenticated
+    isAuthenticated,
+    compact = false,
+    headerActions
   }: {
     module: ModuleDetail
     genericModuleOptions: GenericModuleOption[]
-    isGenericModule: boolean
     isAuthenticated: boolean
+    compact?: boolean
+    headerActions?: Snippet
   } = $props()
 
+  const isGenericModule = $derived(module.moduleType.id === 'generic_module')
   const ectsFactors = $derived(createECTSFactors(module))
   const examPhases = $derived(createExamPhases(module))
   const contact = $derived(createWorkloadContactHours(module))
@@ -352,14 +357,10 @@
 {#snippet rawAvatar(person: Person)}
   <Avatar.Root class="bg-muted size-12">
     {#if person.imageUrl}
-      <Avatar.Image
-        src={person.imageUrl}
-        alt={person.firstname + ' ' + person.lastname}
-        class="object-cover"
-      />
-      <Avatar.Fallback>{person.abbreviation}</Avatar.Fallback>
+      <Avatar.Image src={person.imageUrl} alt={formatPerson(person)} class="object-cover" />
+      <Avatar.Fallback>{person.abbreviation ?? '?'}</Avatar.Fallback>
     {:else}
-      <Avatar.Fallback>{person.abbreviation}</Avatar.Fallback>
+      <Avatar.Fallback>{person.abbreviation ?? '?'}</Avatar.Fallback>
     {/if}
   </Avatar.Root>
   <div class="flex flex-col">
@@ -548,7 +549,12 @@
 <div class="space-y-8">
   <!-- Module Header -->
   <div class="space-y-4">
-    <h1 class="text-3xl font-bold tracking-tight">{module.title}</h1>
+    <div class="flex items-start justify-between gap-4">
+      <h1 class="min-w-0 text-3xl font-bold tracking-tight">{module.title}</h1>
+      {#if headerActions}
+        <div class="shrink-0">{@render headerActions()}</div>
+      {/if}
+    </div>
     <div class="flex flex-wrap items-center gap-2">
       {#if module.status.id === 'inactive'}
         <Tooltip.Provider>
@@ -599,7 +605,7 @@
 
   <!-- Module Information Card -->
 
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+  <div class={cn('grid grid-cols-1 gap-6', !compact && 'lg:grid-cols-2 xl:grid-cols-3')}>
     <!-- general information + submodules -->
     <Card.Root>
       <Card.Header>

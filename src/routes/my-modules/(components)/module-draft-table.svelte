@@ -25,11 +25,13 @@
   let {
     moduleDrafts,
     columns,
-    hasAdditionalModules
+    hasAdditionalModules,
+    selectedModuleId = null
   }: {
     moduleDrafts: ModuleDraft[]
     columns: ColumnDef<ModuleDraft>[]
     hasAdditionalModules: boolean
+    selectedModuleId?: string | null
   } = $props()
 
   const pages = myModuleFilter.pages
@@ -103,7 +105,7 @@
   })
 </script>
 
-<div class="space-y-4">
+<div class="group/module-table space-y-4" data-preview={selectedModuleId !== null}>
   <ModuleDraftTableFilter {table} {hasAdditionalModules} />
   <div class="rounded-md border">
     <Table.Root>
@@ -126,7 +128,8 @@
       <Table.Body>
         {#each table.getRowModel().rows as row (row.id)}
           <Table.Row
-            data-state={row.getIsSelected() && 'selected'}
+            data-state={(row.original.module.id === selectedModuleId || row.getIsSelected()) &&
+              'selected'}
             class={row.original.moduleDraftState === 'waiting_for_changes'
               ? 'border-l-4 border-l-amber-400 bg-amber-50/50 hover:bg-amber-50/70 dark:border-l-amber-500 dark:bg-amber-950/30 dark:hover:bg-amber-950/40'
               : ''}

@@ -5,12 +5,16 @@
 </script>
 
 <script lang="ts">
+  import { resolve } from '$app/paths'
   import { Badge } from '$lib/components/ui/badge/index.js'
 
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { Star } from '@lucide/svelte'
 
-  let { moduleDraft }: { moduleDraft: ModuleDraft } = $props()
+  let {
+    moduleDraft,
+    onPreview
+  }: { moduleDraft: ModuleDraft; onPreview?: (moduleDraft: ModuleDraft) => void } = $props()
 
   let rowTitle = $derived.by(() => {
     let title = moduleDraft.module.title
@@ -20,13 +24,24 @@
     }
     return `${title} - ${fmtCredits.format(moduleDraft.ects)} ECTS`
   })
+
+  function openPreview(event: MouseEvent) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    if (onPreview && window.matchMedia('(min-width: 1024px)').matches) {
+      event.preventDefault()
+      onPreview(moduleDraft)
+    }
+  }
 </script>
 
 <div class="flex items-center gap-2">
-  <!-- <a href="/modules/{moduleDraft.module.id}" class="hover:underline">
+  <a
+    href={resolve('/my-modules/preview/[id=uuid]', { id: moduleDraft.module.id })}
+    class="text-left hover:underline"
+    onclick={openPreview}
+  >
     {rowTitle}
-  </a> -->
-  <span>{rowTitle}</span>
+  </a>
 
   {#if moduleDraft.isNewModule}
     <Badge

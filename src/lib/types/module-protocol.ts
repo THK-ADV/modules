@@ -16,13 +16,17 @@ export interface PrerequisiteEntry {
   modules: string[]
 }
 
-export interface POMandatory {
+export interface PORelation {
   po: string
   specialization: string | null
   recommendedSemester: number[]
 }
 
-export interface POOptional extends POMandatory {
+export interface POMandatory extends PORelation {
+  recommendedSemesterPartTime: number | null
+}
+
+export interface POOptional extends PORelation {
   instanceOf: string
   partOfCatalog: boolean
 }

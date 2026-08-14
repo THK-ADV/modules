@@ -14,6 +14,7 @@
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
+  import * as Select from '$lib/components/ui/select/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { fmtStudyProgram } from '$lib/formats'
   import { mandatoryStudyProgramRelationFormSchema } from '$lib/schemas/module'
@@ -37,7 +38,8 @@
   const dialogForm = superForm(
     {
       fullPOId: '',
-      recommendedSemester: [] as number[]
+      recommendedSemester: [] as number[],
+      recommendedSemesterPartTime: null as number | null
     },
     {
       SPA: true,
@@ -72,7 +74,8 @@
     reset({
       data: {
         fullPOId: '',
-        recommendedSemester: []
+        recommendedSemester: [],
+        recommendedSemesterPartTime: null
       }
     })
     dialogOpen = true
@@ -80,9 +83,13 @@
 
   function openEditDialog(index: number) {
     editingIndex = index
-    const { po, specialization, recommendedSemester } = value[index]
+    const { po, specialization, recommendedSemester, recommendedSemesterPartTime } = value[index]
     reset({
-      data: { fullPOId: specialization ?? po, recommendedSemester }
+      data: {
+        fullPOId: specialization ?? po,
+        recommendedSemester,
+        recommendedSemesterPartTime: recommendedSemesterPartTime ?? null
+      }
     })
     dialogOpen = true
   }
@@ -90,6 +97,7 @@
   // form options
 
   const semesterOptions = createSemesterOptions()
+  const partTimeSemesterOptions = createSemesterOptions(12)
 
   const studyProgramOptions = $derived.by(() => {
     const current = value
@@ -126,13 +134,15 @@
       newEntry = {
         po: sp.po.id,
         specialization: sp.specialization.id,
-        recommendedSemester: $dialogFormData.recommendedSemester
+        recommendedSemester: $dialogFormData.recommendedSemester,
+        recommendedSemesterPartTime: $dialogFormData.recommendedSemesterPartTime
       }
     } else {
       newEntry = {
         po: $dialogFormData.fullPOId,
         specialization: null,
-        recommendedSemester: $dialogFormData.recommendedSemester
+        recommendedSemester: $dialogFormData.recommendedSemester,
+        recommendedSemesterPartTime: $dialogFormData.recommendedSemesterPartTime
       }
     }
 
@@ -180,6 +190,7 @@
               <Table.Row>
                 <Table.Head>Studiengang und PO</Table.Head>
                 <Table.Head>Empfohlenes Studiensemester</Table.Head>
+                <Table.Head>Teilzeit-Semester</Table.Head>
                 <Table.Head class="w-24">Aktionen</Table.Head>
               </Table.Row>
             </Table.Header>
@@ -191,6 +202,13 @@
                   </Table.Cell>
                   <Table.Cell>
                     {showRecommendedSemester(entry.recommendedSemester)}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {showRecommendedSemester(
+                      entry.recommendedSemesterPartTime == null
+                        ? []
+                        : [entry.recommendedSemesterPartTime]
+                    )}
                   </Table.Cell>
                   <Table.Cell>
                     <div class="flex gap-1">
@@ -353,6 +371,37 @@
         bind:value={recommendedSemester.value}
         errors={$dialogErrors}
       />
+
+      <div class="space-y-2">
+        <span class="text-foreground text-sm font-medium"
+          >Empfohlenes Studiensemester im Teilzeitstudium (optional)</span
+        >
+        <Select.Root
+          type="single"
+          value={$dialogFormData.recommendedSemesterPartTime?.toString() ?? 'none'}
+          onValueChange={(value) => {
+            $dialogFormData.recommendedSemesterPartTime = value === 'none' ? null : Number(value)
+          }}
+        >
+          <Select.Trigger
+            class="h-10 w-full"
+            aria-label="Empfohlenes Studiensemester im Teilzeitstudium"
+          >
+            {$dialogFormData.recommendedSemesterPartTime == null
+              ? 'Kein Semester'
+              : `${$dialogFormData.recommendedSemesterPartTime}. Semester`}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="none" label="Kein Semester">Kein Semester</Select.Item>
+            {#each partTimeSemesterOptions as option (option.id)}
+              <Select.Item value={option.id} label={option.label}>{option.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+        <p class="text-muted-foreground text-sm">
+          Das empfohlene Studiensemester, in dem das Modul im Teilzeitstudium belegt werden soll.
+        </p>
+      </div>
     </div>
 
     <Dialog.Footer class="gap-2">

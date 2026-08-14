@@ -23,6 +23,7 @@ export const moduleCatalogModuleOptionSchema = z.object({
   ects: z.number(),
   moduleType: nonEmptyStringSchema,
   recommendedSemesters: z.array(z.number().int()),
+  recommendedSemestersPartTime: z.array(z.number().int()).default([]),
   mandatory: z.boolean(),
   optional: z.boolean(),
   specializations: z.array(nonEmptyStringSchema),
@@ -63,6 +64,20 @@ export type ModuleCatalogGenericElectiveGroup = z.infer<
 // Module type id the backend uses for generic (placeholder) modules
 export const GENERIC_MODULE_TYPE = 'generic_module'
 
+const genericModuleOccurrenceSchema = z.object({
+  moduleId: z.uuid(),
+  semester: z.number().int().min(1),
+  count: z.number().int().min(1)
+})
+
+const moduleDistributionSchema = z.object({
+  moduleId: z.uuid(),
+  semesters: z
+    .array(z.number().int().min(1))
+    .min(2)
+    .refine((semesters) => new Set(semesters).size === semesters.length)
+})
+
 // ModuleCatalogConfig: the user decision sent to preview/generate. Only deviations
 // from the backend defaults are included; empty lists mean "use defaults".
 export const moduleCatalogConfigSchema = z.object({
@@ -88,13 +103,13 @@ export const moduleCatalogConfigSchema = z.object({
         selectedSemester: z.number().int().min(1)
       })
     ),
-    genericModuleOccurrences: z.array(
-      z.object({
-        moduleId: z.uuid(),
-        semester: z.number().int().min(1),
-        count: z.number().int().min(1)
+    genericModuleOccurrences: z.array(genericModuleOccurrenceSchema),
+    alternative: z
+      .object({
+        genericModuleOccurrences: z.array(genericModuleOccurrenceSchema),
+        moduleDistributions: z.array(moduleDistributionSchema).default([])
       })
-    )
+      .default({ genericModuleOccurrences: [], moduleDistributions: [] })
   })
 })
 
@@ -109,7 +124,8 @@ export function createEmptyModuleCatalogConfig(): ModuleCatalogConfig {
     studyPlan: {
       sections: [],
       semesterSelections: [],
-      genericModuleOccurrences: []
+      genericModuleOccurrences: [],
+      alternative: { genericModuleOccurrences: [], moduleDistributions: [] }
     }
   }
 }

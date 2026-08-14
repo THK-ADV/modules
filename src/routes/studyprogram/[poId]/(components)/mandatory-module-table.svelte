@@ -23,7 +23,9 @@
     return (
       (config.isModuleExcluded(module.id) && !config.isModuleExcludedByDefault(module.id)) ||
       config.selectedSemester(module.id) !== undefined ||
-      config.occurrencesOf(module.id).length > 0
+      config.occurrencesOf(module.id).length > 0 ||
+      config.occurrencesOf(module.id, 'alternative').length > 0 ||
+      config.distributionsOf(module.id).length > 0
     )
   }
 

@@ -85,7 +85,8 @@ export const assessmentMethodFormSchema = z.object({
 
 export const mandatoryStudyProgramRelationFormSchema = z.object({
   fullPOId: z.string().nonempty('Studiengang ist erforderlich'),
-  recommendedSemester: z.array(z.number()).optional().default([])
+  recommendedSemester: z.array(z.number()).optional().default([]),
+  recommendedSemesterPartTime: z.number().int().min(1).nullable().default(null)
 })
 
 export const electiveStudyProgramRelationFormSchema =
@@ -151,7 +152,8 @@ const moduleFormBaseSchema = z.object({
       z.object({
         po: z.string().nonempty('Studiengang erforderlich'),
         specialization: z.string().nullable(),
-        recommendedSemester: z.array(z.number())
+        recommendedSemester: z.array(z.number()),
+        recommendedSemesterPartTime: z.number().int().min(1).nullable().default(null)
       })
     ),
     optional: z.array(

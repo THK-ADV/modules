@@ -13,9 +13,9 @@ type ModuleProtocolUpdate = Omit<ModuleProtocol, 'id'>
 function errorMessage(err: any): string {
   switch (err.tag) {
     case 'parsing-error':
-      return `Parsing error: expected ${err.expected}, found ${err.found}`
+      return `Parsing error: expected ${err.error.expected}, found ${err.error.found}`
     case 'printing-error':
-      return `Printing error: expected ${err.expected}, found ${err.found}`
+      return `Printing error: expected ${err.error.expected}, found ${err.error.found}`
     case 'validation-error':
       return `Validation error: ${err.error.errs.join(', ')}`
     default:

@@ -119,7 +119,9 @@
     <Tabs.Content value="study-plan" class="space-y-4 pt-2">
       <p class="text-muted-foreground max-w-3xl text-sm">
         Feinjustierung des automatisch erzeugten Studienverlaufsplans im Modulhandbuch. Im
-        Standardfall werden alle Pflichtmodule dem empfohlenen Semester nach platziert.
+        Standardfall werden alle Pflichtmodule dem empfohlenen Semester nach platziert. Für den
+        Teilzeit-Studienverlaufsplan lassen sich generische Platzhalter-Module separat platzieren
+        und Pflichtmodule auf mehrere Semester aufteilen.
       </p>
       <StudyPlanConfig {config} />
     </Tabs.Content>

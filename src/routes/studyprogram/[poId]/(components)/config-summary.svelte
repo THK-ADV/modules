@@ -70,6 +70,13 @@
         clear: () => config.resetOccurrences()
       })
     }
+    if (config.distributionOverrideCount > 0) {
+      result.push({
+        key: 'distributions',
+        label: fmtCount(config.distributionOverrideCount, 'Modul aufgeteilt', 'Module aufgeteilt'),
+        clear: () => config.resetModuleDistributions()
+      })
+    }
     if (config.sectionCount > 0) {
       result.push({
         key: 'sections',

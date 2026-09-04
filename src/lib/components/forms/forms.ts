@@ -1,9 +1,10 @@
 import { fmtStudyProgram } from '$lib/formats'
-import type { POMandatory } from '$lib/types/module-protocol'
 import type { StudyProgram } from '$lib/types/study-program'
 
-export function showPO(studyPrograms: StudyProgram[]): (po: POMandatory) => string {
-  return ({ po, specialization }: POMandatory) => {
+export function showPO(
+  studyPrograms: StudyProgram[]
+): (po: { po: string; specialization: string | null }) => string {
+  return ({ po, specialization }) => {
     const sp = studyPrograms.find((sp) => {
       if (specialization != null) {
         return sp.po.id === po && sp.specialization?.id === specialization
@@ -22,9 +23,8 @@ export function showRecommendedSemester(semesters: number[]) {
     .join(', ')
 }
 
-export function createSemesterOptions() {
-  const MAX_SEMESTERS = 8
-  return Array.from({ length: MAX_SEMESTERS }, (_, i) => ({
+export function createSemesterOptions(count = 8) {
+  return Array.from({ length: count }, (_, i) => ({
     id: (i + 1).toString(),
     label: `${i + 1}. Semester`
   }))

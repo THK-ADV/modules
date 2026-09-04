@@ -12,6 +12,8 @@ export interface GenericOccurrence {
   count: number
 }
 
+export type GenericOccurrencePlan = 'default' | 'alternative'
+
 export interface StudyPlanSectionDraft {
   id: number
   headline: string
@@ -22,11 +24,13 @@ export function isGenericModule(module: ModuleCatalogModuleOption): boolean {
   return module.moduleType === GENERIC_MODULE_TYPE
 }
 
+export function earliestSemester(semesters: number[]): number | undefined {
+  return semesters.length > 0 ? Math.min(...semesters) : undefined
+}
+
 /** Semester the study plan uses when no explicit selection is made (smallest recommendation). */
 export function defaultSemester(module: ModuleCatalogModuleOption): number | undefined {
-  return module.recommendedSemesters.length > 0
-    ? Math.min(...module.recommendedSemesters)
-    : undefined
+  return earliestSemester(module.recommendedSemesters)
 }
 
 /**
@@ -44,6 +48,10 @@ export class CatalogConfig {
   readonly semesterSelections = new SvelteMap<string, number>()
   /** Study-plan placements per generic module, replacing the default single occurrence. */
   readonly genericOccurrences = new SvelteMap<string, GenericOccurrence[]>()
+  /** Part-time study-plan placements per generic module. */
+  readonly alternativeGenericOccurrences = new SvelteMap<string, GenericOccurrence[]>()
+  /** Part-time ECTS split across semesters, keyed by non-generic module ID. */
+  readonly alternativeModuleDistributions = new SvelteMap<string, number[]>()
   /** Manual study-plan sections (only allowed for POs without specializations). */
   sections = $state<StudyPlanSectionDraft[]>([])
 
@@ -84,6 +92,8 @@ export class CatalogConfig {
       // the backend rejects study-plan overrides that reference excluded modules
       this.semesterSelections.delete(moduleId)
       this.genericOccurrences.delete(moduleId)
+      this.alternativeGenericOccurrences.delete(moduleId)
+      this.alternativeModuleDistributions.delete(moduleId)
     }
   }
 
@@ -135,36 +145,95 @@ export class CatalogConfig {
 
   // --- study plan: generic occurrences ---
 
-  occurrencesOf(moduleId: string): GenericOccurrence[] {
-    return this.genericOccurrences.get(moduleId) ?? []
+  semestersOf(module: ModuleCatalogModuleOption, plan: GenericOccurrencePlan): number[] {
+    return plan === 'alternative'
+      ? module.recommendedSemestersPartTime
+      : module.recommendedSemesters
   }
 
-  addOccurrence(module: ModuleCatalogModuleOption) {
-    const semester = defaultSemester(module)
+  #occurrenceMap(plan: GenericOccurrencePlan) {
+    return plan === 'alternative' ? this.alternativeGenericOccurrences : this.genericOccurrences
+  }
+
+  occurrencesOf(moduleId: string, plan: GenericOccurrencePlan = 'default'): GenericOccurrence[] {
+    return this.#occurrenceMap(plan).get(moduleId) ?? []
+  }
+
+  addOccurrence(module: ModuleCatalogModuleOption, plan: GenericOccurrencePlan = 'default') {
+    const semester = earliestSemester(this.semestersOf(module, plan))
     if (semester === undefined) {
       return
     }
-    const current = this.occurrencesOf(module.id)
-    this.genericOccurrences.set(module.id, [
-      ...current,
+    const map = this.#occurrenceMap(plan)
+    map.set(module.id, [
+      ...this.occurrencesOf(module.id, plan),
       { id: this.#nextOccurrenceId++, semester, count: 1 }
     ])
   }
 
-  updateOccurrence(moduleId: string, id: number, patch: Partial<Omit<GenericOccurrence, 'id'>>) {
-    const next = this.occurrencesOf(moduleId).map((occurrence) =>
-      occurrence.id === id ? { ...occurrence, ...patch } : occurrence
+  updateOccurrence(
+    moduleId: string,
+    id: number,
+    patch: Partial<Omit<GenericOccurrence, 'id'>>,
+    plan: GenericOccurrencePlan = 'default'
+  ) {
+    this.#occurrenceMap(plan).set(
+      moduleId,
+      this.occurrencesOf(moduleId, plan).map((occurrence) =>
+        occurrence.id === id ? { ...occurrence, ...patch } : occurrence
+      )
     )
-    this.genericOccurrences.set(moduleId, next)
   }
 
-  removeOccurrence(moduleId: string, id: number) {
-    const next = this.occurrencesOf(moduleId).filter((occurrence) => occurrence.id !== id)
+  removeOccurrence(moduleId: string, id: number, plan: GenericOccurrencePlan = 'default') {
+    const next = this.occurrencesOf(moduleId, plan).filter((occurrence) => occurrence.id !== id)
+    const map = this.#occurrenceMap(plan)
     if (next.length === 0) {
-      this.genericOccurrences.delete(moduleId)
+      map.delete(moduleId)
     } else {
-      this.genericOccurrences.set(moduleId, next)
+      map.set(moduleId, next)
     }
+  }
+
+  // --- study plan: part-time module distributions ---
+
+  distributionsOf(moduleId: string): number[] {
+    return this.alternativeModuleDistributions.get(moduleId) ?? []
+  }
+
+  addDistribution(moduleId: string) {
+    const module = this.options.modules.find((item) => item.id === moduleId)
+    const semester = module && earliestSemester(module.recommendedSemestersPartTime)
+    if (semester !== undefined) {
+      this.alternativeModuleDistributions.set(moduleId, [semester, semester + 1])
+    }
+  }
+
+  removeDistribution(moduleId: string) {
+    this.alternativeModuleDistributions.delete(moduleId)
+  }
+
+  addDistributionSemester(moduleId: string) {
+    const current = this.distributionsOf(moduleId)
+    this.alternativeModuleDistributions.set(moduleId, [...current, Math.max(...current) + 1])
+  }
+
+  updateDistributionSemester(moduleId: string, index: number, raw: number) {
+    const current = this.distributionsOf(moduleId)
+    const semester = Math.max(1, Math.trunc(raw) || current[index] || 1)
+    if (current.some((value, i) => i !== index && value === semester)) {
+      return
+    }
+    const next = [...current]
+    next[index] = semester
+    this.alternativeModuleDistributions.set(moduleId, next)
+  }
+
+  removeDistributionSemester(moduleId: string, index: number) {
+    this.alternativeModuleDistributions.set(
+      moduleId,
+      this.distributionsOf(moduleId).filter((_, i) => i !== index)
+    )
   }
 
   // --- study plan: sections ---
@@ -210,7 +279,14 @@ export class CatalogConfig {
     for (const occurrences of this.genericOccurrences.values()) {
       count += occurrences.length
     }
+    for (const occurrences of this.alternativeGenericOccurrences.values()) {
+      count += occurrences.length
+    }
     return count
+  }
+
+  get distributionOverrideCount(): number {
+    return this.alternativeModuleDistributions.size
   }
 
   get sectionCount(): number {
@@ -226,7 +302,7 @@ export class CatalogConfig {
   }
 
   get studyPlanTabDeviationCount(): number {
-    return this.occurrenceOverrideCount + this.sectionCount
+    return this.occurrenceOverrideCount + this.distributionOverrideCount + this.sectionCount
   }
 
   get deviationCount(): number {
@@ -235,6 +311,7 @@ export class CatalogConfig {
       this.electiveExclusionCount +
       this.semesterOverrideCount +
       this.occurrenceOverrideCount +
+      this.distributionOverrideCount +
       this.sectionCount
     )
   }
@@ -262,6 +339,11 @@ export class CatalogConfig {
 
   resetOccurrences() {
     this.genericOccurrences.clear()
+    this.alternativeGenericOccurrences.clear()
+  }
+
+  resetModuleDistributions() {
+    this.alternativeModuleDistributions.clear()
   }
 
   resetSections() {
@@ -273,6 +355,7 @@ export class CatalogConfig {
     this.resetElectiveOptions()
     this.resetSemesterSelections()
     this.resetOccurrences()
+    this.resetModuleDistributions()
     this.resetSections()
   }
 
@@ -286,15 +369,17 @@ export class CatalogConfig {
       }
     }
 
-    const genericModuleOccurrences: ModuleCatalogConfig['studyPlan']['genericModuleOccurrences'] =
-      []
-    for (const [moduleId, occurrences] of this.genericOccurrences) {
-      if (this.excludedModules.has(moduleId)) {
-        continue
+    const collectOccurrences = (map: SvelteMap<string, GenericOccurrence[]>) => {
+      const result: ModuleCatalogConfig['studyPlan']['genericModuleOccurrences'] = []
+      for (const [moduleId, occurrences] of map) {
+        if (this.excludedModules.has(moduleId)) {
+          continue
+        }
+        for (const { semester, count } of occurrences) {
+          result.push({ moduleId, semester, count })
+        }
       }
-      for (const { semester, count } of occurrences) {
-        genericModuleOccurrences.push({ moduleId, semester, count })
-      }
+      return result
     }
 
     const excludedElectiveOptions = this.effectiveElectiveExclusions
@@ -338,7 +423,13 @@ export class CatalogConfig {
           headline: headline.trim()
         })),
         semesterSelections,
-        genericModuleOccurrences
+        genericModuleOccurrences: collectOccurrences(this.genericOccurrences),
+        alternative: {
+          genericModuleOccurrences: collectOccurrences(this.alternativeGenericOccurrences),
+          moduleDistributions: [...this.alternativeModuleDistributions]
+            .filter(([moduleId]) => !this.excludedModules.has(moduleId))
+            .map(([moduleId, semesters]) => ({ moduleId, semesters }))
+        }
       }
     }
   }

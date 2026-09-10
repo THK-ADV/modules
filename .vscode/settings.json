@@ -46,5 +46,12 @@
   },
 
   // Enable ESLint validation for specific languages
-  "eslint.validate": ["javascript", "typescript", "svelte"]
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "svelte"
+  ],
+  "files.watcherExclude": {
+    "**/target/**": true
+  }
 }

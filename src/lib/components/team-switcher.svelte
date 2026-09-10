@@ -1,36 +1,28 @@
 <script lang="ts">
+  import { resolve } from '$app/paths'
+  import MateLogo from '$lib/components/mate-logo.svelte'
   import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
 
-  let activeApp = $state({
-    name: 'Modulverwaltung',
-    plan: 'TH Köln'
-  })
-
   const sidebar = useSidebar()
-  const isSidebarCollapsed = $derived(sidebar.state === 'collapsed')
+  const isSidebarCollapsed = $derived(sidebar.state === 'collapsed' && !sidebar.isMobile)
 </script>
 
 <Sidebar.Menu>
   <Sidebar.MenuItem>
-    <a href="/">
-      <Sidebar.MenuButton
-        size="lg"
-        class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-      >
-        {#if isSidebarCollapsed}
-          <div class="flex w-full items-center justify-center">
-            <span class="text-lg font-bold">MV</span>
-          </div>
-        {:else}
-          <div class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold">
-              {activeApp.name}
-            </span>
-            <span class="truncate text-xs">{activeApp.plan}</span>
-          </div>
-        {/if}
-      </Sidebar.MenuButton>
-    </a>
+    <Sidebar.MenuButton size="lg" class="h-16">
+      {#snippet tooltipContent()}
+        MATE – Startseite
+      {/snippet}
+      {#snippet child({ props })}
+        <a {...props} href={resolve('/')} aria-label="MATE – Startseite">
+          {#if isSidebarCollapsed}
+            <MateLogo variant="compact" alt="" class="w-8" />
+          {:else}
+            <MateLogo variant="landscape" alt="" class="h-12 w-full" />
+          {/if}
+        </a>
+      {/snippet}
+    </Sidebar.MenuButton>
   </Sidebar.MenuItem>
 </Sidebar.Menu>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import MateLogo from '$lib/components/mate-logo.svelte'
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Card from '$lib/components/ui/card/index.js'
   import { routeLabels } from '$lib/routes'
@@ -23,86 +24,93 @@
 
 <div class="from-background via-background to-muted/20 flex h-full flex-1 flex-col bg-linear-to-b">
   <!-- Hero -->
-  <section
-    class="mx-auto grid max-w-7xl gap-10 px-4 pt-10 pb-14 md:grid-cols-2 md:items-center md:gap-12"
-  >
-    <div class="space-y-6">
-      <div class="space-y-3">
-        <p class="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
-          TH Köln · Campus Gummersbach
+  <section class="pt-10 pb-14">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-2 md:items-center md:gap-12">
+      <div class="space-y-6">
+        <div class="space-y-3">
+          <p class="text-muted-foreground text-xs font-semibold tracking-[0.2em] uppercase">
+            TH Köln · Campus Gummersbach · Fakultät 10
+          </p>
+          <h1>
+            <span class="sr-only">MATE</span>
+            <MateLogo variant="full" alt="" class="-ml-3 w-56 md:w-64" />
+          </h1>
+          <p class="max-w-md text-xl leading-snug font-medium tracking-tight md:text-2xl">
+            <span class="text-[#b43092] dark:text-[#d883c3]">M</span>odules,
+            <span class="text-[#b43092] dark:text-[#d883c3]">A</span>ssessments,<br />
+            <span class="text-[#b43092] dark:text-[#d883c3]">T</span>imetables and
+            <span class="text-[#b43092] dark:text-[#d883c3]">E</span>xams
+          </p>
+        </div>
+        <p class="text-muted-foreground max-w-xl text-lg leading-relaxed">
+          Zentrale Plattform für Modulbeschreibungen, Modulhandbücher, Stundenpläne und
+          Prüfungslisten aller Studiengänge der Fakultät für Informatik und Ingenieurwissenschaften.
         </p>
-        <h1 class="text-4xl leading-tight font-bold tracking-tight md:text-5xl lg:text-6xl">
-          Modulverwaltung<br />Fakultät 10
-        </h1>
+        <div class="flex flex-wrap gap-3 pt-2">
+          <Button size="lg" href={resolve('/modules')}>
+            Module durchsuchen
+            <ArrowRight class="ml-2 size-4" />
+          </Button>
+          <Button variant="outline" size="lg" href={resolve('/schedule')}>
+            <Calendar1 class="mr-2 size-4" />
+            Kalender öffnen
+          </Button>
+        </div>
       </div>
-      <p class="text-muted-foreground max-w-xl text-lg leading-relaxed">
-        Zentrale Plattform für Modulbeschreibungen, Modulhandbücher und Prüfungslisten aller
-        Studiengänge der Fakultät für Informatik und Ingenieurwissenschaften.
-      </p>
-      <div class="flex flex-wrap gap-3 pt-2">
-        <Button size="lg" href={resolve('/modules')}>
-          Module durchsuchen
-          <ArrowRight class="ml-2 size-4" />
-        </Button>
-        <Button variant="outline" size="lg" href={resolve('/schedule')}>
-          <Calendar1 class="mr-2 size-4" />
-          Kalender öffnen
-        </Button>
-      </div>
-    </div>
 
-    <div class="bg-card/80 rounded-xl border p-8 shadow-sm backdrop-blur-sm">
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold">Schnellzugriff</h3>
-        <div class="space-y-2">
-          <a
-            href={resolve('/modules')}
-            class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
-          >
-            <div class="flex items-center gap-3">
-              <Search class="text-muted-foreground size-5" />
-              <span class="font-medium">{routeLabels['/modules']}</span>
-            </div>
-            <ArrowRight
-              class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </a>
-          <a
-            href={resolve('/module-catalogs')}
-            class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
-          >
-            <div class="flex items-center gap-3">
-              <Book class="text-muted-foreground size-5" />
-              <span class="font-medium">{routeLabels['/module-catalogs']}</span>
-            </div>
-            <ArrowRight
-              class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </a>
-          <a
-            href={resolve('/exam-lists')}
-            class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
-          >
-            <div class="flex items-center gap-3">
-              <FileText class="text-muted-foreground size-5" />
-              <span class="font-medium">{routeLabels['/exam-lists']}</span>
-            </div>
-            <ArrowRight
-              class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </a>
-          <a
-            href={resolve('/my-modules')}
-            class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
-          >
-            <div class="flex items-center gap-3">
-              <Pencil class="text-muted-foreground size-5" />
-              <span class="font-medium">{routeLabels['/my-modules']}</span>
-            </div>
-            <ArrowRight
-              class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </a>
+      <div class="bg-card/80 rounded-xl border p-8 shadow-sm backdrop-blur-sm">
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold">Schnellzugriff</h3>
+          <div class="space-y-2">
+            <a
+              href={resolve('/modules')}
+              class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <Search class="text-muted-foreground size-5" />
+                <span class="font-medium">{routeLabels['/modules']}</span>
+              </div>
+              <ArrowRight
+                class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </a>
+            <a
+              href={resolve('/module-catalogs')}
+              class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <Book class="text-muted-foreground size-5" />
+                <span class="font-medium">{routeLabels['/module-catalogs']}</span>
+              </div>
+              <ArrowRight
+                class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </a>
+            <a
+              href={resolve('/exam-lists')}
+              class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <FileText class="text-muted-foreground size-5" />
+                <span class="font-medium">{routeLabels['/exam-lists']}</span>
+              </div>
+              <ArrowRight
+                class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </a>
+            <a
+              href={resolve('/my-modules')}
+              class="hover:bg-accent/70 group flex items-center justify-between rounded-md px-3 py-2.5 transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <Pencil class="text-muted-foreground size-5" />
+                <span class="font-medium">{routeLabels['/my-modules']}</span>
+              </div>
+              <ArrowRight
+                class="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -226,9 +234,9 @@
   <section class="py-16">
     <div class="mx-auto max-w-7xl space-y-12 px-4">
       <div class="max-w-2xl">
-        <h2 class="mb-3 text-3xl font-bold tracking-tight">Was diese Plattform bietet</h2>
+        <h2 class="mb-3 text-3xl font-bold tracking-tight">Was MATE bietet</h2>
         <p class="text-muted-foreground">
-          Alle Werkzeuge für effektive Modulverwaltung und Studienplanung
+          Module, Studienplanung und Prüfungen auf einer gemeinsamen Plattform
         </p>
       </div>
 
@@ -327,7 +335,7 @@
   <section class="bg-muted/20 border-y py-16">
     <div class="mx-auto max-w-7xl px-4">
       <div class="mb-12 max-w-2xl">
-        <h2 class="mb-3 text-3xl font-bold tracking-tight">Für wen ist diese Plattform?</h2>
+        <h2 class="mb-3 text-3xl font-bold tracking-tight">Für wen ist MATE?</h2>
         <p class="text-muted-foreground">Unterschiedliche Zielgruppen, ein gemeinsames System</p>
       </div>
       <div class="grid gap-8 md:grid-cols-3">
@@ -446,7 +454,7 @@
   <footer class="bg-muted/20 mt-auto border-t py-6">
     <div class="mx-auto max-w-7xl px-4">
       <p class="text-muted-foreground text-center text-sm">
-        © {currentYear} TH Köln · Campus Gummersbach · Fakultät für Informatik und Ingenieurwissenschaften
+        MATE · © {currentYear} TH Köln · Campus Gummersbach · Fakultät für Informatik und Ingenieurwissenschaften
       </p>
     </div>
   </footer>

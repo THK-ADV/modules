@@ -1,9 +1,12 @@
 <script lang="ts" module>
-  import { routeLabels } from '$lib/routes'
+  import { resolve } from '$app/paths'
+  import { CORE_DATA_ROUTE_ID, routeLabels } from '$lib/routes'
   import {
     Book,
     Calendar1,
     CalendarCog,
+    ChevronRight,
+    Database,
     FileText,
     GraduationCap,
     House,
@@ -14,6 +17,7 @@
     Signature,
     CalendarClock
   } from '@lucide/svelte'
+  import { coreDataEntities } from '$lib/core-data/entities'
 
   const mainRoutes = [
     { path: '/', icon: House },
@@ -33,6 +37,7 @@
   import { afterNavigate } from '$app/navigation'
   import { page } from '$app/state'
   import { isProfessor, type User, type UserInfo } from '$lib/auth'
+  import * as Collapsible from '$lib/components/ui/collapsible/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
@@ -41,7 +46,10 @@
 
   const sidebar = useSidebar()
 
+  let coreDataOpen = $state(false)
+
   afterNavigate(() => {
+    if (isActive('/core-data')) coreDataOpen = true
     if (sidebar.isMobile) {
       sidebar.setOpenMobile(false)
     }
@@ -189,6 +197,54 @@
           {/snippet}
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
+    </Sidebar.Menu>
+  </Sidebar.Group>
+{/if}
+
+<!-- administration section -->
+{#if userInfo?.hasCoreDataEditPrivileges}
+  <Sidebar.Separator />
+  <Sidebar.Group>
+    <Sidebar.GroupLabel>Administration</Sidebar.GroupLabel>
+    <Sidebar.Menu>
+      <Collapsible.Root
+        bind:open={coreDataOpen}
+        onOpenChange={(open) => {
+          coreDataOpen = open || (sidebar.state === 'collapsed' && !sidebar.isMobile)
+          if (coreDataOpen && !sidebar.isMobile) sidebar.setOpen(true)
+        }}
+        class="group/collapsible"
+      >
+        {#snippet child({ props })}
+          <Sidebar.MenuItem {...props}>
+            <Collapsible.Trigger>
+              {#snippet child({ props })}
+                <Sidebar.MenuButton {...props} isActive={isActive('/core-data')}>
+                  <Database />
+                  <span>{routeLabels['/core-data']}</span>
+                  <ChevronRight
+                    class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                  />
+                </Sidebar.MenuButton>
+              {/snippet}
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              <Sidebar.MenuSub>
+                {#each coreDataEntities as entity (entity.key)}
+                  {@const path = resolve(CORE_DATA_ROUTE_ID, { entity: entity.key })}
+                  <Sidebar.MenuSubItem>
+                    <Sidebar.MenuSubButton isActive={isActive(path)}>
+                      {#snippet child({ props })}
+                        <a href={path} {...props}><span>{entity.label}</span></a>
+                      {/snippet}
+                    </Sidebar.MenuSubButton>
+                  </Sidebar.MenuSubItem>
+                {/each}
+              </Sidebar.MenuSub>
+            </Collapsible.Content>
+          </Sidebar.MenuItem>
+        {/snippet}
+      </Collapsible.Root>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}

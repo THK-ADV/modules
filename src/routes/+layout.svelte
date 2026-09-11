@@ -19,7 +19,7 @@
 
 <Sidebar.Provider open={data.sidebarOpen} onOpenChange={sideBarOpenChange}>
   <AppSidebar user={data.user} userInfo={data.userInfo} />
-  <Sidebar.Inset>
+  <Sidebar.Inset class="min-w-0">
     <header
       class="flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear md:h-16 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
     >

@@ -74,6 +74,7 @@
                 disabled && 'cursor-not-allowed opacity-50'
               )}
               {...props}
+              {disabled}
             >
               {options.find(({ id }) => id === value)?.deLabel || placeholder}
               <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
@@ -129,6 +130,7 @@
               disabled && 'cursor-not-allowed opacity-50'
             )}
             {...props}
+            {disabled}
           >
             {options.find(({ id }) => id === value)?.deLabel || placeholder}
             <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />

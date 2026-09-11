@@ -12,6 +12,7 @@ export type UserInfo = {
   hasSchedulePlanningPrivileges: boolean
   hasExamPlanningPrivileges: boolean
   hasSchedulePlanningViewPrivileges: boolean // superset of hasSchedulePlanningPrivileges
+  hasCoreDataEditPrivileges: boolean
 }
 
 export interface User {

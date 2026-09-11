@@ -32,7 +32,8 @@ const protectedRoutePrefixes = [
   '/module-approvals',
   '/studyprogram',
   '/planning',
-  '/settings'
+  '/settings',
+  '/core-data'
 ] as const satisfies readonly RouteId[]
 
 function isProtectedRoute(routeId: RouteId | null): boolean {

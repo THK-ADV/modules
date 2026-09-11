@@ -26,6 +26,17 @@ export function clearItemFromLocalStorage(key: string) {
   localStorage.removeItem(key)
 }
 
+export function getBooleanFromLocalStorage(key: string, defaultValue: boolean): boolean {
+  if (!browser) {
+    return defaultValue
+  }
+  const value = localStorage.getItem(key)
+  if (value) {
+    return value === 'true'
+  }
+  return defaultValue
+}
+
 export function setBooleanToLocalStorage(key: string, value: boolean) {
   if (!browser) {
     return

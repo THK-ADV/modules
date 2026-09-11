@@ -1,4 +1,3 @@
-import { browser } from '$app/environment'
 import {
   createModuleFilterOptions,
   type ModuleFilterOption
@@ -13,6 +12,7 @@ import type { StudyProgram } from '$lib/types/study-program'
 import {
   clearItemFromLocalStorage,
   getArrayFromLocalStorage,
+  getBooleanFromLocalStorage,
   setArrayToLocalStorage,
   setBooleanToLocalStorage
 } from './local-storage'
@@ -20,34 +20,12 @@ import { getModuleTypeOptions, getSemesterOptions } from './store.svelte'
 
 type FilterType = 'sf' | 'spf'
 
-function getShowSemesterPlanFromLocalStorage(prefix: FilterType): boolean {
-  if (!browser) {
-    return true
-  }
-  const value = localStorage.getItem(`${prefix}-show-semester-plan`)
-  if (value) {
-    return value === 'true'
-  }
-  return true
-}
-
-function getShowScheduleFromLocalStorage(prefix: FilterType): boolean {
-  if (!browser) {
-    return true
-  }
-  const value = localStorage.getItem(`${prefix}-show-schedule`)
-  if (value) {
-    return value === 'true'
-  }
-  return true
-}
-
 export function createScheduleFilter(prefix: FilterType) {
   // Search
   let searchString = $state('')
 
-  let showSemester = $state(getShowSemesterPlanFromLocalStorage(prefix))
-  let showSchedule = $state(getShowScheduleFromLocalStorage(prefix))
+  let showSemester = $state(getBooleanFromLocalStorage(`${prefix}-show-semester-plan`, true))
+  let showSchedule = $state(getBooleanFromLocalStorage(`${prefix}-show-schedule`, true))
   let showExams = $state(false)
   const showModuleManagementFilter = prefix === 'sf'
 

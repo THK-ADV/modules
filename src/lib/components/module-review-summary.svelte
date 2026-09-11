@@ -2,7 +2,9 @@
   import { goto } from '$app/navigation'
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
+  import { getErrorMessage } from '$lib/errors'
   import { CircleCheck, CircleX, Eye, FileDiff, SquarePen } from '@lucide/svelte'
+  import { getModuleDraftMrUrl, submitModuleReview } from './module-approval.remote'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
@@ -21,7 +23,7 @@
 
   const minRejectCommentLength = 10
 
-  let errorMessage = $state(undefined)
+  let errorMessage = $state<string | undefined>(undefined)
   // svelte-ignore state_referenced_locally
   let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
   let comment = $state('')
@@ -36,30 +38,19 @@
 
   async function performAction(action: 'approve' | 'reject'): Promise<void> {
     reviewInProgress = true
-    const response = await fetch('/actions/module-approval', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    try {
+      await submitModuleReview({
         action,
         comment: comment.trim(),
         reviews: reviews
           .filter((_, index) => reviewedStudyPrograms[index])
           .map(({ reviewId }) => reviewId)
       })
-    })
-
-    reviewInProgress = false
-
-    if (response.ok) {
-      const result = await response.json()
-      if (result.success) {
-        goto(`/module-approvals?approved=${action === 'approve'}`)
-      }
-    } else {
-      const err = await response.json()
-      errorMessage = err.message
+      goto(`/module-approvals?approved=${action === 'approve'}`)
+    } catch (err) {
+      errorMessage = getErrorMessage(err)
+    } finally {
+      reviewInProgress = false
     }
   }
 
@@ -76,15 +67,13 @@
   async function openGitLabMR() {
     errorMessage = undefined
     mrURLisLoading = true
-    const response = await fetch(`/actions/module-approval?moduleId=${moduleId}`)
-    if (response.ok) {
-      const url = await response.text()
-      mrURLisLoading = false
+    try {
+      const url = await getModuleDraftMrUrl(moduleId)
       window.open(url, '_blank', 'noopener,noreferrer')
-    } else {
+    } catch (err) {
+      errorMessage = getErrorMessage(err)
+    } finally {
       mrURLisLoading = false
-      const err = await response.json()
-      errorMessage = err.message
     }
   }
 </script>

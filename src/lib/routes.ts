@@ -49,6 +49,7 @@ export const routeLabels = {
   '/assessment-methods': 'Prüfungsformen',
   '/core-data': 'Stammdaten',
   [CORE_DATA_ROUTE_ID]: 'Stammdaten',
+  '/permissions': 'Berechtigungen',
   '/settings': 'Einstellungen',
   '/privacy': 'Datenschutz'
 } as const satisfies Partial<Record<RouteId, string>>

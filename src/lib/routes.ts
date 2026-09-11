@@ -6,6 +6,7 @@ export const MODULE_ROUTE_ID = '/modules/[id=uuid]' satisfies RouteId
 export const MY_MODULE_ROUTE_ID = '/my-modules/[id=uuid]' satisfies RouteId
 export const PLAN_ROUTE_ID = '/planning/schedule/[draftId]' satisfies RouteId
 export const STUDYPROGRAM_ROUTE_ID = '/studyprogram/[poId]' satisfies RouteId
+export const CORE_DATA_ROUTE_ID = '/core-data/[entity=coreEntity]' satisfies RouteId
 
 /**
  * Breadcrumb labels for every rendered page route. Add the exact SvelteKit route ID here whenever
@@ -46,6 +47,8 @@ export const routeLabels = {
   '/help': 'Hilfe und Dokumentation',
   '/release-notes': 'Release Notes',
   '/assessment-methods': 'Prüfungsformen',
+  '/core-data': 'Stammdaten',
+  [CORE_DATA_ROUTE_ID]: 'Stammdaten',
   '/settings': 'Einstellungen',
   '/privacy': 'Datenschutz'
 } as const satisfies Partial<Record<RouteId, string>>

@@ -14,6 +14,7 @@
     Megaphone,
     Pencil,
     Search,
+    Shield,
     Signature,
     CalendarClock
   } from '@lucide/svelte'
@@ -89,7 +90,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} {...props}>
+            <a href={resolve(route.path)} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>
@@ -110,7 +111,7 @@
         <Sidebar.MenuItem>
           <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
             {#snippet child({ props })}
-              <a href="/planning/schedule" {...props}>
+              <a href={resolve('/planning/schedule')} {...props}>
                 <CalendarCog />
                 <span>{routeLabels['/planning/schedule']}</span>
               </a>
@@ -152,7 +153,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive('/my-modules')}>
           {#snippet child({ props })}
-            <a href="/my-modules" {...props}>
+            <a href={resolve('/my-modules')} {...props}>
               <Pencil />
               <span>{routeLabels['/my-modules']}</span>
             </a>
@@ -176,7 +177,7 @@
         <Sidebar.MenuItem>
           <Sidebar.MenuButton isActive={isActive('/module-approvals')}>
             {#snippet child({ props })}
-              <a href="/module-approvals" {...props}>
+              <a href={resolve('/module-approvals')} {...props}>
                 <Signature />
                 <span>{routeLabels['/module-approvals']}</span>
               </a>
@@ -190,7 +191,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive('/studyprogram')}>
           {#snippet child({ props })}
-            <a href="/studyprogram" {...props}>
+            <a href={resolve('/studyprogram')} {...props}>
               <GraduationCap />
               <span>{routeLabels['/studyprogram']}</span>
             </a>
@@ -245,6 +246,16 @@
           </Sidebar.MenuItem>
         {/snippet}
       </Collapsible.Root>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton isActive={isActive('/permissions')}>
+          {#snippet child({ props })}
+            <a href={resolve('/permissions')} {...props}>
+              <Shield />
+              <span>{routeLabels['/permissions']}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
@@ -257,7 +268,7 @@
       <Sidebar.MenuItem>
         <Sidebar.MenuButton isActive={isActive(route.path)}>
           {#snippet child({ props })}
-            <a href={route.path} {...props}>
+            <a href={resolve(route.path)} {...props}>
               <route.icon />
               <span>{routeLabels[route.path]}</span>
             </a>

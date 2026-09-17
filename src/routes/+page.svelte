@@ -120,17 +120,11 @@
   <section class="border-y py-16">
     <div class="mx-auto grid max-w-7xl gap-12 px-4 md:grid-cols-5">
       <div class="space-y-4 md:col-span-2">
-        <div
-          class="bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium"
-        >
-          <Calendar1 class="size-4" />
-          Neu
-        </div>
         <h2 class="text-3xl font-bold tracking-tight">Semesterkalender</h2>
         <p class="text-muted-foreground leading-relaxed">
           Behalten Sie den Überblick über Ihr Studium mit unserem integrierten Kalender. Alle
-          wichtigen Termine an einem Ort: Ihr persönlicher Stundenplan, Prüfungstermine,
-          vorlesungsfreie Zeit und Feiertage.
+          wichtigen Termine an einem Ort: Ihr persönlicher Stundenplan, Campus- und
+          Fakultäts-Events, Prüfungstermine, vorlesungsfreie Zeit und Feiertage.
         </p>
         <div class="space-y-3 pt-2">
           <div class="flex items-start gap-3">
@@ -149,8 +143,10 @@
               <div class="bg-primary size-2 rounded-full"></div>
             </div>
             <div>
-              <p class="font-medium">Semesterplan</p>
-              <p class="text-muted-foreground text-sm">Vorlesungszeit und vorlesungsfreie Zeit</p>
+              <p class="font-medium">Campus-Events</p>
+              <p class="text-muted-foreground text-sm">
+                Veranstaltungen und Buchungen rund um den Campus
+              </p>
             </div>
           </div>
           <div class="flex items-start gap-3">
@@ -158,8 +154,21 @@
               <div class="bg-primary size-2 rounded-full"></div>
             </div>
             <div>
-              <p class="font-medium">Feiertage</p>
-              <p class="text-muted-foreground text-sm">Gesetzliche Feiertage in NRW</p>
+              <p class="font-medium">Fakultäts-Events</p>
+              <p class="text-muted-foreground text-sm">
+                Fakultätsweite Termine (nur für Mitarbeitende)
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="bg-primary/10 mt-0.5 rounded-full p-1">
+              <div class="bg-primary size-2 rounded-full"></div>
+            </div>
+            <div>
+              <p class="font-medium">Semesterplan</p>
+              <p class="text-muted-foreground text-sm">
+                Vorlesungsfreie Zeit, Blockwochen, Prüfungswochen und Feiertage
+              </p>
             </div>
           </div>
           <div class="flex items-start gap-3">
@@ -175,7 +184,7 @@
                   Demnächst
                 </span>
               </div>
-              <p class="text-muted-foreground text-sm">In Vorbereitung und bald verfügbar</p>
+              <p class="text-muted-foreground text-sm">Prüfungstermine aller Studiengänge</p>
             </div>
           </div>
         </div>

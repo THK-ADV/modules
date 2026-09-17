@@ -7,7 +7,8 @@ export const permissionTypes = [
   { id: 'admin', label: 'Admin' },
   { id: 'artifacts-preview', label: 'Artefakte anzeigen' },
   { id: 'artifacts-create', label: 'Artefakte erstellen' },
-  { id: 'schedule-planning', label: 'Stundenplanung' }
+  { id: 'schedule-planning', label: 'Stundenplanung' },
+  { id: 'schedule-booking', label: 'Einzelbuchung' }
 ]
 
 export const permissionSchema = z.object({

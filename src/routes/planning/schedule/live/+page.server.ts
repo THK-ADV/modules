@@ -1,3 +1,4 @@
+import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -7,15 +8,16 @@ import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
-  const { userInfo } = await parent()
+  const { user, userInfo } = await parent()
 
   if (!userInfo?.hasSchedulePlanningPrivileges) {
     throw error(403, { message: 'Keine Berechtigung für die Stundenplanung' })
   }
 
-  const [holidays, semesterEntries] = await Promise.all([
+  const [holidays, semesterEntries, bookingData] = await Promise.all([
     fetchHolidays(fetch),
-    fetchSemesterEntries(fetch)
+    fetchSemesterEntries(fetch),
+    loadCurrentSemesterBookings(fetch, user, true)
   ])
 
   const { timeGrid, monthBg } = holidays
@@ -25,6 +27,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
     holidays: timeGrid,
     holidaysMonth: monthBg,
     semesterEntries,
+    ...bookingData,
     selectedCalendarView,
     selectedCalendarDate
   }

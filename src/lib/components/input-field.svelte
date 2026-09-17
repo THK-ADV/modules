@@ -16,6 +16,7 @@
     errors?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url'
     step?: string
+    maxlength?: number
     modificationStatus?: ModificationStatus // optional modification tracking
     disabled?: boolean
   }
@@ -30,6 +31,7 @@
     errors = {},
     type = 'text',
     step,
+    maxlength,
     modificationStatus,
     disabled = false
   }: Props = $props()
@@ -51,6 +53,7 @@
             {step}
             bind:value
             {placeholder}
+            {maxlength}
             class={errors[name] ? 'border-destructive' : ''}
           />
         {/snippet}
@@ -87,6 +90,7 @@
           bind:value
           {placeholder}
           {disabled}
+          {maxlength}
           class={errors[name] ? 'border-destructive' : ''}
         />
       {/snippet}

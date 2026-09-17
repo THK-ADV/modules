@@ -6,13 +6,17 @@
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { IsMobile } from '$lib/hooks/is-mobile.svelte'
   import { cn } from '$lib/utils.js'
-  import { ChevronDown, Funnel, Layers, Search, X } from '@lucide/svelte'
+  import { ChevronDown, Funnel, Info, Layers, Search, X } from '@lucide/svelte'
   import type { ScheduleProps } from './types'
   import { StudyProgramFilter } from '$lib/components/study-program-filter'
 
-  let { scheduleFilter }: { scheduleFilter: ScheduleProps['scheduleFilter'] } = $props()
+  let {
+    scheduleFilter,
+    canShowFaculty = false
+  }: { scheduleFilter: ScheduleProps['scheduleFilter']; canShowFaculty?: boolean } = $props()
 
   const showReset = $derived.by(() => {
     const {
@@ -51,10 +55,12 @@
   const isMobile = new IsMobile()
 
   const activeSourceDimensions = $derived.by(() => {
-    const { showSemester, showSchedule, showExams } = scheduleFilter
+    const { showSemester, showSchedule, showCampus, showFaculty, showExams } = scheduleFilter
     let count = 0
     if (showSemester) count++
     if (showSchedule) count++
+    if (showCampus) count++
+    if (showFaculty && canShowFaculty) count++
     if (showExams) count++
     return count
   })
@@ -223,6 +229,32 @@
     <Checkbox id="source-schedule" bind:checked={scheduleFilter.showSchedule} />
     <Label for="source-schedule" class="cursor-pointer text-sm font-normal">Stundenplan</Label>
   </div>
+
+  <div class="flex items-center gap-2">
+    <Checkbox id="source-campus" bind:checked={scheduleFilter.showCampus} />
+    <Label for="source-campus" class="cursor-pointer text-sm font-normal">Campus-Events</Label>
+  </div>
+
+  {#if canShowFaculty}
+    <div class="flex items-center gap-2">
+      <Checkbox id="source-faculty" bind:checked={scheduleFilter.showFaculty} />
+      <Label for="source-faculty" class="cursor-pointer text-sm font-normal">Fakultäts-Events</Label
+      >
+    </div>
+  {:else}
+    <div class="flex items-center gap-2">
+      <Checkbox id="source-faculty" checked={false} disabled={true} />
+      <Label for="source-faculty" class="text-sm font-normal opacity-70">Fakultäts-Events</Label>
+      <!-- Separate focusable trigger: a disabled checkbox cannot receive focus or hover. -->
+      <Tooltip.Root>
+        <Tooltip.Trigger class="text-muted-foreground inline-flex">
+          <Info class="size-3.5" aria-hidden="true" />
+          <span class="sr-only">Nur für Mitarbeitende</span>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Nur für Mitarbeitende</Tooltip.Content>
+      </Tooltip.Root>
+    </div>
+  {/if}
 
   <div class="flex items-center gap-2">
     <Checkbox id="source-exams" bind:checked={scheduleFilter.showExams} disabled={true} />

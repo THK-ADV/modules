@@ -26,6 +26,8 @@ export function createScheduleFilter(prefix: FilterType) {
 
   let showSemester = $state(getBooleanFromLocalStorage(`${prefix}-show-semester-plan`, true))
   let showSchedule = $state(getBooleanFromLocalStorage(`${prefix}-show-schedule`, true))
+  let showCampus = $state(getBooleanFromLocalStorage(`${prefix}-show-campus`, true))
+  let showFaculty = $state(getBooleanFromLocalStorage(`${prefix}-show-faculty`, false))
   let showExams = $state(false)
   const showModuleManagementFilter = prefix === 'sf'
 
@@ -84,6 +86,20 @@ export function createScheduleFilter(prefix: FilterType) {
     set showSchedule(value: boolean) {
       showSchedule = value
       setBooleanToLocalStorage(`${prefix}-show-schedule`, value)
+    },
+    get showCampus() {
+      return showCampus
+    },
+    set showCampus(value: boolean) {
+      showCampus = value
+      setBooleanToLocalStorage(`${prefix}-show-campus`, value)
+    },
+    get showFaculty() {
+      return showFaculty
+    },
+    set showFaculty(value: boolean) {
+      showFaculty = value
+      setBooleanToLocalStorage(`${prefix}-show-faculty`, value)
     },
     get showExams() {
       return showExams

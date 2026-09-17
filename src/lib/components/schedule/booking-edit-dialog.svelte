@@ -1,25 +1,39 @@
 <script lang="ts">
   // Note(BK4A9F): Structural and semantic twin of Note(BK4A9F) in
-  // booking-edit-dialog.svelte. Keep dialog chrome, create/edit/duplicate
+  // schedule-entry-edit-dialog.svelte. Keep dialog chrome, create/edit/duplicate
   // modes, form/repeat/save/delete flow, and field layout in sync. Domain-specific
-  // differences (always-module entries, no title/note/metadata) are expected.
-  import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
+  // differences (booking kind, title/note/metadata, teaching-only fields) are expected.
+  import InputField from '$lib/components/input-field.svelte'
   import { ModuleSingleSelect } from '$lib/components/module-filter'
+  import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
+  import * as Form from '$lib/components/ui/form/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
   import { Separator } from '$lib/components/ui/separator/index.js'
   import { Switch } from '$lib/components/ui/switch/index.js'
+  import { Textarea } from '$lib/components/ui/textarea/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { getErrorMessage } from '$lib/errors'
-  import { scheduleEntryFormSchema, type ScheduleEntryFormData } from '$lib/schemas/schedule'
+  import {
+    otherBookingFormSchema,
+    teachingBookingFormSchema,
+    bookingFormSchema,
+    type BookingFormData
+  } from '$lib/schemas/booking'
   import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
+  import {
+    BOOKING_KIND_LABELS,
+    isTeachingKind,
+    type BookingCreate,
+    type BookingEdit,
+    type BookingKind,
+    type BookingMetadata
+  } from '$lib/types/booking'
   import {
     arraysEqual,
     clonePOs,
     mergePOs,
     posEqual,
-    type ScheduleEntryCreate,
-    type ScheduleEntryEdit,
     type ScheduleEntryUpdateScope,
     type SeriesOccurrence
   } from '$lib/types/schedule'
@@ -31,32 +45,35 @@
   import DateTimePicker from '../forms/date-time-picker.svelte'
   import MultiSelectCombobox from '../multi-select-combobox.svelte'
   import Calendar from '../ui/calendar/calendar.svelte'
-  import { getLecturers, getPOs } from './schedule.remote'
+  import BookingMetadataView from './booking-metadata.svelte'
   import ScheduleEntryPoField from './schedule-entry-po-field.svelte'
   import ScheduleEntryUpdateScopeDialog from './schedule-entry-update-scope-dialog.svelte'
+  import { getLecturers, getPOs } from './schedule.remote'
 
   type PendingAction = 'save' | 'delete'
   type SaveIntent = 'save' | 'duplicate'
 
   export interface Create {
     id: 'create'
-    onCreate: (entries: ScheduleEntryCreate[]) => Promise<void>
-    prefilled?: Partial<ScheduleEntryCreate>
+    kind: BookingKind
+    onCreate: (entries: BookingCreate[]) => Promise<void>
+    prefilled?: { start: Date; end: Date }
   }
 
   export interface Edit {
     id: 'edit'
-    entry: ScheduleEntryEdit
+    entry: BookingEdit
+    metadata: BookingMetadata
     getSeries: (seriesId: string) => Promise<SeriesOccurrence[]>
-    onUpdate: (entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) => Promise<void>
-    onDuplicate: (entry: ScheduleEntryCreate) => void
+    onUpdate: (entry: BookingEdit, scope: ScheduleEntryUpdateScope) => Promise<void>
+    onDuplicate: (entry: BookingCreate) => void
     onDelete: (id: string) => Promise<void>
   }
 
   export interface Duplicate {
     id: 'duplicate'
-    entry: ScheduleEntryCreate
-    onCreate: (entries: ScheduleEntryCreate[]) => Promise<void>
+    entry: BookingCreate
+    onCreate: (entries: BookingCreate[]) => Promise<void>
   }
 
   export type Mode = Create | Edit | Duplicate
@@ -67,60 +84,79 @@
     holidays: Date[]
   }
 
-  function hasActualChanges(lhs: ScheduleEntryCreate, rhs: ScheduleEntryEdit): boolean {
-    return (
-      lhs.module !== rhs.module ||
+  let { mode, onClose, holidays }: Props = $props()
+
+  const kind = $derived(mode.id === 'create' ? mode.kind : mode.entry.kind)
+  const isTeaching = $derived(kind === 'teaching')
+
+  function hasActualChanges(lhs: BookingCreate, rhs: BookingEdit): boolean {
+    if (
+      lhs.title !== rhs.title ||
+      lhs.note !== rhs.note ||
       !arraysEqual(lhs.rooms, rhs.rooms) ||
-      lhs.courseType !== rhs.courseType ||
-      !posEqual(lhs.po, mergePOs(rhs.po)) ||
+      !arraysEqual(lhs.lecturer, rhs.lecturer) ||
       lhs.start.getTime() !== rhs.start.getTime() ||
-      lhs.end.getTime() !== rhs.end.getTime() ||
-      !arraysEqual(lhs.lecturer, rhs.lecturer)
-    )
+      lhs.end.getTime() !== rhs.end.getTime()
+    ) {
+      return true
+    }
+    if (isTeachingKind(lhs) && isTeachingKind(rhs)) {
+      return (
+        lhs.module !== rhs.module ||
+        lhs.courseType !== rhs.courseType ||
+        !posEqual(lhs.po, mergePOs(rhs.po))
+      )
+    }
+    return false
   }
 
-  function createformData(
-    entry: ScheduleEntryEdit | ScheduleEntryCreate | Partial<ScheduleEntryCreate> | null
-  ) {
+  function createFormData(mode: Mode) {
+    const entry = mode.id === 'create' ? null : mode.entry
+    const prefilled = mode.id === 'create' ? mode.prefilled : undefined
+    const teaching = entry && isTeachingKind(entry) ? entry : null
     return superForm(
       {
-        module: entry?.module ?? '',
+        kind,
+        title: entry?.title ?? '',
+        note: entry?.note ?? '',
         rooms: entry?.rooms ?? [],
-        courseType: entry?.courseType ?? '',
-        pos: mergePOs(entry?.po ?? []),
+        lecturer: entry?.lecturer ?? [],
         date: {
-          start: entry?.start ?? null,
-          end: entry?.end ?? null
+          start: entry?.start ?? prefilled?.start ?? null,
+          end: entry?.end ?? prefilled?.end ?? null
         },
-        lecturer: entry?.lecturer ?? []
+        module: teaching?.module ?? '',
+        courseType: teaching?.courseType ?? '',
+        pos: teaching ? mergePOs(teaching.po) : []
       },
       {
         SPA: true,
         dataType: 'json',
-        validators: zod4(scheduleEntryFormSchema),
+        validators: zod4(isTeaching ? teachingBookingFormSchema : otherBookingFormSchema),
         onChange: async (event) => {
           if (event.paths.includes('module')) {
-            await prefillForm(event.get('module'))
+            await prefillModuleFields(event.get('module'))
           }
         }
       }
     )
   }
 
-  let { mode, onClose, holidays }: Props = $props()
-
   // Repeated date entries
-  let repeatEntry = $derived(mode != null && mode.id === 'duplicate')
+  let repeatEntry = $derived(mode.id === 'duplicate')
   let repeatedEntries = $state<DateValue[]>([])
   let pendingAction = $state<PendingAction | null>(null)
   let dialogContentRef = $state<HTMLElement | null>(null)
+  let poDialogOpen = $state(false)
 
   const saveButtonDisabled = $derived(
-    pendingAction !== null ||
-      (mode != null && mode.id === 'duplicate' && repeatedEntries.length === 0)
+    pendingAction !== null || (mode.id === 'duplicate' && repeatedEntries.length === 0)
   )
 
-  // Proxy for the date.start field
+  const form = $derived(createFormData(mode))
+  const { form: formData, errors, validateForm } = $derived(form)
+
+  // Proxies for the nested date fields
   let dateStart = {
     get value() {
       return $formData.date.start
@@ -130,7 +166,6 @@
     }
   }
 
-  // Proxy for the date.end field
   let dateEnd = {
     get value() {
       return $formData.date.end
@@ -160,50 +195,18 @@
 
   // UI state
 
-  const title = $derived.by(() => {
-    switch (mode.id) {
-      case 'create':
-        return 'Neuer Eintrag'
-      case 'duplicate': {
-        const module = schedulePlanningFilter.modules.find((m) => m.id === mode.entry.module)
-        if (module) {
-          return `"${module.label}" duplizieren`
-        }
-        return 'Eintrag duplizieren'
-      }
-      case 'edit': {
-        const module = schedulePlanningFilter.modules.find((m) => m.id === mode.entry.module)
-        if (module) {
-          return `"${module.label}" bearbeiten`
-        }
-        return 'Eintrag bearbeiten'
-      }
-    }
-  })
+  const title = $derived(`Einzelbuchung: ${BOOKING_KIND_LABELS[kind]}`)
 
   const description = $derived.by(() => {
     switch (mode.id) {
       case 'create':
-        return 'Neuen Stundenplan-Eintrag anlegen.'
+        return 'Neue Einzelbuchung anlegen.'
       case 'duplicate':
-        return 'Neuen Stundenplan-Eintrag basierend auf dem ausgewählten Modul anlegen.'
+        return 'Neue Buchung basierend auf der ausgewählten Buchung anlegen.'
       case 'edit':
-        return 'Bestehenden Eintrag bearbeiten und anpassen.'
+        return 'Bestehende Buchung bearbeiten und anpassen.'
     }
   })
-
-  const form = $derived.by(() => {
-    switch (mode.id) {
-      case 'create':
-        return createformData(mode.prefilled ?? null)
-      case 'duplicate':
-        return createformData(mode.entry)
-      case 'edit':
-        return createformData(mode.entry)
-    }
-  })
-
-  const { form: formData, errors, validateForm } = $derived(form)
 
   // Options
 
@@ -218,35 +221,61 @@
     deLabel: ct.label
   }))
 
-  const lecturerOptions = schedulePlanningFilter.identities.map((i) => ({
+  const contactOptions = schedulePlanningFilter.identities.map((i) => ({
     id: i.id,
     label: i.label,
     abbrev: i.label
   }))
 
-  function createCurrentEntry(
-    seriesId: string,
-    formData: ScheduleEntryFormData
-  ): ScheduleEntryCreate {
-    return {
+  function createCurrentEntry(seriesId: string, data: BookingFormData): BookingCreate {
+    const base = {
       seriesId,
-      module: formData.module,
-      rooms: [...formData.rooms],
-      courseType: formData.courseType,
-      po: clonePOs(formData.pos),
-      lecturer: [...formData.lecturer],
-      start: new Date(formData.date.start),
-      end: new Date(formData.date.end)
+      title: data.title.trim(),
+      note: data.note.trim() || null,
+      rooms: [...data.rooms],
+      lecturer: [...data.lecturer],
+      start: new Date(data.date.start),
+      end: new Date(data.date.end)
     }
+    if (isTeachingKind(data)) {
+      return {
+        ...base,
+        kind: 'teaching',
+        module: data.module,
+        courseType: data.courseType,
+        po: clonePOs(data.pos)
+      }
+    }
+    return { ...base, kind: data.kind }
+  }
+
+  /** Copies the entry to the given day, keeping the local time of day. */
+  function onDate(entry: BookingCreate, date: DateValue): BookingCreate {
+    const start = new Date(
+      date.year,
+      date.month - 1,
+      date.day,
+      entry.start.getHours(),
+      entry.start.getMinutes()
+    )
+    const end = new Date(
+      date.year,
+      date.month - 1,
+      date.day,
+      entry.end.getHours(),
+      entry.end.getMinutes()
+    )
+    const copy = { ...entry, start, end, rooms: [...entry.rooms], lecturer: [...entry.lecturer] }
+    return isTeachingKind(copy) ? { ...copy, po: clonePOs(copy.po) } : copy
   }
 
   let updateScopeDialogOpen = $state(false)
   let updateScopeDialog: {
-    requestUpdateScope: (entry: ScheduleEntryEdit) => Promise<void>
+    requestUpdateScope: (entry: BookingEdit) => Promise<void>
   } | null = $state(null)
   let updateScopeErrorMessage = $state<string | undefined>(undefined)
 
-  async function requestUpdate(entry: ScheduleEntryEdit) {
+  async function requestUpdate(entry: BookingEdit) {
     if (mode.id !== 'edit') {
       return
     }
@@ -260,13 +289,12 @@
     }
   }
 
-  function createRepeatedEntries(current: ScheduleEntryCreate): ScheduleEntryCreate[] {
+  function createRepeatedEntries(current: BookingCreate): BookingCreate[] {
     if (!repeatEntry || repeatedEntries.length === 0) {
       return [current]
     }
 
     const entries = [current]
-
     for (const date of repeatedEntries) {
       // care: JavaScript months are 0-indexed, but the date library is 1-indexed
       if (
@@ -274,66 +302,11 @@
         current.start.getMonth() === date.month - 1 &&
         current.start.getFullYear() === date.year
       ) {
-        // already added
         continue
       }
-
-      const newEntry = {
-        ...current,
-        rooms: [...current.rooms],
-        po: clonePOs(current.po),
-        lecturer: [...current.lecturer],
-        start: new Date(
-          date.year,
-          date.month - 1,
-          date.day,
-          current.start.getHours(),
-          current.start.getMinutes()
-        ),
-        end: new Date(
-          date.year,
-          date.month - 1,
-          date.day,
-          current.end.getHours(),
-          current.end.getMinutes()
-        )
-      }
-      entries.push(newEntry)
+      entries.push(onDate(current, date))
     }
-
     return entries
-  }
-
-  /**
-   * Duplicates the given entry for each selected date.
-   * @param origin
-   */
-  function duplicateEntries(origin: ScheduleEntryCreate): ScheduleEntryCreate[] {
-    if (!repeatEntry || repeatedEntries.length === 0) {
-      return []
-    }
-    return repeatedEntries.map((date) => {
-      return {
-        ...origin,
-        rooms: [...origin.rooms],
-        po: clonePOs(origin.po),
-        lecturer: [...origin.lecturer],
-        start: new Date(
-          date.year,
-          date.month - 1,
-          date.day,
-          origin.start.getHours(),
-          origin.start.getMinutes()
-        ),
-        end: new Date(
-          date.year,
-          date.month - 1,
-          date.day,
-          origin.end.getHours(),
-          origin.end.getMinutes()
-        )
-      }
-    })
   }
 
   async function handleSave(intent: SaveIntent = 'save') {
@@ -344,47 +317,37 @@
       const validation = await validateForm({ update: true })
       if (!validation.valid) return
 
-      // Superforms keeps the broad initialization type even after successful validation.
-      const validatedFormData = validation.data as ScheduleEntryFormData
+      const parsed = bookingFormSchema.safeParse(validation.data)
+      if (!parsed.success) return
+      const validatedFormData = parsed.data
 
       if (intent === 'duplicate') {
         if (mode.id === 'edit') {
-          const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
-          mode.onDuplicate(current)
+          mode.onDuplicate(createCurrentEntry(mode.entry.seriesId, validatedFormData))
         }
         return
       }
 
       switch (mode.id) {
         case 'create': {
-          // creating new entry
-          const current = createCurrentEntry(
-            mode.prefilled?.seriesId ?? crypto.randomUUID(),
-            validatedFormData
-          )
+          const current = createCurrentEntry(crypto.randomUUID(), validatedFormData)
           await mode.onCreate(createRepeatedEntries(current))
           break
         }
         case 'edit': {
-          // editing existing entry
           const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
           if (hasActualChanges(current, $state.snapshot(mode.entry))) {
-            // did changes, update new entry
             await requestUpdate({ id: mode.entry.id, ...current })
           } else {
-            // no changes, close dialog
             onClose()
           }
           break
         }
         case 'duplicate': {
-          // creating new entry
           const current = createCurrentEntry(mode.entry.seriesId, validatedFormData)
-          const duplicates = duplicateEntries(current)
-          if (duplicates.length > 0) {
-            await mode.onCreate(duplicates)
+          if (repeatedEntries.length > 0) {
+            await mode.onCreate(repeatedEntries.map((date) => onDate(current, date)))
           } else {
-            // no duplicates, close dialog
             onClose()
           }
           break
@@ -415,10 +378,8 @@
     )
   }
 
-  let poDialogOpen = $state(false)
-
-  /** Prefills the form with the lecturers and POs for the given module */
-  async function prefillForm(module: string) {
+  /** Prefills lecturers and POs for the given module */
+  async function prefillModuleFields(module: string) {
     try {
       $formData.lecturer = []
       $formData.pos = []
@@ -494,11 +455,11 @@
                     onclick={() => handleSave('duplicate')}
                   >
                     <Copy class="size-4" />
-                    <span class="sr-only">Eintrag duplizieren</span>
+                    <span class="sr-only">Buchung duplizieren</span>
                   </Button>
                 {/snippet}
               </Tooltip.Trigger>
-              <Tooltip.Content>Eintrag duplizieren</Tooltip.Content>
+              <Tooltip.Content>Buchung duplizieren</Tooltip.Content>
             </Tooltip.Root>
 
             <Tooltip.Root>
@@ -514,12 +475,12 @@
                     onclick={handleDelete}
                   >
                     <Trash2 class="size-4" />
-                    <span class="sr-only">Eintrag löschen</span>
+                    <span class="sr-only">Buchung löschen</span>
                   </Button>
                 {/snippet}
               </Tooltip.Trigger>
               <Tooltip.Content
-                >Eintrag löschen <kbd
+                >Buchung löschen <kbd
                   class="bg-muted text-muted-foreground ml-1 rounded px-1.5 py-0.5 text-xs font-medium"
                   >Del</kbd
                 ></Tooltip.Content
@@ -533,28 +494,39 @@
     <Separator class="my-1 shrink-0" />
 
     <div
-      class="dialog-body-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain pr-1"
+      class="dialog-body-scroll min-h-0 min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain px-1.5"
     >
       <div class="space-y-4 py-2">
-        <!-- Module -->
-        <ModuleSingleSelect
-          disabled={mode.id !== 'create'}
+        <InputField
           {form}
-          {errors}
-          name="module"
-          label="Modul"
-          placeholder="Modul auswählen…"
-          options={schedulePlanningFilter.modules}
-          bind:value={$formData.module}
+          errors={$errors}
+          name="title"
+          label="Titel"
+          placeholder="Titel der Veranstaltung (max. 50 Zeichen)"
+          maxlength={50}
+          bind:value={$formData.title}
+          disabled={mode.id === 'duplicate'}
         />
 
-        <!-- Lecturer -->
+        {#if isTeaching}
+          <ModuleSingleSelect
+            disabled={mode.id !== 'create'}
+            {form}
+            {errors}
+            name="module"
+            label="Modul"
+            placeholder="Modul auswählen…"
+            options={schedulePlanningFilter.modules}
+            bind:value={$formData.module}
+          />
+        {/if}
+
         <MultiSelectCombobox
           {form}
           {errors}
           name="lecturer"
-          label="Dozierende"
-          options={lecturerOptions}
+          label={isTeaching ? 'Dozierende' : 'Ansprechpersonen'}
+          options={contactOptions}
           bind:value={$formData.lecturer}
           maxVisibleBadges={3}
         />
@@ -584,10 +556,9 @@
           <div class="flex flex-col space-y-2">
             <div class="flex items-center space-x-2">
               <Switch id="repeat" bind:checked={repeatEntry} />
-              <Label for="repeat">Eintrag duplizieren</Label>
+              <Label for="repeat">Buchung duplizieren</Label>
             </div>
             {#if repeatEntry}
-              <!-- mark the current entry as selected -->
               <Calendar
                 placeholder={$formData.date.start
                   ? fromDate($formData.date.start, getLocalTimeZone())
@@ -604,7 +575,6 @@
         {/if}
 
         <div class="grid gap-2 md:grid-cols-2">
-          <!-- Room -->
           <MultiSelectCombobox
             {form}
             {errors}
@@ -616,26 +586,48 @@
             maxVisibleBadges={3}
           />
 
-          <!-- Course Type -->
-          <Combobox
-            {form}
-            {errors}
-            name="courseType"
-            label="Kursart"
-            placeholder="Kursart auswählen…"
-            options={courseTypeOptions}
-            bind:value={$formData.courseType}
-            disabled={mode.id === 'duplicate'}
-          />
+          {#if isTeaching}
+            <Combobox
+              {form}
+              {errors}
+              name="courseType"
+              label="Kursart"
+              placeholder="Kursart auswählen…"
+              options={courseTypeOptions}
+              bind:value={$formData.courseType}
+              disabled={mode.id === 'duplicate'}
+            />
+          {/if}
         </div>
 
-        <!-- POs -->
-        {#if mode.id !== 'duplicate'}
+        {#if isTeaching && mode.id !== 'duplicate'}
           <ScheduleEntryPoField
             {form}
             bind:value={$formData.pos}
             bind:subDialogOpen={poDialogOpen}
             studyPrograms={schedulePlanningFilter.studyProgramsWithSpecialization}
+          />
+        {/if}
+
+        <Form.Field {form} name="note">
+          <Form.Control>
+            {#snippet children({ props })}
+              <Form.Label>Notiz (optional)</Form.Label>
+              <Textarea
+                {...props}
+                bind:value={$formData.note}
+                disabled={mode.id === 'duplicate'}
+                rows={3}
+              />
+            {/snippet}
+          </Form.Control>
+          <Form.FieldErrors />
+        </Form.Field>
+
+        {#if mode.id === 'edit'}
+          <BookingMetadataView
+            createdBy={mode.metadata.createdBy}
+            updatedAt={mode.metadata.updatedAt}
           />
         {/if}
       </div>

@@ -5,6 +5,7 @@
     Book,
     Calendar1,
     CalendarCog,
+    CalendarPlus,
     ChevronRight,
     Database,
     FileText,
@@ -79,7 +80,9 @@
   const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
 
   const showPlanningSection = $derived(
-    userInfo?.hasSchedulePlanningViewPrivileges || userInfo?.hasExamPlanningPrivileges
+    userInfo?.hasSchedulePlanningViewPrivileges ||
+      userInfo?.hasExamPlanningPrivileges ||
+      userInfo?.hasScheduleBookingPrivileges
   )
 </script>
 
@@ -114,6 +117,18 @@
               <a href={resolve('/planning/schedule')} {...props}>
                 <CalendarCog />
                 <span>{routeLabels['/planning/schedule']}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      {/if}
+      {#if userInfo?.hasScheduleBookingPrivileges && !userInfo.hasSchedulePlanningPrivileges}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton isActive={isActive('/planning/bookings')}>
+            {#snippet child({ props })}
+              <a href={resolve('/planning/bookings')} {...props}>
+                <CalendarPlus />
+                <span>{routeLabels['/planning/bookings']}</span>
               </a>
             {/snippet}
           </Sidebar.MenuButton>

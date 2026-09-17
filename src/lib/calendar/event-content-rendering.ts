@@ -1,6 +1,21 @@
+import type { CampusBooking } from '$lib/types/booking'
 import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
-import { COURSE_TYPE_COLORS } from './types'
+import {
+  BOOKING_KIND_COLORS,
+  COURSE_TYPE_COLORS,
+  isScheduleLike,
+  type CalendarEventProps
+} from './types'
+
+/** Booking titles are user input and end up in `innerHTML`. */
+function escapeHtml(text: string): string {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
 
 /**
  * Create an SVG icon from a path or an array of paths.
@@ -30,6 +45,29 @@ function createInfoRow(icon: string, text: string): string {
 
 function createShortInfoRow(text: string): string {
   return `<div class="flex items-center gap-1.5 text-xs opacity-70"><span class="truncate">${text}</span></div>`
+}
+
+/** Two-line clamped event title for the full and compact week-view variants. */
+function createTitle(title: string): string {
+  return `<div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">${title}</div>`
+}
+
+/**
+ * Wrap the week-view size variants (`event-size-full`, `event-size-compact`, `event-size-minimum`)
+ * into the event container. The minimum variant shows only a vertically written title.
+ */
+function wrapWeekViews(color: string, full: string, compact: string, minimumTitle: string) {
+  return {
+    html: `
+      <div class="event-content flex h-full flex-col pl-2 text-white" style="--event-course-color: ${color};">
+        <div class="event-size-full flex flex-col gap-1.5 p-1.5">${full}</div>
+        <div class="event-size-compact relative flex flex-col gap-1 p-1.5">${compact}</div>
+        <div class="event-size-minimum flex h-full items-center justify-center overflow-hidden m-1.5">
+          <span class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">${minimumTitle}</span>
+        </div>
+      </div>
+    `
+  }
 }
 
 /**
@@ -67,16 +105,22 @@ const ICONS: Record<string, string> = {
  * @returns The event content as a string.
  */
 export function renderWeekViewEventContent(arg: EventContentArg) {
-  // Only apply custom layout for schedule events, use default for others
-  if (arg.event.extendedProps?.source !== 'schedule') {
-    return true
+  const eventProps = arg.event.extendedProps as CalendarEventProps
+  if (isScheduleLike(eventProps)) {
+    return renderWeekViewScheduleLikeContent(arg, eventProps.raw)
   }
+  if (eventProps.source === 'booking') {
+    return renderWeekViewBookingContent(arg, eventProps.raw)
+  }
+  return true
+}
 
-  const props: ScheduleEntry = arg.event.extendedProps.raw
+function renderWeekViewScheduleLikeContent(arg: EventContentArg, props: ScheduleEntry) {
   const durationMinutes = Math.round(
     (new Date(props.end).getTime() - new Date(props.start).getTime()) / (1000 * 60)
   )
-  const titleLong = props.moduleTitle
+  // Schedule entries carry the module title, teaching bookings their booking title.
+  const titleLong = escapeHtml(arg.event.title)
   const titleShort = props.moduleAbbrev
   const location = props.rooms
     .map(({ abbrev }) => abbrev)
@@ -86,30 +130,12 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   const courseTypeColor = COURSE_TYPE_COLORS[props.courseType]
 
   if (durationMinutes <= 90) {
-    return {
-      html: `
-        <div class="event-content flex h-full flex-col pl-2 text-white" style="--event-course-color: ${courseTypeColor};">
-          <!-- Full view -->
-          <div class="event-size-full flex flex-col gap-1.5 p-1.5">
-            <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
-              ${titleLong}
-            </div>
-            ${createInfoRow(ICONS.mapPin, location)}
-          </div>
-          <!-- Compact view -->
-          <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
-            <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
-              ${titleShort}
-            </div>
-            ${createShortInfoRow(location)}
-          </div>
-          <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-          <div class="event-size-minimum flex h-full items-center justify-center overflow-hidden m-1.5">
-            <span class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
-          </div>
-        </div>
-      `
-    }
+    return wrapWeekViews(
+      courseTypeColor,
+      createTitle(titleLong) + createInfoRow(ICONS.mapPin, location),
+      createTitle(titleShort) + createShortInfoRow(location),
+      titleShort
+    )
   }
 
   const time = arg.timeText
@@ -123,35 +149,51 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
     .sort()
     .join(', ')
 
-  return {
-    html: `
-      <div class="event-content flex h-full flex-col pl-2 text-white" style="--event-course-color: ${courseTypeColor};">
-        <!-- Full view -->
-        <div class="event-size-full flex flex-col gap-1.5 p-1.5">
-          <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
-            ${titleLong}
-          </div>
-          ${createInfoRow(ICONS.clock, time)}
-          ${createInfoRow(ICONS.mapPin, location)}
-          ${createInfoRow(ICONS.user, lecturerLong)}
-          ${createInfoRow(ICONS.book, courseTypeLong)}
-        </div>
-        <!-- Compact view -->
-        <div class="event-size-compact relative flex flex-col gap-1 p-1.5">
-          <div class="min-w-0 overflow-hidden text-sm font-semibold leading-tight wrap-break-word [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] mb-1">
-            ${titleShort}
-          </div>
-          ${createShortInfoRow(timeShort)}
-          ${createShortInfoRow(location)}
-          ${createShortInfoRow(lecturerShort)}
-        </div>
-        <!-- Minimum view - centered abbreviation for narrow stacked columns -->
-        <div class="event-size-minimum flex h-full items-center justify-center overflow-hidden m-1.5">
-          <span class="max-h-full font-bold leading-none [writing-mode:vertical-lr] [text-orientation:mixed]">${titleShort}</span>
-        </div>
-      </div>
-    `
-  }
+  return wrapWeekViews(
+    courseTypeColor,
+    createTitle(titleLong) +
+      createInfoRow(ICONS.clock, time) +
+      createInfoRow(ICONS.mapPin, location) +
+      createInfoRow(ICONS.user, lecturerLong) +
+      createInfoRow(ICONS.book, courseTypeLong),
+    createTitle(titleShort) +
+      createShortInfoRow(timeShort) +
+      createShortInfoRow(location) +
+      createShortInfoRow(lecturerShort),
+    titleShort
+  )
+}
+
+/**
+ * Render campus and faculty bookings for time-grid views: title, time, rooms, contact persons.
+ */
+function renderWeekViewBookingContent(arg: EventContentArg, booking: CampusBooking) {
+  const color = BOOKING_KIND_COLORS[booking.kind]
+  const title = escapeHtml(booking.title)
+  const location = booking.rooms
+    .map(({ abbrev }) => abbrev)
+    .sort()
+    .join(', ')
+  const contacts = booking.lecturer
+    .map(({ label }) => label)
+    .sort()
+    .join(', ')
+  const durationMinutes = Math.round(
+    (new Date(booking.end).getTime() - new Date(booking.start).getTime()) / (1000 * 60)
+  )
+  const details =
+    durationMinutes <= 90
+      ? createInfoRow(ICONS.mapPin, location)
+      : createInfoRow(ICONS.clock, arg.timeText) +
+        createInfoRow(ICONS.mapPin, location) +
+        createInfoRow(ICONS.user, contacts)
+
+  return wrapWeekViews(
+    color,
+    createTitle(title) + details,
+    createTitle(title) + createShortInfoRow(location),
+    title
+  )
 }
 
 /**
@@ -188,21 +230,34 @@ function createMonthRow(title: string, time: string, color: string, courseType: 
  * @returns The event content as a string.
  */
 export function renderMonthViewEventContent(arg: EventContentArg) {
-  // Only apply custom layout for schedule events, use default for others
-  if (arg.event.extendedProps?.source !== 'schedule') {
-    return true
-  }
-
-  const props: ScheduleEntry = arg.event.extendedProps.raw
+  const eventProps = arg.event.extendedProps as CalendarEventProps
   const time = arg.timeText
-  const titleFull = props.moduleTitle
-  const titleCompact = props.moduleAbbrev || props.moduleTitle
-  const courseType = fmtCourseType(props.courseType).charAt(0)
-  const color = COURSE_TYPE_COLORS[props.courseType]
 
-  const fullRow = createMonthRow(titleFull, time, color, courseType)
-  const compactRow = createMonthRow(titleCompact, time, color, courseType)
+  if (isScheduleLike(eventProps)) {
+    const props = eventProps.raw
+    const titleFull = escapeHtml(arg.event.title)
+    const titleCompact = props.moduleAbbrev || titleFull
+    const courseType = fmtCourseType(props.courseType).charAt(0)
+    const color = COURSE_TYPE_COLORS[props.courseType]
+    return wrapMonthRows(
+      createMonthRow(titleFull, time, color, courseType),
+      createMonthRow(titleCompact, time, color, courseType)
+    )
+  }
+  if (eventProps.source === 'booking') {
+    const title = escapeHtml(eventProps.raw.title)
+    const row = createMonthRow(
+      title,
+      time,
+      BOOKING_KIND_COLORS[eventProps.kind],
+      eventProps.kind === 'campus' ? 'C' : 'F'
+    )
+    return wrapMonthRows(row, row)
+  }
+  return true
+}
 
+function wrapMonthRows(fullRow: string, compactRow: string) {
   return {
     html: `
       <div class="event-content event-content-size-container flex h-full w-full min-w-0 flex-col overflow-hidden text-xs text-slate-900 dark:text-white">

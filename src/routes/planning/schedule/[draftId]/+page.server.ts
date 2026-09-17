@@ -1,4 +1,5 @@
 import { PLAN_ROUTE_ID } from '$lib/routes'
+import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -9,7 +10,7 @@ import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) => {
-  const { userInfo } = await parent()
+  const { user, userInfo } = await parent()
 
   if (!userInfo?.hasSchedulePlanningViewPrivileges) {
     throw error(403, { message: 'Keine Berechtigung für die Stundenplanung' })
@@ -25,6 +26,8 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
     throw error(409, { message: 'Veröffentlichte Planungen können nicht bearbeitet werden' })
   }
 
+  const bookingData = await loadCurrentSemesterBookings(fetch, user, true, draft.planDraft.semester)
+
   const { timeGrid, monthBg } = holidays
   const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
 
@@ -32,6 +35,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
     holidays: timeGrid,
     holidaysMonth: monthBg,
     semesterEntries,
+    ...bookingData,
     selectedCalendarView,
     selectedCalendarDate,
     planDraft: draft.planDraft,

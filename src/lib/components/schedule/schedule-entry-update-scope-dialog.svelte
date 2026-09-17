@@ -1,26 +1,22 @@
-<script lang="ts">
+<script lang="ts" generics="T extends { id: string; seriesId: string }">
   import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import type {
-    ScheduleEntryEdit,
-    ScheduleEntryUpdateScope,
-    SeriesOccurrence
-  } from '$lib/types/schedule'
+  import type { ScheduleEntryUpdateScope, SeriesOccurrence } from '$lib/types/schedule'
   import { DateFormatter } from '@internationalized/date'
   import { CalendarDays, Clock } from '@lucide/svelte'
 
   interface Props {
     open?: boolean
-    onUpdate: (entry: ScheduleEntryEdit, scope: ScheduleEntryUpdateScope) => Promise<void>
+    onUpdate: (entry: T, scope: ScheduleEntryUpdateScope) => Promise<void>
     onCancel?: () => void
     getSeries: (seriesId: string) => Promise<SeriesOccurrence[]>
   }
 
   let { open = $bindable(false), onUpdate, onCancel, getSeries }: Props = $props()
 
-  let pendingUpdateEntry = $state<ScheduleEntryEdit | null>(null)
+  let pendingUpdateEntry = $state<T | null>(null)
   let pendingUpdateSeries = $state<SeriesOccurrence[] | null>(null)
   let updatingScope = $state<ScheduleEntryUpdateScope | null>(null)
 
@@ -45,7 +41,7 @@
   }
 
   // Triggers the scope decision flow; opens the dialog when the entry belongs to a series.
-  export async function requestUpdateScope(updateEntry: ScheduleEntryEdit) {
+  export async function requestUpdateScope(updateEntry: T) {
     if (updatingScope !== null) return
 
     clearPendingUpdate()
@@ -73,10 +69,7 @@
     open = false
   }
 
-  async function updateEntryWithScope(
-    updateEntry: ScheduleEntryEdit,
-    scope: ScheduleEntryUpdateScope
-  ) {
+  async function updateEntryWithScope(updateEntry: T, scope: ScheduleEntryUpdateScope) {
     if (updatingScope !== null) return
 
     updatingScope = scope

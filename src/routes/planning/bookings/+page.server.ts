@@ -4,20 +4,28 @@ import {
   fetchSemesterEntries,
   getCalendarCookies
 } from '$lib/server/backend/calendar'
+import { error, redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
-  const { user } = await parent()
+  const { user, userInfo } = await parent()
+
+  if (userInfo?.hasSchedulePlanningPrivileges) {
+    redirect(303, '/planning/schedule')
+  }
+
+  if (!userInfo?.hasScheduleBookingPrivileges) {
+    throw error(403, { message: 'Keine Berechtigung für Einzelbuchungen' })
+  }
 
   const [holidays, semesterEntries, bookingData] = await Promise.all([
     fetchHolidays(fetch),
     fetchSemesterEntries(fetch),
-    loadCurrentSemesterBookings(fetch, user, false)
+    loadCurrentSemesterBookings(fetch, user, true)
   ])
 
-  const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
-
   const { timeGrid, monthBg } = holidays
+  const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
 
   return {
     holidays: timeGrid,

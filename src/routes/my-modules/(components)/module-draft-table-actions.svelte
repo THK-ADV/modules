@@ -5,6 +5,8 @@
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
+  import { getErrorMessage } from '$lib/errors'
+  import type { ModuleDraftTableAction } from '$lib/schemas/module-actions'
   import {
     canCancelReview,
     canDiscardChanges,
@@ -16,7 +18,7 @@
   import { cn } from '$lib/utils'
   import { SquarePen, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
-  import type { ModuleDraftTableAction } from '$lib/schemas/module-actions'
+  import { performModuleDraftAction } from '../module-actions.remote'
 
   type ActionKey = ModuleDraftTableAction | 'edit'
 
@@ -75,27 +77,13 @@
 
   async function performAction(action: ModuleDraftTableAction) {
     try {
-      const response = await fetch(`/actions/module-actions/${moduleId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || `${action} failed`)
-      }
-
-      // refresh the page data
+      await performModuleDraftAction({ moduleId, action })
       await invalidateAll()
       onActionComplete()
     } catch (error) {
       console.error(`${action} failed:`, error)
-      alert(`Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
+      alert(`Fehler: ${getErrorMessage(error)}`)
     } finally {
-      // reset loading states
       switch (action) {
         case 'delete':
           isDeleting = false

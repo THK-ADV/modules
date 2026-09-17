@@ -22,6 +22,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
+  import { getErrorMessage } from '$lib/errors'
   import { examListReleaseFormSchema } from '$lib/schemas/exam-list'
   import type { Semester } from '$lib/types/semester'
   import type { StudyProgram } from '$lib/types/study-program'
@@ -30,6 +31,7 @@
   import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
+  import { publishExamList } from '../studyprogram.remote'
 
   let {
     semesters,
@@ -86,21 +88,13 @@
     closeDialog()
     isPublishing = true
 
-    const response = await fetch(`/actions/publish`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ semester, date, po: sp.po.id })
-    })
-
-    isPublishing = false
-
-    if (response.ok) {
+    try {
+      await publishExamList({ semester, date, po: sp.po.id })
       await invalidate('preview:studyProgram')
-    } else {
-      const err = await response.json()
-      showErrorMessage = err.message || 'Unbekannter Fehler beim Freigeben der Prüfungsliste'
+    } catch (err) {
+      showErrorMessage = getErrorMessage(err, 'Unbekannter Fehler beim Freigeben der Prüfungsliste')
+    } finally {
+      isPublishing = false
     }
   }
 </script>

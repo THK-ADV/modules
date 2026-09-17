@@ -1,12 +1,15 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { type EventClickInfo } from '$lib/calendar'
+  import { isScheduleLike, type EventClickInfo } from '$lib/calendar'
+  import BookingDetailsDialog from '$lib/components/schedule/booking-details-dialog.svelte'
+  import { fetchBookings } from '$lib/components/schedule/booking.remote'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { getBooleanFromLocalStorage, setBooleanToLocalStorage } from '$lib/stores/local-storage'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
+  import type { CampusBooking, TeachingBooking } from '$lib/types/booking'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { TriangleAlert, X } from '@lucide/svelte'
   import type { PageProps } from './$types'
@@ -15,7 +18,12 @@
 
   const { data }: PageProps = $props()
 
-  let selectedScheduleEntry = $state<ScheduleEntry | null>(null)
+  // Seed local state once; $state makes in-place array mutations here and in Schedule reactive.
+  // $derived(data.bookings) would not make the array deeply reactive.
+  // svelte-ignore state_referenced_locally
+  let bookings = $state(data.bookings)
+  let selectedScheduleEntry = $state<ScheduleEntry | TeachingBooking | null>(null)
+  let selectedBooking = $state<CampusBooking | null>(null)
   let hintRead = $state(getBooleanFromLocalStorage(HINT_STORAGE_KEY, false))
 
   function dismissHint() {
@@ -23,11 +31,18 @@
     setBooleanToLocalStorage(HINT_STORAGE_KEY, true)
   }
 
+  // Read-only: clicks only open details, bookings are edited under /planning/bookings.
   function onEventClick(info: EventClickInfo) {
-    if (info.event.extendedProps?.source !== 'schedule') {
-      return
+    const props = info.event.extendedProps
+    if (isScheduleLike(props)) {
+      selectedScheduleEntry = props.raw
+    } else if (props.source === 'booking') {
+      selectedBooking = props.raw
     }
-    selectedScheduleEntry = info.event.extendedProps.raw
+  }
+
+  function loadBookings(semester: string) {
+    return fetchBookings({ semester, kinds: data.bookingKinds, bypassCache: false })
   }
 </script>
 
@@ -64,12 +79,15 @@
     </p>
   </div>
 
-  <ScheduleFilter {scheduleFilter} />
+  <ScheduleFilter {scheduleFilter} canShowFaculty={data.canSeeFaculty} />
 
   <Schedule
     holidays={data.holidays}
     holidaysMonth={data.holidaysMonth}
     semesterEntries={data.semesterEntries}
+    bind:bookings
+    bookingSemester={data.bookingSemester}
+    {loadBookings}
     {onEventClick}
     {scheduleFilter}
     bypassCache={false}
@@ -81,6 +99,11 @@
       onClose={() => (selectedScheduleEntry = null)}
       entry={selectedScheduleEntry}
       studyPrograms={scheduleFilter.studyProgramsWithSpecialization}
+      showBookingMetadata={false}
     />
+  {/if}
+
+  {#if selectedBooking}
+    <BookingDetailsDialog onClose={() => (selectedBooking = null)} booking={selectedBooking} />
   {/if}
 </div>

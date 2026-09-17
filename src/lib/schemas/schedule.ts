@@ -31,6 +31,9 @@ const scheduleEntryTimeFields = {
   end: z.date()
 }
 
+// Note(BK5B4D): Write-input fields are a twin of Note(BK5B4D) teachingBookingInputSchema
+// in schemas/booking.ts. Keep module/courseType/rooms/po/lecturer/series/date
+// constraints in sync.
 const scheduleEntryInputFields = {
   module: z.string().trim().min(1),
   courseType: courseTypeSchema,
@@ -95,18 +98,18 @@ export const deleteDraftScheduleEntryInputSchema = z.object({
 })
 
 // Backend responses
-const backendDateTimeResponseSchema = z.iso
+export const backendDateTimeResponseSchema = z.iso
   .datetime({ offset: true })
   .transform((value) => new Date(value))
 
-const scheduleManagementResponseSchema = z.object({
+export const scheduleManagementResponseSchema = z.object({
   id: z.string().trim().min(1),
   kind: z.enum(['person', 'group', 'unknown']),
   label: z.string().trim().min(1),
   abbreviation: z.string().trim().min(1)
 })
 
-const scheduleRoomResponseSchema = z.object({
+export const scheduleRoomResponseSchema = z.object({
   id: z.string().trim().min(1),
   abbrev: z.string().trim().min(1)
 })
@@ -178,7 +181,7 @@ export const semesterPlanEntryListResponseSchema = z.array(
 )
 
 // Client-side forms
-export const scheduleEntryFormSchema = z.object({
+export const scheduleEntryFormFields = {
   module: z.string().min(1, 'Modulbezeichnung erforderlich'),
   rooms: z.array(z.string()).min(1, 'Mindestens ein Raum erforderlich'),
   courseType: courseTypeSchema,
@@ -206,7 +209,9 @@ export const scheduleEntryFormSchema = z.object({
       path: ['end']
     }),
   lecturer: z.array(z.string())
-})
+}
+
+export const scheduleEntryFormSchema = z.object(scheduleEntryFormFields)
 
 export type ScheduleEntryFormData = z.infer<typeof scheduleEntryFormSchema>
 

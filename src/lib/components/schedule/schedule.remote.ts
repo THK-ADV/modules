@@ -37,6 +37,8 @@ export const fetchLiveScheduleEntries = query(
   }
 )
 
+// Note(BK3A7B): Create/update/series/occurrences/delete remotes are a twin of
+// Note(BK3A7B) in booking.remote.ts. Keep command/query wrappers in sync.
 /** Creates live schedule entries. Returns the created entries. */
 export const createLiveScheduleEntries = command(
   createScheduleEntriesInputSchema,

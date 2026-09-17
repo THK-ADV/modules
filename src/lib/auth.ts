@@ -13,6 +13,7 @@ export type UserInfo = {
   hasExamPlanningPrivileges: boolean
   hasSchedulePlanningViewPrivileges: boolean // superset of hasSchedulePlanningPrivileges
   hasCoreDataEditPrivileges: boolean
+  hasScheduleBookingPrivileges: boolean
 }
 
 export interface User {
@@ -24,4 +25,8 @@ export interface User {
 
 export function isProfessor(user: User): boolean {
   return user.roles.includes('professor')
+}
+
+export function canSeeFacultyBookings(user: User | undefined): boolean {
+  return user?.roles.includes('employee') ?? false
 }

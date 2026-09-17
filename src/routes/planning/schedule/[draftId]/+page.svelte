@@ -10,24 +10,25 @@
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
-  <h2 class="text-3xl font-bold tracking-tight">
-    <span class="sm:hidden">
-      Stundenplanung für {data.semester.abbrev.toUpperCase()}
-      {String(data.semester.year).slice(-2)}
-    </span>
-    <span class="hidden sm:inline">
-      Stundenplanung für {data.semester.deLabel}
-      {data.semester.year}
-    </span>
-  </h2>
+  <div class="space-y-2">
+    <h2 class="text-3xl font-bold tracking-tight">
+      <span class="sm:hidden">
+        Stundenplanung für {data.semester.abbrev.toUpperCase()}
+        {String(data.semester.year).slice(-2)}
+      </span>
+      <span class="hidden sm:inline">
+        Stundenplanung für {data.semester.deLabel}
+        {data.semester.year}
+      </span>
+    </h2>
+    <p class="text-muted-foreground text-sm">
+      {#if canEdit}
+        Stundenplan entwerfen und Einzelbuchungen direkt im Kalender verwalten.
+      {:else}
+        Stundenplanentwurf und Einzelbuchungen im Kalender ansehen.
+      {/if}
+    </p>
+  </div>
 
-  <SchedulePlanningEditor
-    api={scheduleEntryApi}
-    {canEdit}
-    calendarData={{
-      holidays: data.holidays,
-      holidaysMonth: data.holidaysMonth,
-      semesterEntries: data.semesterEntries
-    }}
-  />
+  <SchedulePlanningEditor api={scheduleEntryApi} {canEdit} calendarData={data} />
 </div>

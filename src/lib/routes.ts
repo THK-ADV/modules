@@ -43,6 +43,7 @@ export const routeLabels = {
   '/planning/schedule': 'Stundenplanung',
   '/planning/exam': 'Prüfungsplanung',
   '/planning/schedule/live': 'Veröffentlichter Stundenplan',
+  '/planning/bookings': 'Einzelbuchung',
   [PLAN_ROUTE_ID]: 'Stundenplanung',
   '/help': 'Hilfe und Dokumentation',
   '/release-notes': 'Release Notes',

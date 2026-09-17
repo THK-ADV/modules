@@ -7,6 +7,9 @@
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { uiStore } from '$lib/stores/ui.svelte.js'
+  import type { ScheduleEntry } from '$lib/types/schedule'
+  import { isTeachingKind } from '$lib/types/booking'
+  import { semesterIdOf } from '$lib/types/semester'
 
   const {
     holidays,
@@ -19,9 +22,19 @@
     onEventResize,
     scheduleFilter,
     scheduleEntries = $bindable([]),
+    bookings = $bindable([]),
+    bookingSemester,
+    loadBookings,
+    editableSource,
     bypassCache,
     loadScheduleEntries
   }: ScheduleProps = $props()
+
+  let fetchedBookingSemesters = $state<string[]>([])
+
+  function isBookingSemesterLoaded(semester: string) {
+    return semester === bookingSemester || fetchedBookingSemesters.includes(semester)
+  }
 
   const holidayEventsForView = $derived(
     uiStore.selectedCalendarView === 'dayGridMonth' ? holidaysMonth : holidays
@@ -29,7 +42,7 @@
 
   // Single derived function that tracks source toggles and filters
   const filteredEvents = $derived.by(() => {
-    const { showSemester, showSchedule } = scheduleFilter
+    const { showSemester, showSchedule, showCampus, showFaculty } = scheduleFilter
     const allEvents: CalendarEvent<CalendarEventProps>[] = [...holidayEventsForView]
 
     if (showSemester) {
@@ -57,7 +70,7 @@
       }
     }
 
-    if (showSchedule) {
+    if (showSchedule || showCampus || showFaculty) {
       const {
         selectedTeachingUnits,
         selectedCourseTypes,
@@ -75,96 +88,79 @@
       const selectedSemesterNums = selectedSemesters.map((s) => parseInt(s, 10))
       const lowerSearch = searchString.toLowerCase()
 
-      // Pattern: if an entry fails any active filter below, we `continue` and drop it; only entries
-      // that never hit `continue` make it through to `allEvents.push(entry)` at the end of the loop.
-      for (const entry of scheduleEntries) {
-        // Free-text search is constrained to the title and abbreviation of the schedule entry
+      const matchesRooms = (rooms: { id: string }[]) =>
+        selectedRooms.length === 0 || selectedRooms.some((r) => rooms.some(({ id }) => id === r))
+
+      // Applies to schedule entries and teaching bookings alike. `title` is the module title for
+      // schedule entries and the booking title for bookings.
+      const matchesScheduleFilter = (title: string, raw: ScheduleEntry): boolean => {
+        // Free-text search is constrained to the title and abbreviation of the entry
         if (
           searchString &&
-          !entry.title.toLowerCase().includes(lowerSearch) &&
-          !entry.extendedProps.raw.moduleAbbrev.toLowerCase().includes(lowerSearch)
+          !title.toLowerCase().includes(lowerSearch) &&
+          !raw.moduleAbbrev.toLowerCase().includes(lowerSearch)
         ) {
-          continue
+          return false
         }
 
         // Teaching units filter
         if (selectedTeachingUnits.length > 0) {
-          if (
-            !selectedTeachingUnits.some((tu) => entry.extendedProps.raw.teachingUnits.includes(tu))
-          ) {
-            continue
+          if (!selectedTeachingUnits.some((tu) => raw.teachingUnits.includes(tu))) {
+            return false
           }
         }
 
         // Course types filter
-        if (selectedCourseTypes.length > 0) {
-          if (!selectedCourseTypes.includes(entry.extendedProps.raw.courseType)) {
-            continue
-          }
+        if (selectedCourseTypes.length > 0 && !selectedCourseTypes.includes(raw.courseType)) {
+          return false
         }
 
         // Modules filter
-        if (selectedModules.length > 0) {
-          if (!selectedModules.includes(entry.extendedProps.raw.module)) {
-            continue
-          }
+        if (selectedModules.length > 0 && !selectedModules.includes(raw.module)) {
+          return false
         }
 
         // Study programs & semesters filter
         // If both are selected, both must match on the same PO entry.
         if (selectedStudyPrograms.length > 0 || selectedSemesters.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.po.filter(
-            ({ po, recommendedSemester }) => {
-              const matchesProgram =
-                selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
-              const matchesSemester =
-                selectedSemesters.length === 0 ||
-                selectedSemesterNums.some((n) => recommendedSemester.includes(n))
+          const hasMatchingPo = raw.po.some(({ po, recommendedSemester }) => {
+            const matchesProgram =
+              selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
+            const matchesSemester =
+              selectedSemesters.length === 0 ||
+              selectedSemesterNums.some((n) => recommendedSemester.includes(n))
 
-              return matchesProgram && matchesSemester
-            }
-          )
+            return matchesProgram && matchesSemester
+          })
 
-          if (matchingPoEntries.length === 0) {
-            continue
+          if (!hasMatchingPo) {
+            return false
           }
         }
 
         // Module managers filter
         if (showModuleManagementFilter && selectedModuleManagers.length > 0) {
-          if (
-            !selectedModuleManagers.some((id) =>
-              entry.extendedProps.raw.moduleManagement.some((m) => m.id === id)
-            )
-          ) {
-            continue
+          if (!selectedModuleManagers.some((id) => raw.moduleManagement.some((m) => m.id === id))) {
+            return false
           }
         }
 
         // Lecturers filter
         if (selectedLecturers.length > 0) {
-          if (
-            !selectedLecturers.some((id) =>
-              entry.extendedProps.raw.lecturer.some((m) => m.id === id)
-            )
-          ) {
-            continue
+          if (!selectedLecturers.some((id) => raw.lecturer.some((m) => m.id === id))) {
+            return false
           }
         }
 
         // Rooms filter
-        if (selectedRooms.length > 0) {
-          if (
-            !selectedRooms.some((r) => entry.extendedProps.raw.rooms.some(({ id }) => id === r))
-          ) {
-            continue
-          }
+        if (!matchesRooms(raw.rooms)) {
+          return false
         }
 
         // Module types filter
         // If both module types and study programs are selected, both must match on the same PO entry.
         if (selectedModuleTypes.length > 0) {
-          const matchingPoEntries = entry.extendedProps.raw.po.filter(({ po, mandatory }) => {
+          const hasMatchingPo = raw.po.some(({ po, mandatory }) => {
             const matchesProgram =
               selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)
             const matchesModuleType = selectedModuleTypes.some(
@@ -174,20 +170,59 @@
             return matchesProgram && matchesModuleType
           })
 
-          if (matchingPoEntries.length === 0) {
-            continue
+          if (!hasMatchingPo) {
+            return false
           }
         }
 
-        allEvents.push(entry)
+        return true
+      }
+
+      if (showSchedule) {
+        for (const entry of scheduleEntries) {
+          if (matchesScheduleFilter(entry.title, entry.extendedProps.raw)) {
+            allEvents.push(entry)
+          }
+        }
+      }
+
+      const visible = { teaching: showSchedule, campus: showCampus, faculty: showFaculty }
+
+      for (const entry of bookings) {
+        const props = entry.extendedProps
+        if (!visible[props.kind]) continue
+        const matches = isTeachingKind(props)
+          ? matchesScheduleFilter(entry.title, props.raw)
+          : matchesRooms(props.raw.rooms)
+        if (matches) allEvents.push(entry)
       }
     }
 
     return allEvents
   })
 
+  // Bookings are preloaded for the current semester; only fetch again when the view leaves it.
+  function loadBookingsForRange(info: DateRangeInfo) {
+    if (!loadBookings) return
+    // `end` is exclusive; a week may straddle two semesters.
+    for (const semester of new Set([
+      semesterIdOf(info.start),
+      semesterIdOf(new Date(info.end.getTime() - 1))
+    ])) {
+      if (isBookingSemesterLoaded(semester)) continue
+      fetchedBookingSemesters.push(semester)
+      Promise.resolve()
+        .then(() => loadBookings(semester))
+        .then((events) => bookings.push(...events))
+        .catch(() => {
+          fetchedBookingSemesters = fetchedBookingSemesters.filter((s) => s !== semester)
+        })
+    }
+  }
+
   // Fetch schedule entries when the date range changes
   async function onDateRangeSet(info: DateRangeInfo) {
+    loadBookingsForRange(info)
     try {
       // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
       // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
@@ -220,5 +255,6 @@
     {onEventDrop}
     {onEventCopy}
     {onEventResize}
+    {editableSource}
   />
 </div>

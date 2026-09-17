@@ -188,6 +188,10 @@ export async function fetchScheduleEntriesByRange(
   return toScheduleEvents(entries)
 }
 
+// Note(BK9C2F): Create/update/series/delete/occurrence helpers are a twin of
+// Note(BK9C2F) in booking.ts. Keep request parsing, HTTP verbs/paths, and
+// calendar event mapping in sync. Range fetch and lecturer/PO queries are
+// schedule-specific.
 export async function fetchScheduleEntrySeriesOccurrences(
   fetch: typeof globalThis.fetch,
   seriesId: string

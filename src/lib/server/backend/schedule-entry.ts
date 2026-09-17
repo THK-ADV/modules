@@ -2,6 +2,8 @@ import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
 import { COURSE_TYPE_COLORS } from '$lib/calendar/types'
 import type { ScheduleEntry, ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
 
+// Note(BK9C2F): Event and write-request mapping is a twin of Note(BK9C2F) in
+// booking.ts. Keep calendar event shape and ISO write payloads in sync.
 export type ScheduleEntryWriteRequest = Omit<ScheduleEntryEdit, 'id' | 'start' | 'end'> & {
   start: string
   end: string

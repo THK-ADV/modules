@@ -22,7 +22,8 @@
     type EventClickInfo,
     type EventCopyInfo,
     type EventDropInfo,
-    type EventResizeInfo
+    type EventResizeInfo,
+    type EventSource
   } from './types.js'
 
   interface Props {
@@ -43,6 +44,8 @@
     onEventResize?: (info: EventResizeInfo) => void
     /** Callback when the date range is set */
     onDateRangeSet?: (info: DateRangeInfo) => void
+    /** Event sources that may be dragged, copied or resized */
+    editableSource?: EventSource | EventSource[]
     /** Additional CSS classes for the container */
     class?: string
   }
@@ -55,8 +58,15 @@
     onEventCopy,
     onEventResize,
     onDateRangeSet,
+    editableSource = 'schedule',
     class: className
   }: Props = $props()
+
+  function isEditableSource(source: EventSource) {
+    return Array.isArray(editableSource)
+      ? editableSource.includes(source)
+      : source === editableSource
+  }
 
   let calendarEl: HTMLDivElement
   let calendar: Calendar | null = null
@@ -281,7 +291,7 @@
         })
       },
       eventDragStart: (arg) => {
-        if (arg.event.extendedProps.source !== 'schedule') {
+        if (!isEditableSource(arg.event.extendedProps.source)) {
           return
         }
         isEventDragging = true
@@ -290,7 +300,7 @@
         setCopyCursorIndicator(dragStartedWithCopyModifier)
       },
       eventDrop: (arg) => {
-        if (arg.event.extendedProps.source !== 'schedule') {
+        if (!isEditableSource(arg.event.extendedProps.source)) {
           arg.revert()
           return
         }
@@ -327,7 +337,7 @@
         arg.revert()
       },
       eventDragStop: (arg) => {
-        if (arg.event.extendedProps.source !== 'schedule') {
+        if (!isEditableSource(arg.event.extendedProps.source)) {
           return
         }
         showOriginalEventAsCopy(false)
@@ -338,7 +348,7 @@
         setCopyCursorIndicator(false)
       },
       eventResize: (arg) => {
-        if (arg.event.extendedProps.source !== 'schedule') {
+        if (!isEditableSource(arg.event.extendedProps.source)) {
           arg.revert()
           return
         }

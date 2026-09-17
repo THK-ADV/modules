@@ -1,3 +1,9 @@
+import {
+  isTeachingKind,
+  type Booking,
+  type CampusBooking,
+  type TeachingBooking
+} from '$lib/types/booking'
 import type {
   CourseType,
   ScheduleEntry,
@@ -44,6 +50,16 @@ export interface ScheduleEventProps {
 }
 
 /**
+ * Extended props for booking events. Teaching bookings are never mapped to `source: 'schedule'`,
+ * otherwise planning drag/drop would hit `/scheduleEntries`.
+ */
+export type BookingEventProps =
+  | { source: 'booking'; kind: 'teaching'; raw: TeachingBooking }
+  | { source: 'booking'; kind: 'campus' | 'faculty'; raw: CampusBooking }
+
+export type TeachingBookingEventProps = Extract<BookingEventProps, { kind: 'teaching' }>
+
+/**
  * Extended props for exam events.
  */
 export interface ExamEventProps {
@@ -58,7 +74,15 @@ export type CalendarEventProps =
   | HolidayEventProps
   | SemesterPlanEventProps
   | ScheduleEventProps
+  | BookingEventProps
   | ExamEventProps
+
+/** Schedule entries and teaching bookings share renderer, filters and details. */
+export function isScheduleLike(
+  props: CalendarEventProps
+): props is ScheduleEventProps | TeachingBookingEventProps {
+  return props.source === 'schedule' || (props.source === 'booking' && isTeachingKind(props))
+}
 
 /**
  * Known event source types for the schedule calendar.
@@ -83,6 +107,17 @@ export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
   seminar: '#F0A870',
   exercise: '#7059AA',
   tutorial: '#B43092'
+}
+
+export const BOOKING_KIND_COLORS: Record<CampusBooking['kind'], string> = {
+  campus: '#873C0B',
+  faculty: '#475569'
+}
+
+export function bookingEventColor(booking: Booking): string {
+  return isTeachingKind(booking)
+    ? COURSE_TYPE_COLORS[booking.courseType]
+    : BOOKING_KIND_COLORS[booking.kind]
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { ModuleCore } from '$lib/types/schedule'
-import type { Semester } from '$lib/types/semester'
+import type { Semester } from '$lib/schemas/semester'
 
 export interface Deleted {
   type: 'deleted'

@@ -2,11 +2,11 @@
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core'
-  import type { StudyProgramMangerInfo } from '../+page.server'
+  import type { StudyProgramManagerInfo } from '$lib/schemas/study-program-artifacts'
 
   type DataTableProps = {
-    columns: ColumnDef<StudyProgramMangerInfo>[]
-    data: StudyProgramMangerInfo[]
+    columns: ColumnDef<StudyProgramManagerInfo>[]
+    data: StudyProgramManagerInfo[]
   }
 
   let { data, columns }: DataTableProps = $props()

@@ -58,6 +58,13 @@ export function fmtStudyProgramShort(sp: StudyProgram) {
   return `${sp.abbreviation} ${degree} ${sp.po.version}`
 }
 
+export function fmtStudyProgramWithoutPO(studyProgram: StudyProgram) {
+  if (studyProgram.specialization) {
+    return `${studyProgram.deLabel} ${studyProgram.specialization.deLabel} (${studyProgram.degree.deLabel})`
+  }
+  return `${studyProgram.deLabel} (${studyProgram.degree.deLabel})`
+}
+
 export function fmtPerson(p: Identity): string {
   switch (p.kind) {
     case 'person':

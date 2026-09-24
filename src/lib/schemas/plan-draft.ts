@@ -1,5 +1,6 @@
 import { PLAN_DRAFT_KINDS } from '$lib/types/plan-draft'
 import { z } from 'zod/v4'
+import { semesterSchema } from './semester'
 
 export const createPlanDraftInputSchema = z.object({
   kind: z.enum(PLAN_DRAFT_KINDS),
@@ -15,16 +16,7 @@ export const planDraftResponseSchema = z.object({
   publishedAt: z.iso.datetime({ local: true }).nullable()
 })
 
-export const semesterResponseSchema = z.object({
-  id: z.string().trim().min(1),
-  year: z.number().int(),
-  abbrev: z.string().trim().min(1),
-  deLabel: z.string().trim().min(1),
-  start: z.iso.date(),
-  end: z.iso.date()
-})
-
 export const planDraftWithSemesterResponseSchema = z.object({
   planDraft: planDraftResponseSchema,
-  semester: semesterResponseSchema
+  semester: semesterSchema
 })

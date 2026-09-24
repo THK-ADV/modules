@@ -1,4 +1,4 @@
-import type { Semester } from './semester'
+import type { Semester } from '$lib/schemas/semester'
 
 export const PLAN_DRAFT_KINDS = ['schedule', 'exam'] as const
 

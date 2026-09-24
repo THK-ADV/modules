@@ -2,8 +2,7 @@ import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
 import {
   createPlanDraftInputSchema,
   planDraftResponseSchema,
-  planDraftWithSemesterResponseSchema,
-  semesterResponseSchema
+  planDraftWithSemesterResponseSchema
 } from '$lib/schemas/plan-draft'
 import {
   createDraftScheduleEntriesInputSchema,
@@ -22,7 +21,7 @@ import {
   type PlanDraftKind
 } from '$lib/types/plan-draft'
 import type { ScheduleEntryCreate, ScheduleEntryEdit, SeriesOccurrence } from '$lib/types/schedule'
-import type { Semester } from '$lib/types/semester'
+import { semesterSchema, type Semester } from '$lib/schemas/semester'
 import { z } from 'zod/v4'
 import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
 import { toScheduleEvent, toScheduleEntryWriteRequest, toScheduleEvents } from './schedule-entry'
@@ -32,7 +31,7 @@ export async function fetchPlanningSemesters(fetch: typeof globalThis.fetch): Pr
   return fetchBackendJson(
     fetch,
     '/api/semesters',
-    z.array(semesterResponseSchema),
+    z.array(semesterSchema),
     'Fehler beim Laden der Semester'
   )
 }

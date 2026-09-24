@@ -5,17 +5,11 @@
     isPublishing: boolean
     showErrorMessage: string | undefined
   }
-
-  function fmtStudyProgram(studyProgram: StudyProgram) {
-    if (studyProgram.specialization) {
-      return `${studyProgram.deLabel} ${studyProgram.specialization.deLabel} (${studyProgram.degree.deLabel})`
-    }
-    return `${studyProgram.deLabel} (${studyProgram.degree.deLabel})`
-  }
 </script>
 
 <script lang="ts">
-  import { invalidate } from '$app/navigation'
+  import { publishExamList } from '../studyprogram.remote'
+  import { getErrorMessage } from '$lib/errors'
   import Combobox from '$lib/components/combobox.svelte'
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
   import { Calendar } from '$lib/components/ui/calendar/index.js'
@@ -23,18 +17,17 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
   import { examListReleaseFormSchema } from '$lib/schemas/exam-list'
-  import type { Semester } from '$lib/types/semester'
+  import type { Semester } from '$lib/schemas/semester'
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
   import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
   import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
-
+  import { fmtStudyProgramWithoutPO } from '$lib/formats'
   let {
     semesters,
     showExamListReleaseDialog = $bindable(),
-    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     isPublishing = $bindable(),
     // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     showErrorMessage = $bindable()
@@ -75,6 +68,7 @@
   }
 
   async function handleSubmit() {
+    if (isPublishing) return
     const sp = showExamListReleaseDialog
     const validation = await validateForm({ update: true })
 
@@ -86,21 +80,13 @@
     closeDialog()
     isPublishing = true
 
-    const response = await fetch(`/actions/publish`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ semester, date, po: sp.po.id })
-    })
-
-    isPublishing = false
-
-    if (response.ok) {
-      await invalidate('preview:studyProgram')
-    } else {
-      const err = await response.json()
-      showErrorMessage = err.message || 'Unbekannter Fehler beim Freigeben der Prüfungsliste'
+    showErrorMessage = undefined
+    try {
+      await publishExamList({ semester, date: date.toISOString(), po: sp.po.id })
+    } catch (error) {
+      showErrorMessage = getErrorMessage(error, 'Freigabe der Prüfungsliste fehlgeschlagen')
+    } finally {
+      isPublishing = false
     }
   }
 </script>
@@ -117,7 +103,7 @@
     <Dialog.Header>
       <Dialog.Title class="text-lg font-semibold"
         >Prüfungsliste freigeben für {showExamListReleaseDialog &&
-          fmtStudyProgram(showExamListReleaseDialog)}</Dialog.Title
+          fmtStudyProgramWithoutPO(showExamListReleaseDialog)}</Dialog.Title
       >
       <Dialog.Description
         >Zur Freigabe der Prüfungsliste werden folgende Informationen benötigt:</Dialog.Description

@@ -1,33 +1,18 @@
 <script lang="ts">
+  import { resolve } from '$app/paths'
+  import { Button } from '$lib/components/ui/button'
   import type { StudyProgram } from '$lib/types/study-program'
-  import { Upload } from '@lucide/svelte'
-  import type { Action } from './studyProgram-table-actions.svelte'
-  import StudyProgramTableActions from './studyProgram-table-actions.svelte'
+  import { ArrowRight } from '@lucide/svelte'
 
-  let {
-    studyProgram,
-    canCreate,
-    onClickModuleIntroductionUpload
-  }: {
-    studyProgram: StudyProgram
-    canCreate: boolean
-    onClickModuleIntroductionUpload: (sp: StudyProgram) => void
-  } = $props()
-
-  const actions: Action[] = [
-    {
-      key: 'uploadModuleCatalogIntroduction',
-      label: 'Einleitung hochladen',
-      Icon: Upload,
-      onclick: () => {
-        onClickModuleIntroductionUpload(studyProgram)
-      },
-      variant: 'outline',
-      className: 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-800'
-    }
-  ]
+  let { studyProgram }: { studyProgram: StudyProgram } = $props()
 </script>
 
-{#if canCreate}
-  <StudyProgramTableActions {actions} />
-{/if}
+<Button
+  href={resolve('/studyprogram/[poId]', { poId: studyProgram.po.id })}
+  variant="outline"
+  size="sm"
+  class="border-gray-300 font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-800"
+>
+  <ArrowRight />
+  Öffnen
+</Button>

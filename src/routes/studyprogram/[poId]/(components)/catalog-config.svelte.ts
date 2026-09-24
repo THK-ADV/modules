@@ -2,7 +2,8 @@ import {
   GENERIC_MODULE_TYPE,
   type ModuleCatalogConfig,
   type ModuleCatalogConfigOptions,
-  type ModuleCatalogModuleOption
+  type ModuleCatalogModuleOption,
+  type ModuleCatalogStudyPlan
 } from '$lib/schemas/module-catalog'
 import { SvelteMap, SvelteSet } from 'svelte/reactivity'
 
@@ -39,6 +40,8 @@ export function defaultSemester(module: ModuleCatalogModuleOption): number | und
  */
 export class CatalogConfig {
   readonly options: ModuleCatalogConfigOptions
+
+  studyPlanEnabled = $state(true)
 
   /** Modules removed from catalog and study plan. */
   readonly excludedModules = new SvelteSet<string>()
@@ -271,10 +274,11 @@ export class CatalogConfig {
   }
 
   get semesterOverrideCount(): number {
-    return this.semesterSelections.size
+    return this.studyPlanEnabled ? this.semesterSelections.size : 0
   }
 
   get occurrenceOverrideCount(): number {
+    if (!this.studyPlanEnabled) return 0
     let count = 0
     for (const occurrences of this.genericOccurrences.values()) {
       count += occurrences.length
@@ -286,11 +290,11 @@ export class CatalogConfig {
   }
 
   get distributionOverrideCount(): number {
-    return this.alternativeModuleDistributions.size
+    return this.studyPlanEnabled ? this.alternativeModuleDistributions.size : 0
   }
 
   get sectionCount(): number {
-    return this.completeSections.length
+    return this.studyPlanEnabled ? this.completeSections.length : 0
   }
 
   get mandatoryTabDeviationCount(): number {
@@ -302,6 +306,7 @@ export class CatalogConfig {
   }
 
   get studyPlanTabDeviationCount(): number {
+    if (!this.studyPlanEnabled) return 1
     return this.occurrenceOverrideCount + this.distributionOverrideCount + this.sectionCount
   }
 
@@ -310,9 +315,7 @@ export class CatalogConfig {
       this.excludedModuleCount +
       this.electiveExclusionCount +
       this.semesterOverrideCount +
-      this.occurrenceOverrideCount +
-      this.distributionOverrideCount +
-      this.sectionCount
+      this.studyPlanTabDeviationCount
     )
   }
 
@@ -351,6 +354,7 @@ export class CatalogConfig {
   }
 
   resetAll() {
+    this.studyPlanEnabled = true
     this.resetModules()
     this.resetElectiveOptions()
     this.resetSemesterSelections()
@@ -362,7 +366,7 @@ export class CatalogConfig {
   // --- config assembly ---
 
   buildConfig(): ModuleCatalogConfig {
-    const semesterSelections: ModuleCatalogConfig['studyPlan']['semesterSelections'] = []
+    const semesterSelections: ModuleCatalogStudyPlan['semesterSelections'] = []
     for (const [moduleId, selectedSemester] of this.semesterSelections) {
       if (!this.excludedModules.has(moduleId)) {
         semesterSelections.push({ moduleId, selectedSemester })
@@ -370,7 +374,7 @@ export class CatalogConfig {
     }
 
     const collectOccurrences = (map: SvelteMap<string, GenericOccurrence[]>) => {
-      const result: ModuleCatalogConfig['studyPlan']['genericModuleOccurrences'] = []
+      const result: ModuleCatalogStudyPlan['genericModuleOccurrences'] = []
       for (const [moduleId, occurrences] of map) {
         if (this.excludedModules.has(moduleId)) {
           continue
@@ -417,20 +421,22 @@ export class CatalogConfig {
         ),
         excludedElectiveOptions
       },
-      studyPlan: {
-        sections: this.completeSections.map(({ untilSemester, headline }) => ({
-          untilSemester,
-          headline: headline.trim()
-        })),
-        semesterSelections,
-        genericModuleOccurrences: collectOccurrences(this.genericOccurrences),
-        alternative: {
-          genericModuleOccurrences: collectOccurrences(this.alternativeGenericOccurrences),
-          moduleDistributions: [...this.alternativeModuleDistributions]
-            .filter(([moduleId]) => !this.excludedModules.has(moduleId))
-            .map(([moduleId, semesters]) => ({ moduleId, semesters }))
-        }
-      }
+      studyPlan: this.studyPlanEnabled
+        ? {
+            sections: this.completeSections.map(({ untilSemester, headline }) => ({
+              untilSemester,
+              headline: headline.trim()
+            })),
+            semesterSelections,
+            genericModuleOccurrences: collectOccurrences(this.genericOccurrences),
+            alternative: {
+              genericModuleOccurrences: collectOccurrences(this.alternativeGenericOccurrences),
+              moduleDistributions: [...this.alternativeModuleDistributions]
+                .filter(([moduleId]) => !this.excludedModules.has(moduleId))
+                .map(([moduleId, semesters]) => ({ moduleId, semesters }))
+            }
+          }
+        : null
     }
   }
 }

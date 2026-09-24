@@ -22,10 +22,11 @@
   function isModified(module: ModuleCatalogModuleOption): boolean {
     return (
       (config.isModuleExcluded(module.id) && !config.isModuleExcludedByDefault(module.id)) ||
-      config.selectedSemester(module.id) !== undefined ||
-      config.occurrencesOf(module.id).length > 0 ||
-      config.occurrencesOf(module.id, 'alternative').length > 0 ||
-      config.distributionsOf(module.id).length > 0
+      (config.studyPlanEnabled &&
+        (config.selectedSemester(module.id) !== undefined ||
+          config.occurrencesOf(module.id).length > 0 ||
+          config.occurrencesOf(module.id, 'alternative').length > 0 ||
+          config.distributionsOf(module.id).length > 0))
     )
   }
 
@@ -187,7 +188,11 @@
               </div>
             </Table.Cell>
             <Table.Cell>
-              {#if module.recommendedSemesters.length === 0}
+              {#if !config.studyPlanEnabled}
+                <span class="text-muted-foreground" title="Studienverlaufsplan ausgeschaltet"
+                  >–</span
+                >
+              {:else if module.recommendedSemesters.length === 0}
                 <span
                   class="text-muted-foreground"
                   title="Nur Pflichtmodule mit empfohlenem Semester erscheinen im Studienplan"

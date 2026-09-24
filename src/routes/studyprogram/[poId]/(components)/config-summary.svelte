@@ -30,6 +30,13 @@
 
   const chips: Chip[] = $derived.by(() => {
     const result: Chip[] = []
+    if (!config.studyPlanEnabled) {
+      result.push({
+        key: 'study-plan',
+        label: 'Ohne Studienverlaufsplan',
+        clear: () => (config.studyPlanEnabled = true)
+      })
+    }
     if (config.excludedModuleCount > 0) {
       result.push({
         key: 'modules',
@@ -97,7 +104,7 @@
       {#if config.isDefault}
         <span class="text-sm font-medium">Standardkonfiguration</span>
         <span class="text-muted-foreground hidden text-sm sm:inline">
-          – das Modulhandbuch wird mit den Standardeinstellungen erzeugt
+          – das Modulhandbuch wird mit Studienverlaufsplan erzeugt
         </span>
       {:else}
         <span class="text-primary text-sm font-semibold">

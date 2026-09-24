@@ -80,6 +80,7 @@ const moduleDistributionSchema = z.object({
 
 // ModuleCatalogConfig: the user decision sent to preview/generate. Only deviations
 // from the backend defaults are included; empty lists mean "use defaults".
+// studyPlan is required: null omits the plan, an object enables it.
 export const moduleCatalogConfigSchema = z.object({
   moduleSelection: z.object({
     excludedModuleIds: z.array(z.uuid()),
@@ -90,30 +91,33 @@ export const moduleCatalogConfigSchema = z.object({
       })
     )
   }),
-  studyPlan: z.object({
-    sections: z.array(
-      z.object({
-        untilSemester: z.number().int().min(1),
-        headline: nonEmptyStringSchema
-      })
-    ),
-    semesterSelections: z.array(
-      z.object({
-        moduleId: z.uuid(),
-        selectedSemester: z.number().int().min(1)
-      })
-    ),
-    genericModuleOccurrences: z.array(genericModuleOccurrenceSchema),
-    alternative: z
-      .object({
-        genericModuleOccurrences: z.array(genericModuleOccurrenceSchema),
-        moduleDistributions: z.array(moduleDistributionSchema).default([])
-      })
-      .default({ genericModuleOccurrences: [], moduleDistributions: [] })
-  })
+  studyPlan: z
+    .object({
+      sections: z.array(
+        z.object({
+          untilSemester: z.number().int().min(1),
+          headline: nonEmptyStringSchema
+        })
+      ),
+      semesterSelections: z.array(
+        z.object({
+          moduleId: z.uuid(),
+          selectedSemester: z.number().int().min(1)
+        })
+      ),
+      genericModuleOccurrences: z.array(genericModuleOccurrenceSchema),
+      alternative: z
+        .object({
+          genericModuleOccurrences: z.array(genericModuleOccurrenceSchema).default([]),
+          moduleDistributions: z.array(moduleDistributionSchema).default([])
+        })
+        .default({ genericModuleOccurrences: [], moduleDistributions: [] })
+    })
+    .nullable()
 })
 
 export type ModuleCatalogConfig = z.infer<typeof moduleCatalogConfigSchema>
+export type ModuleCatalogStudyPlan = NonNullable<ModuleCatalogConfig['studyPlan']>
 
 export function createEmptyModuleCatalogConfig(): ModuleCatalogConfig {
   return {

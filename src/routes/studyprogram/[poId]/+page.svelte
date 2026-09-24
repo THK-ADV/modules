@@ -53,8 +53,8 @@
     <h2 class="text-3xl font-bold tracking-tight">Modulhandbuch konfigurieren</h2>
     <p class="text-muted-foreground max-w-3xl text-sm">
       Das Modulhandbuch wird standardmäßig mit allen Modulen und einem automatisch erzeugten
-      Studienverlaufsplan generiert. Hier können gezielt Abweichungen vom Standard festgelegt
-      werden.
+      Studienverlaufsplan generiert. Hier können gezielt Abweichungen vom Standard festgelegt und
+      der Studienverlaufsplan im gleichnamigen Tab ausgeschaltet werden.
     </p>
   </div>
 
@@ -97,9 +97,12 @@
 
     <Tabs.Content value="mandatory" class="space-y-4 pt-2">
       <p class="text-muted-foreground max-w-3xl text-sm">
-        Abgewählte Pflichtmodule werden aus dem Abschnitt "Module" <span class="font-bold">und</span
-        > dem Studienverlaufsplan entfernt. Bei Modulen mit mehreren empfohlenen Semestern kann zudem
-        das Semester festgelegt werden, in dem das Modul im Studienverlaufsplan erscheint.
+        Abgewählte Pflichtmodule werden aus dem Abschnitt "Module" entfernt.
+        {#if config.studyPlanEnabled}
+          Sie werden auch aus dem Studienverlaufsplan entfernt. Bei Modulen mit mehreren empfohlenen
+          Semestern kann zudem das Semester festgelegt werden, in dem das Modul im
+          Studienverlaufsplan erscheint.
+        {/if}
       </p>
       <MandatoryModuleTable {config} />
     </Tabs.Content>
@@ -117,12 +120,14 @@
     {/if}
 
     <Tabs.Content value="study-plan" class="space-y-4 pt-2">
-      <p class="text-muted-foreground max-w-3xl text-sm">
-        Feinjustierung des automatisch erzeugten Studienverlaufsplans im Modulhandbuch. Im
-        Standardfall werden alle Pflichtmodule dem empfohlenen Semester nach platziert. Für den
-        Teilzeit-Studienverlaufsplan lassen sich generische Platzhalter-Module separat platzieren
-        und Pflichtmodule auf mehrere Semester aufteilen.
-      </p>
+      {#if config.studyPlanEnabled}
+        <p class="text-muted-foreground max-w-3xl text-sm">
+          Feinjustierung des automatisch erzeugten Studienverlaufsplans im Modulhandbuch. Im
+          Standardfall werden alle Pflichtmodule dem empfohlenen Semester nach platziert. Für den
+          Teilzeit-Studienverlaufsplan lassen sich generische Platzhalter-Module separat platzieren
+          und Pflichtmodule auf mehrere Semester aufteilen.
+        </p>
+      {/if}
       <StudyPlanConfig {config} />
     </Tabs.Content>
   </Tabs.Root>
@@ -139,6 +144,9 @@
           Das Modulhandbuch wird mit {config.deviationCount}
           {config.deviationCount === 1 ? 'Anpassung' : 'Anpassungen'} für das aktuelle Semester erstellt.
         {/if}
+        {config.studyPlanEnabled
+          ? 'Ein Studienverlaufsplan wird erzeugt.'
+          : 'Es wird kein Studienverlaufsplan erzeugt.'}
       </Dialog.Description>
     </Dialog.Header>
     <Dialog.Footer class="gap-2">

@@ -1,4 +1,3 @@
-import type { ArtifactAction } from './schemas/artifact-action'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
@@ -517,109 +516,109 @@ function htmlCSV(csv: string, studyProgramLabel: string, po: string) {
   `
 }
 
-export async function previewModuleCatalog(
-  studyProgram: StudyProgram,
-  config: ModuleCatalogConfig
-) {
-  const action = 'moduleCatalog'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
-}
-
-export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
-  const action = 'moduleCatalog_creation'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
-}
-
-export async function previewExamList(studyProgram: StudyProgram) {
-  const action = 'examList'
-  const actionLabel = 'Prüfungsliste'
-  await performFileAction(action, actionLabel, studyProgram)
-}
-
-export async function previewExamLoad(studyProgram: StudyProgram) {
-  const action = 'examLoad'
-  const actionLabel = 'Prüfungslast'
-  await performFileAction(action, actionLabel, studyProgram)
-}
-
-async function performFileAction(
-  action: ArtifactAction,
-  actionLabel: string,
-  studyProgram: StudyProgram,
-  body?: ModuleCatalogConfig
-) {
-  const newTab = window.open()
-  const studyProgramLabel = studyProgram.deLabel
-
-  newTab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
-  newTab?.document.close()
+/** Authenticated binary/text fetch via the /auth-api proxy (streams; no devalue hop). */
+async function fetchArtifact(url: string, init?: RequestInit): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 180_000)
 
   try {
-    // Use a longer timeout for large programs
-    const timeoutDuration = 180000 // 3 min
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
-
-    const po = studyProgram.po.id
-    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}`
-    const response = await fetch(url, {
-      signal: controller.signal,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    clearTimeout(timeoutId)
-
+    const response = await fetch(url, { ...init, signal: controller.signal })
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }))
-      throw new Error(error.message || `${action} failed`)
+      const err = await response.json().catch(() => null)
+      throw new Error(
+        (typeof err?.message === 'string' && err.message) ||
+          `Fehler beim Erzeugen (${response.status})`
+      )
     }
+    return response
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
 
-    if (newTab && !newTab.closed) {
-      const contentType = response.headers.get('Content-Type') || ''
-      const mimeType = contentType.split(';')[0].trim()
+async function openPreviewTab(
+  actionLabel: string,
+  studyProgram: StudyProgram,
+  render: (tab: Window, po: string, studyProgramLabel: string) => Promise<void>
+) {
+  const tab = window.open()
+  const studyProgramLabel = studyProgram.deLabel
+  const po = studyProgram.po.id
 
-      switch (mimeType) {
-        case 'text/csv':
-        case 'text/plain': {
-          const csv = await response.text()
-          newTab.document.writeln(htmlCSV(csv, studyProgramLabel, po))
-          newTab.document.close()
-          break
-        }
-        case 'application/pdf': {
-          const blob = await response.blob()
-          const blobUrl = URL.createObjectURL(blob)
+  tab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
+  tab?.document.close()
 
-          const contentDisposition = response.headers.get('Content-Disposition')
-          const filename =
-            contentDisposition?.match(/filename="(.+?)"/)?.[1] ||
-            `${actionLabel}_${studyProgram.po.id}.pdf`
-
-          newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
-          newTab.document.close()
-
-          // Clean up blob URL after a longer delay to ensure PDF loads
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-          break
-        }
-        default: {
-          newTab.close()
-          break
-        }
-      }
-    }
+  try {
+    if (!tab || tab.closed) return
+    await render(tab, po, studyProgramLabel)
   } catch (error) {
-    if (newTab && !newTab.closed) {
+    if (tab && !tab.closed) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unbekannter Fehler beim Generieren des Dokuments'
       const isTimeoutError =
-        errorMessage.includes('Server Timeout') || errorMessage.includes('aborted')
+        errorMessage.includes('Server Timeout') ||
+        errorMessage.includes('aborted') ||
+        (error instanceof DOMException && error.name === 'AbortError')
 
-      newTab.document.writeln(htmlError(actionLabel, errorMessage, isTimeoutError))
-      newTab.document.close()
+      tab.document.writeln(htmlError(actionLabel, errorMessage, isTimeoutError))
+      tab.document.close()
     }
   }
+}
+
+async function showPdf(
+  actionLabel: string,
+  studyProgram: StudyProgram,
+  request: (po: string) => Promise<Response>
+) {
+  await openPreviewTab(actionLabel, studyProgram, async (tab, po, studyProgramLabel) => {
+    const blob = await (await request(po)).blob()
+    const blobUrl = URL.createObjectURL(blob)
+    tab.document.writeln(
+      htmlPDF(blobUrl, `${actionLabel}_${po}.pdf`, actionLabel, studyProgramLabel)
+    )
+    tab.document.close()
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+  })
+}
+
+function moduleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig, preview: boolean) {
+  return showPdf('Modulhandbuch', studyProgram, (po) =>
+    fetchArtifact(`/auth-api/moduleCatalogs/${encodeURIComponent(po)}?preview=${preview}`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/pdf',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(config)
+    })
+  )
+}
+
+export function previewModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
+  return moduleCatalog(studyProgram, config, true)
+}
+
+export function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
+  return moduleCatalog(studyProgram, config, false)
+}
+
+export function previewExamList(studyProgram: StudyProgram) {
+  return showPdf('Prüfungsliste', studyProgram, (po) =>
+    fetchArtifact(`/auth-api/examLists/preview/${encodeURIComponent(po)}`, {
+      headers: { Accept: 'application/pdf' }
+    })
+  )
+}
+
+export function previewExamLoad(studyProgram: StudyProgram) {
+  return openPreviewTab('Prüfungslast', studyProgram, async (tab, po, studyProgramLabel) => {
+    const csv = await (
+      await fetchArtifact(`/auth-api/examLoad/${encodeURIComponent(po)}?preview=true`, {
+        headers: { Accept: 'text/csv' }
+      })
+    ).text()
+    tab.document.writeln(htmlCSV(csv, studyProgramLabel, po))
+    tab.document.close()
+  })
 }

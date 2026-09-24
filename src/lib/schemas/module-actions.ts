@@ -1,10 +1,19 @@
 import { z } from 'zod/v4'
 
-export const moduleDraftActionRequestSchema = z.object({
-  action: z.enum(['delete', 'publish', 'requestReview', 'cancelReview', 'requestFastForwardReview'])
-})
+export const moduleDraftActionSchema = z.enum([
+  'delete',
+  'publish',
+  'requestReview',
+  'cancelReview',
+  'requestFastForwardReview'
+])
 
-export type ModuleDraftTableAction = z.infer<typeof moduleDraftActionRequestSchema>['action']
+export type ModuleDraftTableAction = z.infer<typeof moduleDraftActionSchema>
+
+export const moduleDraftActionInputSchema = z.object({
+  moduleId: z.string().trim().min(1),
+  action: moduleDraftActionSchema
+})
 
 export const moduleReviewActionRequestSchema = z
   .object({

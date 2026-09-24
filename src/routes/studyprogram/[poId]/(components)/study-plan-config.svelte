@@ -3,6 +3,7 @@
   import { Button } from '$lib/components/ui/button/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import * as Select from '$lib/components/ui/select/index.js'
+  import { Switch } from '$lib/components/ui/switch/index.js'
   import type { ModuleCatalogModuleOption } from '$lib/schemas/module-catalog'
   import { Info, Plus, Trash2, X } from '@lucide/svelte'
   import { slide } from 'svelte/transition'
@@ -190,235 +191,262 @@
 {/snippet}
 
 <div class="space-y-8">
-  {#if placeableGenericModules.length > 0}
-    <div class="space-y-4">
-      <div class="space-y-1">
-        <h5 class="font-medium">Platzierung generischer Platzhalter-Module</h5>
-        <p class="text-muted-foreground text-sm">
-          Generische Platzhalter-Module werden standardmäßig einmal im Studienverlaufsplan
-          platziert. Hier lassen sich zusätzliche Platzierungen anlegen, wenn dasselbe Modul
-          mehrfach oder in mehreren Semestern belegt werden soll – getrennt für den Vollzeit- und
-          den Teilzeit-Studienverlaufsplan.
-        </p>
-      </div>
-
-      <div class="space-y-2">
-        {#each placeableGenericModules as module (module.id)}
-          <div class="overflow-hidden rounded-lg border">
-            <div class="bg-muted/30 border-b px-4 py-3">
-              <span class="text-sm font-medium">{module.title}</span>
-              <span class="text-muted-foreground ml-2 text-xs">{module.abbrev}</span>
-            </div>
-            <div class="divide-y sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-              {@render planPlacements(
-                module,
-                'default',
-                'Vollzeit',
-                'Kein empfohlenes Studiensemester hinterlegt.'
-              )}
-              {@render planPlacements(
-                module,
-                'alternative',
-                'Teilzeit',
-                'Kein empfohlenes Teilzeit-Semester am Modul hinterlegt.'
-              )}
-            </div>
-          </div>
-        {/each}
-      </div>
+  <div class="bg-muted/30 flex items-start justify-between gap-4 rounded-lg border p-4">
+    <div class="space-y-1">
+      <label for="study-plan-enabled" class="cursor-pointer font-medium">
+        Studienverlaufsplan erzeugen
+      </label>
+      <p id="study-plan-description" class="text-muted-foreground text-sm">
+        {#if config.studyPlanEnabled}
+          Das Modulhandbuch enthält einen Studienverlaufsplan. Hier können Sie dessen Platzierungen
+          und Abschnitte anpassen.
+        {:else}
+          Das Modulhandbuch wird ohne Studienverlaufsplan erzeugt. Ihre Plan-Einstellungen bleiben
+          beim erneuten Einschalten erhalten. Die Modulauswahl bleibt verfügbar.
+        {/if}
+      </p>
     </div>
-  {/if}
+    <Switch
+      id="study-plan-enabled"
+      bind:checked={config.studyPlanEnabled}
+      aria-describedby="study-plan-description"
+    />
+  </div>
 
-  {#if distributableModules.length > 0}
-    <div class="space-y-4">
-      <div class="space-y-1">
-        <h5 class="font-medium">Aufteilung von Modulen im Teilzeit-Studienverlaufsplan</h5>
-        <p class="text-muted-foreground text-sm">
-          Wählen Sie ein Pflichtmodul, um dessen ECTS im Teilzeitplan auf mehrere Semester
-          aufzuteilen. Die Punkte werden gleichmäßig verteilt.
-        </p>
-      </div>
+  {#if config.studyPlanEnabled}
+    {#if placeableGenericModules.length > 0}
+      <div class="space-y-4">
+        <div class="space-y-1">
+          <h5 class="font-medium">Platzierung generischer Platzhalter-Module</h5>
+          <p class="text-muted-foreground text-sm">
+            Generische Platzhalter-Module werden standardmäßig einmal im Studienverlaufsplan
+            platziert. Hier lassen sich zusätzliche Platzierungen anlegen, wenn dasselbe Modul
+            mehrfach oder in mehreren Semestern belegt werden soll – getrennt für den Vollzeit- und
+            den Teilzeit-Studienverlaufsplan.
+          </p>
+        </div>
 
-      {#if availableModules.length > 0}
-        <Select.Root
-          type="single"
-          bind:value={pendingModuleId}
-          onValueChange={(id) => {
-            config.addDistribution(id)
-            pendingModuleId = ''
-          }}
-        >
-          <Select.Trigger class="text-muted-foreground h-9 max-w-lg text-sm">
-            Modul auswählen…
-          </Select.Trigger>
-          <Select.Content>
-            {#each availableModules as module (module.id)}
-              <Select.Item value={module.id} label={module.title}>
-                {module.title}
-                <span class="text-muted-foreground ml-2 text-xs">
-                  {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS
-                </span>
-              </Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-      {:else}
-        <p class="text-muted-foreground text-sm">Alle geeigneten Module sind bereits aufgeteilt.</p>
-      {/if}
-
-      {#each distributedModules as module (module.id)}
-        {@const semesters = config.distributionsOf(module.id)}
-        {@const ectsShare = (module.ects / semesters.length).toLocaleString('de-DE')}
-        <div class="overflow-hidden rounded-lg border" transition:slide={{ duration: 150 }}>
-          <div class="bg-muted/30 flex items-start justify-between gap-3 border-b px-4 py-3">
-            <div class="min-w-0">
-              <div class="truncate text-sm font-medium">{module.title}</div>
-              <div class="text-muted-foreground text-xs">
-                {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS gesamt
+        <div class="space-y-2">
+          {#each placeableGenericModules as module (module.id)}
+            <div class="overflow-hidden rounded-lg border">
+              <div class="bg-muted/30 border-b px-4 py-3">
+                <span class="text-sm font-medium">{module.title}</span>
+                <span class="text-muted-foreground ml-2 text-xs">{module.abbrev}</span>
+              </div>
+              <div class="divide-y sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                {@render planPlacements(
+                  module,
+                  'default',
+                  'Vollzeit',
+                  'Kein empfohlenes Studiensemester hinterlegt.'
+                )}
+                {@render planPlacements(
+                  module,
+                  'alternative',
+                  'Teilzeit',
+                  'Kein empfohlenes Teilzeit-Semester am Modul hinterlegt.'
+                )}
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="text-muted-foreground hover:text-destructive size-8 shrink-0"
-              aria-label="Aufteilung von {module.title} entfernen"
-              onclick={() => config.removeDistribution(module.id)}
-            >
-              <Trash2 />
-            </Button>
-          </div>
-          <div class="space-y-3 p-4">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-              {#each semesters as semester, index (index)}
-                <div class="flex items-center gap-1">
-                  <Input
-                    type="number"
-                    min="1"
-                    class="h-8 w-20 text-sm tabular-nums"
-                    value={semester}
-                    aria-label="Semester {index + 1} der Aufteilung von {module.title}"
-                    onchange={(e) => {
-                      config.updateDistributionSemester(
-                        module.id,
-                        index,
-                        Number(e.currentTarget.value)
-                      )
-                      e.currentTarget.value = String(config.distributionsOf(module.id)[index])
-                    }}
-                  />
-                  <span class="text-muted-foreground text-sm">. Sem.</span>
-                  {#if semesters.length > 2}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="text-muted-foreground hover:text-destructive size-7"
-                      aria-label="Semester aus der Aufteilung entfernen"
-                      onclick={() => config.removeDistributionSemester(module.id, index)}
-                    >
-                      <X />
-                    </Button>
-                  {/if}
-                </div>
-              {/each}
-              <Button
-                variant="ghost"
-                size="sm"
-                class="text-muted-foreground h-8"
-                onclick={() => config.addDistributionSemester(module.id)}
-              >
-                <Plus />
-                Semester
-              </Button>
-            </div>
-            <p class="text-muted-foreground text-sm tabular-nums">{ectsShare} ECTS je Semester</p>
-          </div>
+          {/each}
         </div>
-      {/each}
-    </div>
-  {/if}
-
-  <div class="space-y-4">
-    <div class="space-y-1">
-      <h5 class="font-medium">Abschnitte im Studienverlaufsplan</h5>
-      {#if hasSpecializations}
-        <p class="text-muted-foreground text-sm">
-          Gliederung des Studienverlaufsplans in benannte Abschnitte.
-        </p>
-      {:else}
-        <p class="text-muted-foreground text-sm">
-          Der Studienverlaufsplan kann optional in benannte Abschnitte gegliedert werden. Ein
-          Abschnitt umfasst alle Module bis einschließlich des angegebenen Semesters. Ohne
-          Abschnitte wird eine durchgehende Tabelle erzeugt.
-        </p>
-      {/if}
-    </div>
-
-    {#if hasSpecializations}
-      <div class="bg-muted/40 flex gap-3 rounded-lg border px-4 py-3">
-        <Info class="text-muted-foreground mt-0.5 size-4 shrink-0" />
-        <div class="space-y-2">
-          <p class="text-sm">
-            Diese Prüfungsordnung hat Schwerpunkte. Der Studienplan wird automatisch in Basisstudium
-            und Schwerpunkt-Tabellen getrennt, manuelle Abschnitte sind deshalb nicht verfügbar.
-          </p>
-          <div class="flex flex-wrap gap-1">
-            {#each config.options.specializations as specialization (specialization.id)}
-              <Badge variant="outline" class="rounded-sm font-normal">
-                {specialization.label}
-              </Badge>
-            {/each}
-          </div>
-        </div>
-      </div>
-    {:else}
-      <div class="space-y-2">
-        {#each config.sections as section (section.id)}
-          <div class="flex flex-wrap items-center gap-2" transition:slide={{ duration: 150 }}>
-            <Input
-              type="text"
-              placeholder="Überschrift, z.B. Grundlagen"
-              class="h-9 w-full max-w-sm"
-              bind:value={section.headline}
-              aria-label="Überschrift des Abschnitts"
-            />
-            <span class="text-muted-foreground text-sm">bis</span>
-            <Select.Root
-              type="single"
-              value={String(section.untilSemester)}
-              onValueChange={(value) => (section.untilSemester = Number(value))}
-            >
-              <Select.Trigger class="h-9 w-36 text-sm" aria-label="Abschnitt bis Semester">
-                {section.untilSemester}. Semester
-              </Select.Trigger>
-              <Select.Content>
-                {#each semesterRange as semester (semester)}
-                  <Select.Item value={String(semester)} label="{semester}. Semester">
-                    {semester}. Semester
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="text-muted-foreground hover:text-destructive size-9"
-              aria-label="Abschnitt entfernen"
-              onclick={() => config.removeSection(section.id)}
-            >
-              <Trash2 />
-            </Button>
-            {#if section.headline.trim().length === 0}
-              <span class="text-sm text-amber-600 dark:text-amber-500">
-                Ohne Überschrift wird der Abschnitt ignoriert
-              </span>
-            {/if}
-          </div>
-        {/each}
-        <Button variant="outline" size="sm" onclick={() => config.addSection()}>
-          <Plus />
-          Abschnitt hinzufügen
-        </Button>
       </div>
     {/if}
-  </div>
+
+    {#if distributableModules.length > 0}
+      <div class="space-y-4">
+        <div class="space-y-1">
+          <h5 class="font-medium">Aufteilung von Modulen im Teilzeit-Studienverlaufsplan</h5>
+          <p class="text-muted-foreground text-sm">
+            Wählen Sie ein Pflichtmodul, um dessen ECTS im Teilzeitplan auf mehrere Semester
+            aufzuteilen. Die Punkte werden gleichmäßig verteilt.
+          </p>
+        </div>
+
+        {#if availableModules.length > 0}
+          <Select.Root
+            type="single"
+            bind:value={pendingModuleId}
+            onValueChange={(id) => {
+              config.addDistribution(id)
+              pendingModuleId = ''
+            }}
+          >
+            <Select.Trigger class="text-muted-foreground h-9 max-w-lg text-sm">
+              Modul auswählen…
+            </Select.Trigger>
+            <Select.Content>
+              {#each availableModules as module (module.id)}
+                <Select.Item value={module.id} label={module.title}>
+                  {module.title}
+                  <span class="text-muted-foreground ml-2 text-xs">
+                    {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS
+                  </span>
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        {:else}
+          <p class="text-muted-foreground text-sm">
+            Alle geeigneten Module sind bereits aufgeteilt.
+          </p>
+        {/if}
+
+        {#each distributedModules as module (module.id)}
+          {@const semesters = config.distributionsOf(module.id)}
+          {@const ectsShare = (module.ects / semesters.length).toLocaleString('de-DE')}
+          <div class="overflow-hidden rounded-lg border" transition:slide={{ duration: 150 }}>
+            <div class="bg-muted/30 flex items-start justify-between gap-3 border-b px-4 py-3">
+              <div class="min-w-0">
+                <div class="truncate text-sm font-medium">{module.title}</div>
+                <div class="text-muted-foreground text-xs">
+                  {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS gesamt
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="text-muted-foreground hover:text-destructive size-8 shrink-0"
+                aria-label="Aufteilung von {module.title} entfernen"
+                onclick={() => config.removeDistribution(module.id)}
+              >
+                <Trash2 />
+              </Button>
+            </div>
+            <div class="space-y-3 p-4">
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                {#each semesters as semester, index (index)}
+                  <div class="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min="1"
+                      class="h-8 w-20 text-sm tabular-nums"
+                      value={semester}
+                      aria-label="Semester {index + 1} der Aufteilung von {module.title}"
+                      onchange={(e) => {
+                        config.updateDistributionSemester(
+                          module.id,
+                          index,
+                          Number(e.currentTarget.value)
+                        )
+                        e.currentTarget.value = String(config.distributionsOf(module.id)[index])
+                      }}
+                    />
+                    <span class="text-muted-foreground text-sm">. Sem.</span>
+                    {#if semesters.length > 2}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="text-muted-foreground hover:text-destructive size-7"
+                        aria-label="Semester aus der Aufteilung entfernen"
+                        onclick={() => config.removeDistributionSemester(module.id, index)}
+                      >
+                        <X />
+                      </Button>
+                    {/if}
+                  </div>
+                {/each}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="text-muted-foreground h-8"
+                  onclick={() => config.addDistributionSemester(module.id)}
+                >
+                  <Plus />
+                  Semester
+                </Button>
+              </div>
+              <p class="text-muted-foreground text-sm tabular-nums">{ectsShare} ECTS je Semester</p>
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    <div class="space-y-4">
+      <div class="space-y-1">
+        <h5 class="font-medium">Abschnitte im Studienverlaufsplan</h5>
+        {#if hasSpecializations}
+          <p class="text-muted-foreground text-sm">
+            Gliederung des Studienverlaufsplans in benannte Abschnitte.
+          </p>
+        {:else}
+          <p class="text-muted-foreground text-sm">
+            Der Studienverlaufsplan kann optional in benannte Abschnitte gegliedert werden. Ein
+            Abschnitt umfasst alle Module bis einschließlich des angegebenen Semesters. Ohne
+            Abschnitte wird eine durchgehende Tabelle erzeugt.
+          </p>
+        {/if}
+      </div>
+
+      {#if hasSpecializations}
+        <div class="bg-muted/40 flex gap-3 rounded-lg border px-4 py-3">
+          <Info class="text-muted-foreground mt-0.5 size-4 shrink-0" />
+          <div class="space-y-2">
+            <p class="text-sm">
+              Diese Prüfungsordnung hat Schwerpunkte. Der Studienplan wird automatisch in
+              Basisstudium und Schwerpunkt-Tabellen getrennt, manuelle Abschnitte sind deshalb nicht
+              verfügbar.
+            </p>
+            <div class="flex flex-wrap gap-1">
+              {#each config.options.specializations as specialization (specialization.id)}
+                <Badge variant="outline" class="rounded-sm font-normal">
+                  {specialization.label}
+                </Badge>
+              {/each}
+            </div>
+          </div>
+        </div>
+      {:else}
+        <div class="space-y-2">
+          {#each config.sections as section (section.id)}
+            <div class="flex flex-wrap items-center gap-2" transition:slide={{ duration: 150 }}>
+              <Input
+                type="text"
+                placeholder="Überschrift, z.B. Grundlagen"
+                class="h-9 w-full max-w-sm"
+                bind:value={section.headline}
+                aria-label="Überschrift des Abschnitts"
+              />
+              <span class="text-muted-foreground text-sm">bis</span>
+              <Select.Root
+                type="single"
+                value={String(section.untilSemester)}
+                onValueChange={(value) => (section.untilSemester = Number(value))}
+              >
+                <Select.Trigger class="h-9 w-36 text-sm" aria-label="Abschnitt bis Semester">
+                  {section.untilSemester}. Semester
+                </Select.Trigger>
+                <Select.Content>
+                  {#each semesterRange as semester (semester)}
+                    <Select.Item value={String(semester)} label="{semester}. Semester">
+                      {semester}. Semester
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="text-muted-foreground hover:text-destructive size-9"
+                aria-label="Abschnitt entfernen"
+                onclick={() => config.removeSection(section.id)}
+              >
+                <Trash2 />
+              </Button>
+              {#if section.headline.trim().length === 0}
+                <span class="text-sm text-amber-600 dark:text-amber-500">
+                  Ohne Überschrift wird der Abschnitt ignoriert
+                </span>
+              {/if}
+            </div>
+          {/each}
+          <Button variant="outline" size="sm" onclick={() => config.addSection()}>
+            <Plus />
+            Abschnitt hinzufügen
+          </Button>
+        </div>
+      {/if}
+    </div>
+  {/if}
 </div>

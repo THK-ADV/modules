@@ -1,4 +1,5 @@
-import type { ArtifactAction } from './schemas/artifact-action'
+import { previewArtifact } from '../routes/studyprogram/studyprogram.remote'
+import { getErrorMessage } from './errors'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
@@ -87,7 +88,7 @@ function htmlPlaceholder(actionLabel: string, studyProgramLabel: string) {
   `
 }
 
-function htmlError(actionLabel: string, errorMessage: string, isTimeoutError: boolean) {
+function htmlError(actionLabel: string, errorMessage: string) {
   return `
     <html>
       <head>
@@ -153,22 +154,6 @@ function htmlError(actionLabel: string, errorMessage: string, isTimeoutError: bo
           .error-box span {
             font-weight: 600;
           }
-          .tip-box {
-            background-color: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 0.375rem;
-            padding: 1rem;
-          }
-          .tip-box p {
-            font-size: 0.875rem;
-            color: #78350f;
-            line-height: 1.6;
-          }
-          .tip-box span {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 0.5rem;
-          }
         </style>
       </head>
       <body>
@@ -184,19 +169,6 @@ function htmlError(actionLabel: string, errorMessage: string, isTimeoutError: bo
             <div class="error-box">
               <p><span>Fehlermeldung:</span> ${errorMessage}</p>
             </div>
-            
-            ${
-              isTimeoutError
-                ? `
-            <div class="tip-box">
-              <p>
-                <span>Tipp bei Timeout-Fehlern:</span>
-                • Bei wiederholten Problemen kontaktieren Sie den Support
-              </p>
-            </div>
-            `
-                : ''
-            }
           </div>
         </div>
       </body>
@@ -521,104 +493,50 @@ export async function previewModuleCatalog(
   studyProgram: StudyProgram,
   config: ModuleCatalogConfig
 ) {
-  const action = 'moduleCatalog'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
-}
-
-export async function createModuleCatalog(studyProgram: StudyProgram, config: ModuleCatalogConfig) {
-  const action = 'moduleCatalog_creation'
-  const actionLabel = 'Modulhandbuch'
-  await performFileAction(action, actionLabel, studyProgram, config)
+  await performFileAction('Modulhandbuch', studyProgram, () =>
+    previewArtifact({ document: 'moduleCatalog', po: studyProgram.po.id, config })
+  )
 }
 
 export async function previewExamList(studyProgram: StudyProgram) {
-  const action = 'examList'
-  const actionLabel = 'Prüfungsliste'
-  await performFileAction(action, actionLabel, studyProgram)
+  await performFileAction('Prüfungsliste', studyProgram, () =>
+    previewArtifact({ document: 'examList', po: studyProgram.po.id })
+  )
 }
 
 export async function previewExamLoad(studyProgram: StudyProgram) {
-  const action = 'examLoad'
-  const actionLabel = 'Prüfungslast'
-  await performFileAction(action, actionLabel, studyProgram)
+  await performFileAction('Prüfungslast', studyProgram, () =>
+    previewArtifact({ document: 'examLoad', po: studyProgram.po.id })
+  )
 }
 
 async function performFileAction(
-  action: ArtifactAction,
   actionLabel: string,
   studyProgram: StudyProgram,
-  body?: ModuleCatalogConfig
+  request: () => ReturnType<typeof previewArtifact>
 ) {
   const newTab = window.open()
   const studyProgramLabel = studyProgram.deLabel
-
   newTab?.document.writeln(htmlPlaceholder(actionLabel, studyProgramLabel))
   newTab?.document.close()
 
   try {
-    // Use a longer timeout for large programs
-    const timeoutDuration = 180000 // 3 min
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
+    const { data, contentType, filename } = await request()
+    if (!newTab || newTab.closed) return
 
-    const po = studyProgram.po.id
-    const url = `/actions/preview/${action}?po=${encodeURIComponent(po)}`
-    const response = await fetch(url, {
-      signal: controller.signal,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Unknown error' }))
-      throw new Error(error.message || `${action} failed`)
+    if (contentType === 'text/csv') {
+      newTab.document.writeln(
+        htmlCSV(new TextDecoder().decode(data), studyProgramLabel, studyProgram.po.id)
+      )
+    } else {
+      const blobUrl = URL.createObjectURL(new Blob([data], { type: contentType }))
+      newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
     }
-
-    if (newTab && !newTab.closed) {
-      const contentType = response.headers.get('Content-Type') || ''
-      const mimeType = contentType.split(';')[0].trim()
-
-      switch (mimeType) {
-        case 'text/csv':
-        case 'text/plain': {
-          const csv = await response.text()
-          newTab.document.writeln(htmlCSV(csv, studyProgramLabel, po))
-          newTab.document.close()
-          break
-        }
-        case 'application/pdf': {
-          const blob = await response.blob()
-          const blobUrl = URL.createObjectURL(blob)
-
-          const contentDisposition = response.headers.get('Content-Disposition')
-          const filename =
-            contentDisposition?.match(/filename="(.+?)"/)?.[1] ||
-            `${actionLabel}_${studyProgram.po.id}.pdf`
-
-          newTab.document.writeln(htmlPDF(blobUrl, filename, actionLabel, studyProgramLabel))
-          newTab.document.close()
-
-          // Clean up blob URL after a longer delay to ensure PDF loads
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-          break
-        }
-        default: {
-          newTab.close()
-          break
-        }
-      }
-    }
+    newTab.document.close()
   } catch (error) {
     if (newTab && !newTab.closed) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unbekannter Fehler beim Generieren des Dokuments'
-      const isTimeoutError =
-        errorMessage.includes('Server Timeout') || errorMessage.includes('aborted')
-
-      newTab.document.writeln(htmlError(actionLabel, errorMessage, isTimeoutError))
+      newTab.document.writeln(htmlError(actionLabel, getErrorMessage(error)))
       newTab.document.close()
     }
   }

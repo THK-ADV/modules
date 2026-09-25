@@ -7,7 +7,8 @@
   const dateFormatter = new DateFormatter('de-DE', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC'
   })
 
   const dateTimeFormatter = new DateFormatter('de-DE', {
@@ -22,20 +23,19 @@
     return `${semester.abbrev.toUpperCase()} ${semester.year}`
   }
 
-  function fmtExamListPublishDate(examList: ExamList) {
-    return `${dateFormatter.format(new Date(examList.date))} (${fmtSemester(examList.semester)})`
+  function fmtPublishDate(document: PublishedDocument) {
+    return `${dateFormatter.format(new Date(document.date))} (${fmtSemester(document.semester)})`
   }
 </script>
 
 <script lang="ts">
+  import { resolve } from '$app/paths'
   import ErrorMessage from '$lib/components/error-message.svelte'
-  import SuccessMessage from '$lib/components/success-message.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import { previewExamList, previewExamLoad } from '$lib/preview-action'
-  import type { ExamList } from '$lib/types/exam-list'
-  import type { Semester } from '$lib/types/semester'
+  import type { Semester } from '$lib/schemas/semester'
   import type { StudyProgram } from '$lib/types/study-program'
   import { DateFormatter } from '@internationalized/date'
   import { FlaskConical } from '@lucide/svelte'
@@ -45,37 +45,33 @@
   import ExamListTableActions from './(components)/exam-list-table-actions.svelte'
   import ExamLoadTableActions from './(components)/exam-load-table-actions.svelte'
   import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
-  import ModuleCatalogUploadIntroDialog from './(components)/module-catalog-upload-intro-dialog.svelte'
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
   import StudyProgramTable from './(components)/studyProgram-table.svelte'
-  import type { StudyProgramMangerInfo } from './+page.server'
-  import { resolve } from '$app/paths'
-  import StudyProgramTableTitleCell from './(components)/study-program-table-title-cell.svelte'
+  import type {
+    PublishedDocument,
+    StudyProgramManagerInfo
+  } from '$lib/schemas/study-program-artifacts'
+  import { getStudyProgramManagement } from './studyprogram.remote'
+  import { fmtStudyProgramWithoutPO } from '$lib/formats'
 
   let { data }: PageProps = $props()
+  const management = $derived(await getStudyProgramManagement())
 
   let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
-  let showModuleCatalogIntroductionUploadDialog: StudyProgram | undefined = $state(undefined)
   let showErrorMessage: string | undefined = $state(undefined)
-  let showSuccessMessage: string | undefined = $state(undefined)
   let isPublishing = $state(false)
-  // Tab handling
-
   let selectedTab: Tab = $derived((data.selectedTab || 'module-catalog') as Tab)
 
   function updateSelectedTab(value: string) {
     document.cookie = `${SELECTED_TAB_COOKIE_NAME}=${value}; path=/; max-age=${SELECTED_TAB_COOKIE_MAX_AGE}`
   }
 
-  const columns: ColumnDef<StudyProgramMangerInfo>[] = $derived.by(() => {
-    let cols: ColumnDef<StudyProgramMangerInfo>[] = [
+  const columns: ColumnDef<StudyProgramManagerInfo>[] = $derived.by(() => {
+    let cols: ColumnDef<StudyProgramManagerInfo>[] = [
       {
         accessorKey: 'title',
         header: 'Studiengang',
-        cell: ({ row }) =>
-          renderComponent(StudyProgramTableTitleCell, {
-            studyProgram: row.original.studyProgram
-          })
+        cell: ({ row }) => fmtStudyProgramWithoutPO(row.original.studyProgram)
       },
       {
         accessorKey: 'po',
@@ -98,9 +94,25 @@
               return renderComponent(StudyProgramTableStatus, {
                 badgeContent,
                 tooltipBadge: () =>
-                  'Bei der Vorschau oder Erstellung des Modulhandbuchs wird die aktuelle Einleitung verwendet. Diese kann jederzeit ausgetauscht werden.',
+                  'Bei der Vorschau oder Freigabe des Modulhandbuchs wird die aktuelle Einleitung verwendet. Diese kann jederzeit ausgetauscht werden.',
                 tooltipPending: () =>
-                  'Die Einleitung des Modulhandbuchs (Prolog Teil) wurde noch nicht hochgeladen. Hierfür auf "Einleitung hochladen" klicken.'
+                  'Die Einleitung des Modulhandbuchs (Prolog Teil) wurde noch nicht hochgeladen. Öffnen Sie den Studiengang und laden Sie die Einleitung dort hoch.'
+              })
+            }
+          },
+          {
+            accessorKey: 'module-catalog-publish-info',
+            header: 'Veröffentlicht am',
+            cell: ({ row }) => {
+              const badgeContent = row.original.moduleCatalog
+                ? fmtPublishDate(row.original.moduleCatalog)
+                : undefined
+              return renderComponent(StudyProgramTableStatus, {
+                badgeContent,
+                tooltipBadge: () =>
+                  'Das Modulhandbuch wurde für das Semester freigegeben und ist unter "Modulhandbücher" öffentlich zugänglich. Eine erneute Freigabe ersetzt diese Fassung.',
+                tooltipPending: () =>
+                  'Das Modulhandbuch wurde noch nicht freigegeben. Öffnen Sie den Studiengang, prüfen Sie die Vorschau und geben Sie es frei.'
               })
             }
           },
@@ -108,11 +120,7 @@
             id: 'module-catalog-actions',
             cell: ({ row }) => {
               return renderComponent(ModuleCatalogTableActions, {
-                studyProgram: row.original.studyProgram,
-                canCreate: row.original.canCreate,
-                onClickModuleIntroductionUpload: (sp: StudyProgram) => {
-                  showModuleCatalogIntroductionUploadDialog = sp
-                }
+                studyProgram: row.original.studyProgram
               })
             }
           }
@@ -125,7 +133,7 @@
             header: 'Veröffentlicht am',
             cell: ({ row }) => {
               const badgeContent = row.original.examList
-                ? fmtExamListPublishDate(row.original.examList)
+                ? fmtPublishDate(row.original.examList)
                 : undefined
               return renderComponent(StudyProgramTableStatus, {
                 badgeContent,
@@ -175,18 +183,10 @@
 
 <ErrorMessage bind:message={showErrorMessage} />
 
-<SuccessMessage bind:message={showSuccessMessage} />
-
 <ExamListReleaseDialog
-  semesters={data.semesters}
+  semesters={management.semesters}
   bind:showExamListReleaseDialog
   bind:isPublishing
-  bind:showErrorMessage
-/>
-
-<ModuleCatalogUploadIntroDialog
-  bind:showModuleCatalogIntroductionUploadDialog
-  bind:showSuccessMessage
   bind:showErrorMessage
 />
 
@@ -198,10 +198,6 @@
     <p class="text-muted-foreground text-sm">
       Als PAV oder SGL können hier die <span class="font-bold">aktuellsten Versionen</span> von Modulhandbüchern
       und Prüfungslisten eingesehen werden. Für die Vorschau werden ausschließlich aktive Module verwendet.
-    </p>
-    <p class="text-muted-foreground text-sm">
-      Zudem können die Einleitung des Modulhandbuchs (Prolog Teil) hochgeladen werden. Diese wird
-      bei der Vorschau und Erstellung des Modulhandbuchs verwendet.
     </p>
   </div>
   <div class="space-y-4">
@@ -231,8 +227,12 @@
       </Tabs.Content>
       <Tabs.Content value="module-catalog" class="ml-1">
         <p class="text-muted-foreground text-sm">
-          Über den jeweiligen Studiengang kann das Modulhandbuch konfiguriert, als Vorschau geöffnet
-          und erstellt werden.
+          Über den jeweiligen Studiengang kann das Modulhandbuch konfiguriert, in der Vorschau
+          geprüft und freigegeben werden. Die Freigabe veröffentlicht diese Fassung. Sie ist unter
+          <a href={resolve('/module-catalogs')} class="text-primary underline hover:no-underline"
+            >Modulhandbücher</a
+          >
+          öffentlich abrufbar. Eine erneute Freigabe ersetzt die vorherige Fassung.
         </p>
       </Tabs.Content>
       <Tabs.Content value="exam-load" class="ml-1">
@@ -242,6 +242,6 @@
         </p>
       </Tabs.Content>
     </Tabs.Root>
-    <StudyProgramTable data={data.studyProgramMangerInfo} {columns} />
+    <StudyProgramTable data={management.studyPrograms} {columns} />
   </div>
 </div>

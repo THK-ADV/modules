@@ -22,7 +22,7 @@
     Upload
   } from '@lucide/svelte'
   import type { PageProps } from './$types'
-  import type { Semester } from '$lib/types/semester'
+  import type { Semester } from '$lib/schemas/semester'
   import { resolve } from '$app/paths'
   import { goto, invalidateAll } from '$app/navigation'
   import {

@@ -1,6 +1,14 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button/index.js'
-  import { Book, Eye, LoaderCircle, RotateCcw, SlidersHorizontal, X } from '@lucide/svelte'
+  import {
+    Eye,
+    FileCheck,
+    LoaderCircle,
+    RotateCcw,
+    SlidersHorizontal,
+    Upload,
+    X
+  } from '@lucide/svelte'
   import { fade } from 'svelte/transition'
   import type { CatalogConfig } from './catalog-config.svelte'
 
@@ -15,13 +23,15 @@
     generating,
     canCreate,
     onPreview,
-    onCreate
+    onPublish,
+    onUploadIntroduction
   }: {
     config: CatalogConfig
-    generating: 'preview' | 'create' | undefined
+    generating: 'preview' | 'publish' | undefined
     canCreate: boolean
     onPreview: () => void
-    onCreate: () => void
+    onPublish: () => void
+    onUploadIntroduction: () => void
   } = $props()
 
   function fmtCount(count: number, singular: string, plural: string) {
@@ -121,6 +131,7 @@
               class="text-muted-foreground hover:text-destructive -mr-0.5 rounded-full transition-colors"
               title="Diese Anpassungen zurücksetzen"
               aria-label="{chip.label} zurücksetzen"
+              disabled={generating !== undefined}
               onclick={chip.clear}
             >
               <X class="size-3" />
@@ -130,11 +141,27 @@
       {/if}
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex min-w-0 flex-wrap items-center gap-2">
       {#if !config.isDefault}
-        <Button variant="ghost" size="sm" onclick={() => config.resetAll()}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={generating !== undefined}
+          onclick={() => config.resetAll()}
+        >
           <RotateCcw />
           Zurücksetzen
+        </Button>
+      {/if}
+      {#if canCreate}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={generating !== undefined}
+          onclick={onUploadIntroduction}
+        >
+          <Upload />
+          Einleitung hochladen
         </Button>
       {/if}
       <Button variant="outline" size="sm" disabled={generating !== undefined} onclick={onPreview}>
@@ -146,13 +173,13 @@
         Vorschau
       </Button>
       {#if canCreate}
-        <Button size="sm" disabled={generating !== undefined} onclick={onCreate}>
-          {#if generating === 'create'}
+        <Button size="sm" disabled={generating !== undefined} onclick={onPublish}>
+          {#if generating === 'publish'}
             <LoaderCircle class="animate-spin" />
           {:else}
-            <Book />
+            <FileCheck />
           {/if}
-          Erstellen
+          Freigeben
         </Button>
       {/if}
     </div>

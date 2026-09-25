@@ -1,25 +1,37 @@
 <script lang="ts">
+  import ErrorMessage from '$lib/components/error-message.svelte'
+  import SuccessMessage from '$lib/components/success-message.svelte'
   import { Button } from '$lib/components/ui/button/index.js'
+  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
-  import { createModuleCatalog, previewModuleCatalog } from '$lib/preview-action'
+  import { previewModuleCatalog } from '$lib/preview-action'
+  import { getStudyProgram, publishModuleCatalog } from '../studyprogram.remote'
+  import { getErrorMessage } from '$lib/errors'
+  import type { StudyProgram } from '$lib/types/study-program'
   import type { PageProps } from './$types'
+  import ModuleCatalogUploadIntroDialog from '../(components)/module-catalog-upload-intro-dialog.svelte'
   import { CatalogConfig } from './(components)/catalog-config.svelte'
   import ConfigSummary from './(components)/config-summary.svelte'
   import ElectiveModuleTable from './(components)/elective-module-table.svelte'
   import MandatoryModuleTable from './(components)/mandatory-module-table.svelte'
   import StudyPlanConfig from './(components)/study-plan-config.svelte'
 
-  let { data }: PageProps = $props()
+  let { data: pageData }: PageProps = $props()
+  const data = $derived(await getStudyProgram(pageData.poId))
 
   const config = $derived(new CatalogConfig(data.options))
   const hasElectives = $derived(data.options.genericElectiveGroups.length > 0)
 
   let selectedTab = $state('mandatory')
-  let generating = $state<'preview' | 'create' | undefined>(undefined)
-  let showCreateConfirm = $state(false)
+  let generating = $state<'preview' | 'publish' | undefined>(undefined)
+  let showPublishConfirm = $state(false)
+  let introUploadTarget = $state<StudyProgram | undefined>(undefined)
+  let showErrorMessage = $state<string | undefined>(undefined)
+  let showSuccessMessage = $state<string | undefined>(undefined)
 
   async function handlePreview() {
+    if (generating) return
     generating = 'preview'
     try {
       await previewModuleCatalog(data.studyProgram, config.buildConfig())
@@ -28,11 +40,17 @@
     }
   }
 
-  async function handleCreate() {
-    showCreateConfirm = false
-    generating = 'create'
+  async function handlePublish() {
+    if (generating) return
+    showPublishConfirm = false
+    generating = 'publish'
+    showErrorMessage = undefined
+    showSuccessMessage = undefined
     try {
-      await createModuleCatalog(data.studyProgram, config.buildConfig())
+      await publishModuleCatalog({ po: data.studyProgram.po.id, config: config.buildConfig() })
+      showSuccessMessage = 'Modulhandbuch freigegeben.'
+    } catch (error) {
+      showErrorMessage = getErrorMessage(error, 'Freigabe des Modulhandbuchs fehlgeschlagen')
     } finally {
       generating = undefined
     }
@@ -48,7 +66,19 @@
   {/if}
 {/snippet}
 
-<div class="flex h-full flex-1 flex-col space-y-8">
+<LoadingOverlay show={generating === 'publish'} message="Modulhandbuch wird freigegeben…" />
+
+<ErrorMessage bind:message={showErrorMessage} />
+
+<SuccessMessage bind:message={showSuccessMessage} />
+
+<ModuleCatalogUploadIntroDialog
+  bind:showModuleCatalogIntroductionUploadDialog={introUploadTarget}
+  bind:showSuccessMessage
+  bind:showErrorMessage
+/>
+
+<div class="flex h-full min-w-0 flex-1 flex-col space-y-8">
   <div class="space-y-2">
     <h2 class="text-3xl font-bold tracking-tight">Modulhandbuch konfigurieren</h2>
     <p class="text-muted-foreground max-w-3xl text-sm">
@@ -63,7 +93,8 @@
     {generating}
     canCreate={data.canCreate}
     onPreview={handlePreview}
-    onCreate={() => (showCreateConfirm = true)}
+    onPublish={() => (showPublishConfirm = true)}
+    onUploadIntroduction={() => (introUploadTarget = data.studyProgram)}
   />
 
   <Tabs.Root
@@ -72,7 +103,7 @@
       (value) => (selectedTab = value)
     }
   >
-    <Tabs.List>
+    <Tabs.List class="h-auto max-w-full flex-wrap justify-start">
       <Tabs.Trigger value="mandatory">
         <span class="flex items-center gap-1.5">
           Pflichtmodule
@@ -133,25 +164,30 @@
   </Tabs.Root>
 </div>
 
-<Dialog.Root bind:open={showCreateConfirm}>
+<Dialog.Root bind:open={showPublishConfirm}>
   <Dialog.Content class="max-w-lg">
     <Dialog.Header>
-      <Dialog.Title>Modulhandbuch erstellen</Dialog.Title>
+      <Dialog.Title>Modulhandbuch freigeben</Dialog.Title>
       <Dialog.Description>
         {#if config.isDefault}
-          Das Modulhandbuch wird mit der Standardkonfiguration für das aktuelle Semester erstellt.
+          Das Modulhandbuch wird mit der Standardkonfiguration öffentlich freigegeben.
         {:else}
           Das Modulhandbuch wird mit {config.deviationCount}
-          {config.deviationCount === 1 ? 'Anpassung' : 'Anpassungen'} für das aktuelle Semester erstellt.
+          {config.deviationCount === 1 ? 'Anpassung' : 'Anpassungen'} öffentlich freigegeben.
         {/if}
         {config.studyPlanEnabled
           ? 'Ein Studienverlaufsplan wird erzeugt.'
           : 'Es wird kein Studienverlaufsplan erzeugt.'}
+        Semester und Freigabedatum setzt das System. Eine bereits veröffentlichte Fassung wird ersetzt.
       </Dialog.Description>
     </Dialog.Header>
+    <p class="text-muted-foreground text-sm">
+      Prüfen Sie die Fassung vorher mit „Vorschau“ auf Inhalt und Fehler. Die veröffentlichte PDF
+      entspricht dieser Vorschau, enthält aber kein Wasserzeichen und keine Vorschauhinweise.
+    </p>
     <Dialog.Footer class="gap-2">
-      <Button variant="outline" onclick={() => (showCreateConfirm = false)}>Abbrechen</Button>
-      <Button onclick={handleCreate}>Erstellen</Button>
+      <Button variant="outline" onclick={() => (showPublishConfirm = false)}>Abbrechen</Button>
+      <Button onclick={handlePublish}>Freigeben</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

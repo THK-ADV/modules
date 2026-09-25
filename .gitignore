@@ -23,6 +23,3 @@ vite.config.ts.timestamp-*
 
 # JetBrains
 .idea
-
-# Specs
-/docs

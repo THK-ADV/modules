@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
-import type { ExamList } from '$lib/types/exam-list'
+import type { PublishedDocument } from '$lib/schemas/study-program-artifacts'
 
 export const load: PageServerLoad = async ({ fetch }) => {
   // TODO: only fetch for a specific semester
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     })
   }
 
-  const examLists: ExamList[] = await res.json()
+  const examLists: PublishedDocument[] = await res.json()
 
   return { examLists }
 }

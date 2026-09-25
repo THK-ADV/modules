@@ -1,6 +1,6 @@
 <script lang="ts">
   import { isParsed, type ModuleVersion } from '$lib/types/module-version'
-  import type { Semester } from '$lib/types/semester'
+  import type { Semester } from '$lib/schemas/semester'
   import * as Tooltip from '$lib/components/ui/tooltip'
   import * as Popover from '$lib/components/ui/popover'
   import { Button } from '$lib/components/ui/button'

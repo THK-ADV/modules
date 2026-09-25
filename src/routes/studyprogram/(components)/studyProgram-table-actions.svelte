@@ -1,6 +1,6 @@
 <script lang="ts" module>
   export type PreviewActionKey = 'previewExamList' | 'previewExamLoad'
-  export type ActionKey = PreviewActionKey | 'releaseExamList' | 'uploadModuleCatalogIntroduction'
+  export type ActionKey = PreviewActionKey | 'releaseExamList'
 
   export interface Action {
     key: ActionKey
@@ -40,7 +40,6 @@
       'flex cursor-pointer items-center gap-2 font-medium',
       key === 'previewExamList' && 'text-gray-600 focus:text-gray-700',
       key === 'previewExamLoad' && 'text-gray-600 focus:text-gray-700',
-      key === 'uploadModuleCatalogIntroduction' && 'text-gray-600 focus:text-gray-700',
       key === 'releaseExamList' && 'text-green-600 focus:text-green-700'
     )}
     {onclick}

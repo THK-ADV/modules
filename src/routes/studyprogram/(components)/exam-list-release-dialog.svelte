@@ -17,14 +17,14 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
   import { examListReleaseFormSchema } from '$lib/schemas/exam-list'
+  import { fmtDate, fmtSemester, fmtStudyProgramWithoutPO } from '$lib/formats'
   import type { Semester } from '$lib/schemas/semester'
   import type { StudyProgram } from '$lib/types/study-program'
   import { cn } from '$lib/utils'
-  import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
+  import { fromDate, getLocalTimeZone } from '@internationalized/date'
   import { Calendar1 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
-  import { fmtStudyProgramWithoutPO } from '$lib/formats'
   let {
     semesters,
     showExamListReleaseDialog = $bindable(),
@@ -33,16 +33,10 @@
     showErrorMessage = $bindable()
   }: Props = $props()
 
-  const df = new DateFormatter('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-
   const semesterOptions = $derived(
     semesters.map((s) => ({
       id: s.id,
-      deLabel: `${s.deLabel} ${s.year}`
+      deLabel: fmtSemester(s)
     }))
   )
 
@@ -140,7 +134,7 @@
               >
                 <Calendar1 class="mr-2 size-4" />
                 {$dialogFormData.releaseDate
-                  ? df.format($dialogFormData.releaseDate)
+                  ? fmtDate($dialogFormData.releaseDate)
                   : 'Datum auswählen…'}
               </Popover.Trigger>
               <input hidden value={$dialogFormData.releaseDate?.toISOString()} name={props.name} />

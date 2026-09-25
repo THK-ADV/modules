@@ -6,6 +6,7 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import type { ModuleCatalogModuleOption } from '$lib/schemas/module-catalog'
   import { Info, Plus, Trash2, X } from '@lucide/svelte'
+  import { fmtCredits } from '$lib/formats'
   import { slide } from 'svelte/transition'
   import {
     earliestSemester,
@@ -280,7 +281,7 @@
                 <Select.Item value={module.id} label={module.title}>
                   {module.title}
                   <span class="text-muted-foreground ml-2 text-xs">
-                    {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS
+                    {module.abbrev} · {fmtCredits(module.ects)} ECTS
                   </span>
                 </Select.Item>
               {/each}
@@ -294,13 +295,13 @@
 
         {#each distributedModules as module (module.id)}
           {@const semesters = config.distributionsOf(module.id)}
-          {@const ectsShare = (module.ects / semesters.length).toLocaleString('de-DE')}
+          {@const ectsShare = fmtCredits(module.ects / semesters.length)}
           <div class="overflow-hidden rounded-lg border" transition:slide={{ duration: 150 }}>
             <div class="bg-muted/30 flex items-start justify-between gap-3 border-b px-4 py-3">
               <div class="min-w-0">
                 <div class="truncate text-sm font-medium">{module.title}</div>
                 <div class="text-muted-foreground text-xs">
-                  {module.abbrev} · {module.ects.toLocaleString('de-DE')} ECTS gesamt
+                  {module.abbrev} · {fmtCredits(module.ects)} ECTS gesamt
                 </div>
               </div>
               <Button

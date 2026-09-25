@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PersonShort } from '$lib/types/module'
+  import { fmtPersonInitial } from '$lib/formats'
 
   let { management }: { management: PersonShort[] } = $props()
 
@@ -9,7 +10,7 @@
       switch (x.kind) {
         case 'person':
           if (x.firstname && x.lastname) {
-            res += `${x.lastname}, ${x.firstname.charAt(0)}.`
+            res += fmtPersonInitial(x)
             if (i < xs.length - 1) {
               res += ' & '
             }

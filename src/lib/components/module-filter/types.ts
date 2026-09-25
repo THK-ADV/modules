@@ -1,4 +1,4 @@
-import { fmtManagement } from '$lib/formats'
+import { fmtCredits, fmtManagement } from '$lib/formats'
 import type { ModuleCore } from '$lib/types/core'
 
 export interface ModuleFilterOption {
@@ -25,13 +25,10 @@ function createManagementLabel(people: string[]): string {
   return overflow > 0 ? `${visible.join(', ')} +${overflow}` : visible.join(', ')
 }
 
-function toModuleFilterOption(
-  module: ModuleCore,
-  ectsFormatter: Intl.NumberFormat
-): ModuleFilterOption {
+function toModuleFilterOption(module: ModuleCore): ModuleFilterOption {
   const managementPeople = module.moduleManagement.map(fmtManagement).filter(Boolean)
   const managementLabel = createManagementLabel(managementPeople)
-  const ectsLabel = `${ectsFormatter.format(module.ects)} ECTS`
+  const ectsLabel = `${fmtCredits(module.ects)} ECTS`
 
   return {
     id: module.id,
@@ -44,6 +41,5 @@ function toModuleFilterOption(
 }
 
 export function createModuleFilterOptions(modules: ModuleCore[]): ModuleFilterOption[] {
-  const ectsFormatter = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 })
-  return modules.map((module) => toModuleFilterOption(module, ectsFormatter))
+  return modules.map(toModuleFilterOption)
 }

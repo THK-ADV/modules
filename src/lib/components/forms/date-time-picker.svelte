@@ -5,7 +5,8 @@
   import * as Popover from '$lib/components/ui/popover/index.js'
   import { ScrollArea } from '$lib/components/ui/scroll-area/index.js'
   import { cn } from '$lib/utils'
-  import { DateFormatter, fromDate, getLocalTimeZone } from '@internationalized/date'
+  import { fromDate, getLocalTimeZone } from '@internationalized/date'
+  import { fmtDateTime } from '$lib/formats'
   import { Calendar1 } from '@lucide/svelte'
 
   interface Props {
@@ -34,14 +35,6 @@
     minuteIntervals = [0, 15, 30, 45]
   }: Props = $props()
 
-  const df = new DateFormatter('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
   // Current selection
   let selectedHour = $derived(value ? value.getHours() : hourRange.start)
   let selectedMinute = $derived(
@@ -69,7 +62,7 @@
 
   function formatDateTime(date: Date | null): string {
     if (!date) return placeholder
-    return df.format(date)
+    return fmtDateTime(date)
   }
 </script>
 

@@ -5,9 +5,7 @@
   import type { ColumnDef } from '@tanstack/table-core'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
-  const fmtCredits = creditsFormatter()
-
-  function fmtSemester(xs: ReadonlyArray<StudyProgramModuleAssociation>) {
+  function fmtRecommendedSemesters(xs: ReadonlyArray<StudyProgramModuleAssociation>) {
     let semester: number[]
     const res: Record<number, undefined> = {}
     for (const { recommendedSemester } of xs) {
@@ -91,12 +89,12 @@
     {
       accessorKey: 'credits',
       header: 'ECTS',
-      cell: ({ row }) => fmtCredits.format(row.original.ects)
+      cell: ({ row }) => fmtCredits(row.original.ects)
     },
     {
       accessorKey: 'semester',
       header: 'Semester',
-      cell: ({ row }) => fmtSemester(row.original.studyProgram)
+      cell: ({ row }) => fmtRecommendedSemesters(row.original.studyProgram)
     }
   ]
 </script>
@@ -106,7 +104,7 @@
   import type { PageProps } from './$types'
   import ModuleTableTitleCell from './(components)/module-table-title-cell.svelte'
   import ModulesTable from './(components)/modules-table.svelte'
-  import { creditsFormatter, peopleShortOrdering } from '$lib/formats'
+  import { fmtCredits, fmtDate, peopleShortOrdering } from '$lib/formats'
   import ModuleTableManagementCell from './(components)/modules-table-management-cell.svelte'
 
   let { data }: PageProps = $props()
@@ -117,11 +115,7 @@
       return null
     }
 
-    return latest.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    return fmtDate(latest)
   })
 </script>
 

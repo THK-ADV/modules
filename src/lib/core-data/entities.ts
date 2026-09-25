@@ -5,6 +5,7 @@ import type {
   CoreDataFieldName,
   EmploymentType
 } from '$lib/schemas/core-data'
+import { fmtPersonName } from '$lib/formats'
 
 export interface CoreDataOption {
   id: string
@@ -137,7 +138,7 @@ export const coreDataEntities: CoreDataEntity[] = [
     ],
     display: (row) =>
       'kind' in row && row.kind === 'person'
-        ? `${row.lastname}, ${row.firstname}`
+        ? fmtPersonName(row)
         : 'label' in row
           ? row.label
           : row.id,

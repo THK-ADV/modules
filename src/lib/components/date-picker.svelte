@@ -4,7 +4,8 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import * as Popover from '$lib/components/ui/popover/index.js'
   import { cn } from '$lib/utils'
-  import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
+  import { fmtDate } from '$lib/formats'
+  import { parseDate } from '@internationalized/date'
   import { Calendar1 } from '@lucide/svelte'
 
   interface Props {
@@ -25,7 +26,6 @@
     disabled = false
   }: Props = $props()
   let open = $state(false)
-  const dateFormatter = new DateFormatter('de-DE', { dateStyle: 'medium' })
   const calendarValue = $derived(value ? parseDate(value) : undefined)
 </script>
 
@@ -44,9 +44,7 @@
           )}
         >
           <Calendar1 class="size-4" />
-          {calendarValue
-            ? dateFormatter.format(calendarValue.toDate(getLocalTimeZone()))
-            : 'Datum auswählen…'}
+          {value ? fmtDate(value) : 'Datum auswählen…'}
         </Popover.Trigger>
         <input type="hidden" {value} name={props.name} />
       {/snippet}

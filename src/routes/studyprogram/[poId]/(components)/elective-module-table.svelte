@@ -6,6 +6,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import type { ModuleCatalogGenericElectiveGroup } from '$lib/schemas/module-catalog'
   import { cn } from '$lib/utils.js'
+  import { fmtCredits } from '$lib/formats'
   import { ChevronRight, Search } from '@lucide/svelte'
   import { SvelteSet } from 'svelte/reactivity'
   import type { CatalogConfig } from './catalog-config.svelte'
@@ -293,7 +294,7 @@
               <Table.Cell
                 class={cn('text-right tabular-nums', !checked && 'text-muted-foreground')}
               >
-                {candidate.ects.toLocaleString('de-DE')}
+                {fmtCredits(candidate.ects)}
               </Table.Cell>
               <Table.Cell>
                 <Badge

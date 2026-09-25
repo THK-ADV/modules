@@ -1,30 +1,12 @@
 <script lang="ts" module>
+  import { fmtDate, fmtSemesterShort } from '$lib/formats'
   type Tab = 'module-catalog' | 'exam-list' | 'exam-load'
 
   export const SELECTED_TAB_COOKIE_NAME = 'studyprogram:selected-tab'
   export const SELECTED_TAB_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
-  const dateFormatter = new DateFormatter('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC'
-  })
-
-  const dateTimeFormatter = new DateFormatter('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
-  function fmtSemester(semester: Semester) {
-    return `${semester.abbrev.toUpperCase()} ${semester.year}`
-  }
-
   function fmtPublishDate(document: PublishedDocument) {
-    return `${dateFormatter.format(new Date(document.date))} (${fmtSemester(document.semester)})`
+    return `${fmtDate(document.date)} (${fmtSemesterShort(document.semester)})`
   }
 </script>
 
@@ -35,9 +17,7 @@
   import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
   import { previewExamList, previewExamLoad } from '$lib/preview-action'
-  import type { Semester } from '$lib/schemas/semester'
   import type { StudyProgram } from '$lib/types/study-program'
-  import { DateFormatter } from '@internationalized/date'
   import { FlaskConical } from '@lucide/svelte'
   import type { ColumnDef } from '@tanstack/table-core'
   import type { PageProps } from './$types'
@@ -52,7 +32,7 @@
     StudyProgramManagerInfo
   } from '$lib/schemas/study-program-artifacts'
   import { getStudyProgramManagement } from './studyprogram.remote'
-  import { fmtStudyProgramWithoutPO } from '$lib/formats'
+  import { fmtDateTime, fmtStudyProgramWithoutPO } from '$lib/formats'
 
   let { data }: PageProps = $props()
   const management = $derived(await getStudyProgramManagement())
@@ -89,7 +69,7 @@
             header: 'Einleitung hochgeladen am',
             cell: ({ row }) => {
               const badgeContent = row.original.moduleCatalogIntroLastModified
-                ? dateTimeFormatter.format(row.original.moduleCatalogIntroLastModified)
+                ? fmtDateTime(row.original.moduleCatalogIntroLastModified)
                 : undefined
               return renderComponent(StudyProgramTableStatus, {
                 badgeContent,

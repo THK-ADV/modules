@@ -6,6 +6,7 @@
   import * as Popover from '$lib/components/ui/popover'
   import { Separator } from '$lib/components/ui/separator'
   import { cn } from '$lib/utils.js'
+  import { fmtStudyProgramBadge } from '$lib/formats'
   import { Check, CirclePlus } from '@lucide/svelte'
 
   let {
@@ -44,13 +45,7 @@
     const opt = options.find((x) => x.id === id)
     if (!opt) return ''
 
-    const sp = opt.studyProgram
-    if (sp.specialization) {
-      const spec =
-        sp.specialization.id.split('_').at(-1)?.toUpperCase() ?? sp.specialization.deLabel
-      return `${sp.abbreviation}-${spec} · PO${sp.po.version}`
-    }
-    return `${sp.abbreviation} · PO${sp.po.version}`
+    return fmtStudyProgramBadge(opt.studyProgram)
   }
 
   const hasActiveFilters = $derived(filterValues.length > 0)

@@ -1,24 +1,8 @@
-<script lang="ts" module>
-  import { DateFormatter } from '@internationalized/date'
-
-  function fmtSemester(semester: Semester) {
-    return `${semester.deLabel} ${semester.year}`
-  }
-
-  const df = new DateFormatter('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC'
-  })
-</script>
-
 <script lang="ts">
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import type { PublishedDocument } from '$lib/schemas/study-program-artifacts'
-  import type { Semester } from '$lib/schemas/semester'
-  import { fmtStudyProgramWithoutPO } from '$lib/formats'
+  import { fmtDate, fmtSemester, fmtStudyProgramWithoutPO } from '$lib/formats'
   import DataTableTitleButton from './modules-table-title-button.svelte'
   import { Button } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
@@ -65,7 +49,7 @@
     {
       accessorKey: 'date',
       header: 'Veröffentlicht am',
-      cell: ({ row }) => df.format(new Date(row.original.date))
+      cell: ({ row }) => fmtDate(row.original.date)
     },
     {
       id: 'download',
@@ -120,7 +104,7 @@
         fmtSemester(semester),
         semester.abbrev,
         date,
-        df.format(new Date(date))
+        fmtDate(date)
       ]
         .join(' ')
         .toLocaleLowerCase('de')

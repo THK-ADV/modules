@@ -1,4 +1,5 @@
 import type { Semester } from '$lib/schemas/semester'
+import { fmtDateTime, fmtSemester } from '$lib/formats'
 
 export const PLAN_DRAFT_KINDS = ['schedule', 'exam'] as const
 
@@ -24,20 +25,15 @@ export interface PlanDraftView extends PlanDraft {
 }
 
 export function createPlanDraftViews(drafts: PlanDraft[], semesters: Semester[]): PlanDraftView[] {
-  const dateFormatter = new Intl.DateTimeFormat('de-DE', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  })
-
   return drafts.map((draft) => {
     const match = semesters.find((semester) => semester.id === draft.semester)
     let semesterLabel
     if (match) {
-      semesterLabel = `${match.deLabel} ${match.year}`
+      semesterLabel = fmtSemester(match)
     } else {
       semesterLabel = draft.semester
     }
-    const updatedAtLabel = dateFormatter.format(new Date(draft.updatedAt))
+    const updatedAtLabel = fmtDateTime(draft.updatedAt)
     return { ...draft, semesterLabel, updatedAtLabel }
   })
 }

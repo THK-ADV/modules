@@ -7,6 +7,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import type { ModuleCatalogModuleOption } from '$lib/schemas/module-catalog'
   import { cn } from '$lib/utils.js'
+  import { fmtCredits } from '$lib/formats'
   import { Info, Search } from '@lucide/svelte'
   import { defaultSemester, isGenericModule, type CatalogConfig } from './catalog-config.svelte'
 
@@ -165,7 +166,7 @@
               <div class="text-muted-foreground text-xs">{module.abbrev}</div>
             </Table.Cell>
             <Table.Cell class={cn('text-right tabular-nums', excluded && 'text-muted-foreground')}>
-              {module.ects.toLocaleString('de-DE')}
+              {fmtCredits(module.ects)}
             </Table.Cell>
             <Table.Cell class={cn(excluded && 'text-muted-foreground')}>
               <div class="flex flex-wrap gap-1">

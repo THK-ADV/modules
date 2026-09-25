@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  import { fmtPersonInitial } from '$lib/formats'
   import type { ColumnDef } from '@tanstack/table-core'
 
   const columns: ColumnDef<ModuleReview>[] = [
@@ -15,7 +16,7 @@
       header: 'Angefragt von',
       cell: ({ row }) => {
         const { firstname, lastname } = row.original.author
-        return firstname.length > 0 ? `${lastname}, ${firstname.charAt(0)}.` : lastname
+        return fmtPersonInitial({ firstname, lastname })
       },
       enableColumnFilter: false
     },

@@ -1,14 +1,9 @@
 <script lang="ts">
   import type { BookingMetadata } from '$lib/types/booking'
+  import { fmtDateTime } from '$lib/formats'
   import { History, UserRound } from '@lucide/svelte'
 
   let { createdBy, updatedAt }: BookingMetadata = $props()
-
-  const updatedAtFormatter = new Intl.DateTimeFormat('de-DE', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Europe/Berlin'
-  })
 </script>
 
 <div
@@ -22,6 +17,6 @@
   <span class="flex items-center gap-1.5">
     <History class="size-3" aria-hidden="true" />
     Zuletzt bearbeitet
-    <span class="text-foreground/75 font-medium">{updatedAtFormatter.format(updatedAt)}</span>
+    <span class="text-foreground/75 font-medium">{fmtDateTime(updatedAt)}</span>
   </span>
 </div>

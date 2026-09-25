@@ -2,18 +2,11 @@
   import { Badge } from '$lib/components/ui/badge'
   import { Tag } from '@lucide/svelte'
   import { renderMarkdown } from '$lib/markdown'
+  import { fmtDate } from '$lib/formats'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
   const releases = $derived(data.releases)
-
-  function formatReleaseDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
 </script>
 
 <div class="flex h-full max-w-5xl flex-1 flex-col space-y-8">
@@ -35,7 +28,7 @@
           >
             <!-- Date -->
             <div class="mb-2 shrink-0 text-sm font-semibold sm:mb-0 sm:pt-2">
-              {formatReleaseDate(release.published_at)}
+              {fmtDate(release.published_at)}
             </div>
 
             <!-- Release content -->

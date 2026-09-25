@@ -4,7 +4,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import type { ScheduleEntryUpdateScope, SeriesOccurrence } from '$lib/types/schedule'
-  import { DateFormatter } from '@internationalized/date'
+  import { fmtTime, fmtWeekdayDate } from '$lib/formats'
   import { CalendarDays, Clock } from '@lucide/svelte'
 
   interface Props {
@@ -20,24 +20,8 @@
   let pendingUpdateSeries = $state<SeriesOccurrence[] | null>(null)
   let updatingScope = $state<ScheduleEntryUpdateScope | null>(null)
 
-  const seriesDateFormatter = new DateFormatter('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-
-  const seriesTimeFormatter = new DateFormatter('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
-  function formatSeriesDate(date: Date): string {
-    return seriesDateFormatter.format(date)
-  }
-
   function formatSeriesTimeRange(start: Date, end: Date): string {
-    return `${seriesTimeFormatter.format(start)} - ${seriesTimeFormatter.format(end)}`
+    return `${fmtTime(start)} - ${fmtTime(end)}`
   }
 
   // Triggers the scope decision flow; opens the dialog when the entry belongs to a series.
@@ -141,7 +125,7 @@
                   <Table.Cell class="py-2">
                     <div class="flex min-w-0 items-center gap-2">
                       <CalendarDays class="text-muted-foreground size-4 shrink-0" />
-                      <span class="truncate font-medium">{formatSeriesDate(occurrence.start)}</span>
+                      <span class="truncate font-medium">{fmtWeekdayDate(occurrence.start)}</span>
                     </div>
                   </Table.Cell>
                   <Table.Cell class="py-2">

@@ -23,6 +23,7 @@
   } from '@lucide/svelte'
   import type { PageProps } from './$types'
   import type { Semester } from '$lib/schemas/semester'
+  import { fmtSemester } from '$lib/formats'
   import { resolve } from '$app/paths'
   import { goto, invalidateAll } from '$app/navigation'
   import {
@@ -116,7 +117,7 @@
   })
 
   function semesterLabel(semester: Semester): string {
-    return `${semester.deLabel} ${semester.year}`
+    return fmtSemester(semester)
   }
 </script>
 

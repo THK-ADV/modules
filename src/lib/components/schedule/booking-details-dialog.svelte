@@ -6,7 +6,7 @@
   import { buttonVariants } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import { BOOKING_KIND_LABELS, type CampusBooking } from '$lib/types/booking'
-  import { DateFormatter } from '@internationalized/date'
+  import { fmtWeekdayDate, fmtTime } from '$lib/formats'
   import { CalendarDays, Clock, MapPin, StickyNote, Users } from '@lucide/svelte'
 
   interface Props {
@@ -15,18 +15,6 @@
   }
 
   let { onClose, booking }: Props = $props()
-
-  const dateFormatter = new DateFormatter('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })
-
-  const timeFormatter = new DateFormatter('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 
   const start = $derived(new Date(booking.start))
   const end = $derived(new Date(booking.end))
@@ -66,14 +54,12 @@
       <div class="bg-muted/50 flex items-center gap-4 rounded-lg px-4 py-2.5 text-sm">
         <div class="flex items-center gap-2">
           <CalendarDays class="text-muted-foreground size-4" />
-          <span class="font-medium">{dateFormatter.format(start)}</span>
+          <span class="font-medium">{fmtWeekdayDate(start)}</span>
         </div>
         <span class="text-muted-foreground/40">·</span>
         <div class="flex items-center gap-2">
           <Clock class="text-muted-foreground size-4" />
-          <span class="font-medium"
-            >{timeFormatter.format(start)} – {timeFormatter.format(end)}</span
-          >
+          <span class="font-medium">{fmtTime(start)} – {fmtTime(end)}</span>
         </div>
       </div>
 

@@ -12,7 +12,7 @@
   import { isTeachingBooking, type TeachingBooking } from '$lib/types/booking'
   import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
   import type { StudyProgram } from '$lib/types/study-program'
-  import { DateFormatter } from '@internationalized/date'
+  import { fmtWeekdayDate, fmtStudyProgramName, fmtTime } from '$lib/formats'
   import {
     CalendarDays,
     Clock,
@@ -36,24 +36,12 @@
   // Teaching bookings show their booking title; the module title moves to the description.
   const booking = $derived(isTeachingBooking(entry) ? entry : null)
 
-  const dateFormatter = new DateFormatter('de-DE', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  })
-
-  const timeFormatter = new DateFormatter('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
   const start = $derived(new Date(entry.start))
   const end = $derived(new Date(entry.end))
 
-  const startLabel = $derived(timeFormatter.format(start))
-  const endLabel = $derived(timeFormatter.format(end))
-  const dateLabel = $derived(dateFormatter.format(start))
+  const startLabel = $derived(fmtTime(start))
+  const endLabel = $derived(fmtTime(end))
+  const dateLabel = $derived(fmtWeekdayDate(start))
   const roomLabel = $derived(
     entry.rooms
       .map((room) => room.abbrev)
@@ -80,7 +68,7 @@
           return [po.po, po.po, po.mandatory]
         }
         const id = sp.specialization?.id ?? sp.po.id
-        const name = sp.specialization ? `${sp.deLabel} ${sp.specialization.deLabel}` : sp.deLabel
+        const name = fmtStudyProgramName(sp)
         const label = `${name} · ${sp.degree.deLabel} · PO${sp.po.version}`
         return [id, label, po.mandatory]
       })

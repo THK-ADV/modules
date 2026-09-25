@@ -280,6 +280,7 @@
     History
   } from '@lucide/svelte'
   import { renderMarkdown } from '$lib/markdown'
+  import { fmtDate } from '$lib/formats'
   import { resolve } from '$app/paths'
 
   const {
@@ -319,13 +320,7 @@
   let isWorkloadDetailsExpanded = $state(true)
   let isAssessmentPrerequisiteExpanded = $state(false)
   let isAttendanceRequirementExpanded = $state(false)
-  const lastModified = $derived(
-    new Date(module.lastModified).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  )
+  const lastModified = $derived(fmtDate(module.lastModified))
   let isGenericModuleExpanded = $state(false)
   let selectedLanguage = $derived.by(() => {
     const lang = module.language.id

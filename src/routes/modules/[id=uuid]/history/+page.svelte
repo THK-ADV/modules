@@ -9,6 +9,7 @@
     downloadModuleVersion
   } from '$lib/components/history'
   import { isParsed, type ModuleVersion } from '$lib/types/module-version'
+  import { fmtDateLong } from '$lib/formats'
   import * as Card from '$lib/components/ui/card'
   import * as Empty from '$lib/components/ui/empty'
   import * as Tabs from '$lib/components/ui/tabs'
@@ -239,14 +240,6 @@
     conflictMessage = null
   }
 
-  function formatShortDate(iso: string) {
-    return new Date(iso).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    })
-  }
-
   function setContentView(next: string | undefined) {
     if (next !== 'diff' && next !== 'rendered') return
     if (next === 'diff' && !canDiff) return
@@ -345,7 +338,7 @@
                       {:else}
                         <History class="size-4" aria-hidden="true" />
                         <span class="hidden sm:inline">Version vom</span>
-                        <span>{formatShortDate(currentFileVersion.committedAt)}</span>
+                        <span>{fmtDateLong(currentFileVersion.committedAt)}</span>
                       {/if}
                     </span>
                   {/if}

@@ -15,7 +15,7 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import { getCoreData } from '$lib/core-data/core-data.remote'
   import { getErrorMessage } from '$lib/errors'
-  import { fmtStudyProgram } from '$lib/formats'
+  import { fmtPersonName, fmtStudyProgram } from '$lib/formats'
   import type { Permission } from '$lib/schemas/permission'
   import { getFullPOId } from '$lib/types/study-program'
   import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SquarePen, Trash2 } from '@lucide/svelte'
@@ -41,14 +41,13 @@
     identities
       .flatMap((identity) =>
         'kind' in identity && identity.kind === 'person' && identity.isActive
-          ? [{ id: identity.id, deLabel: `${identity.lastname}, ${identity.firstname}` }]
+          ? [{ id: identity.id, deLabel: fmtPersonName(identity) }]
           : []
       )
       .sort((a, b) => a.deLabel.localeCompare(b.deLabel, 'de'))
   )
 
-  const personName = (permission: Permission) =>
-    `${permission.person.lastname}, ${permission.person.firstname}`
+  const personName = (permission: Permission) => fmtPersonName(permission.person)
 
   const columns: ColumnDef<Permission>[] = $derived([
     { id: 'person', header: 'Person', accessorFn: personName },

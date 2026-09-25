@@ -6,6 +6,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import { getErrorMessage } from '$lib/errors'
+  import { fmtPersonName } from '$lib/formats'
   import { permissionFormSchema, permissionTypes, type Permission } from '$lib/schemas/permission'
   import { untrack } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
@@ -50,10 +51,7 @@
 
   const personOptions = $derived(
     item && !people.some((person) => person.id === item.person.id)
-      ? [
-          { id: item.person.id, deLabel: `${item.person.lastname}, ${item.person.firstname}` },
-          ...people
-        ]
+      ? [{ id: item.person.id, deLabel: fmtPersonName(item.person) }, ...people]
       : people
   )
 

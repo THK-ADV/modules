@@ -1,4 +1,5 @@
 import { PLAN_ROUTE_ID } from '$lib/routes'
+import { fmtSemester } from '$lib/formats'
 import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
@@ -40,6 +41,6 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
     selectedCalendarDate,
     planDraft: draft.planDraft,
     semester: draft.semester,
-    breadcrumbLabels: { [PLAN_ROUTE_ID]: `${draft.semester.deLabel} ${draft.semester.year}` }
+    breadcrumbLabels: { [PLAN_ROUTE_ID]: fmtSemester(draft.semester) }
   }
 }

@@ -6,6 +6,7 @@
   import { Button } from '$lib/components/ui/button'
   import { ArrowLeftToLine, ArrowRightToLine, FileText } from '@lucide/svelte'
   import { cn } from '$lib/utils'
+  import { fmtDateLong, fmtSemester } from '$lib/formats'
   import { IsMobile } from '$lib/hooks/is-mobile.svelte'
 
   type Side = 'left' | 'right'
@@ -55,22 +56,6 @@
 
   function semesterEndUtc(s: Semester): number {
     return Date.parse(`${s.end}T23:59:59.999Z`)
-  }
-
-  function formatSemesterLabel(semester: Semester) {
-    return `${semester.deLabel} ${semester.year}`
-  }
-
-  function formatSemesterLabelShort(semester: Semester) {
-    return semester.abbrev
-  }
-
-  function formatLongDate(iso: string) {
-    return new Date(iso).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    })
   }
 
   function formatMonthRange(s: Semester) {
@@ -179,10 +164,10 @@
         type,
         selectable: isParsed(v),
         typeLabel,
-        primaryLabel: isParsedEvent ? formatLongDate(v.committedAt) : typeLabel,
+        primaryLabel: isParsedEvent ? fmtDateLong(v.committedAt) : typeLabel,
         secondaryLabel: isParsedEvent
-          ? `${formatSemesterLabel(v.semester)}`
-          : `${formatLongDate(v.committedAt)}`
+          ? `${fmtSemester(v.semester)}`
+          : `${fmtDateLong(v.committedAt)}`
       })
     }
     return result
@@ -206,14 +191,6 @@
     return (unitPosition / Math.max(semesters.length, 1)) * 100
   })
 
-  function formatShortDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    })
-  }
-
   function dotColorClass(type: EventVisual['type']) {
     if (type === 'parsed') return 'bg-emerald-500'
     if (type === 'deleted') return 'bg-zinc-500'
@@ -231,8 +208,8 @@
   }
 
   function ariaLabel(e: EventVisual) {
-    const date = formatShortDate(e.version.committedAt)
-    const semLabel = formatSemesterLabel(e.version.semester)
+    const date = fmtDateLong(e.version.committedAt)
+    const semLabel = fmtSemester(e.version.semester)
     return `${e.typeLabel}, ${date}, ${semLabel}`
   }
 
@@ -272,7 +249,7 @@
           <span
             class="text-muted-foreground line-clamp-1 text-center text-xs leading-tight font-medium tracking-wide uppercase sm:tracking-[0.12em]"
           >
-            {isMobile.current ? formatSemesterLabelShort(sem) : formatSemesterLabel(sem)}
+            {isMobile.current ? sem.abbrev : fmtSemester(sem)}
           </span>
           <span
             class="text-muted-foreground/70 line-clamp-1 text-center text-[11px] leading-tight tabular-nums"

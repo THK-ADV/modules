@@ -1,10 +1,9 @@
+import { TIME_ZONE } from '$lib/formats'
 import { COURSE_TYPES, SEMESTER_PLAN_TYPES } from '$lib/types/schedule'
 import { z } from 'zod/v4'
 
-export const SCHEDULE_TIME_ZONE = 'Europe/Berlin'
-
 const scheduleDateFormatter = new Intl.DateTimeFormat('de-DE', {
-  timeZone: SCHEDULE_TIME_ZONE,
+  timeZone: TIME_ZONE,
   year: 'numeric',
   month: '2-digit',
   day: '2-digit'

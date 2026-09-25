@@ -1,11 +1,6 @@
-<script lang="ts" module>
-  import { creditsFormatter } from '$lib/formats'
-
-  const fmtCredits = creditsFormatter()
-</script>
-
 <script lang="ts">
   import { resolve } from '$app/paths'
+  import { fmtCredits } from '$lib/formats'
   import { Badge } from '$lib/components/ui/badge/index.js'
 
   import type { ModuleDraft } from '$lib/types/module-draft'
@@ -22,7 +17,7 @@
     if (moduleDraft.moduleDraft) {
       title = moduleDraft.moduleDraft.title
     }
-    return `${title} - ${fmtCredits.format(moduleDraft.ects)} ECTS`
+    return `${title} - ${fmtCredits(moduleDraft.ects)} ECTS`
   })
 
   function openPreview(event: MouseEvent) {

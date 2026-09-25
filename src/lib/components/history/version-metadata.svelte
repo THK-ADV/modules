@@ -1,17 +1,10 @@
 <script lang="ts">
   import { isParsed, type ModuleVersion } from '$lib/types/module-version'
+  import { fmtDateLong, fmtSemester } from '$lib/formats'
 
   type Props = { version: ModuleVersion }
 
   let { version }: Props = $props()
-
-  function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    })
-  }
 
   const title = $derived(
     isParsed(version)
@@ -21,7 +14,7 @@
         : 'Parsing fehlgeschlagen'
   )
 
-  const semesterLabel = $derived(`${version.semester.deLabel} ${version.semester.year}`)
+  const semesterLabel = $derived(fmtSemester(version.semester))
 </script>
 
 <div class="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -29,7 +22,7 @@
     {title}
   </h3>
   <p class="text-muted-foreground m-0 flex flex-wrap items-baseline gap-x-2 text-xs tabular-nums">
-    <span>{formatDate(version.committedAt)}</span>
+    <span>{fmtDateLong(version.committedAt)}</span>
     <span aria-hidden="true">·</span>
     <span>{semesterLabel}</span>
     <span aria-hidden="true">·</span>

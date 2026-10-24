@@ -51,6 +51,7 @@ export const routeLabels = {
   '/core-data': 'Stammdaten',
   [CORE_DATA_ROUTE_ID]: 'Stammdaten',
   '/permissions': 'Berechtigungen',
+  '/git': 'Git',
   '/settings': 'Einstellungen',
   '/privacy': 'Datenschutz'
 } as const satisfies Partial<Record<RouteId, string>>

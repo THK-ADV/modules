@@ -10,6 +10,7 @@
     Database,
     FileText,
     GraduationCap,
+    GitBranch,
     House,
     LifeBuoy,
     Megaphone,
@@ -267,6 +268,16 @@
             <a href={resolve('/permissions')} {...props}>
               <Shield />
               <span>{routeLabels['/permissions']}</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton isActive={isActive('/git')}>
+          {#snippet child({ props })}
+            <a href={resolve('/git')} {...props}>
+              <GitBranch />
+              <span>{routeLabels['/git']}</span>
             </a>
           {/snippet}
         </Sidebar.MenuButton>

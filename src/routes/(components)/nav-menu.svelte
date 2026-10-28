@@ -11,6 +11,7 @@
     FileText,
     GraduationCap,
     GitBranch,
+    GitPullRequestArrow,
     House,
     LifeBuoy,
     Megaphone,
@@ -28,6 +29,11 @@
     { path: '/module-catalogs', icon: Book },
     { path: '/exam-lists', icon: FileText },
     { path: '/schedule', icon: Calendar1 }
+  ] as const
+
+  const gitRoutes = [
+    { path: '/git/branches', icon: GitBranch },
+    { path: '/git/publication', icon: GitPullRequestArrow }
   ] as const
 
   const secondaryRoutes = [
@@ -272,16 +278,26 @@
           {/snippet}
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive('/git')}>
-          {#snippet child({ props })}
-            <a href={resolve('/git')} {...props}>
-              <GitBranch />
-              <span>{routeLabels['/git']}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
+    </Sidebar.Menu>
+  </Sidebar.Group>
+
+  <!-- git section -->
+  <Sidebar.Separator />
+  <Sidebar.Group>
+    <Sidebar.GroupLabel>Git</Sidebar.GroupLabel>
+    <Sidebar.Menu>
+      {#each gitRoutes as route (route.path)}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton isActive={isActive(route.path)}>
+            {#snippet child({ props })}
+              <a href={resolve(route.path)} {...props}>
+                <route.icon />
+                <span>{routeLabels[route.path]}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      {/each}
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}

@@ -10,7 +10,7 @@
   <div class="space-y-2">
     <div class="flex items-center gap-3">
       <GitBranch class="text-muted-foreground size-6" aria-hidden="true" />
-      <h1 class="text-3xl font-bold tracking-tight">Git</h1>
+      <h1 class="text-3xl font-bold tracking-tight">Branches abgleichen</h1>
     </div>
     <p class="text-muted-foreground text-sm">
       Modul-Branches und Entwürfe abgleichen. Verwaiste Branches und unvollständige Entwürfe

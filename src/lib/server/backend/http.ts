@@ -10,11 +10,13 @@ async function readBackendErrorMessage(resp: Response): Promise<string | null> {
   return typeof body?.message === 'string' ? body.message : null
 }
 
+/** `accepted` lists error statuses whose response the caller handles itself. */
 export async function fetchBackend(
   fetch: ServerFetch,
   input: FetchInput,
   fallbackMessage: string,
-  init?: FetchInit
+  init?: FetchInit,
+  accepted: number[] = []
 ): Promise<Response> {
   let resp: Response
 
@@ -24,7 +26,7 @@ export async function fetchBackend(
     throw error(503, { message: 'Backend ist nicht erreichbar' })
   }
 
-  if (!resp.ok) {
+  if (!resp.ok && !accepted.includes(resp.status)) {
     const message = (await readBackendErrorMessage(resp)) || fallbackMessage
     throw error(resp.status, { message })
   }
@@ -37,9 +39,10 @@ export async function fetchBackendJson<Schema extends ZodType>(
   input: FetchInput,
   schema: Schema,
   fallbackMessage: string,
-  init?: FetchInit
+  init?: FetchInit,
+  accepted: number[] = []
 ): Promise<output<Schema>> {
-  const resp = await fetchBackend(fetch, input, fallbackMessage, init)
+  const resp = await fetchBackend(fetch, input, fallbackMessage, init, accepted)
 
   let data: unknown
 

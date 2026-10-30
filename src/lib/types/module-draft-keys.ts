@@ -8,7 +8,7 @@ export interface ModuleDraftKeys {
 // Utility type to get all possible paths from a nested object type
 type Paths<T> = T extends object
   ? {
-      [K in keyof T]: K extends string
+      [K in keyof T]-?: K extends string
         ? T[K] extends object
           ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
             T[K] extends any[]

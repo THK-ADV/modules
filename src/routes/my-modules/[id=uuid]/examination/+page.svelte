@@ -2,11 +2,16 @@
   import AssessmentMethodsForm from '$lib/components/assessment-methods-form.svelte'
   import ComboboxField from '$lib/components/combobox.svelte'
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
+  import { Button } from '$lib/components/ui/button/index.js'
+  import Spinner from '$lib/components/ui/spinner/spinner.svelte'
+  import { getErrorMessage } from '$lib/errors'
   import { moduleUpdateState } from '$lib/stores/store.svelte.js'
+  import ExamNames from './exam-names.svelte'
+  import { getModuleExams } from './module-exams.remote'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
-  let { data }: PageProps = $props()
+  let { data, params }: PageProps = $props()
 
   const modulePermittedAssessmentMethodOptions = moduleUpdateState.assessmentMethods
     .filter(({ isRPO }) => isRPO)
@@ -136,4 +141,46 @@
       />
     </div>
   </div>
+
+  {#if data.mode === 'edit'}
+    <div class="space-y-5">
+      <div class="space-y-2 border-b pb-4">
+        <h4 class="text-foreground text-base font-medium">Modulprüfungen</h4>
+        <p class="text-muted-foreground text-sm">
+          Namen der Modulprüfungen, die in der Prüfungsplanung zur Auswahl stehen.
+        </p>
+      </div>
+
+      <svelte:boundary>
+        <ExamNames id={params.id} />
+        {#snippet pending()}
+          <div class="text-muted-foreground flex items-center gap-2 text-sm" role="status">
+            <Spinner class="motion-reduce:animate-none" aria-hidden="true" />
+            Prüfungsnamen werden geladen …
+          </div>
+        {/snippet}
+        {#snippet failed(error, reset)}
+          <div
+            class="border-destructive/30 bg-destructive/10 space-y-3 rounded-md border p-3"
+            role="alert"
+          >
+            <p class="text-destructive text-sm">
+              Die Prüfungsnamen konnten nicht geladen werden: {getErrorMessage(error)}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onclick={() => {
+                void getModuleExams(params.id)
+                  .refresh()
+                  .catch(() => {})
+                reset()
+              }}>Erneut versuchen</Button
+            >
+          </div>
+        {/snippet}
+      </svelte:boundary>
+    </div>
+  {/if}
 </div>

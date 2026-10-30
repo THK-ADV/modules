@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser, dev } from '$app/environment'
+  import { deserialize } from '$app/forms'
   import { beforeNavigate, goto } from '$app/navigation'
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
@@ -12,8 +13,9 @@
   import Separator from '$lib/components/ui/separator/separator.svelte'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
+  import { getErrorMessage } from '$lib/errors'
   import { routeLabels } from '$lib/routes'
-  import { moduleFormSchema } from '$lib/schemas/module'
+  import { moduleDraftSchema, moduleFormSchema, type ModuleForm } from '$lib/schemas/module'
   import {
     getSectionStatus,
     type FormFieldPath,
@@ -21,10 +23,14 @@
     type SectionId
   } from '$lib/types/module-draft-keys'
   import { cn } from '$lib/utils'
-  import SuperDebug, { superForm } from 'sveltekit-superforms'
+  import type { ActionResult } from '@sveltejs/kit'
+  import SuperDebug, { superForm, type ValidationErrors } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import type { LayoutProps } from './$types'
-  import { setModuleFormContext } from './context'
+  import { setModuleExamsContext, setModuleFormContext } from './context'
+  import { updateModuleExams } from './examination/module-exams.remote'
+  import { updateModulePermittedAssessmentMethods } from './examination/permitted-assessment-methods.remote'
+  import { updateModulePermissions } from './management/module-permissions.remote'
 
   let { children, data, params }: LayoutProps = $props()
 
@@ -129,12 +135,139 @@
     }
   ])
 
+  // last acknowledged state of the draft, exams, permitted assessment methods and update permissions.
+  // only changed domains are saved, so that a retry after a partial failure saves the remaining ones
+  // svelte-ignore state_referenced_locally
+  let saved = $state.raw(structuredClone(data.form.data))
+  // id of the module created by this editor, so that a retry updates it instead of creating another one
+  let createdId = $state<string>()
+
+  const draftKeys = Object.keys(moduleDraftSchema.shape) as (keyof ModuleForm)[]
+  const draftOf = (form: ModuleForm) => Object.fromEntries(draftKeys.map((key) => [key, form[key]]))
+
+  function changes(form: ModuleForm) {
+    return {
+      draft: hasActualChanges(draftOf(form), draftOf(saved)),
+      exams: hasActualChanges(form.exams, saved.exams),
+      permittedAssessmentMethods: hasActualChanges(
+        form.permittedAssessmentMethods,
+        saved.permittedAssessmentMethods
+      ),
+      updatePermissions: hasActualChanges(form.updatePermissions, saved.updatePermissions)
+    }
+  }
+
+  setModuleExamsContext((exams) => {
+    if (saved.exams) return
+    saved = { ...saved, exams: $state.snapshot(exams) }
+    form.form.update(($form) => ({ ...$form, exams: $state.snapshot(exams) }), { taint: false })
+  })
+
+  /**
+   * Saves changed domains of the validated `snapshot` in this order:
+   * 1. Draft first to obtain an ID on creation and stop further writes if it fails.
+   * 2. Exams and permitted assessment methods in parallel, since they are independent.
+   * 3. Permissions only after all preceding writes succeed, since they may revoke access.
+   */
+  async function save(snapshot: ModuleForm, body: FormData): Promise<ActionResult> {
+    const todo = changes(snapshot)
+    const errors: ValidationErrors<ModuleForm> = {}
+    let message: string | undefined
+
+    if (todo.draft || (data.mode === 'create' && !createdId)) {
+      const result: ActionResult = await fetch(
+        createdId ? `/my-modules/${createdId}?mode=edit` : formAction,
+        {
+          method: 'POST',
+          body,
+          headers: { accept: 'application/json', 'x-sveltekit-action': 'true' }
+        }
+      )
+        .then(async (resp) => deserialize(await resp.text()))
+        .catch((error) => ({ type: 'error', error }))
+      if (result.type === 'redirect') return result
+      if (result.type === 'success') {
+        saved = { ...saved, ...draftOf(snapshot) }
+        createdId ??= result.data?.id
+      } else {
+        Object.assign(errors, result.type === 'failure' ? result.data?.form?.errors : undefined)
+        message =
+          (result.type === 'failure' ? result.data?.message : result.error?.message) ??
+          'Fehler beim Aktualisieren des Moduls'
+      }
+    }
+
+    const moduleId = createdId ?? id
+    const { exams } = snapshot
+    async function write<K extends 'exams' | 'permittedAssessmentMethods' | 'updatePermissions'>(
+      key: K,
+      run: () => Promise<unknown>,
+      error: ValidationErrors<ModuleForm>[K]
+    ) {
+      try {
+        await run()
+        saved = { ...saved, [key]: snapshot[key] }
+      } catch (e) {
+        errors[key] = error
+        message ??= getErrorMessage(e)
+      }
+    }
+    if (!message) {
+      await Promise.all([
+        exams &&
+          todo.exams &&
+          write('exams', () => updateModuleExams({ id: moduleId, ...exams }), {
+            examNames: { _errors: ['Die Prüfungsnamen konnten nicht gespeichert werden.'] }
+          }),
+        todo.permittedAssessmentMethods &&
+          write(
+            'permittedAssessmentMethods',
+            () =>
+              updateModulePermittedAssessmentMethods({
+                id: moduleId,
+                permittedAssessmentMethods: snapshot.permittedAssessmentMethods
+              }),
+            { _errors: ['Die zulässigen Prüfungsformen konnten nicht gespeichert werden.'] }
+          )
+      ])
+    }
+    if (!message && todo.updatePermissions) {
+      await write(
+        'updatePermissions',
+        () =>
+          updateModulePermissions({ id: moduleId, updatePermissions: snapshot.updatePermissions }),
+        { _errors: ['Die Bearbeitungsrechte konnten nicht gespeichert werden.'] }
+      )
+    }
+
+    // a copy, since the form data must not share objects with the saved state
+    const form = {
+      id: data.form.id,
+      valid: !message,
+      posted: true,
+      errors,
+      data: structuredClone({ ...snapshot, exams: snapshot.exams ?? saved.exams })
+    }
+    return message
+      ? { type: 'failure', status: 400, data: { form, message } }
+      : { type: 'success', status: 200, data: { form } }
+  }
+
   // svelte-ignore state_referenced_locally
   const form = superForm(data.form, {
     validators: zod4Client(moduleFormSchema),
     dataType: 'json',
+    // keep the saved data and do not reload layout data before leaving the editor
+    resetForm: false,
+    invalidateAll: false,
     onError: ({ result }) => {
       console.error('Form submission failed:', result)
+    },
+    onSubmit: ({ jsonData, customRequest }) => {
+      // edits during saving must not change what is saved
+      const snapshot = $state.snapshot($formData)
+      jsonData(draftOf(snapshot))
+      customRequest(({ formData }) => save(moduleFormSchema.parse(snapshot), formData))
     },
     onUpdated: async ({ form }) => {
       // redirect, if form submission was successful and no server error occurred
@@ -152,7 +285,7 @@
 
   setModuleFormContext(form)
 
-  const { form: formData, enhance, tainted, allErrors, submitting } = form
+  const { form: formData, enhance, allErrors, submitting } = form
 
   // handle error hints
 
@@ -179,6 +312,7 @@
     examPhases: 'examination',
     assessmentMethods: 'examination',
     permittedAssessmentMethods: 'examination',
+    exams: 'examination',
 
     // Workload section
     workload: 'workload',
@@ -249,17 +383,11 @@
     const sectionsWithErrors = new Set<string>()
 
     for (const error of errors) {
-      const sectionId = fieldToSectionMap[error.path as FormFieldPath]
+      const sectionId =
+        fieldToSectionMap[error.path as FormFieldPath] ??
+        fieldToSectionMap[error.path.split(/[.[]/)[0] as FormFieldPath]
       if (sectionId) {
         sectionsWithErrors.add(sectionId)
-        continue
-      }
-      if (error.path.includes('.')) {
-        const rootField = error.path.split('.')[0]
-        const sectionId = fieldToSectionMap[rootField as FormFieldPath]
-        if (sectionId) {
-          sectionsWithErrors.add(sectionId)
-        }
       }
     }
 
@@ -279,10 +407,6 @@
       goto(selectedHref)
     }
   }
-
-  // store original form data for comparison
-  // svelte-ignore state_referenced_locally
-  const originalFormData = structuredClone(data.form.data)
 
   // deep comparison function to check for actual changes
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -313,8 +437,7 @@
   }
 
   // prevent leaving the page with unsaved changes
-  const hasUnsavedChanges = $derived($tainted)
-  const hasChangesToSubmit = $derived(hasActualChanges($formData, originalFormData))
+  const hasChangesToSubmit = $derived(Object.values(changes($formData)).some(Boolean))
 
   beforeNavigate(({ to, cancel }) => {
     // prevent navigation during submission
@@ -326,7 +449,7 @@
       return
     }
 
-    if (hasUnsavedChanges && to) {
+    if (hasChangesToSubmit && to) {
       const currentModuleBase = `/my-modules/${id}`
       const isWithinModule = to.url.pathname.startsWith(currentModuleBase)
 
@@ -475,6 +598,7 @@
     method="POST"
     action={formAction}
     use:enhance
+    inert={$submitting}
     class={$submitting ? 'pointer-events-none opacity-75' : ''}
   >
     <!-- mobile section selector (shown on small screens) -->

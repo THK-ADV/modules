@@ -111,6 +111,11 @@
     @apply border-border;
   }
 
+  /* Keeps the end state of exit animations until bits-ui unmounts the element, which would otherwise flash for one frame. */
+  [data-state='closed'] {
+    --tw-animation-fill-mode: forwards;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

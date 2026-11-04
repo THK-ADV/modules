@@ -5,10 +5,9 @@ export const moduleExamsSchema = z.object({
   title: z.string(),
   examNames: z.array(z.string()).nullable()
 })
-export type ModuleExams = z.infer<typeof moduleExamsSchema>
 
 /** Validates trimmed names without changing the input while editing. */
-export const examNamesSchema = z
+const examNamesSchema = z
   .array(
     z
       .string()

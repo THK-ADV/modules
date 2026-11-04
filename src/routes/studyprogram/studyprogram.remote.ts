@@ -1,8 +1,6 @@
 import { command, form, getRequestEvent, query } from '$app/server'
 import { error } from '@sveltejs/kit'
 import { z } from 'zod/v4'
-import { examListReleaseRequestSchema } from '$lib/schemas/exam-list'
-import { semesterSchema } from '$lib/schemas/semester'
 import {
   artifactPreviewSchema,
   artifactTargetSchema,
@@ -42,14 +40,8 @@ export const getPublishedDocuments = query(
 
 export const getStudyProgramManagement = query(async () => {
   const { fetch } = getRequestEvent()
-  const [privileges, semesters, examLists, moduleCatalogs, introductions] = await Promise.all([
+  const [privileges, examLists, moduleCatalogs, introductions] = await Promise.all([
     getStudyProgramPrivileges(),
-    fetchBackendJson(
-      fetch,
-      '/api/examLists/semesters',
-      z.array(semesterSchema),
-      'Semester konnten nicht geladen werden'
-    ),
     getPublishedDocuments('examLists'),
     getPublishedDocuments('moduleCatalogs'),
     fetchBackendJson(
@@ -76,7 +68,7 @@ export const getStudyProgramManagement = query(async () => {
       a.degree.id.localeCompare(b.degree.id) ||
       a.po.version - b.po.version
   )
-  return { studyPrograms, semesters }
+  return { studyPrograms }
 })
 
 export const getStudyProgram = query(artifactTargetSchema, async (po) => {
@@ -97,25 +89,24 @@ export const getStudyProgram = query(artifactTargetSchema, async (po) => {
 export const previewArtifact = command(artifactPreviewSchema, async (input) => {
   const { fetch } = getRequestEvent()
   const po = encodeURIComponent(input.po)
-  const isCatalog = input.document === 'moduleCatalog'
   const isCSV = input.document === 'examLoad'
   const contentType = isCSV ? 'text/csv' : 'application/pdf'
-  const path = isCatalog
-    ? `/moduleCatalogs/preview/${po}`
-    : isCSV
-      ? `/examLoad/${po}?preview=true`
+  const path = isCSV
+    ? `/examLoad/${po}?preview=true`
+    : input.document === 'moduleCatalog'
+      ? `/moduleCatalogs/preview/${po}`
       : `/examLists/preview/${po}`
   const response = await fetchBackend(
     fetch,
     `/auth-api${path}`,
     'Vorschau konnte nicht erzeugt werden',
     {
-      method: isCatalog ? 'POST' : 'GET',
+      method: isCSV ? 'GET' : 'POST',
       headers: {
         Accept: contentType,
-        ...(isCatalog ? { 'Content-Type': 'application/json' } : {})
+        ...(isCSV ? {} : { 'Content-Type': 'application/json' })
       },
-      body: isCatalog ? JSON.stringify(input.config) : undefined
+      body: isCSV ? undefined : JSON.stringify(input.config)
     }
   )
   const mime = response.headers.get('Content-Type')?.split(';')[0].trim()
@@ -143,24 +134,6 @@ export const publishModuleCatalog = command(moduleCatalogRequestSchema, async ({
   )
   await getStudyProgramManagement().refresh()
 })
-
-export const publishExamList = command(
-  examListReleaseRequestSchema,
-  async ({ po, semester, date }) => {
-    const { fetch } = getRequestEvent()
-    await fetchBackend(
-      fetch,
-      `/auth-api/examLists/${encodeURIComponent(po)}`,
-      'Freigabe der Prüfungsliste fehlgeschlagen',
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ semester, date })
-      }
-    )
-    await getStudyProgramManagement().refresh()
-  }
-)
 
 export const uploadModuleCatalogIntroduction = form(
   moduleCatalogUploadSchema,

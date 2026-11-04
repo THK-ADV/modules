@@ -39,6 +39,7 @@ export const routeLabels = {
   '/module-approvals/[id=uuid]': 'Modul',
   '/studyprogram': 'Studiengang',
   [STUDYPROGRAM_ROUTE_ID]: 'Modulhandbuch konfigurieren',
+  '/studyprogram/[poId]/exam-list': 'Prüfungsliste konfigurieren',
   '/schedule': 'Semesterkalender',
   '/planning/schedule': 'Stundenplanung',
   '/planning/exam': 'Prüfungsplanung',

@@ -1,8 +1,6 @@
 <script lang="ts">
-  import type { PageProps } from './$types'
   import PublishedDocumentTable from '$lib/components/published-document-table.svelte'
-
-  let { data }: PageProps = $props()
+  import { getPublishedDocuments } from '../studyprogram/studyprogram.remote'
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
@@ -12,5 +10,8 @@
       Veröffentlichte Prüfungslisten aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>
   </div>
-  <PublishedDocumentTable data={data.examLists} fileBasePath="/api/examLists/file/" />
+  <PublishedDocumentTable
+    data={await getPublishedDocuments('examLists')}
+    fileBasePath="/api/examLists/file/"
+  />
 </div>

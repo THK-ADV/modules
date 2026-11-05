@@ -1,4 +1,4 @@
-import type { ModuleShort } from '$lib/schemas/module-details'
+import type { ModuleDraftResponse } from '$lib/schemas/module-draft'
 
 export const MODULE_DRAFT_STATES = [
   'published',
@@ -12,33 +12,11 @@ export const MODULE_DRAFT_STATES = [
 
 export type ModuleDraftState = (typeof MODULE_DRAFT_STATES)[number]
 
-export interface ModuleDraft {
-  module: ModuleShort
-  isNewModule: boolean // true, if module is not merged into main yet (Neu Badge)
-  isModuleManager: boolean
+export type ModuleDraft = ModuleDraftResponse & {
   isDirectlyAssigned: boolean // true if inherited or granted permission (Zugewiesenes Modul => default)
   isPartOfAccreditation: boolean // true if this module is associated to a new PO (Akkreditierungs Badge)
   isDerivedFromRole: boolean // true if this module is only associated via a permission or role (Gesonderte Rolle Badge)
   canBeFastForwardApproved: boolean // true if the user has fast forward approval permission for this particular module
-  ects: number
-  mandatoryPOs: string[] | null
-  optionalPOs: string[] | null
-  moduleDraftState: ModuleDraftState
-  moduleDraft: {
-    id: string
-    title: string
-    abbreviation: string
-    // modifiedKeys and keysToBeReviewed are comma separated list of keys that were modified
-    modifiedKeys: string
-    keysToBeReviewed: string
-  } | null
-}
-
-export interface ModuleDrafts {
-  direct: ModuleDraft[] // modules directly assigned to the user
-  indirect?: ModuleDraft[] // modules assigned through permissions granted to the user (e.g. admin, PAV, …)
-  pos?: string[] // resolved POs if indirect is set
-  accreditationPOs?: string[] // POs which are currently in accreditation
 }
 
 export function canEdit(state: ModuleDraftState) {

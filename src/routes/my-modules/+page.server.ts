@@ -1,13 +1,7 @@
+import { moduleDraftsResponseSchema, type ModuleDraftResponse } from '$lib/schemas/module-draft'
 import type { ModuleDraft, ModuleDraftState } from '$lib/types/module-draft'
 import { error } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
-
-interface ParsedModuleDrafts {
-  direct: ModuleDraft[] // modules directly assigned to the user
-  indirect?: ModuleDraft[] // modules assigned through permissions granted to the user (e.g. admin, PAV, …)
-  pos?: string[] // resolved POs if indirect is set
-  accreditationPOs?: string[] // POs which are currently in accreditation
-}
 
 function moduleDraftStateOrd(state: ModuleDraftState): number {
   switch (state) {
@@ -54,7 +48,7 @@ function checkSpecialization(maybeFullPO: string, allowedPOs: string[]) {
 }
 
 function canBeFastForwardApproved(
-  module: ModuleDraft,
+  module: ModuleDraftResponse,
   fastForwardApprovalPOs: string[] | undefined
 ) {
   if (!fastForwardApprovalPOs) return false
@@ -90,45 +84,42 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
     throw error(res.status, { message })
   }
 
-  const parsed: ParsedModuleDrafts = await res.json()
+  const parsed = moduleDraftsResponseSchema.parse(await res.json())
+  const accreditationPOs = parsed.accreditationPOs
+  const isPartOfAccreditation = (m: ModuleDraftResponse) =>
+    !!accreditationPOs && !!m.mandatoryPOs?.some((po) => accreditationPOs.includes(po))
+  const canFastForward = (m: ModuleDraftResponse) =>
+    canBeFastForwardApproved(m, userInfo?.fastForwardApprovalPOs)
+
   const moduleDrafts: ModuleDraft[] = []
-  let i = 0
-  const directlyAssigned: Record<string, number> = {}
+  const directlyAssigned = new Map<string, ModuleDraft>()
 
   for (const m of parsed.direct) {
-    m.isDirectlyAssigned = true
-    m.isDerivedFromRole = false
-    m.isPartOfAccreditation = false
-    m.canBeFastForwardApproved = canBeFastForwardApproved(m, userInfo?.fastForwardApprovalPOs)
-    moduleDrafts.push(m)
-    directlyAssigned[m.module.id] = i
-    i++
+    const draft: ModuleDraft = {
+      ...m,
+      isDirectlyAssigned: true,
+      isDerivedFromRole: false,
+      isPartOfAccreditation: false,
+      canBeFastForwardApproved: canFastForward(m)
+    }
+    moduleDrafts.push(draft)
+    directlyAssigned.set(m.module.id, draft)
   }
 
-  if (parsed.indirect) {
-    for (const m of parsed.indirect) {
-      if (m.module.id in directlyAssigned) {
-        // update the module if it's directly assigned
-        const mod = moduleDrafts[directlyAssigned[m.module.id]]
-        mod.isDerivedFromRole = true
-
-        if (parsed.accreditationPOs != null && mod.mandatoryPOs != null) {
-          const accreditationPOs = parsed.accreditationPOs
-          mod.isPartOfAccreditation = mod.mandatoryPOs.some((po) => accreditationPOs.includes(po))
-        }
-      } else {
-        // insert the new module
-        m.isDirectlyAssigned = false
-        m.isDerivedFromRole = true
-        m.isPartOfAccreditation = false
-        m.canBeFastForwardApproved = canBeFastForwardApproved(m, userInfo?.fastForwardApprovalPOs)
-        if (parsed.accreditationPOs != null && m.mandatoryPOs != null) {
-          const accreditationPOs = parsed.accreditationPOs
-          m.isPartOfAccreditation = m.mandatoryPOs.some((po) => accreditationPOs.includes(po))
-        }
-
-        moduleDrafts.push(m)
-      }
+  for (const m of parsed.indirect ?? []) {
+    const draft = directlyAssigned.get(m.module.id)
+    if (draft) {
+      // update the module if it's directly assigned
+      draft.isDerivedFromRole = true
+      draft.isPartOfAccreditation = isPartOfAccreditation(draft)
+    } else {
+      moduleDrafts.push({
+        ...m,
+        isDirectlyAssigned: false,
+        isDerivedFromRole: true,
+        isPartOfAccreditation: isPartOfAccreditation(m),
+        canBeFastForwardApproved: canFastForward(m)
+      })
     }
   }
 

@@ -2,6 +2,7 @@
   import { resolve } from '$app/paths'
   import { fmtCredits } from '$lib/formats'
   import { Badge } from '$lib/components/ui/badge/index.js'
+  import InactiveModuleIcon from '$lib/components/inactive-module-icon.svelte'
 
   import type { ModuleDraft } from '$lib/types/module-draft'
   import { Star } from '@lucide/svelte'
@@ -30,6 +31,9 @@
 </script>
 
 <div class="flex items-center gap-2">
+  {#if moduleDraft.status === 'inactive'}
+    <InactiveModuleIcon />
+  {/if}
   <a
     href={resolve('/my-modules/preview/[id=uuid]', { id: moduleDraft.module.id })}
     class="text-left hover:underline"

@@ -3,7 +3,7 @@ import { z } from 'zod/v4'
 
 export const moduleDraftStateResponseSchema = z.object({ id: z.enum(MODULE_DRAFT_STATES) })
 
-const moduleShortResponseSchema = z.object({
+export const moduleShortResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
   abbreviation: z.string()

@@ -1,5 +1,6 @@
 import { previewArtifact } from '../routes/studyprogram/studyprogram.remote'
 import { getErrorMessage } from './errors'
+import type { ExamListConfig } from './schemas/exam-list'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
 import type { StudyProgram } from './types/study-program'
 
@@ -498,9 +499,9 @@ export async function previewModuleCatalog(
   )
 }
 
-export async function previewExamList(studyProgram: StudyProgram) {
+export async function previewExamList(studyProgram: StudyProgram, config: ExamListConfig) {
   await performFileAction('Prüfungsliste', studyProgram, () =>
-    previewArtifact({ document: 'examList', po: studyProgram.po.id })
+    previewArtifact({ document: 'examList', po: studyProgram.po.id, config })
   )
 }
 

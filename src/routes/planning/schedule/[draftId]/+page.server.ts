@@ -1,6 +1,6 @@
 import { PLAN_ROUTE_ID } from '$lib/routes'
 import { fmtSemester } from '$lib/formats'
-import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
+import { bookingAccess } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -20,14 +20,12 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
   const [holidays, semesterEntries, draft] = await Promise.all([
     fetchHolidays(fetch),
     fetchSemesterEntries(fetch),
-    fetchPlanDraft(fetch, params.draftId, 'schedule')
+    fetchPlanDraft(fetch, params.draftId)
   ])
 
   if (draft.planDraft.publishedAt !== null) {
     throw error(409, { message: 'Veröffentlichte Planungen können nicht bearbeitet werden' })
   }
-
-  const bookingData = await loadCurrentSemesterBookings(fetch, user, true, draft.planDraft.semester)
 
   const { timeGrid, monthBg } = holidays
   const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
@@ -36,7 +34,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
     holidays: timeGrid,
     holidaysMonth: monthBg,
     semesterEntries,
-    ...bookingData,
+    ...bookingAccess(user),
     selectedCalendarView,
     selectedCalendarDate,
     planDraft: draft.planDraft,

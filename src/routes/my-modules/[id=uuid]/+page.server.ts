@@ -1,10 +1,10 @@
-import { moduleFormSchema, type ModuleForm } from '$lib/schemas/module.js'
+import { moduleDraftSchema, type ModuleDraft } from '$lib/schemas/module.js'
 import type { ModuleProtocol } from '$lib/types/module-protocol.js'
 import { fail } from '@sveltejs/kit'
 import { superValidate, type SuperValidated } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'
 import type { Actions } from './$types.js'
-import { fetchBackend, fetchBackendJson } from '$lib/server/backend/http.js'
+import { fetchBackendJson } from '$lib/server/backend/http.js'
 import { z } from 'zod/v4'
 
 type ModuleProtocolUpdate = Omit<ModuleProtocol, 'id'>
@@ -23,7 +23,7 @@ function errorMessage(err: any): string {
   }
 }
 
-function createModuleProtocol(form: SuperValidated<ModuleForm>): ModuleProtocolUpdate {
+function createModuleProtocol(form: SuperValidated<ModuleDraft>): ModuleProtocolUpdate {
   return {
     metadata: {
       title: form.data.title,
@@ -87,43 +87,9 @@ function createModule(fetch: typeof globalThis.fetch, protocol: ModuleProtocolUp
   )
 }
 
-function updateModulePermissions(
-  fetch: typeof globalThis.fetch,
-  permissions: string[],
-  moduleId: string
-) {
-  return fetchBackend(
-    fetch,
-    `/auth-api/moduleUpdatePermissions/${moduleId}`,
-    'Fehler beim Aktualisieren der Modul-Zugriffsrechte',
-    {
-      method: 'POST',
-      body: JSON.stringify(permissions),
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
-}
-
-function updateModulePermittedAssessmentMethods(
-  fetch: typeof globalThis.fetch,
-  assessmentMethods: string[],
-  moduleId: string
-) {
-  return fetchBackend(
-    fetch,
-    `/auth-api/modules/${moduleId}/assessmentMethods`,
-    'Fehler beim Aktualisieren der zulässigen Prüfungsformen',
-    {
-      method: 'PUT',
-      body: JSON.stringify(assessmentMethods),
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
-}
-
 export const actions: Actions = {
   default: async ({ request, params, fetch, url }) => {
-    const form = await superValidate(request, zod4(moduleFormSchema))
+    const form = await superValidate(request, zod4(moduleDraftSchema))
     const mode = url.searchParams.get('mode')
 
     if (!form.valid || !mode) {
@@ -134,52 +100,16 @@ export const actions: Actions = {
 
     if (mode === 'create') {
       const { id } = await createModule(fetch, protocol)
-      const [up, amr] = await Promise.all([
-        updateModulePermissions(fetch, form.data.updatePermissions, id),
-        updateModulePermittedAssessmentMethods(fetch, form.data.permittedAssessmentMethods, id)
-      ])
-      if (!up.ok || !amr.ok) {
-        const err1 = await up
-          .json()
-          .then((json) => errorMessage(json))
-          .catch(() => 'Fehler beim Aktualisieren der Modul-Zugriffsrechte')
-        const err2 = await amr
-          .json()
-          .then((json) => errorMessage(json))
-          .catch(() => 'Fehler beim Aktualisieren der zulässigen Prüfungsformen')
-        return fail(400, { form, message: err1 || err2 })
-      }
-      return { form }
-    } else {
-      const [mr, pr, amr] = await Promise.all([
-        updateModule(fetch, protocol, params.id),
-        updateModulePermissions(fetch, form.data.updatePermissions, params.id),
-        updateModulePermittedAssessmentMethods(
-          fetch,
-          form.data.permittedAssessmentMethods,
-          params.id
-        )
-      ])
-
-      if (!mr.ok || !pr.ok || !amr.ok) {
-        const err1 = await mr
-          .json()
-          .then((json) => errorMessage(json))
-          .catch(() => null)
-        const err2 = await pr
-          .json()
-          .then((json) => errorMessage(json))
-          .catch(() => null)
-        const err3 = await amr
-          .json()
-          .then((json) => errorMessage(json))
-          .catch(() => null)
-        return fail(400, {
-          form,
-          message: err1 || err2 || err3 || 'Fehler beim Aktualisieren des Moduls'
-        })
-      }
-      return { form }
+      return { form, id }
     }
+    const resp = await updateModule(fetch, protocol, params.id)
+    if (!resp.ok) {
+      const message = await resp
+        .json()
+        .then((json) => errorMessage(json))
+        .catch(() => 'Fehler beim Aktualisieren des Moduls')
+      return fail(400, { form, message })
+    }
+    return { form }
   }
 }

@@ -311,7 +311,7 @@
   <Dialog.Content showClose={!removing} class="sm:max-w-lg">
     {#if deleting}
       <Dialog.Header>
-        <Dialog.Title>Berechtigung löschen?</Dialog.Title>
+        <Dialog.Title>Berechtigung löschen</Dialog.Title>
         <Dialog.Description>
           Die Berechtigung „{deleting.permType.label}“ für {personName(deleting)} wird unwiderruflich
           entfernt.

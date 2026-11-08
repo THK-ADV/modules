@@ -19,7 +19,8 @@
     Search,
     Shield,
     Signature,
-    CalendarClock
+    CalendarClock,
+    ClipboardList
   } from '@lucide/svelte'
   import { coreDataEntities } from '$lib/core-data/entities'
 
@@ -49,7 +50,6 @@
   import * as Collapsible from '$lib/components/ui/collapsible/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'
-  import * as Tooltip from '$lib/components/ui/tooltip/index.js'
 
   let { user, userInfo }: { user?: User; userInfo?: UserInfo } = $props()
 
@@ -88,7 +88,7 @@
 
   const showPlanningSection = $derived(
     userInfo?.hasSchedulePlanningViewPrivileges ||
-      userInfo?.hasExamPlanningPrivileges ||
+      userInfo?.hasExamPlanningViewPrivileges ||
       userInfo?.hasScheduleBookingPrivileges
   )
 </script>
@@ -141,25 +141,30 @@
           </Sidebar.MenuButton>
         </Sidebar.MenuItem>
       {/if}
+      {#if userInfo?.hasExamPlanningViewPrivileges}
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton
+            isActive={isActive('/planning/exam') && !isActive('/planning/exam/exams')}
+          >
+            {#snippet child({ props })}
+              <a href={resolve('/planning/exam')} {...props}>
+                <CalendarClock />
+                <span>{routeLabels['/planning/exam']}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      {/if}
       {#if userInfo?.hasExamPlanningPrivileges}
         <Sidebar.MenuItem>
-          <Tooltip.Root>
-            <Tooltip.Trigger class="w-full">
-              <Sidebar.MenuButton
-                aria-disabled="true"
-                class="opacity-50"
-                isActive={isActive('/planning/exam')}
-              >
-                {#snippet child({ props })}
-                  <span {...props}>
-                    <CalendarClock />
-                    <span>{routeLabels['/planning/exam']}</span>
-                  </span>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Tooltip.Trigger>
-            <Tooltip.Content>Demnächst verfügbar</Tooltip.Content>
-          </Tooltip.Root>
+          <Sidebar.MenuButton isActive={isActive('/planning/exam/exams')}>
+            {#snippet child({ props })}
+              <a href={resolve('/planning/exam/exams')} {...props}>
+                <ClipboardList />
+                <span>{routeLabels['/planning/exam/exams']}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
         </Sidebar.MenuItem>
       {/if}
     </Sidebar.Menu>

@@ -128,6 +128,7 @@ export const fmtDate = dateFormat({ dateStyle: 'medium' }) // 05.01.2026
 export const fmtDateLong = dateFormat({ dateStyle: 'long' }) // 5. Januar 2026
 export const fmtDateTime = dateFormat({ dateStyle: 'medium', timeStyle: 'short' }) // 05.01.2026, 14:30
 export const fmtTime = dateFormat({ timeStyle: 'short' }) // 14:30
+export const fmtWeekdayLong = dateFormat({ weekday: 'long', day: 'numeric', month: 'long' }) // Montag, 5. Januar
 // Mo., 05.01.2026
 export const fmtWeekdayDate = dateFormat({
   weekday: 'short',

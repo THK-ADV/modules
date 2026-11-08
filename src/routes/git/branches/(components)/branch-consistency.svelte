@@ -212,7 +212,7 @@
   <Dialog.Content showClose={!removing} class="sm:max-w-lg">
     {#if deleting}
       <Dialog.Header>
-        <Dialog.Title>{categories[deleting.kind].deleteLabel}?</Dialog.Title>
+        <Dialog.Title>{categories[deleting.kind].deleteLabel}</Dialog.Title>
         <Dialog.Description>
           {#if deleting.kind === 'branch'}
             Die Branch <code class="font-mono text-xs">{deleting.branchName}</code> zu „{deleting.title ||

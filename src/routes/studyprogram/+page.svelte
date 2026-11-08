@@ -12,19 +12,13 @@
 
 <script lang="ts">
   import { resolve } from '$app/paths'
-  import ErrorMessage from '$lib/components/error-message.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import LoadingOverlay from '$lib/components/ui/loading-overlay/loading-overlay.svelte'
   import * as Tabs from '$lib/components/ui/tabs/index.js'
-  import { previewExamList, previewExamLoad } from '$lib/preview-action'
-  import type { StudyProgram } from '$lib/types/study-program'
-  import { FlaskConical } from '@lucide/svelte'
+  import { previewExamLoad } from '$lib/preview-action'
+  import { ArrowRight, Eye, FlaskConical } from '@lucide/svelte'
   import type { ColumnDef } from '@tanstack/table-core'
   import type { PageProps } from './$types'
-  import ExamListReleaseDialog from './(components)/exam-list-release-dialog.svelte'
-  import ExamListTableActions from './(components)/exam-list-table-actions.svelte'
-  import ExamLoadTableActions from './(components)/exam-load-table-actions.svelte'
-  import ModuleCatalogTableActions from './(components)/module-catalog-table-actions.svelte'
+  import StudyProgramTableAction from './(components)/studyProgram-table-action.svelte'
   import StudyProgramTableStatus from './(components)/studyProgram-table-status.svelte'
   import StudyProgramTable from './(components)/studyProgram-table.svelte'
   import type {
@@ -37,9 +31,6 @@
   let { data }: PageProps = $props()
   const management = $derived(await getStudyProgramManagement())
 
-  let showExamListReleaseDialog: StudyProgram | undefined = $state(undefined)
-  let showErrorMessage: string | undefined = $state(undefined)
-  let isPublishing = $state(false)
   let selectedTab: Tab = $derived((data.selectedTab || 'module-catalog') as Tab)
 
   function updateSelectedTab(value: string) {
@@ -99,8 +90,10 @@
           {
             id: 'module-catalog-actions',
             cell: ({ row }) => {
-              return renderComponent(ModuleCatalogTableActions, {
-                studyProgram: row.original.studyProgram
+              return renderComponent(StudyProgramTableAction, {
+                href: resolve('/studyprogram/[poId]', { poId: row.original.studyProgram.po.id }),
+                Icon: ArrowRight,
+                label: 'Öffnen'
               })
             }
           }
@@ -120,22 +113,19 @@
                 tooltipBadge: () =>
                   'Die Prüfungsliste wurde vom Prüfungsausschuss für das Semester freigegeben und ist unter "Prüfungslisten" für alle öffentlich zugänglich. Diese kann jederzeit überschrieben werden.',
                 tooltipPending: () =>
-                  'Die Prüfungsliste wurde noch nicht freigegeben. Hierfür auf "Freigabe" klicken und das entsprechende Semester auswählen.'
+                  'Die Prüfungsliste wurde noch nicht freigegeben. Öffnen Sie den Studiengang, konfigurieren Sie die Liste und geben Sie sie frei.'
               })
             }
           },
           {
             id: 'exam-list-actions',
             cell: ({ row }) => {
-              return renderComponent(ExamListTableActions, {
-                studyProgram: row.original.studyProgram,
-                canCreate: row.original.canCreate,
-                onClickExamListRelease: (sp: StudyProgram) => {
-                  showExamListReleaseDialog = sp
-                },
-                onClickExamListPreview: async (sp: StudyProgram) => {
-                  await previewExamList(sp)
-                }
+              return renderComponent(StudyProgramTableAction, {
+                href: resolve('/studyprogram/[poId]/exam-list', {
+                  poId: row.original.studyProgram.po.id
+                }),
+                Icon: ArrowRight,
+                label: 'Öffnen'
               })
             }
           }
@@ -146,11 +136,10 @@
           {
             id: 'exam-load-actions',
             cell: ({ row }) => {
-              return renderComponent(ExamLoadTableActions, {
-                studyProgram: row.original.studyProgram,
-                onClickExamLoadPreview: async (sp: StudyProgram) => {
-                  await previewExamLoad(sp)
-                }
+              return renderComponent(StudyProgramTableAction, {
+                onclick: () => previewExamLoad(row.original.studyProgram),
+                Icon: Eye,
+                label: 'Vorschau'
               })
             }
           }
@@ -158,17 +147,6 @@
     }
   })
 </script>
-
-<LoadingOverlay show={isPublishing} message="Prüfungsliste wird freigegeben…" />
-
-<ErrorMessage bind:message={showErrorMessage} />
-
-<ExamListReleaseDialog
-  semesters={management.semesters}
-  bind:showExamListReleaseDialog
-  bind:isPublishing
-  bind:showErrorMessage
-/>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
   <div class="space-y-2">
@@ -194,15 +172,13 @@
       </Tabs.List>
       <Tabs.Content value="exam-list" class="ml-1">
         <p class="text-muted-foreground text-sm">
-          PAVs haben darüber hinaus die Möglichkeit, Prüfungslisten für <span class="font-bold"
-            >alle öffentlich freizugeben</span
-          >. Hierfür wird ein Datum der Freigabe und ein Semester, für die die Prüfungsliste gilt,
-          ausgewählt. Die PDF wird anschließend unter
+          Über den jeweiligen Studiengang wird die Prüfungsliste eines Semesters konfiguriert, in
+          der Vorschau geprüft und von PAVs freigegeben. Die PDF wird anschließend unter
           <a href={resolve('/exam-lists')} class="text-primary underline hover:no-underline"
             >Prüfungslisten</a
           >
-          veröffentlicht. Pro Studiengang, PO und Semester kann es nur eine Prüfungsliste geben. Erneute
-          Freigaben überschreiben die vorherige Prüfungsliste.
+          veröffentlicht. Pro Studiengang, PO und Semester gibt es eine Prüfungsliste; eine erneute Freigabe
+          ersetzt sie.
         </p>
       </Tabs.Content>
       <Tabs.Content value="module-catalog" class="ml-1">

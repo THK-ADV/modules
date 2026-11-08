@@ -14,12 +14,7 @@ import {
   scheduleSeriesOccurrenceListResponseSchema,
   updateDraftScheduleEntryInputSchema
 } from '$lib/schemas/schedule'
-import {
-  PLAN_DRAFT_KINDS,
-  type PlanDraft,
-  type PlanDraftCreate,
-  type PlanDraftKind
-} from '$lib/types/plan-draft'
+import type { PlanDraft, PlanDraftCreate } from '$lib/types/plan-draft'
 import type { ScheduleEntryCreate, ScheduleEntryEdit, SeriesOccurrence } from '$lib/types/schedule'
 import { semesterSchema, type Semester } from '$lib/schemas/semester'
 import { z } from 'zod/v4'
@@ -36,17 +31,9 @@ export async function fetchPlanningSemesters(fetch: typeof globalThis.fetch): Pr
   )
 }
 
-/** Fetches the plan drafts for the given kind */
-export function fetchPlanDrafts(
-  fetch: typeof globalThis.fetch,
-  kind: PlanDraftKind
-): Promise<PlanDraft[]> {
-  const parsedKind = parseBackendRequestInput(
-    z.enum(PLAN_DRAFT_KINDS),
-    kind,
-    'Ungültige Planungsstand-Art'
-  )
-  const params = new URLSearchParams({ activeOnly: 'false', kind: parsedKind })
+/** Fetches the schedule plan drafts */
+export function fetchPlanDrafts(fetch: typeof globalThis.fetch): Promise<PlanDraft[]> {
+  const params = new URLSearchParams({ activeOnly: 'false' })
   return fetchBackendJson(
     fetch,
     `/auth-api/schedulePlanDrafts?${params}`,
@@ -55,26 +42,19 @@ export function fetchPlanDrafts(
   )
 }
 
-/** Fetches a plan draft for the given kind */
+/** Fetches a schedule plan draft */
 export async function fetchPlanDraft(
   fetch: typeof globalThis.fetch,
-  id: string,
-  kind: PlanDraftKind
+  id: string
 ): Promise<{ planDraft: PlanDraft; semester: Semester }> {
   const planDraftId = parseBackendRequestInput(
     z.string().trim().min(1),
     id,
     'Ungültige Planungsstand-ID'
   )
-  const parsedKind = parseBackendRequestInput(
-    z.enum(PLAN_DRAFT_KINDS),
-    kind,
-    'Ungültige Planungsstand-Art'
-  )
-  const params = new URLSearchParams({ kind: parsedKind })
   return fetchBackendJson(
     fetch,
-    `/auth-api/schedulePlanDrafts/${encodeURIComponent(planDraftId)}?${params}`,
+    `/auth-api/schedulePlanDrafts/${encodeURIComponent(planDraftId)}`,
     planDraftWithSemesterResponseSchema,
     'Fehler beim Laden des Planungsstands'
   )

@@ -2,6 +2,7 @@ import { z } from 'zod/v4'
 import { studyProgramSchema } from './study-program'
 import { moduleCatalogConfigSchema } from './module-catalog'
 import { semesterSchema } from './semester'
+import { examListConfigSchema } from './exam-list'
 
 export const artifactTargetSchema = z.string().trim().min(1)
 
@@ -32,7 +33,12 @@ export const moduleCatalogRequestSchema = z.object({
 
 export const artifactPreviewSchema = z.discriminatedUnion('document', [
   moduleCatalogRequestSchema.extend({ document: z.literal('moduleCatalog') }),
-  z.object({ po: artifactTargetSchema, document: z.enum(['examList', 'examLoad']) })
+  z.object({
+    po: artifactTargetSchema,
+    document: z.literal('examList'),
+    config: examListConfigSchema
+  }),
+  z.object({ po: artifactTargetSchema, document: z.literal('examLoad') })
 ])
 
 export const INTRODUCTION_FILE_TYPE =

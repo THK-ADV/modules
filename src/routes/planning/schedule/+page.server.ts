@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch, parent }) => {
 
   const [semesters, allDrafts] = await Promise.all([
     fetchPlanningSemesters(fetch),
-    fetchPlanDrafts(fetch, 'schedule')
+    fetchPlanDrafts(fetch)
   ])
 
   const drafts = createPlanDraftViews(allDrafts, semesters)

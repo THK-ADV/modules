@@ -1,9 +1,17 @@
-import { ectsFactorSchema, employmentTypeSchema, identityTitleSchema } from '$lib/schemas/core-data'
+import {
+  ectsFactorSchema,
+  employmentTypeSchema,
+  identityTitleSchema,
+  roomEquipmentSchema,
+  roomSeatingSchema
+} from '$lib/schemas/core-data'
 import type {
   CoreDataKey,
   CoreDataRow,
   CoreDataFieldName,
-  EmploymentType
+  EmploymentType,
+  RoomEquipment,
+  RoomSeating
 } from '$lib/schemas/core-data'
 import { fmtPersonName } from '$lib/formats'
 
@@ -64,6 +72,31 @@ const employmentTypeLabels: Record<EmploymentType, { label: string; tableLabel: 
 const ectsFactors: CoreDataOption[] = ectsFactorSchema.options.map((factor) => ({
   id: String(factor),
   label: String(factor)
+}))
+
+const roomSeatingLabels: Record<RoomSeating, string> = {
+  tiered: 'Ansteigende Bestuhlung',
+  fixed: 'Feste Bestuhlung',
+  loose: 'Lose Bestuhlung',
+  none: 'Keine Bestuhlung'
+}
+const roomSeatings: CoreDataOption[] = [
+  { id: '', label: 'Unbekannt' },
+  ...roomSeatingSchema.options.map((id) => ({ id, label: roomSeatingLabels[id] }))
+]
+const roomEquipmentLabels: Record<RoomEquipment, string> = {
+  projector: 'Beamer',
+  display: 'Bildschirm',
+  document_camera: 'Dokumentenkamera',
+  chalkboard: 'Kreidetafel',
+  whiteboard: 'Whiteboard',
+  sound_system: 'Beschallungsanlage',
+  video_conference: 'Videokonferenzsystem',
+  moderation_kit: 'Moderationskoffer'
+}
+const roomEquipment: CoreDataOption[] = roomEquipmentSchema.options.map((id) => ({
+  id,
+  label: roomEquipmentLabels[id]
 }))
 
 const labelEntity = (key: CoreDataKey, label: string, singular: string): CoreDataEntity => ({
@@ -152,7 +185,19 @@ export const coreDataEntities: CoreDataEntity[] = [
       { name: 'label', label: 'Bezeichnung', type: 'text' },
       { name: 'abbrev', label: 'Abkürzung', type: 'text' },
       { name: 'type', label: 'Typ', type: 'text' },
-      { name: 'capacity', label: 'Kapazität', type: 'number' }
+      { name: 'capacity', label: 'Sitzplätze', type: 'number' },
+      { name: 'examCapacityOpt', label: 'Prüfungsplätze optimal', type: 'number' },
+      { name: 'examCapacityMax', label: 'Prüfungsplätze maximal', type: 'number' },
+      { name: 'seating', label: 'Bestuhlung', type: 'select', options: roomSeatings },
+      { name: 'pcs', label: 'PC-Arbeitsplätze', type: 'number' },
+      {
+        name: 'equipment',
+        label: 'Ausstattung',
+        type: 'multiselect',
+        options: roomEquipment,
+        maxVisibleBadges: 3,
+        hidden: true
+      }
     ],
     display: (row) => ('label' in row && 'abbrev' in row ? row.label || row.abbrev : row.id)
   },

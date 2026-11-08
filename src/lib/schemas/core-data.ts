@@ -31,6 +31,22 @@ export const ectsFactorSchema = z.enum(
 )
 export type EctsFactor = z.infer<typeof ectsFactorSchema>
 
+/** Seating layout of a room; `none` means no seating. */
+export const roomSeatingSchema = z.enum(['tiered', 'fixed', 'loose', 'none'])
+export type RoomSeating = z.infer<typeof roomSeatingSchema>
+
+export const roomEquipmentSchema = z.enum([
+  'projector',
+  'display',
+  'document_camera',
+  'chalkboard',
+  'whiteboard',
+  'sound_system',
+  'video_conference',
+  'moderation_kit'
+])
+export type RoomEquipment = z.infer<typeof roomEquipmentSchema>
+
 const labelSchema = z.object({ id: z.string(), deLabel: z.string(), enLabel: z.string() })
 const personSchema = z.object({
   id: z.string(),
@@ -91,7 +107,13 @@ export const coreDataSchemas = {
     label: z.string(),
     abbrev: z.string(),
     type: z.string(),
-    capacity: z.number().int()
+    /** general seating, not the seats under exam conditions */
+    capacity: z.number().int(),
+    examCapacityOpt: z.number().int().nonnegative().nullable(),
+    examCapacityMax: z.number().int().nonnegative().nullable(),
+    seating: roomSeatingSchema.nullable(),
+    pcs: z.number().int().nonnegative().nullable(),
+    equipment: z.array(roomEquipmentSchema)
   })
 }
 
@@ -111,6 +133,16 @@ const optional = <T extends z.ZodType<string>>(schema: T) =>
     .union([schema, z.literal('')])
     .transform((v) => v || null)
     .nullish()
+/** Optional count; an empty input becomes `null`, never 0. */
+const optionalCount = (label: string) =>
+  z.preprocess(
+    (value) => (value === '' || value == null ? null : value),
+    z.coerce
+      .number()
+      .int(`${label} müssen eine ganze Zahl sein`)
+      .nonnegative(`${label} dürfen nicht negativ sein`)
+      .nullable()
+  )
 const labels = { id: idSchema, deLabel: required('Bezeichnung (DE)'), enLabel: z.string().trim() }
 const editableLabelSchema = labelSchema.extend(labels)
 
@@ -169,14 +201,29 @@ export const coreDataFormSchemas = {
     abbrev: required('Abkürzung'),
     faculty: required('Fakultät')
   }),
-  rooms: coreDataSchemas.rooms.omit({ id: true }).extend({
-    label: z.string().trim(),
-    abbrev: required('Abkürzung'),
-    type: z.string().trim(),
-    capacity: z
-      .union([z.number(), required('Kapazität')], 'Kapazität ist erforderlich')
-      .pipe(
-        z.coerce.number<string | number>().int().nonnegative('Kapazität darf nicht negativ sein')
-      )
-  })
+  /** Always contains all newer fields, since the backend replaces the whole room once any of them is sent. */
+  rooms: coreDataSchemas.rooms
+    .omit({ id: true })
+    .extend({
+      label: z.string().trim(),
+      abbrev: required('Abkürzung'),
+      type: z.string().trim(),
+      capacity: z
+        .union([z.number(), required('Kapazität')], 'Kapazität ist erforderlich')
+        .pipe(
+          z.coerce.number<string | number>().int().nonnegative('Kapazität darf nicht negativ sein')
+        ),
+      examCapacityOpt: optionalCount('Optimale Prüfungsplätze'),
+      examCapacityMax: optionalCount('Maximale Prüfungsplätze'),
+      seating: optional(roomSeatingSchema),
+      pcs: optionalCount('PC-Arbeitsplätze')
+    })
+    .refine(
+      ({ examCapacityOpt, examCapacityMax }) =>
+        examCapacityOpt === null || examCapacityMax === null || examCapacityOpt <= examCapacityMax,
+      {
+        message: 'Maximale Prüfungsplätze dürfen nicht unter den optimalen liegen',
+        path: ['examCapacityMax']
+      }
+    )
 }

@@ -10,6 +10,7 @@ import type {
   SemesterPlanEntry,
   SemesterPlanType
 } from '$lib/types/schedule'
+import type { ExamEntry } from '$lib/schemas/exam-planning'
 import type { EventInput } from '@fullcalendar/core'
 
 export const SELECTED_CALENDAR_VIEW_COOKIE_NAME = 'calendar:selected-view'
@@ -60,10 +61,13 @@ export type BookingEventProps =
 export type TeachingBookingEventProps = Extract<BookingEventProps, { kind: 'teaching' }>
 
 /**
- * Extended props for exam events.
+ * Generic so `raw` keeps the concrete entry type, published or draft: the schedule filter reads
+ * `teachingUnits`, which only published appointments carry.
  */
-export interface ExamEventProps {
+export interface ExamEventProps<E extends ExamEntry = ExamEntry> {
   source: 'exam'
+  raw: E
+  methodLabels: string[]
 }
 
 /**
@@ -108,6 +112,8 @@ export const COURSE_TYPE_COLORS: Record<CourseType, string> = {
   exercise: '#7059AA',
   tutorial: '#B43092'
 }
+
+export const EXAM_COLOR = '#B4533F'
 
 export const BOOKING_KIND_COLORS: Record<CampusBooking['kind'], string> = {
   campus: '#873C0B',

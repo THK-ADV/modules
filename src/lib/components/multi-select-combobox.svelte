@@ -15,11 +15,14 @@
     id: string
     label: string
     abbrev?: string
+    /** Secondary text below the label, also searchable. */
+    hint?: string
   }
 
   interface Props {
-    form: any // eslint-disable-line @typescript-eslint/no-explicit-any
-    name: string // name of the field in the form
+    /** Superform of the field; without it, the combobox stands alone and `label` names it for screen readers. */
+    form?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    name?: string // name of the field in the form
     label: string
     description?: string
     options: Option[]
@@ -29,12 +32,14 @@
     width?: string // optional width for popover content
     modificationStatus?: ModificationStatus // optional modification tracking
     disabled?: boolean
+    /** Id of the trigger without `form`, e.g. for a `<label for>`. */
+    id?: string
     onValueChange?: (value: string[]) => void
   }
 
   let {
     form,
-    name,
+    name = '',
     label,
     description,
     options,
@@ -44,6 +49,7 @@
     width = 'w-[350px]', // Default width
     modificationStatus,
     disabled = false,
+    id,
     onValueChange
   }: Props = $props()
 
@@ -61,13 +67,13 @@
 
     value = currentSelection
     onValueChange?.(currentSelection)
-    form.validate(name)
+    form?.validate(name)
   }
 
   function clear() {
     value = []
     onValueChange?.([])
-    form.validate(name)
+    form?.validate(name)
     open = false
   }
 
@@ -104,7 +110,7 @@
   })
 </script>
 
-{#snippet popoverContent(props: { name: string })}
+{#snippet popoverContent(props: Record<string, unknown>)}
   <Popover.Trigger
     role="combobox"
     class={cn(
@@ -155,16 +161,16 @@
           </Command.Item>
         {/if}
         <Command.Group>
-          {#each sortedOptions as { id, label, abbrev } (id)}
+          {#each sortedOptions as { id, label, abbrev, hint } (id)}
             <Command.Item
               value={id}
-              keywords={abbrev ? [label, abbrev] : [label]}
+              keywords={[label, abbrev, hint].filter((k) => k !== undefined)}
               onSelect={() => toggle(id)}
               {disabled}
             >
               <div
                 class={cn(
-                  'border-primary mr-2 flex size-4 items-center justify-center rounded-sm border',
+                  'border-primary mr-2 flex size-4 shrink-0 items-center justify-center rounded-sm border',
                   value.includes(id)
                     ? 'bg-primary text-primary-foreground'
                     : 'opacity-50 [&_svg]:invisible'
@@ -172,7 +178,12 @@
               >
                 <Check class="size-4" />
               </div>
-              <span>{label}</span>
+              <span class="min-w-0">
+                <span class="block">{label}</span>
+                {#if hint}
+                  <span class="text-muted-foreground block text-xs">{hint}</span>
+                {/if}
+              </span>
             </Command.Item>
           {/each}
         </Command.Group>
@@ -181,7 +192,12 @@
   </Popover.Content>
 {/snippet}
 
-{#if modificationStatus}
+{#if !form}
+  <Popover.Root bind:open>
+    {@render popoverContent({ id, 'aria-label': label })}
+    {@render dropdownMenu()}
+  </Popover.Root>
+{:else if modificationStatus}
   <!-- Enhanced version with modification tracking -->
   <div class="space-y-2 {getFieldHighlightClasses(modificationStatus)}">
     <div class="flex items-center justify-between">

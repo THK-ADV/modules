@@ -1,4 +1,4 @@
-import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
+import { bookingAccess } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -14,10 +14,9 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
     throw error(403, { message: 'Keine Berechtigung für die Stundenplanung' })
   }
 
-  const [holidays, semesterEntries, bookingData] = await Promise.all([
+  const [holidays, semesterEntries] = await Promise.all([
     fetchHolidays(fetch),
-    fetchSemesterEntries(fetch),
-    loadCurrentSemesterBookings(fetch, user, true)
+    fetchSemesterEntries(fetch)
   ])
 
   const { timeGrid, monthBg } = holidays
@@ -27,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
     holidays: timeGrid,
     holidaysMonth: monthBg,
     semesterEntries,
-    ...bookingData,
+    ...bookingAccess(user),
     selectedCalendarView,
     selectedCalendarDate
   }

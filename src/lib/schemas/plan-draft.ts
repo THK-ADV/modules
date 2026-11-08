@@ -3,7 +3,6 @@ import { z } from 'zod/v4'
 import { semesterSchema } from './semester'
 
 export const createPlanDraftInputSchema = z.object({
-  kind: z.enum(PLAN_DRAFT_KINDS),
   semester: z.string().trim().min(1)
 })
 

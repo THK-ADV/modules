@@ -14,7 +14,6 @@
     createBookings,
     deleteBooking,
     fetchBookingSeriesOccurrences,
-    fetchBookings,
     updateBooking,
     updateBookingSeries
   } from '$lib/components/schedule/booking.remote'
@@ -22,6 +21,7 @@
   import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleEntryUpdateScopeDialog from '$lib/components/schedule/schedule-entry-update-scope-dialog.svelte'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
+  import { ScheduleSources } from '$lib/components/schedule/schedule-sources.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { Button } from '$lib/components/ui/button/index.js'
   import { getErrorMessage } from '$lib/errors'
@@ -38,10 +38,12 @@
 
   const { data }: PageProps = $props()
 
-  // Seed local state once; $state makes in-place array mutations here and in Schedule reactive.
-  // $derived(data.bookings) would not make the array deeply reactive.
-  // svelte-ignore state_referenced_locally
-  let bookings = $state(data.bookings)
+  const sources = new ScheduleSources(() => ({
+    filter: schedulePlanningFilter,
+    loadScheduleEntries: liveScheduleEntryEditorApi.load,
+    bookingKinds: data.bookingKinds,
+    bypassCache: true
+  }))
   let errorMessage = $state<string | undefined>(undefined)
   let dialogMode = $state<Mode | null>(null)
   let selectedScheduleEntry = $state<ScheduleEntry | null>(null)
@@ -55,15 +57,6 @@
   let mouseUpdateRevert: (() => void) | null = null
 
   const holidays = $derived(data.holidays.map((h) => new Date(h.start as string)))
-
-  async function loadBookings(semester: string) {
-    try {
-      return await fetchBookings({ semester, kinds: data.bookingKinds, bypassCache: true })
-    } catch (err) {
-      errorMessage = getErrorMessage(err)
-      throw err
-    }
-  }
 
   // Calendar callbacks
 
@@ -144,11 +137,11 @@
     await createEntries([entry])
   }
 
-  // Remote calls with optimistic list updates
+  // Remote calls; the saved bookings from the response patch the calendar without a refetch
 
   async function createEntries(entries: BookingCreate[]) {
     try {
-      bookings.push(...(await createBookings(entries)))
+      sources.patchBookings(await createBookings(entries))
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
@@ -162,16 +155,9 @@
     onError?: () => void
   ) {
     try {
-      const updated =
+      sources.patchBookings(
         scope === 'series' ? await updateBookingSeries(entry) : await updateBooking(entry)
-      for (const event of updated) {
-        const idx = bookings.findIndex((e) => e.id === event.id)
-        if (idx !== -1) {
-          bookings[idx] = event
-        } else {
-          bookings.push(event)
-        }
-      }
+      )
     } catch (err) {
       onError?.()
       errorMessage = getErrorMessage(err)
@@ -183,10 +169,7 @@
   async function deleteEntry(id: string) {
     try {
       await deleteBooking(id)
-      const idx = bookings.findIndex((e) => e.id === id)
-      if (idx !== -1) {
-        bookings.splice(idx, 1)
-      }
+      sources.patchBookings([], [id])
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
@@ -222,11 +205,7 @@
   <ScheduleFilter scheduleFilter={schedulePlanningFilter} canShowFaculty={data.canSeeFaculty} />
 
   <Schedule
-    bypassCache={true}
-    loadScheduleEntries={liveScheduleEntryEditorApi.load}
-    bind:bookings
-    bookingSemester={data.bookingSemester}
-    {loadBookings}
+    {sources}
     editableSource="booking"
     holidays={data.holidays}
     holidaysMonth={data.holidaysMonth}

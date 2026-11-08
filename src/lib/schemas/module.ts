@@ -94,7 +94,8 @@ export const electiveStudyProgramRelationFormSchema =
     instanceOf: z.string().nonempty('Modul ist erforderlich')
   })
 
-const moduleFormBaseSchema = z.object({
+/** Fields of the module draft. */
+export const moduleDraftSchema = z.object({
   title: z
     .string()
     .min(1, 'Modulbezeichnung erforderlich')
@@ -121,12 +122,10 @@ const moduleFormBaseSchema = z.object({
   status: z.string().nonempty('Status erforderlich'),
   management: z.array(z.string()).min(1, 'Modulverantwortung erforderlich'),
   lecturers: z.array(z.string()).min(1, 'Dozierende erforderlich'),
-  updatePermissions: z.array(z.string()),
   firstExaminer: z.string().nonempty('Erstprüfer erforderlich'),
   secondExaminer: z.string().nonempty('Zweitprüfer erforderlich'),
   examPhases: z.array(z.string()).min(1, 'Prüfungsphase erforderlich'),
   assessmentMethods: z.array(assessmentMethodFormSchema),
-  permittedAssessmentMethods: z.array(z.string()),
   workload: z.object({
     lecture: workloadNumber,
     seminar: workloadNumber,
@@ -212,14 +211,26 @@ const moduleFormBaseSchema = z.object({
     .nullable()
 })
 
-export const moduleFormSchema = moduleFormBaseSchema.refine(
-  ({ assessmentMethods, permittedAssessmentMethods }) =>
-    assessmentMethods.every(({ method }) => permittedAssessmentMethods.includes(method)),
-  {
-    error:
-      'Alle Prüfungsformen im kommenden Semester müssen in den zulässigen Prüfungsformen enthalten sein.',
-    path: ['assessmentMethods']
-  }
-)
+export type ModuleDraft = z.infer<typeof moduleDraftSchema>
+
+export const updatePermissionsSchema = z.array(z.string())
+
+export const permittedAssessmentMethodsSchema = z.array(z.string())
+
+/** Editor form of the module draft, update permissions and permitted assessment methods. */
+export const moduleFormSchema = moduleDraftSchema
+  .extend({
+    updatePermissions: updatePermissionsSchema,
+    permittedAssessmentMethods: permittedAssessmentMethodsSchema
+  })
+  .refine(
+    ({ assessmentMethods, permittedAssessmentMethods }) =>
+      assessmentMethods.every(({ method }) => permittedAssessmentMethods.includes(method)),
+    {
+      error:
+        'Alle Prüfungsformen im kommenden Semester müssen in den zulässigen Prüfungsformen enthalten sein.',
+      path: ['assessmentMethods']
+    }
+  )
 
 export type ModuleForm = z.infer<typeof moduleFormSchema>

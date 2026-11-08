@@ -27,8 +27,7 @@
   import SuperDebug, { superForm, type ValidationErrors } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import type { LayoutProps } from './$types'
-  import { setModuleExamsContext, setModuleFormContext } from './context'
-  import { updateModuleExams } from './examination/module-exams.remote'
+  import { setModuleFormContext } from './context'
   import { updateModulePermittedAssessmentMethods } from './examination/permitted-assessment-methods.remote'
   import { updateModulePermissions } from './management/module-permissions.remote'
 
@@ -135,7 +134,7 @@
     }
   ])
 
-  // last acknowledged state of the draft, exams, permitted assessment methods and update permissions.
+  // last acknowledged state of the draft, permitted assessment methods and update permissions.
   // only changed domains are saved, so that a retry after a partial failure saves the remaining ones
   // svelte-ignore state_referenced_locally
   let saved = $state.raw(structuredClone(data.form.data))
@@ -148,7 +147,6 @@
   function changes(form: ModuleForm) {
     return {
       draft: hasActualChanges(draftOf(form), draftOf(saved)),
-      exams: hasActualChanges(form.exams, saved.exams),
       permittedAssessmentMethods: hasActualChanges(
         form.permittedAssessmentMethods,
         saved.permittedAssessmentMethods
@@ -157,16 +155,10 @@
     }
   }
 
-  setModuleExamsContext((exams) => {
-    if (saved.exams) return
-    saved = { ...saved, exams: $state.snapshot(exams) }
-    form.form.update(($form) => ({ ...$form, exams: $state.snapshot(exams) }), { taint: false })
-  })
-
   /**
    * Saves changed domains of the validated `snapshot` in this order:
    * 1. Draft first to obtain an ID on creation and stop further writes if it fails.
-   * 2. Exams and permitted assessment methods in parallel, since they are independent.
+   * 2. Permitted assessment methods.
    * 3. Permissions only after all preceding writes succeed, since they may revoke access.
    */
   async function save(snapshot: ModuleForm, body: FormData): Promise<ActionResult> {
@@ -198,8 +190,7 @@
     }
 
     const moduleId = createdId ?? id
-    const { exams } = snapshot
-    async function write<K extends 'exams' | 'permittedAssessmentMethods' | 'updatePermissions'>(
+    async function write<K extends 'permittedAssessmentMethods' | 'updatePermissions'>(
       key: K,
       run: () => Promise<unknown>,
       error: ValidationErrors<ModuleForm>[K]
@@ -212,24 +203,16 @@
         message ??= getErrorMessage(e)
       }
     }
-    if (!message) {
-      await Promise.all([
-        exams &&
-          todo.exams &&
-          write('exams', () => updateModuleExams({ id: moduleId, ...exams }), {
-            examNames: { _errors: ['Die Prüfungsnamen konnten nicht gespeichert werden.'] }
+    if (!message && todo.permittedAssessmentMethods) {
+      await write(
+        'permittedAssessmentMethods',
+        () =>
+          updateModulePermittedAssessmentMethods({
+            id: moduleId,
+            permittedAssessmentMethods: snapshot.permittedAssessmentMethods
           }),
-        todo.permittedAssessmentMethods &&
-          write(
-            'permittedAssessmentMethods',
-            () =>
-              updateModulePermittedAssessmentMethods({
-                id: moduleId,
-                permittedAssessmentMethods: snapshot.permittedAssessmentMethods
-              }),
-            { _errors: ['Die zulässigen Prüfungsformen konnten nicht gespeichert werden.'] }
-          )
-      ])
+        { _errors: ['Die zulässigen Prüfungsformen konnten nicht gespeichert werden.'] }
+      )
     }
     if (!message && todo.updatePermissions) {
       await write(
@@ -246,7 +229,7 @@
       valid: !message,
       posted: true,
       errors,
-      data: structuredClone({ ...snapshot, exams: snapshot.exams ?? saved.exams })
+      data: structuredClone(snapshot)
     }
     return message
       ? { type: 'failure', status: 400, data: { form, message } }
@@ -312,7 +295,6 @@
     examPhases: 'examination',
     assessmentMethods: 'examination',
     permittedAssessmentMethods: 'examination',
-    exams: 'examination',
 
     // Workload section
     workload: 'workload',

@@ -6,7 +6,7 @@
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import { getErrorMessage } from '$lib/errors'
   import { moduleUpdateState } from '$lib/stores/store.svelte.js'
-  import ExamNames from './exam-names.svelte'
+  import ModuleExams from './module-exams.svelte'
   import { getModuleExams } from './module-exams.remote'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
@@ -147,16 +147,16 @@
       <div class="space-y-2 border-b pb-4">
         <h4 class="text-foreground text-base font-medium">Modulprüfungen</h4>
         <p class="text-muted-foreground text-sm">
-          Namen der Modulprüfungen, die in der Prüfungsplanung zur Auswahl stehen.
+          Prüfungen, denen das Modul in der Prüfungsplanung zugeordnet ist.
         </p>
       </div>
 
       <svelte:boundary>
-        <ExamNames id={params.id} />
+        <ModuleExams id={params.id} canManage={data.userInfo?.hasExamPlanningPrivileges ?? false} />
         {#snippet pending()}
           <div class="text-muted-foreground flex items-center gap-2 text-sm" role="status">
             <Spinner class="motion-reduce:animate-none" aria-hidden="true" />
-            Prüfungsnamen werden geladen …
+            Prüfungen werden geladen …
           </div>
         {/snippet}
         {#snippet failed(error, reset)}
@@ -165,7 +165,7 @@
             role="alert"
           >
             <p class="text-destructive text-sm">
-              Die Prüfungsnamen konnten nicht geladen werden: {getErrorMessage(error)}
+              Die Prüfungen konnten nicht geladen werden: {getErrorMessage(error)}
             </p>
             <Button
               type="button"

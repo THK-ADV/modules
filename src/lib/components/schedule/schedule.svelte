@@ -3,13 +3,18 @@
     Calendar,
     type CalendarEvent,
     type CalendarEventProps,
-    type DateRangeInfo
+    type DateRangeInfo,
+    type ExamEventProps
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
+  import { Button } from '$lib/components/ui/button/index.js'
+  import { getErrorMessage } from '$lib/errors'
+  import type { PublishedExamEntry } from '$lib/schemas/exam-planning'
   import { uiStore } from '$lib/stores/ui.svelte.js'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { isTeachingKind } from '$lib/types/booking'
   import { semesterIdOf } from '$lib/types/semester'
+  import { RefreshCw, TriangleAlert } from '@lucide/svelte'
 
   const {
     holidays,
@@ -27,8 +32,14 @@
     loadBookings,
     editableSource,
     bypassCache,
-    loadScheduleEntries
+    loadScheduleEntries,
+    loadExamEntries
   }: ScheduleProps = $props()
+
+  let examEntries = $state.raw<CalendarEvent<ExamEventProps<PublishedExamEntry>>[]>([])
+  let visibleRange = $state.raw<{ start: number; end: number } | null>(null)
+  /** Failed loading of the visible exams with a retry refetching them. */
+  let examFailure = $state.raw<{ message: string; retry: () => void }>()
 
   let fetchedBookingSemesters = $state<string[]>([])
 
@@ -42,7 +53,7 @@
 
   // Single derived function that tracks source toggles and filters
   const filteredEvents = $derived.by(() => {
-    const { showSemester, showSchedule, showCampus, showFaculty } = scheduleFilter
+    const { showSemester, showSchedule, showCampus, showFaculty, showExams } = scheduleFilter
     const allEvents: CalendarEvent<CalendarEventProps>[] = [...holidayEventsForView]
 
     if (showSemester) {
@@ -70,7 +81,7 @@
       }
     }
 
-    if (showSchedule || showCampus || showFaculty) {
+    if (showSchedule || showCampus || showFaculty || (showExams && loadExamEntries)) {
       const {
         selectedTeachingUnits,
         selectedCourseTypes,
@@ -186,6 +197,49 @@
         }
       }
 
+      // Exams have no course type or module management, so these filters do not apply to them.
+      const matchesExamFilter = (title: string, raw: PublishedExamEntry): boolean => {
+        const people = [
+          ...raw.modules.map((m) => m.firstExaminer),
+          ...raw.rooms.flatMap((r) => r.invigilators)
+        ]
+        return (
+          (!searchString ||
+            title.toLowerCase().includes(lowerSearch) ||
+            raw.modules.some(
+              (m) =>
+                m.title.toLowerCase().includes(lowerSearch) ||
+                m.abbrev.toLowerCase().includes(lowerSearch)
+            )) &&
+          (selectedTeachingUnits.length === 0 ||
+            selectedTeachingUnits.some((tu) => raw.teachingUnits.includes(tu))) &&
+          (selectedModules.length === 0 ||
+            raw.modules.some((m) => selectedModules.includes(m.id))) &&
+          (selectedLecturers.length === 0 ||
+            selectedLecturers.some((id) => people.some((p) => p?.id === id))) &&
+          matchesRooms(raw.rooms) &&
+          ((selectedStudyPrograms.length === 0 &&
+            selectedSemesters.length === 0 &&
+            selectedModuleTypes.length === 0) ||
+            raw.po.some(
+              ({ po, recommendedSemester, mandatory }) =>
+                (selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)) &&
+                (selectedSemesters.length === 0 ||
+                  selectedSemesterNums.some((n) => recommendedSemester.includes(n))) &&
+                (selectedModuleTypes.length === 0 ||
+                  selectedModuleTypes.some(
+                    (id) => (id === 'pm' && mandatory) || (id === 'wm' && !mandatory)
+                  ))
+            ))
+        )
+      }
+
+      if (showExams && loadExamEntries) {
+        for (const entry of examEntries) {
+          if (matchesExamFilter(entry.title, entry.extendedProps.raw)) allEvents.push(entry)
+        }
+      }
+
       const visible = { teaching: showSchedule, campus: showCampus, faculty: showFaculty }
 
       for (const entry of bookings) {
@@ -220,8 +274,39 @@
     }
   }
 
+  // Exams are loaded only while shown, for the visible range.
+  $effect(() => {
+    const range = visibleRange
+    examFailure = undefined
+    if (!range || !loadExamEntries || !scheduleFilter.showExams) return
+    let current = true
+    // Outside the effect, so the remote query is not bound to its reactive context.
+    const load = (refresh: boolean) =>
+      Promise.resolve()
+        .then(async () => {
+          const query = loadExamEntries(range)
+          if (refresh) await query.refresh()
+          return query
+        })
+        .then((events) => current && (examEntries = events))
+        .catch((error) => {
+          if (!current) return
+          examEntries = []
+          examFailure = {
+            message: getErrorMessage(error),
+            retry: () => {
+              examFailure = undefined
+              load(true)
+            }
+          }
+        })
+    load(false)
+    return () => (current = false)
+  })
+
   // Fetch schedule entries when the date range changes
   async function onDateRangeSet(info: DateRangeInfo) {
+    visibleRange = { start: info.start.getTime(), end: info.end.getTime() }
     loadBookingsForRange(info)
     try {
       // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
@@ -244,6 +329,20 @@
     }
   }
 </script>
+
+{#if examFailure}
+  <div
+    class="border-destructive/30 bg-destructive/10 mb-2 flex flex-wrap items-center gap-2 rounded-md border p-2 pl-3 text-sm"
+    role="alert"
+  >
+    <TriangleAlert class="text-destructive size-4 shrink-0" aria-hidden="true" />
+    <p class="text-destructive flex-1">Prüfungen fehlen im Kalender: {examFailure.message}</p>
+    <Button variant="outline" size="sm" onclick={examFailure.retry}>
+      <RefreshCw aria-hidden="true" />
+      Erneut laden
+    </Button>
+  </div>
+{/if}
 
 <!-- Calendar -->
 <div class="min-h-[60vh]">

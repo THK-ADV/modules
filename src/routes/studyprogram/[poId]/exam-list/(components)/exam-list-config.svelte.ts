@@ -4,11 +4,11 @@ import { TIME_ZONE } from '$lib/formats'
 import { today } from '@internationalized/date'
 import { SvelteMap, SvelteSet } from 'svelte/reactivity'
 
-/** `null` is the default exam named after the module. */
-export type Exam = string | null
+/** Id of an exam. */
+export type Exam = string
 
 /** Why a candidate is not part of the list. */
-export type Exclusion = 'generic' | 'manual' | 'phases' | 'exams'
+export type Exclusion = 'generic' | 'none' | 'manual' | 'phases' | 'exams'
 
 /** List-wide settings, edited as a draft in the settings dialog. */
 export type ExamListSettings = Pick<
@@ -122,7 +122,7 @@ export class ExamListState {
   }
 
   exams(m: ExamListModuleOption): Exam[] {
-    return m.examNames ?? [null]
+    return m.exams.map((e) => e.id)
   }
 
   /** Considered phases: the module phases within the filter, for generic modules all except `none`. */
@@ -133,16 +133,17 @@ export class ExamListState {
   exclusion(m: ExamListModuleOption): Exclusion | undefined {
     if (this.excludeGenericModules && m.isGeneric) return 'generic'
     if (m.isGeneric) return this.excludedModules.has(m.id) ? 'manual' : undefined
+    if (m.exams.length === 0) return 'none'
     if (this.phases(m).length === 0) return 'phases'
     if (this.excludedModules.has(m.id)) return 'manual'
     if (!this.exams(m).some((exam) => this.isExamIncluded(m, exam))) return 'exams'
   }
 
-  /** Including a module also includes its default exam, which has no switch of its own. */
+  /** Including a module also includes its only exam, which has no switch of its own. */
   setModuleIncluded(m: ExamListModuleOption, included: boolean) {
     if (included) {
       this.excludedModules.delete(m.id)
-      this.excludedExams.delete(key(m.id, null))
+      if (m.exams.length === 1) this.excludedExams.delete(key(m.id, m.exams[0].id))
     } else this.excludedModules.add(m.id)
   }
 

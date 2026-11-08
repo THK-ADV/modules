@@ -1,14 +1,17 @@
 import type { CampusBooking } from '$lib/types/booking'
+import { examExaminers, examModuleAbbrevs, examRoomLabel } from '$lib/types/exam-planning'
 import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
 import {
   BOOKING_KIND_COLORS,
   COURSE_TYPE_COLORS,
+  EXAM_COLOR,
   isScheduleLike,
-  type CalendarEventProps
+  type CalendarEventProps,
+  type ExamEventProps
 } from './types'
 
-/** Booking titles are user input and end up in `innerHTML`. */
+/** Booking titles and exam data are user input and end up in `innerHTML`. */
 function escapeHtml(text: string): string {
   return text
     .replaceAll('&', '&amp;')
@@ -112,7 +115,45 @@ export function renderWeekViewEventContent(arg: EventContentArg) {
   if (eventProps.source === 'booking') {
     return renderWeekViewBookingContent(arg, eventProps.raw)
   }
+  if (eventProps.source === 'exam') {
+    return renderWeekViewExamContent(arg, eventProps)
+  }
   return true
+}
+
+/** Exam name; the module abbreviations follow in their own row. */
+const examTitle = (raw: ExamEventProps['raw']) => escapeHtml(raw.examName)
+
+/** Rooms of an exam appointment, or a hint that none is assigned yet. */
+function examRooms({ raw }: ExamEventProps): string {
+  return raw.rooms.length ? escapeHtml(raw.rooms.map(examRoomLabel).join(', ')) : 'Raum offen'
+}
+
+/** Exam appointments for time-grid views: exam, rooms, time, examiners and modules. */
+function renderWeekViewExamContent(arg: EventContentArg, props: ExamEventProps) {
+  const { raw } = props
+  const title = examTitle(raw)
+  const short = escapeHtml(examModuleAbbrevs(raw))
+  const rooms = examRooms(props)
+  const examiners = escapeHtml(
+    examExaminers(raw)
+      .map((e) => e.label)
+      .join(', ')
+  )
+  const long = new Date(raw.end).getTime() - new Date(raw.start).getTime() > 90 * 60 * 1000
+
+  return wrapWeekViews(
+    EXAM_COLOR,
+    createTitle(title) +
+      createInfoRow(ICONS.mapPin, rooms) +
+      (long
+        ? createInfoRow(ICONS.clock, arg.timeText) +
+          createInfoRow(ICONS.user, examiners) +
+          (raw.modules.length ? createInfoRow(ICONS.book, short) : '')
+        : ''),
+    createTitle(short) + createShortInfoRow(rooms),
+    short
+  )
 }
 
 function renderWeekViewScheduleLikeContent(arg: EventContentArg, props: ScheduleEntry) {
@@ -253,6 +294,13 @@ export function renderMonthViewEventContent(arg: EventContentArg) {
       eventProps.kind === 'campus' ? 'C' : 'F'
     )
     return wrapMonthRows(row, row)
+  }
+  if (eventProps.source === 'exam') {
+    const { raw } = eventProps
+    return wrapMonthRows(
+      createMonthRow(examTitle(raw), time, EXAM_COLOR, 'P'),
+      createMonthRow(escapeHtml(examModuleAbbrevs(raw)), time, EXAM_COLOR, 'P')
+    )
   }
   return true
 }

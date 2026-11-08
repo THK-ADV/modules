@@ -27,6 +27,7 @@
 
   const exclusions: Record<Exclusion, string> = {
     generic: 'Generisch',
+    none: 'Keine Prüfung zugeordnet',
     manual: 'Ausgeschlossen',
     phases: 'Keine gewählte Phase',
     exams: 'Alle Prüfungen ausgeschlossen'
@@ -165,8 +166,10 @@
       <Table.Body>
         {#each visible as m (m.id)}
           {@const exclusion = config.exclusion(m)}
-          {@const locked = exclusion === 'generic' || exclusion === 'phases'}
-          {@const named = m.isGeneric ? undefined : m.examNames}
+          {@const locked =
+            exclusion === 'generic' || exclusion === 'none' || exclusion === 'phases'}
+          {@const only = m.exams.length === 1 ? m.exams[0] : undefined}
+          {@const named = m.exams.length > 1 ? m.exams : undefined}
           <Table.Row
             class={cn(!locked && 'cursor-pointer', exclusion && 'bg-muted/40')}
             onclick={onRowClick(
@@ -202,8 +205,8 @@
                 {/if}
               </div>
               <div class="text-muted-foreground text-xs">
-                {methods(m)}{#if named}&nbsp;· {named.length}
-                  {named.length === 1 ? 'Prüfung' : 'Prüfungen'}{/if}
+                {methods(m)}{#if named}&nbsp;· {named.length} Prüfungen{:else if only && only.name !== m.title}&nbsp;·
+                  Prüfung {only.name}{/if}
               </div>
               <div class="text-muted-foreground text-xs md:hidden">
                 Erstprüfer {label('identities', m.firstExaminer)} · Zweitprüfer
@@ -231,13 +234,13 @@
                     .map((p) => label('examPhaseAbbrevs', p))
                     .join(', ') || '—'}
                 </span>
-              {:else if !exclusion && !named}
-                {@render periods(m, null)}
+              {:else if !exclusion && only}
+                {@render periods(m, only.id)}
               {/if}
             </Table.Cell>
           </Table.Row>
           {#if named && (!exclusion || exclusion === 'exams')}
-            {#each named as exam (exam)}
+            {#each named as { id: exam, name } (exam)}
               {@const included = config.isExamIncluded(m, exam)}
               <Table.Row
                 class={cn('cursor-pointer', !included && 'bg-muted/40')}
@@ -253,12 +256,12 @@
                     <Checkbox
                       checked={included}
                       onCheckedChange={(checked) => config.setExamIncluded(m, exam, checked)}
-                      aria-label="Prüfung {exam} aufnehmen"
+                      aria-label="Prüfung {name} aufnehmen"
                     />
                     <span class="text-sm">
                       <span class="text-muted-foreground">Prüfung</span>
                       <span class={cn(!included && 'text-muted-foreground line-through')}
-                        >{exam}</span
+                        >{name}</span
                       >
                     </span>
                   </div>

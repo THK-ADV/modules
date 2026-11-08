@@ -44,8 +44,20 @@
     onEventResize?: (info: EventResizeInfo) => void
     /** Callback when the date range is set */
     onDateRangeSet?: (info: DateRangeInfo) => void
+    /**
+     * Callback when an element made draggable with `Draggable` from `@fullcalendar/interaction` is dropped on the
+     * calendar. `dateStr` is the day without time for all-day drops. Nothing is added to the calendar by itself.
+     */
+    onExternalDrop?: (info: {
+      date: Date
+      dateStr: string
+      allDay: boolean
+      draggedEl: HTMLElement
+    }) => void
     /** Event sources that may be dragged, copied or resized */
     editableSource?: EventSource | EventSource[]
+    /** Date shown on mount instead of the last viewed one */
+    initialDate?: string | Date
     /** Additional CSS classes for the container */
     class?: string
   }
@@ -58,7 +70,9 @@
     onEventCopy,
     onEventResize,
     onDateRangeSet,
+    onExternalDrop,
     editableSource = 'schedule',
+    initialDate,
     class: className
   }: Props = $props()
 
@@ -137,6 +151,11 @@
     calendar?.today()
   }
 
+  /** Shows the given date in the current view. */
+  export function gotoDate(date: string | Date) {
+    calendar?.gotoDate(date)
+  }
+
   function handleViewChange(value: string) {
     if (!value) return
     uiStore.selectedCalendarView = value
@@ -198,7 +217,7 @@
     calendar = new Calendar(calendarEl, {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: uiStore.selectedCalendarView,
-      initialDate: uiStore.selectedCalendarDate,
+      initialDate: initialDate ?? uiStore.selectedCalendarDate,
       height: 'auto',
       headerToolbar: false,
       editable: onEventDrop || onEventCopy || onEventResize ? true : false,
@@ -207,6 +226,14 @@
       eventResizableFromStart: onEventResize ? true : false,
       selectable: onDateSelect ? true : false,
       selectMinDistance: onDateSelect ? 15 : 0, // Only trigger date selection after a drag gesture (15 min range), not simple clicks.
+      droppable: Boolean(onExternalDrop),
+      drop: (arg) =>
+        onExternalDrop?.({
+          date: arg.date,
+          dateStr: arg.dateStr,
+          allDay: arg.allDay,
+          draggedEl: arg.draggedEl
+        }),
       events: [],
       nowIndicator: true,
       dayMaxEvents: true,

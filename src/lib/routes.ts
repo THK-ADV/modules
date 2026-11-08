@@ -5,6 +5,7 @@ import type { RouteId } from '$app/types'
 export const MODULE_ROUTE_ID = '/modules/[id=uuid]' satisfies RouteId
 export const MY_MODULE_ROUTE_ID = '/my-modules/[id=uuid]' satisfies RouteId
 export const PLAN_ROUTE_ID = '/planning/schedule/[draftId]' satisfies RouteId
+export const EXAM_PLAN_ROUTE_ID = '/planning/exam/[draftId]' satisfies RouteId
 export const STUDYPROGRAM_ROUTE_ID = '/studyprogram/[poId]' satisfies RouteId
 export const CORE_DATA_ROUTE_ID = '/core-data/[entity=coreEntity]' satisfies RouteId
 
@@ -43,6 +44,9 @@ export const routeLabels = {
   '/schedule': 'Semesterkalender',
   '/planning/schedule': 'Stundenplanung',
   '/planning/exam': 'Prüfungsplanung',
+  [EXAM_PLAN_ROUTE_ID]: 'Prüfungsplan',
+  '/planning/exam/[draftId]/invigilation': 'Aufsichten',
+  '/planning/exam/exams': 'Prüfungen',
   '/planning/schedule/live': 'Veröffentlichter Stundenplan',
   '/planning/bookings': 'Einzelbuchung',
   [PLAN_ROUTE_ID]: 'Stundenplanung',

@@ -1,6 +1,7 @@
 export { default as Calendar } from './calendar.svelte'
 export { getDefaultCalendarView } from './default-view.js'
 export { isScheduleLike } from './types.js'
+export { toExamEvent } from './exam-event.js'
 export type {
   BookingEventProps,
   CalendarEvent,

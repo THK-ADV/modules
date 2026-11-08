@@ -7,11 +7,14 @@ import type {
   EventDropInfo,
   EventResizeInfo,
   EventSource,
+  ExamEventProps,
   HolidayEventProps,
   ScheduleEventProps,
   SemesterPlanEventProps
 } from '$lib/calendar'
+import type { PublishedExamEntry } from '$lib/schemas/exam-planning'
 import type { ScheduleFilter } from '$lib/stores/schedule-filter.svelte'
+import type { RemoteQuery } from '@sveltejs/kit'
 import type { ScheduleEntryEditorApi } from './schedule-entry-editor-api'
 
 export interface ScheduleProps {
@@ -27,6 +30,11 @@ export interface ScheduleProps {
   /** Semester ID whose bookings are contained in `bookings` on mount. */
   bookingSemester?: string
   loadBookings?: (semester: string) => Promise<CalendarEvent<BookingEventProps>[]>
+  /** Loads published exam appointments by range; without it, exams are never shown. */
+  loadExamEntries?: (range: {
+    start: number
+    end: number
+  }) => RemoteQuery<CalendarEvent<ExamEventProps<PublishedExamEntry>>[]>
   editableSource?: EventSource | EventSource[]
   onEventClick?: (info: EventClickInfo) => void
   onDateSelect?: (info: DateSelectInfo) => void

@@ -11,6 +11,7 @@ export type UserInfo = {
   fastForwardApprovalPOs: string[] | undefined
   hasSchedulePlanningPrivileges: boolean
   hasExamPlanningPrivileges: boolean
+  hasExamPlanningViewPrivileges: boolean // superset of hasExamPlanningPrivileges
   hasSchedulePlanningViewPrivileges: boolean // superset of hasSchedulePlanningPrivileges
   hasCoreDataEditPrivileges: boolean
   hasScheduleBookingPrivileges: boolean

@@ -13,14 +13,15 @@
     onClose
   }: {
     id: string
-    moduleDraftState: ModuleDraftState
+    /** Shows the edit action if the draft can be edited. */
+    moduleDraftState?: ModuleDraftState
     onClose?: () => void
   } = $props()
 </script>
 
 {#snippet actions()}
   <div class="flex items-center gap-1">
-    {#if canEdit(moduleDraftState)}
+    {#if moduleDraftState && canEdit(moduleDraftState)}
       <Button
         href={resolve('/my-modules/[id=uuid]', { id })}
         variant="outline"

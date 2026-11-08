@@ -15,8 +15,14 @@
 
   let {
     scheduleFilter,
-    canShowFaculty = false
-  }: { scheduleFilter: ScheduleProps['scheduleFilter']; canShowFaculty?: boolean } = $props()
+    canShowFaculty = false,
+    canShowExams = false
+  }: {
+    scheduleFilter: ScheduleProps['scheduleFilter']
+    canShowFaculty?: boolean
+    /** Whether the calendar loads exams; otherwise the source stays disabled. */
+    canShowExams?: boolean
+  } = $props()
 
   const showReset = $derived.by(() => {
     const {
@@ -61,7 +67,7 @@
     if (showSchedule) count++
     if (showCampus) count++
     if (showFaculty && canShowFaculty) count++
-    if (showExams) count++
+    if (showExams && canShowExams) count++
     return count
   })
 
@@ -257,8 +263,13 @@
   {/if}
 
   <div class="flex items-center gap-2">
-    <Checkbox id="source-exams" bind:checked={scheduleFilter.showExams} disabled={true} />
-    <Label for="source-exams" class="cursor-pointer text-sm font-normal">Prüfungen</Label>
+    {#if canShowExams}
+      <Checkbox id="source-exams" bind:checked={scheduleFilter.showExams} />
+      <Label for="source-exams" class="cursor-pointer text-sm font-normal">Prüfungen</Label>
+    {:else}
+      <Checkbox id="source-exams" checked={false} disabled={true} />
+      <Label for="source-exams" class="text-sm font-normal opacity-70">Prüfungen</Label>
+    {/if}
   </div>
 {/snippet}
 

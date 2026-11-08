@@ -8,6 +8,7 @@ import {
   updateScheduleEntry,
   updateScheduleEntrySeries
 } from '$lib/server/backend/calendar'
+import { fetchPublishedExamEvents } from '$lib/server/backend/exam-entry'
 import {
   createScheduleEntriesInputSchema,
   scheduleEntriesRangeInputSchema,
@@ -34,6 +35,15 @@ export const fetchLiveScheduleEntries = query(
   async ({ start, end, bypassCache }) => {
     const { fetch } = getRequestEvent()
     return fetchScheduleEntriesByRange(fetch, start, end, bypassCache)
+  }
+)
+
+/** Fetches published exam appointments overlapping the range of epoch milliseconds */
+export const fetchPublishedExamEntries = query(
+  z.object({ start: z.number().int(), end: z.number().int() }),
+  async ({ start, end }) => {
+    const { fetch } = getRequestEvent()
+    return fetchPublishedExamEvents(fetch, start, end)
   }
 )
 

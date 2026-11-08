@@ -7,8 +7,7 @@ const dateRangeSchema = z.object({
 })
 export type DateRange = z.infer<typeof dateRangeSchema>
 
-/** `exam: null` refers to the default exam named after the module. */
-const examRefSchema = z.object({ module: z.uuid(), exam: z.string().nullable() })
+const examRefSchema = z.object({ module: z.uuid(), exam: z.uuid() })
 
 const registrationOverrideSchema = examRefSchema
   .extend(dateRangeSchema.shape)
@@ -35,8 +34,8 @@ const examListPOSchema = z.object({
 })
 
 /**
- * `semester` is the smallest recommended semester, the maximum integer without any. `examNames: null` selects the
- * default exam, generic modules have `[]`.
+ * `semester` is the smallest recommended semester, the maximum integer without any. Generic modules and modules
+ * without assigned exams have empty `exams`.
  */
 const examListModuleOptionSchema = z.object({
   id: z.uuid(),
@@ -50,7 +49,7 @@ const examListModuleOptionSchema = z.object({
   firstExaminer: z.string(),
   secondExaminer: z.string(),
   examPhases: z.array(z.string()),
-  examNames: z.array(z.string()).nullable()
+  exams: z.array(z.object({ id: z.uuid(), name: z.string() }))
 })
 export type ExamListModuleOption = z.infer<typeof examListModuleOptionSchema>
 

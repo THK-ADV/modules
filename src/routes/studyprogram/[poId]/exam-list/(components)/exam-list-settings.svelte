@@ -184,7 +184,7 @@
       content?.focus()
     }}
   >
-    <Dialog.Header class="border-b px-6 py-4">
+    <Dialog.Header class="border-b py-4 pr-12 pl-6">
       <Dialog.Title>Einstellungen</Dialog.Title>
       <Dialog.Description>Gelten für alle Module der Prüfungsliste.</Dialog.Description>
     </Dialog.Header>

@@ -15,7 +15,6 @@ export interface PlanDraft {
 }
 
 export interface PlanDraftCreate {
-  kind: PlanDraftKind
   semester: string
 }
 

@@ -1,5 +1,4 @@
 import { z } from 'zod/v4'
-import { moduleExamsUpdateSchema } from './module-exams'
 
 const createYamlSafeText = (
   minLength?: number,
@@ -218,12 +217,11 @@ export const updatePermissionsSchema = z.array(z.string())
 
 export const permittedAssessmentMethodsSchema = z.array(z.string())
 
-/** Editor form of the module draft, update permissions, permitted assessment methods and the lazily loaded exams of the live module. */
+/** Editor form of the module draft, update permissions and permitted assessment methods. */
 export const moduleFormSchema = moduleDraftSchema
   .extend({
     updatePermissions: updatePermissionsSchema,
-    permittedAssessmentMethods: permittedAssessmentMethodsSchema,
-    exams: moduleExamsUpdateSchema.optional()
+    permittedAssessmentMethods: permittedAssessmentMethodsSchema
   })
   .refine(
     ({ assessmentMethods, permittedAssessmentMethods }) =>

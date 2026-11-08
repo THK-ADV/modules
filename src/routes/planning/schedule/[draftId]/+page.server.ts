@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, params, parent }) =
   const [holidays, semesterEntries, draft] = await Promise.all([
     fetchHolidays(fetch),
     fetchSemesterEntries(fetch),
-    fetchPlanDraft(fetch, params.draftId, 'schedule')
+    fetchPlanDraft(fetch, params.draftId)
   ])
 
   if (draft.planDraft.publishedAt !== null) {

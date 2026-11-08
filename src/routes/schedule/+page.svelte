@@ -1,8 +1,10 @@
 <script lang="ts">
   import { browser } from '$app/environment'
-  import { isScheduleLike, type EventClickInfo } from '$lib/calendar'
+  import { isScheduleLike, type EventClickInfo, type ExamEventProps } from '$lib/calendar'
   import BookingDetailsDialog from '$lib/components/schedule/booking-details-dialog.svelte'
   import { fetchBookings } from '$lib/components/schedule/booking.remote'
+  import ExamEntryDetailsDialog from '$lib/components/schedule/exam-entry-details-dialog.svelte'
+  import { fetchPublishedExamEntries } from '$lib/components/schedule/schedule.remote'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
@@ -24,6 +26,7 @@
   let bookings = $state(data.bookings)
   let selectedScheduleEntry = $state<ScheduleEntry | TeachingBooking | null>(null)
   let selectedBooking = $state<CampusBooking | null>(null)
+  let selectedExam = $state<ExamEventProps | null>(null)
   let hintRead = $state(getBooleanFromLocalStorage(HINT_STORAGE_KEY, false))
 
   function dismissHint() {
@@ -38,6 +41,8 @@
       selectedScheduleEntry = props.raw
     } else if (props.source === 'booking') {
       selectedBooking = props.raw
+    } else if (props.source === 'exam') {
+      selectedExam = props
     }
   }
 
@@ -79,7 +84,7 @@
     </p>
   </div>
 
-  <ScheduleFilter {scheduleFilter} canShowFaculty={data.canSeeFaculty} />
+  <ScheduleFilter {scheduleFilter} canShowFaculty={data.canSeeFaculty} canShowExams />
 
   <Schedule
     holidays={data.holidays}
@@ -92,6 +97,7 @@
     {scheduleFilter}
     bypassCache={false}
     loadScheduleEntries={liveScheduleEntryEditorApi.load}
+    loadExamEntries={fetchPublishedExamEntries}
   />
 
   {#if selectedScheduleEntry}
@@ -100,6 +106,14 @@
       entry={selectedScheduleEntry}
       studyPrograms={scheduleFilter.studyProgramsWithSpecialization}
       showBookingMetadata={false}
+    />
+  {/if}
+
+  {#if selectedExam}
+    <ExamEntryDetailsDialog
+      exam={selectedExam}
+      studyPrograms={scheduleFilter.studyProgramsWithSpecialization}
+      onClose={() => (selectedExam = null)}
     />
   {/if}
 

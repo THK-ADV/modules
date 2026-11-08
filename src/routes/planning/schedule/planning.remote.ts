@@ -10,7 +10,7 @@ export const createSchedulePlanDraft = form(
   }),
   async ({ semester }) => {
     const { fetch } = getRequestEvent()
-    await createPlanDraft(fetch, { kind: 'schedule', semester })
+    await createPlanDraft(fetch, { semester })
     throw redirect(303, resolve('/planning/schedule'))
   }
 )

@@ -3,8 +3,7 @@
     Calendar,
     type CalendarEvent,
     type CalendarEventProps,
-    type DateRangeInfo,
-    type ExamEventProps
+    type DateRangeInfo
   } from '$lib/calendar'
   import type { ScheduleProps } from '$lib/components/schedule/types'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -13,39 +12,21 @@
   import { uiStore } from '$lib/stores/ui.svelte.js'
   import type { ScheduleEntry } from '$lib/types/schedule'
   import { isTeachingKind } from '$lib/types/booking'
-  import { semesterIdOf } from '$lib/types/semester'
   import { RefreshCw, TriangleAlert } from '@lucide/svelte'
 
   const {
     holidays,
     holidaysMonth,
     semesterEntries,
+    sources,
     onEventClick,
     onDateSelect,
     onEventDrop,
     onEventCopy,
     onEventResize,
     scheduleFilter,
-    scheduleEntries = $bindable([]),
-    bookings = $bindable([]),
-    bookingSemester,
-    loadBookings,
-    editableSource,
-    bypassCache,
-    loadScheduleEntries,
-    loadExamEntries
+    editableSource
   }: ScheduleProps = $props()
-
-  let examEntries = $state.raw<CalendarEvent<ExamEventProps<PublishedExamEntry>>[]>([])
-  let visibleRange = $state.raw<{ start: number; end: number } | null>(null)
-  /** Failed loading of the visible exams with a retry refetching them. */
-  let examFailure = $state.raw<{ message: string; retry: () => void }>()
-
-  let fetchedBookingSemesters = $state<string[]>([])
-
-  function isBookingSemesterLoaded(semester: string) {
-    return semester === bookingSemester || fetchedBookingSemesters.includes(semester)
-  }
 
   const holidayEventsForView = $derived(
     uiStore.selectedCalendarView === 'dayGridMonth' ? holidaysMonth : holidays
@@ -81,7 +62,7 @@
       }
     }
 
-    if (showSchedule || showCampus || showFaculty || (showExams && loadExamEntries)) {
+    if (showSchedule || showCampus || showFaculty || showExams) {
       const {
         selectedTeachingUnits,
         selectedCourseTypes,
@@ -190,7 +171,7 @@
       }
 
       if (showSchedule) {
-        for (const entry of scheduleEntries) {
+        for (const entry of sources.scheduleEntries?.current ?? []) {
           if (matchesScheduleFilter(entry.title, entry.extendedProps.raw)) {
             allEvents.push(entry)
           }
@@ -234,110 +215,47 @@
         )
       }
 
-      if (showExams && loadExamEntries) {
-        for (const entry of examEntries) {
+      if (showExams) {
+        for (const entry of sources.examEntries?.current ?? []) {
           if (matchesExamFilter(entry.title, entry.extendedProps.raw)) allEvents.push(entry)
         }
       }
 
       const visible = { teaching: showSchedule, campus: showCampus, faculty: showFaculty }
 
-      for (const entry of bookings) {
-        const props = entry.extendedProps
-        if (!visible[props.kind]) continue
-        const matches = isTeachingKind(props)
-          ? matchesScheduleFilter(entry.title, props.raw)
-          : matchesRooms(props.raw.rooms)
-        if (matches) allEvents.push(entry)
+      for (const query of sources.bookings) {
+        for (const entry of query.current ?? []) {
+          const props = entry.extendedProps
+          if (!visible[props.kind]) continue
+          const matches = isTeachingKind(props)
+            ? matchesScheduleFilter(entry.title, props.raw)
+            : matchesRooms(props.raw.rooms)
+          if (matches) allEvents.push(entry)
+        }
       }
     }
 
     return allEvents
   })
 
-  // Bookings are preloaded for the current semester; only fetch again when the view leaves it.
-  function loadBookingsForRange(info: DateRangeInfo) {
-    if (!loadBookings) return
-    // `end` is exclusive; a week may straddle two semesters.
-    for (const semester of new Set([
-      semesterIdOf(info.start),
-      semesterIdOf(new Date(info.end.getTime() - 1))
-    ])) {
-      if (isBookingSemesterLoaded(semester)) continue
-      fetchedBookingSemesters.push(semester)
-      Promise.resolve()
-        .then(() => loadBookings(semester))
-        .then((events) => bookings.push(...events))
-        .catch(() => {
-          fetchedBookingSemesters = fetchedBookingSemesters.filter((s) => s !== semester)
-        })
-    }
-  }
-
-  // Exams are loaded only while shown, for the visible range.
-  $effect(() => {
-    const range = visibleRange
-    examFailure = undefined
-    if (!range || !loadExamEntries || !scheduleFilter.showExams) return
-    let current = true
-    // Outside the effect, so the remote query is not bound to its reactive context.
-    const load = (refresh: boolean) =>
-      Promise.resolve()
-        .then(async () => {
-          const query = loadExamEntries(range)
-          if (refresh) await query.refresh()
-          return query
-        })
-        .then((events) => current && (examEntries = events))
-        .catch((error) => {
-          if (!current) return
-          examEntries = []
-          examFailure = {
-            message: getErrorMessage(error),
-            retry: () => {
-              examFailure = undefined
-              load(true)
-            }
-          }
-        })
-    load(false)
-    return () => (current = false)
-  })
-
-  // Fetch schedule entries when the date range changes
-  async function onDateRangeSet(info: DateRangeInfo) {
-    visibleRange = { start: info.start.getTime(), end: info.end.getTime() }
-    loadBookingsForRange(info)
-    try {
-      // FullCalendar calls `datesSet` synchronously during `calendar.render()` inside Svelte's
-      // `onMount`; defer `.run()` so the remote query starts outside that reactive mount context.
-      const entries = await Promise.resolve()
-        .then(() =>
-          loadScheduleEntries({
-            start: info.start.getTime(),
-            end: info.end.getTime(),
-            bypassCache
-          })
-        )
-        .catch(() => {
-          return []
-        })
-      scheduleEntries.length = 0
-      scheduleEntries.push(...entries)
-    } catch {
-      // network or parse error — leave current entries in place
+  function onDateRangeSet({ start, end }: DateRangeInfo) {
+    const range = sources.range
+    if (range?.start !== start.getTime() || range.end !== end.getTime()) {
+      sources.range = { start: start.getTime(), end: end.getTime() }
     }
   }
 </script>
 
-{#if examFailure}
+{#if sources.failed.length}
   <div
     class="border-destructive/30 bg-destructive/10 mb-2 flex flex-wrap items-center gap-2 rounded-md border p-2 pl-3 text-sm"
     role="alert"
   >
     <TriangleAlert class="text-destructive size-4 shrink-0" aria-hidden="true" />
-    <p class="text-destructive flex-1">Prüfungen fehlen im Kalender: {examFailure.message}</p>
-    <Button variant="outline" size="sm" onclick={examFailure.retry}>
+    <p class="text-destructive flex-1">
+      Einträge fehlen im Kalender: {getErrorMessage(sources.failed[0]?.error)}
+    </p>
+    <Button variant="outline" size="sm" onclick={() => sources.retry()}>
       <RefreshCw aria-hidden="true" />
       Erneut laden
     </Button>

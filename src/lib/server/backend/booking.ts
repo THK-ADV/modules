@@ -17,7 +17,6 @@ import {
   type BookingKind
 } from '$lib/types/booking'
 import type { SeriesOccurrence } from '$lib/types/schedule'
-import { semesterIdOf } from '$lib/types/semester'
 import { z } from 'zod/v4'
 import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
 
@@ -88,19 +87,13 @@ export async function fetchBookingsForSemester(
   return lists.flat().map(toBookingEvent)
 }
 
-/** Page-load data for the calendar pages: bookings of the requested semester (current by default), kinds by user role. */
-export async function loadCurrentSemesterBookings(
-  fetch: typeof globalThis.fetch,
-  user: User | undefined,
-  bypassCache: boolean,
-  bookingSemester = semesterIdOf(new Date())
-) {
+/** Booking kinds the calendar pages load for the user; faculty bookings are visible to employees only. */
+export function bookingAccess(user: User | undefined) {
   const canSeeFaculty = canSeeFacultyBookings(user)
   const bookingKinds: BookingKind[] = canSeeFaculty
     ? ['teaching', 'campus', 'faculty']
     : ['teaching', 'campus']
-  const bookings = await fetchBookingsForSemester(fetch, bookingSemester, bookingKinds, bypassCache)
-  return { bookings, bookingSemester, bookingKinds, canSeeFaculty }
+  return { bookingKinds, canSeeFaculty }
 }
 
 export async function fetchBookingSeriesOccurrences(

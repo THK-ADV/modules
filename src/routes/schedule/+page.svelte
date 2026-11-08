@@ -2,12 +2,11 @@
   import { browser } from '$app/environment'
   import { isScheduleLike, type EventClickInfo, type ExamEventProps } from '$lib/calendar'
   import BookingDetailsDialog from '$lib/components/schedule/booking-details-dialog.svelte'
-  import { fetchBookings } from '$lib/components/schedule/booking.remote'
   import ExamEntryDetailsDialog from '$lib/components/schedule/exam-entry-details-dialog.svelte'
-  import { fetchPublishedExamEntries } from '$lib/components/schedule/schedule.remote'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
+  import { ScheduleSources } from '$lib/components/schedule/schedule-sources.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { getBooleanFromLocalStorage, setBooleanToLocalStorage } from '$lib/stores/local-storage'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
@@ -20,10 +19,13 @@
 
   const { data }: PageProps = $props()
 
-  // Seed local state once; $state makes in-place array mutations here and in Schedule reactive.
-  // $derived(data.bookings) would not make the array deeply reactive.
-  // svelte-ignore state_referenced_locally
-  let bookings = $state(data.bookings)
+  const sources = new ScheduleSources(() => ({
+    filter: scheduleFilter,
+    loadScheduleEntries: liveScheduleEntryEditorApi.load,
+    bookingKinds: data.bookingKinds,
+    bypassCache: false,
+    exams: true
+  }))
   let selectedScheduleEntry = $state<ScheduleEntry | TeachingBooking | null>(null)
   let selectedBooking = $state<CampusBooking | null>(null)
   let selectedExam = $state<ExamEventProps | null>(null)
@@ -44,10 +46,6 @@
     } else if (props.source === 'exam') {
       selectedExam = props
     }
-  }
-
-  function loadBookings(semester: string) {
-    return fetchBookings({ semester, kinds: data.bookingKinds, bypassCache: false })
   }
 </script>
 
@@ -90,14 +88,9 @@
     holidays={data.holidays}
     holidaysMonth={data.holidaysMonth}
     semesterEntries={data.semesterEntries}
-    bind:bookings
-    bookingSemester={data.bookingSemester}
-    {loadBookings}
+    {sources}
     {onEventClick}
     {scheduleFilter}
-    bypassCache={false}
-    loadScheduleEntries={liveScheduleEntryEditorApi.load}
-    loadExamEntries={fetchPublishedExamEntries}
   />
 
   {#if selectedScheduleEntry}

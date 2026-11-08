@@ -1,4 +1,5 @@
 import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
+import type { RemoteQuery } from '@sveltejs/kit'
 import type {
   ScheduleEntryCreate,
   ScheduleEntryEdit,
@@ -29,7 +30,7 @@ export interface ScheduleEntryLoadOptions {
 }
 
 export interface ScheduleEntryEditorApi {
-  load: (options: ScheduleEntryLoadOptions) => Promise<CalendarEvent<ScheduleEventProps>[]>
+  load: (options: ScheduleEntryLoadOptions) => RemoteQuery<CalendarEvent<ScheduleEventProps>[]>
   create: (entries: ScheduleEntryCreate[]) => Promise<CalendarEvent<ScheduleEventProps>[]>
   update: (
     entry: ScheduleEntryEdit,
@@ -40,9 +41,7 @@ export interface ScheduleEntryEditorApi {
 }
 
 export const liveScheduleEntryEditorApi: ScheduleEntryEditorApi = {
-  async load(options) {
-    return await fetchLiveScheduleEntries(options)
-  },
+  load: fetchLiveScheduleEntries,
   async create(entries) {
     return await createLiveScheduleEntries(entries)
   },
@@ -62,9 +61,7 @@ export const liveScheduleEntryEditorApi: ScheduleEntryEditorApi = {
 
 export function createDraftScheduleEntryEditorApi(draftId: string): ScheduleEntryEditorApi {
   return {
-    async load(options) {
-      return await fetchDraftScheduleEntries({ draftId, range: options })
-    },
+    load: (range) => fetchDraftScheduleEntries({ draftId, range }),
     async create(entries) {
       return await createDraftScheduleEntries({ draftId, entries })
     },

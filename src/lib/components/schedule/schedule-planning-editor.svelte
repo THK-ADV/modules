@@ -9,7 +9,6 @@
     createBookings,
     deleteBooking,
     fetchBookingSeriesOccurrences,
-    fetchBookings,
     updateBooking,
     updateBookingSeries
   } from '$lib/components/schedule/booking.remote'
@@ -25,14 +24,12 @@
   } from '$lib/types/booking'
   import {
     isScheduleLike,
-    type BookingEventProps,
     type CalendarEvent,
     type DateSelectInfo,
     type EventClickInfo,
     type EventCopyInfo,
     type EventDropInfo,
-    type EventResizeInfo,
-    type ScheduleEventProps
+    type EventResizeInfo
   } from '$lib/calendar'
   import ErrorMessage from '$lib/components/error-message.svelte'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
@@ -42,6 +39,7 @@
   import ScheduleEntryUpdateScopeDialog from '$lib/components/schedule/schedule-entry-update-scope-dialog.svelte'
   import type { ScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
+  import { ScheduleSources } from '$lib/components/schedule/schedule-sources.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { getErrorMessage } from '$lib/errors'
   import { Label } from '$lib/components/ui/label/index.js'
@@ -64,8 +62,6 @@
     holidays: HolidayCalendarEvent<HolidayEventProps>[]
     holidaysMonth: HolidayCalendarEvent<HolidayEventProps>[]
     semesterEntries: CalendarEvent<SemesterPlanEventProps>[]
-    bookings: CalendarEvent<BookingEventProps>[]
-    bookingSemester: string
     bookingKinds: BookingKind[]
     canSeeFaculty: boolean
   }
@@ -91,10 +87,12 @@
     if (browser) localStorage.setItem('spf-create-mode', mode)
   }
 
-  // Data
-  let scheduleEntries = $state<CalendarEvent<ScheduleEventProps>[]>([])
-  // svelte-ignore state_referenced_locally
-  let bookings = $state(calendarData.bookings)
+  const sources = new ScheduleSources(() => ({
+    filter: schedulePlanningFilter,
+    loadScheduleEntries: api.load,
+    bookingKinds: calendarData.bookingKinds,
+    bypassCache: true
+  }))
   let bookingDialogMode = $state<BookingMode | null>(null)
   let selectedBooking = $state<CampusBooking | null>(null)
   let pendingBookingSlot = $state<{ start: Date; end: Date } | null>(null)
@@ -319,24 +317,11 @@
 
   async function createEntry(entries: ScheduleEntryCreate[]) {
     try {
-      const createdEntries = await api.create(entries)
-      // prefer optimistic update over server update
-      scheduleEntries.push(...createdEntries)
+      sources.patchScheduleEntries(await api.create(entries))
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
       resetDialog()
-    }
-  }
-
-  function replaceScheduleEntries(updatedEntries: CalendarEvent<ScheduleEventProps>[]) {
-    for (const updatedEntry of updatedEntries) {
-      const idx = scheduleEntries.findIndex((e) => e.id === updatedEntry.id)
-      if (idx !== -1) {
-        scheduleEntries[idx] = updatedEntry
-      } else {
-        scheduleEntries.push(updatedEntry)
-      }
     }
   }
 
@@ -346,8 +331,7 @@
     options?: { onError?: () => void }
   ) {
     try {
-      const updatedEntries = await api.update(entry, scope)
-      replaceScheduleEntries(updatedEntries)
+      sources.patchScheduleEntries(await api.update(entry, scope))
     } catch (err) {
       options?.onError?.()
       errorMessage = getErrorMessage(err)
@@ -359,11 +343,7 @@
   async function deleteEntry(id: string) {
     try {
       await api.delete(id)
-      // prefer optimistic update over server delete
-      const idx = scheduleEntries.findIndex((e) => e.id === id)
-      if (idx !== -1) {
-        scheduleEntries.splice(idx, 1)
-      }
+      sources.patchScheduleEntries([], [id])
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
@@ -390,15 +370,6 @@
     }
   }
 
-  async function loadBookings(semester: string) {
-    try {
-      return await fetchBookings({ semester, kinds: calendarData.bookingKinds, bypassCache: true })
-    } catch (err) {
-      errorMessage = getErrorMessage(err)
-      throw err
-    }
-  }
-
   function openCreateBookingDialog(kind: BookingKind) {
     const prefilled = pendingBookingSlot ?? undefined
     pendingBookingSlot = null
@@ -407,7 +378,7 @@
 
   async function createBookingEntries(entries: BookingCreate[]) {
     try {
-      bookings.push(...(await createBookings(entries)))
+      sources.patchBookings(await createBookings(entries))
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
@@ -421,16 +392,9 @@
     onError?: () => void
   ) {
     try {
-      const updated =
+      sources.patchBookings(
         scope === 'series' ? await updateBookingSeries(entry) : await updateBooking(entry)
-      for (const event of updated) {
-        const idx = bookings.findIndex((e) => e.id === event.id)
-        if (idx !== -1) {
-          bookings[idx] = event
-        } else {
-          bookings.push(event)
-        }
-      }
+      )
     } catch (err) {
       onError?.()
       errorMessage = getErrorMessage(err)
@@ -448,8 +412,7 @@
   async function deleteBookingEntry(id: string) {
     try {
       await deleteBooking(id)
-      const idx = bookings.findIndex((e) => e.id === id)
-      if (idx !== -1) bookings.splice(idx, 1)
+      sources.patchBookings([], [id])
     } catch (err) {
       errorMessage = getErrorMessage(err)
     } finally {
@@ -531,12 +494,7 @@
     </div>
 
     <Schedule
-      bypassCache={true}
-      loadScheduleEntries={api.load}
-      bind:scheduleEntries
-      bind:bookings
-      bookingSemester={calendarData.bookingSemester}
-      {loadBookings}
+      {sources}
       editableSource={['schedule', 'booking']}
       holidays={calendarData.holidays}
       holidaysMonth={calendarData.holidaysMonth}

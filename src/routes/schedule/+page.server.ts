@@ -1,4 +1,4 @@
-import { loadCurrentSemesterBookings } from '$lib/server/backend/booking'
+import { bookingAccess } from '$lib/server/backend/booking'
 import {
   fetchHolidays,
   fetchSemesterEntries,
@@ -9,10 +9,9 @@ import type { PageServerLoad } from './$types'
 export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
   const { user } = await parent()
 
-  const [holidays, semesterEntries, bookingData] = await Promise.all([
+  const [holidays, semesterEntries] = await Promise.all([
     fetchHolidays(fetch),
-    fetchSemesterEntries(fetch),
-    loadCurrentSemesterBookings(fetch, user, false)
+    fetchSemesterEntries(fetch)
   ])
 
   const { selectedCalendarView, selectedCalendarDate } = getCalendarCookies(cookies)
@@ -23,7 +22,7 @@ export const load: PageServerLoad = async ({ fetch, cookies, parent }) => {
     holidays: timeGrid,
     holidaysMonth: monthBg,
     semesterEntries,
-    ...bookingData,
+    ...bookingAccess(user),
     selectedCalendarView,
     selectedCalendarDate
   }

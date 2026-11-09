@@ -27,12 +27,22 @@
     getSortedRowModel,
     type SortingState
   } from '@tanstack/table-core'
-  import { deletePermission, getPermissions, getStudyPrograms } from '../permissions.remote'
+  import {
+    deletePermission,
+    getPermissions,
+    getPermissionTypes,
+    getStudyPrograms
+  } from '../permissions.remote'
   import PermissionContextCell from './permission-context-cell.svelte'
   import PermissionForm from './permission-form.svelte'
 
-  const [permissions, studyPrograms, identities] = $derived(
-    await Promise.all([getPermissions(), getStudyPrograms(), getCoreData('identities')])
+  const [permissions, permissionTypes, studyPrograms, identities] = $derived(
+    await Promise.all([
+      getPermissions(),
+      getPermissionTypes(),
+      getStudyPrograms(),
+      getCoreData('identities')
+    ])
   )
 
   const studyProgramById = $derived(new Map(studyPrograms.map((sp) => [getFullPOId(sp), sp])))
@@ -292,6 +302,7 @@
   <PermissionForm
     item={editing}
     {permissions}
+    {permissionTypes}
     {people}
     {contextOptions}
     onClose={() => (editing = undefined)}

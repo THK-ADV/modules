@@ -7,7 +7,11 @@
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import { getErrorMessage } from '$lib/errors'
   import { fmtPersonName } from '$lib/formats'
-  import { permissionFormSchema, permissionTypes, type Permission } from '$lib/schemas/permission'
+  import {
+    permissionFormSchema,
+    type Permission,
+    type PermissionType
+  } from '$lib/schemas/permission'
   import { untrack } from 'svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
@@ -18,13 +22,15 @@
     /** null = create, row = edit. Mounted per dialog, so the values below stay fixed. */
     item: Permission | null
     permissions: Permission[]
+    permissionTypes: PermissionType[]
     people: { id: string; deLabel: string }[]
     contextOptions: StudyProgramFilterOption[]
     onClose: () => void
     onSaved: (message: string) => void
   }
 
-  let { item, permissions, people, contextOptions, onClose, onSaved }: Props = $props()
+  let { item, permissions, permissionTypes, people, contextOptions, onClose, onSaved }: Props =
+    $props()
 
   let saving = $state(false)
   let errorMessage = $state<string>()

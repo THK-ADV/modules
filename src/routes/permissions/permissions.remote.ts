@@ -1,5 +1,9 @@
 import { command, getRequestEvent, query } from '$app/server'
-import { permissionFormSchema, permissionSchema } from '$lib/schemas/permission'
+import {
+  permissionFormSchema,
+  permissionSchema,
+  permissionTypeSchema
+} from '$lib/schemas/permission'
 import { studyProgramSchema } from '$lib/schemas/study-program'
 import { fetchBackend, fetchBackendJson } from '$lib/server/backend/http'
 import { z } from 'zod/v4'
@@ -14,6 +18,16 @@ export const getPermissions = query(async () => {
     '/auth-api/permissions',
     z.array(permissionSchema),
     'Fehler beim Laden der Berechtigungen'
+  )
+})
+
+export const getPermissionTypes = query(async () => {
+  const { fetch } = getRequestEvent()
+  return fetchBackendJson(
+    fetch,
+    '/auth-api/permissions/types',
+    z.array(permissionTypeSchema),
+    'Fehler beim Laden der Berechtigungstypen'
   )
 })
 

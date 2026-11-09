@@ -222,36 +222,48 @@ export const deleteExamEntry = command(draftEntrySchema, async ({ draftId, id })
   await getExamPlan(draftId).refresh()
 })
 
-/** Labels and options for phases, RPO assessment methods, persons, rooms with an exam capacity and study programs. */
+/**
+ * Labels and options for phases, RPO assessment methods, persons, research assistants (WMA) as
+ * candidates for the automatic invigilation, rooms with an exam capacity and study programs.
+ */
 export const getExamPlanningLabels = query(async () => {
   const { fetch } = getRequestEvent()
-  const [examPhases, assessmentMethods, identities, rooms, studyPrograms] = await Promise.all([
-    fetchBackendJson(fetch, '/api/examPhases', examPlanningLabelSchemas.examPhases, labelError),
-    fetchBackendJson(
-      fetch,
-      '/api/assessmentMethods?source=rpo',
-      examPlanningLabelSchemas.assessmentMethods,
-      labelError
-    ),
-    fetchBackendJson(fetch, '/api/identities', examPlanningLabelSchemas.identities, labelError),
-    fetchBackendJson(
-      fetch,
-      '/api/rooms?examCapacityOnly=true',
-      examPlanningLabelSchemas.rooms,
-      labelError
-    ),
-    fetchBackendJson(
-      fetch,
-      '/api/studyPrograms?filter=not-expired',
-      examPlanningLabelSchemas.studyPrograms,
-      labelError
-    )
-  ])
+  const [examPhases, assessmentMethods, identities, wmas, rooms, studyPrograms] = await Promise.all(
+    [
+      fetchBackendJson(fetch, '/api/examPhases', examPlanningLabelSchemas.examPhases, labelError),
+      fetchBackendJson(
+        fetch,
+        '/api/assessmentMethods?source=rpo',
+        examPlanningLabelSchemas.assessmentMethods,
+        labelError
+      ),
+      fetchBackendJson(fetch, '/api/identities', examPlanningLabelSchemas.identities, labelError),
+      fetchBackendJson(
+        fetch,
+        '/api/identities?employmentType=wma',
+        examPlanningLabelSchemas.identities,
+        labelError
+      ),
+      fetchBackendJson(
+        fetch,
+        '/api/rooms?examCapacityOnly=true',
+        examPlanningLabelSchemas.rooms,
+        labelError
+      ),
+      fetchBackendJson(
+        fetch,
+        '/api/studyPrograms?filter=not-expired',
+        examPlanningLabelSchemas.studyPrograms,
+        labelError
+      )
+    ]
+  )
   return {
     examPhases: examPhases.filter((p) => p.id !== 'none'),
     assessmentMethods,
     identities,
     persons: identities.flatMap((i) => ('firstname' in i ? [i] : [])),
+    wmas: wmas.flatMap((i) => ('firstname' in i ? [i] : [])),
     rooms,
     studyPrograms
   }

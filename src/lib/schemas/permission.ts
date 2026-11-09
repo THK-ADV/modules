@@ -1,20 +1,12 @@
 import { z } from 'zod/v4'
 
-/** Mirrors `permission.PermissionType` of the backend, including its labels. */
-export const permissionTypes = [
-  { id: 'module', label: 'Module der PO bearbeiten' },
-  { id: 'approval-fast-forward', label: 'Review überspringen' },
-  { id: 'admin', label: 'Admin' },
-  { id: 'artifacts-preview', label: 'Artefakte anzeigen' },
-  { id: 'artifacts-create', label: 'Artefakte erstellen' },
-  { id: 'schedule-planning', label: 'Stundenplanung' },
-  { id: 'schedule-booking', label: 'Einzelbuchung' }
-]
+export const permissionTypeSchema = z.object({ id: z.string(), label: z.string() })
+export type PermissionType = z.infer<typeof permissionTypeSchema>
 
 export const permissionSchema = z.object({
   id: z.number().int(),
   person: z.object({ id: z.string(), firstname: z.string(), lastname: z.string() }),
-  permType: z.object({ id: z.string(), label: z.string() }),
+  permType: permissionTypeSchema,
   context: z.array(z.string()).nullable()
 })
 export type Permission = z.infer<typeof permissionSchema>

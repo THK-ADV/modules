@@ -465,6 +465,7 @@
               phases={labels.examPhases}
               methods={labels.assessmentMethods}
               persons={labels.persons}
+              candidates={labels.wmas}
               {duties}
               save={(next) => saveExamPoolConfig({ draftId, config: next })}
             />

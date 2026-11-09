@@ -104,6 +104,7 @@
           phases={labels.examPhases}
           methods={labels.assessmentMethods}
           persons={labels.persons}
+          candidates={labels.wmas}
           duties={new Map(inv.roster.map((p) => [p.id, p.count]))}
           save={(next) => saveExamPoolConfig({ draftId, config: next })}
         />

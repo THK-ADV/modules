@@ -16,6 +16,7 @@
     phases,
     methods,
     persons,
+    candidates,
     duties,
     save
   }: {
@@ -23,6 +24,8 @@
     phases: { id: string; label: string; abbrev: string }[]
     methods: { id: string; deLabel: string }[]
     persons: PlanningLabels['persons']
+    /** Persons offered for selection, a subset of `persons`. */
+    candidates: PlanningLabels['persons']
     /** Saved invigilations per person over all appointments of the plan. */
     duties: Map<string, number>
     /** Persists the configuration; a rejection keeps the dialog open with the error. */
@@ -43,26 +46,26 @@
   const personById = $derived(new Map(persons.map((p) => [p.id, p])))
   const dutiesHint = (id: string) =>
     plural(duties.get(id) ?? 0, 'Aufsicht im Plan', 'Aufsichten im Plan')
-  /** Active persons, preceded by selected ones that are inactive or missing in the core data. */
+  const activeCandidates = $derived(candidates.filter((p) => p.isActive))
+  const offered = $derived(new Set(activeCandidates.map((p) => p.id)))
+  /** Active candidates, preceded by selected persons that are not offered as such, e.g. inactive ones. */
   const invigilatorOptions = $derived([
     ...draft.availableInvigilators
-      .filter((id) => !personById.get(id)?.isActive)
+      .filter((id) => !offered.has(id))
       .map((id) => {
         const p = personById.get(id)
         return {
           id,
           label: p ? `${p.lastname}, ${p.firstname}` : id,
-          hint: `Nicht aktiv, ${dutiesHint(id)}`
+          hint: p?.isActive ? dutiesHint(id) : `Nicht aktiv, ${dutiesHint(id)}`
         }
       }),
-    ...persons
-      .filter((p) => p.isActive)
-      .map((p) => ({
-        id: p.id,
-        label: `${p.lastname}, ${p.firstname}`,
-        hint: dutiesHint(p.id),
-        keywords: [p.abbreviation]
-      }))
+    ...activeCandidates.map((p) => ({
+      id: p.id,
+      label: `${p.lastname}, ${p.firstname}`,
+      hint: dutiesHint(p.id),
+      keywords: [p.abbreviation]
+    }))
   ])
   const selectedInvigilators = $derived(
     draft.availableInvigilators

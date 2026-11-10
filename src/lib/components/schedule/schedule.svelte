@@ -179,41 +179,34 @@
       }
 
       // Exams have no course type or module management, so these filters do not apply to them.
-      const matchesExamFilter = (title: string, raw: PublishedExamEntry): boolean => {
-        const people = [
-          ...raw.modules.map((m) => m.firstExaminer),
-          ...raw.rooms.flatMap((r) => r.invigilators)
-        ]
-        return (
-          (!searchString ||
-            title.toLowerCase().includes(lowerSearch) ||
-            raw.modules.some(
-              (m) =>
-                m.title.toLowerCase().includes(lowerSearch) ||
-                m.abbrev.toLowerCase().includes(lowerSearch)
-            )) &&
-          (selectedTeachingUnits.length === 0 ||
-            selectedTeachingUnits.some((tu) => raw.teachingUnits.includes(tu))) &&
-          (selectedModules.length === 0 ||
-            raw.modules.some((m) => selectedModules.includes(m.id))) &&
-          (selectedLecturers.length === 0 ||
-            selectedLecturers.some((id) => people.some((p) => p?.id === id))) &&
-          matchesRooms(raw.rooms) &&
-          ((selectedStudyPrograms.length === 0 &&
-            selectedSemesters.length === 0 &&
-            selectedModuleTypes.length === 0) ||
-            raw.po.some(
-              ({ po, recommendedSemester, mandatory }) =>
-                (selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)) &&
-                (selectedSemesters.length === 0 ||
-                  selectedSemesterNums.some((n) => recommendedSemester.includes(n))) &&
-                (selectedModuleTypes.length === 0 ||
-                  selectedModuleTypes.some(
-                    (id) => (id === 'pm' && mandatory) || (id === 'wm' && !mandatory)
-                  ))
-            ))
-        )
-      }
+      // Lecturers match the first examiners of the modules, not the invigilators.
+      const matchesExamFilter = (title: string, raw: PublishedExamEntry): boolean =>
+        (!searchString ||
+          title.toLowerCase().includes(lowerSearch) ||
+          raw.modules.some(
+            (m) =>
+              m.title.toLowerCase().includes(lowerSearch) ||
+              m.abbrev.toLowerCase().includes(lowerSearch)
+          )) &&
+        (selectedTeachingUnits.length === 0 ||
+          selectedTeachingUnits.some((tu) => raw.teachingUnits.includes(tu))) &&
+        (selectedModules.length === 0 || raw.modules.some((m) => selectedModules.includes(m.id))) &&
+        (selectedLecturers.length === 0 ||
+          selectedLecturers.some((id) => raw.modules.some((m) => m.firstExaminer?.id === id))) &&
+        matchesRooms(raw.rooms) &&
+        ((selectedStudyPrograms.length === 0 &&
+          selectedSemesters.length === 0 &&
+          selectedModuleTypes.length === 0) ||
+          raw.po.some(
+            ({ po, recommendedSemester, mandatory }) =>
+              (selectedStudyPrograms.length === 0 || selectedStudyPrograms.includes(po)) &&
+              (selectedSemesters.length === 0 ||
+                selectedSemesterNums.some((n) => recommendedSemester.includes(n))) &&
+              (selectedModuleTypes.length === 0 ||
+                selectedModuleTypes.some(
+                  (id) => (id === 'pm' && mandatory) || (id === 'wm' && !mandatory)
+                ))
+          ))
 
       if (showExams) {
         for (const entry of sources.examEntries?.current ?? []) {

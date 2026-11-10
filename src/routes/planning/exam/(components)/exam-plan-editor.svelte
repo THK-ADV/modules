@@ -31,7 +31,7 @@
     Upload,
     UserRoundCheck
   } from '@lucide/svelte'
-  import { untrack, type Snippet } from 'svelte'
+  import { settled, untrack, type Snippet } from 'svelte'
   import { MediaQuery } from 'svelte/reactivity'
   import {
     getExamEntries,
@@ -218,13 +218,15 @@
       .catch((error) => (errorMessage = getErrorMessage(error)))
   }
 
-  function onSaved(entry: ExamEntryDraft, created: boolean) {
+  async function onSaved(entry: ExamEntryDraft, created: boolean) {
     if (putEntry(draftId, entry.id, entry)) refreshPool()
-    if (created) {
-      calendar?.gotoDate(entry.start)
-      // The creating panel stays mounted and takes over the appointment with its edits made meanwhile.
-      mode = { kind: 'edit', entry }
-    }
+    if (!created) return
+    calendar?.gotoDate(entry.start)
+    // Switches only once the refreshes have settled: a batch still pending would otherwise render the new
+    // appointment's sections with its own state, in which the panel still creates and has no appointment.
+    await settled()
+    // The creating panel stays mounted and takes over the appointment with its edits made meanwhile.
+    mode = { kind: 'edit', entry }
   }
 
   function onDeleted(id: string) {

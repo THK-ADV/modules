@@ -96,7 +96,8 @@
     /** Whether a section has unsaved changes. */
     dirty?: boolean
     onClose: () => void
-    onSaved: (entry: ExamEntryDraft, created: boolean) => void
+    /** Resolves once a created appointment is opened for editing. */
+    onSaved: (entry: ExamEntryDraft, created: boolean) => Promise<void>
     onDeleted: (id: string) => void
   } = $props()
 
@@ -265,7 +266,7 @@
       else return
       // The sent values count as saved; edits made while saving stay unsaved.
       if (same(times, submitted)) times = timesOf(saved)
-      onSaved(saved, !entry)
+      await onSaved(saved, !entry)
     })
   }
 

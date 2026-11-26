@@ -15,7 +15,7 @@
 
 - Admin and dashboard pages share one UX language (reference: `src/routes/git/publication`):
   - Header: the navigation icon, `h1` and a one-line description; data components render inside a `svelte:boundary` whose pending and failed states keep the header
-  - Status box: one bordered `bg-muted/25` section with a status icon, a headline stating the key number, one secondary fact and a refresh action. Show each number once; no extra stats rows or count badges
+  - Status box: one bordered `bg-muted/25` section with a status icon, a headline stating the key number, one secondary fact and a refresh action. Show each number once; no extra stats rows or count badges. The box must add information of its own: omit it when everything it would show already follows from the rest of the page (e.g. the selected tab and the list)
   - Lists: a `Card` without a heading (the page header and status box already name the content; label the table via `aria-label`) and an optional left-aligned search (`sm:max-w-md`) above a table. Secondary columns appear from `md` and are shown inline below the title on smaller screens. Row actions are always visible icon-only ghost buttons (`size="icon"`, `size-8`) with a `title` tooltip and an `aria-label` naming the row
   - States are text-only outline badges in emerald (new, ok), sky (changed), amber (warning) or red (deleted, destructive), each with dark mode variants
   - Details open in a right side panel next to the list (as in `/my-modules`), full screen on small screens; dialogs are reserved for confirmations and settings. Bulk actions live in a sticky bottom action bar

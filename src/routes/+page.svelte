@@ -3,7 +3,16 @@
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Card from '$lib/components/ui/card/index.js'
   import { routeLabels } from '$lib/routes'
-  import { Book, Calendar1, FileText, Code, Mail, Pencil, Search, ArrowRight } from '@lucide/svelte'
+  import {
+    Book,
+    CalendarDays,
+    FileText,
+    Code,
+    Mail,
+    Pencil,
+    Search,
+    ArrowRight
+  } from '@lucide/svelte'
   import { resolve } from '$app/paths'
 
   const now = new Date()
@@ -52,7 +61,7 @@
             <ArrowRight class="ml-2 size-4" />
           </Button>
           <Button variant="outline" size="lg" href={resolve('/schedule')}>
-            <Calendar1 class="mr-2 size-4" />
+            <CalendarDays class="mr-2 size-4" />
             Kalender öffnen
           </Button>
         </div>

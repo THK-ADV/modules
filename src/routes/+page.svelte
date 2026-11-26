@@ -182,17 +182,10 @@
           </div>
           <div class="flex items-start gap-3">
             <div class="bg-primary/10 mt-0.5 rounded-full p-1">
-              <div class="size-2 rounded-full"></div>
+              <div class="bg-primary size-2 rounded-full"></div>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <p class="font-medium">Prüfungsplan</p>
-                <span
-                  class="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                >
-                  Demnächst
-                </span>
-              </div>
+              <p class="font-medium">Prüfungsplan</p>
               <p class="text-muted-foreground text-sm">Prüfungstermine aller Studiengänge</p>
             </div>
           </div>

@@ -32,6 +32,7 @@ const protectedRoutePrefixes = [
   '/module-approvals',
   '/studyprogram',
   '/planning',
+  '/invigilations',
   '/settings',
   '/core-data',
   '/permissions',

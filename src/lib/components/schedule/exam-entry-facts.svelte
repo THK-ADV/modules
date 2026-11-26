@@ -2,7 +2,12 @@
   import type { ExamEntry, ExamPO } from '$lib/schemas/exam-planning'
   import type { StudyProgram } from '$lib/types/study-program'
   import { examExaminers } from '$lib/types/exam-planning'
-  import { fmtStudyProgram, fmtStudyProgramName } from '$lib/formats'
+  import {
+    fmtList,
+    fmtPersonInitialFirst,
+    fmtStudyProgram,
+    fmtStudyProgramName
+  } from '$lib/formats'
 
   type POKey = Pick<ExamPO, 'po' | 'specialization'>
   const findStudyProgram = (po: POKey, programs: StudyProgram[]) =>
@@ -132,7 +137,11 @@
               <span class="text-muted-foreground">{room.label}</span>
               {#if room.invigilators.length}
                 <span class="text-muted-foreground mt-0.5 block text-xs">
-                  Aufsicht: {room.invigilators.map((i) => i.label).join(', ')}
+                  Aufsicht: {fmtList(
+                    room.invigilators.map((i) =>
+                      fmtPersonInitialFirst({ lastname: i.label, firstname: i.firstname ?? '' })
+                    )
+                  )}
                 </span>
               {/if}
             </span>

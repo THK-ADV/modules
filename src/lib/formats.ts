@@ -77,6 +77,15 @@ export function fmtPersonInitial(person: { lastname: string; firstname: string }
   return person.firstname ? `${person.lastname}, ${person.firstname.charAt(0)}.` : person.lastname
 }
 
+/** `V. Nachname`, so that commas in a list only separate people. */
+export function fmtPersonInitialFirst(person: { lastname: string; firstname: string }): string {
+  return person.firstname ? `${person.firstname.charAt(0)}. ${person.lastname}` : person.lastname
+}
+
+const conjunction = new Intl.ListFormat('de', { type: 'conjunction' })
+/** `A, B und C` */
+export const fmtList = (items: string[]) => conjunction.format(items)
+
 export function fmtPerson(p: Identity): string {
   switch (p.kind) {
     case 'person':
@@ -126,6 +135,7 @@ const dateFormat = (options: Intl.DateTimeFormatOptions) => {
 
 export const fmtDate = dateFormat({ dateStyle: 'medium' }) // 05.01.2026
 export const fmtDateLong = dateFormat({ dateStyle: 'long' }) // 5. Januar 2026
+export const fmtDateFull = dateFormat({ dateStyle: 'full' }) // Montag, 5. Januar 2026
 export const fmtDateTime = dateFormat({ dateStyle: 'medium', timeStyle: 'short' }) // 05.01.2026, 14:30
 export const fmtTime = dateFormat({ timeStyle: 'short' }) // 14:30
 export const fmtWeekdayLong = dateFormat({ weekday: 'long', day: 'numeric', month: 'long' }) // Montag, 5. Januar

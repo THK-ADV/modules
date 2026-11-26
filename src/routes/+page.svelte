@@ -3,7 +3,16 @@
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Card from '$lib/components/ui/card/index.js'
   import { routeLabels } from '$lib/routes'
-  import { Book, Calendar1, FileText, Code, Mail, Pencil, Search, ArrowRight } from '@lucide/svelte'
+  import {
+    Book,
+    CalendarDays,
+    FileText,
+    Code,
+    Mail,
+    Pencil,
+    Search,
+    ArrowRight
+  } from '@lucide/svelte'
   import { resolve } from '$app/paths'
 
   const now = new Date()
@@ -52,7 +61,7 @@
             <ArrowRight class="ml-2 size-4" />
           </Button>
           <Button variant="outline" size="lg" href={resolve('/schedule')}>
-            <Calendar1 class="mr-2 size-4" />
+            <CalendarDays class="mr-2 size-4" />
             Kalender öffnen
           </Button>
         </div>
@@ -173,17 +182,10 @@
           </div>
           <div class="flex items-start gap-3">
             <div class="bg-primary/10 mt-0.5 rounded-full p-1">
-              <div class="size-2 rounded-full"></div>
+              <div class="bg-primary size-2 rounded-full"></div>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <p class="font-medium">Prüfungsplan</p>
-                <span
-                  class="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                >
-                  Demnächst
-                </span>
-              </div>
+              <p class="font-medium">Prüfungsplan</p>
               <p class="text-muted-foreground text-sm">Prüfungstermine aller Studiengänge</p>
             </div>
           </div>

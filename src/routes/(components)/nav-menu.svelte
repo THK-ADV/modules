@@ -3,15 +3,17 @@
   import { CORE_DATA_ROUTE_ID, routeLabels } from '$lib/routes'
   import {
     Book,
-    Calendar1,
+    CalendarClock,
     CalendarCog,
+    CalendarDays,
     CalendarPlus,
     ChevronRight,
+    ClipboardList,
     Database,
     FileText,
-    GraduationCap,
     GitBranch,
     GitPullRequestArrow,
+    GraduationCap,
     House,
     LifeBuoy,
     Megaphone,
@@ -19,17 +21,20 @@
     Search,
     Shield,
     Signature,
-    CalendarClock,
-    ClipboardList
+    UserRoundCheck,
+    type IconProps
   } from '@lucide/svelte'
   import { coreDataEntities } from '$lib/core-data/entities'
+  import type { Component } from 'svelte'
+
+  type NavPath = Exclude<keyof typeof routeLabels, `${string}[${string}`>
 
   const mainRoutes = [
     { path: '/', icon: House },
     { path: '/modules', icon: Search },
     { path: '/module-catalogs', icon: Book },
     { path: '/exam-lists', icon: FileText },
-    { path: '/schedule', icon: Calendar1 }
+    { path: '/schedule', icon: CalendarDays }
   ] as const
 
   const gitRoutes = [
@@ -64,10 +69,14 @@
     }
   })
 
-  function isActive(path: string): boolean {
+  function current(path: string): 'page' | 'location' | undefined {
     const pathname = page.url.pathname
-    if (path === '/') return pathname === '/'
-    return pathname === path || pathname.startsWith(path + '/')
+    if (pathname === path) return 'page'
+    if (path !== '/' && pathname.startsWith(path + '/')) return 'location'
+  }
+
+  function isActive(path: string): boolean {
+    return current(path) !== undefined
   }
 
   const showMyModules = $derived.by(() => {
@@ -78,95 +87,76 @@
     return isProfessor(user)
   })
 
-  const showPAVSection = $derived(userInfo?.hasDirectorPrivileges)
-
-  const showModuleReview = $derived(userInfo?.hasModuleReviewPrivileges)
-
-  const rejectedReviews = $derived(userInfo?.rejectedReviews)
-
-  const reviewsToApprove = $derived(userInfo?.reviewsToApprove)
-
-  const showPlanningSection = $derived(
-    userInfo?.hasSchedulePlanningViewPrivileges ||
-      userInfo?.hasExamPlanningViewPrivileges ||
-      userInfo?.hasScheduleBookingPrivileges
+  const showScheduleSection = $derived(
+    userInfo?.hasSchedulePlanningViewPrivileges || userInfo?.hasScheduleBookingPrivileges
   )
 </script>
+
+{#snippet navButton(path: NavPath, Icon: Component<IconProps>, active = isActive(path))}
+  <Sidebar.MenuButton isActive={active} aria-current={active ? current(path) : undefined}>
+    {#snippet child({ props })}
+      <a href={resolve(path)} {...props}>
+        <Icon />
+        <span>{routeLabels[path]}</span>
+      </a>
+    {/snippet}
+  </Sidebar.MenuButton>
+{/snippet}
 
 <!-- main navigation -->
 <Sidebar.Group>
   <Sidebar.Menu>
     {#each mainRoutes as route (route.path)}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive(route.path)}>
-          {#snippet child({ props })}
-            <a href={resolve(route.path)} {...props}>
-              <route.icon />
-              <span>{routeLabels[route.path]}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
+        {@render navButton(route.path, route.icon)}
       </Sidebar.MenuItem>
     {/each}
   </Sidebar.Menu>
 </Sidebar.Group>
 
-<!-- planning section -->
-{#if showPlanningSection}
+<!-- schedule section -->
+{#if showScheduleSection}
   <Sidebar.Separator />
   <Sidebar.Group>
-    <Sidebar.GroupLabel>Planung</Sidebar.GroupLabel>
+    <Sidebar.GroupLabel>Veranstaltungen</Sidebar.GroupLabel>
     <Sidebar.Menu>
       {#if userInfo?.hasSchedulePlanningViewPrivileges}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={isActive('/planning/schedule')}>
-            {#snippet child({ props })}
-              <a href={resolve('/planning/schedule')} {...props}>
-                <CalendarCog />
-                <span>{routeLabels['/planning/schedule']}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
+          {@render navButton('/planning/schedule', CalendarCog)}
         </Sidebar.MenuItem>
       {/if}
       {#if userInfo?.hasScheduleBookingPrivileges && !userInfo.hasSchedulePlanningPrivileges}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={isActive('/planning/bookings')}>
-            {#snippet child({ props })}
-              <a href={resolve('/planning/bookings')} {...props}>
-                <CalendarPlus />
-                <span>{routeLabels['/planning/bookings']}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
+          {@render navButton('/planning/bookings', CalendarPlus)}
         </Sidebar.MenuItem>
       {/if}
-      {#if userInfo?.hasExamPlanningViewPrivileges}
+    </Sidebar.Menu>
+  </Sidebar.Group>
+{/if}
+
+<!-- exams section -->
+{#if userInfo}
+  <Sidebar.Separator />
+  <Sidebar.Group>
+    <Sidebar.GroupLabel>Prüfungen</Sidebar.GroupLabel>
+    <Sidebar.Menu>
+      {#if userInfo.hasExamPlanningPrivileges}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton
-            isActive={isActive('/planning/exam') && !isActive('/planning/exam/exams')}
-          >
-            {#snippet child({ props })}
-              <a href={resolve('/planning/exam')} {...props}>
-                <CalendarClock />
-                <span>{routeLabels['/planning/exam']}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
+          {@render navButton('/planning/exam/exams', ClipboardList)}
         </Sidebar.MenuItem>
       {/if}
-      {#if userInfo?.hasExamPlanningPrivileges}
+      {#if userInfo.hasExamPlanningViewPrivileges}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={isActive('/planning/exam/exams')}>
-            {#snippet child({ props })}
-              <a href={resolve('/planning/exam/exams')} {...props}>
-                <ClipboardList />
-                <span>{routeLabels['/planning/exam/exams']}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
+          {@render navButton(
+            '/planning/exam',
+            CalendarClock,
+            isActive('/planning/exam') && !isActive('/planning/exam/exams')
+          )}
         </Sidebar.MenuItem>
       {/if}
+      <Sidebar.MenuItem>
+        {@render navButton('/invigilations', UserRoundCheck)}
+      </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
 {/if}
@@ -175,19 +165,12 @@
 {#if showMyModules}
   <Sidebar.Separator />
   <Sidebar.Group>
-    <Sidebar.GroupLabel>Dozent:in</Sidebar.GroupLabel>
+    <Sidebar.GroupLabel>Module</Sidebar.GroupLabel>
     <Sidebar.Menu>
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive('/my-modules')}>
-          {#snippet child({ props })}
-            <a href={resolve('/my-modules')} {...props}>
-              <Pencil />
-              <span>{routeLabels['/my-modules']}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
-        {#if rejectedReviews}
-          <Sidebar.MenuBadge>{rejectedReviews}</Sidebar.MenuBadge>
+        {@render navButton('/my-modules', Pencil)}
+        {#if userInfo?.rejectedReviews}
+          <Sidebar.MenuBadge>{userInfo.rejectedReviews}</Sidebar.MenuBadge>
         {/if}
       </Sidebar.MenuItem>
     </Sidebar.Menu>
@@ -195,35 +178,21 @@
 {/if}
 
 <!-- PAV or SGL section -->
-{#if showPAVSection}
+{#if userInfo?.hasDirectorPrivileges}
   <Sidebar.Separator />
   <Sidebar.Group>
     <Sidebar.GroupLabel>PAV oder SGL</Sidebar.GroupLabel>
     <Sidebar.Menu>
-      {#if showModuleReview}
+      {#if userInfo.hasModuleReviewPrivileges}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={isActive('/module-approvals')}>
-            {#snippet child({ props })}
-              <a href={resolve('/module-approvals')} {...props}>
-                <Signature />
-                <span>{routeLabels['/module-approvals']}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-          {#if reviewsToApprove}
-            <Sidebar.MenuBadge>{reviewsToApprove}</Sidebar.MenuBadge>
+          {@render navButton('/module-approvals', Signature)}
+          {#if userInfo.reviewsToApprove}
+            <Sidebar.MenuBadge>{userInfo.reviewsToApprove}</Sidebar.MenuBadge>
           {/if}
         </Sidebar.MenuItem>
       {/if}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive('/studyprogram')}>
-          {#snippet child({ props })}
-            <a href={resolve('/studyprogram')} {...props}>
-              <GraduationCap />
-              <span>{routeLabels['/studyprogram']}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
+        {@render navButton('/studyprogram', GraduationCap)}
       </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
@@ -261,7 +230,7 @@
                 {#each coreDataEntities as entity (entity.key)}
                   {@const path = resolve(CORE_DATA_ROUTE_ID, { entity: entity.key })}
                   <Sidebar.MenuSubItem>
-                    <Sidebar.MenuSubButton isActive={isActive(path)}>
+                    <Sidebar.MenuSubButton isActive={isActive(path)} aria-current={current(path)}>
                       {#snippet child({ props })}
                         <a href={path} {...props}><span>{entity.label}</span></a>
                       {/snippet}
@@ -274,14 +243,7 @@
         {/snippet}
       </Collapsible.Root>
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive('/permissions')}>
-          {#snippet child({ props })}
-            <a href={resolve('/permissions')} {...props}>
-              <Shield />
-              <span>{routeLabels['/permissions']}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
+        {@render navButton('/permissions', Shield)}
       </Sidebar.MenuItem>
     </Sidebar.Menu>
   </Sidebar.Group>
@@ -293,14 +255,7 @@
     <Sidebar.Menu>
       {#each gitRoutes as route (route.path)}
         <Sidebar.MenuItem>
-          <Sidebar.MenuButton isActive={isActive(route.path)}>
-            {#snippet child({ props })}
-              <a href={resolve(route.path)} {...props}>
-                <route.icon />
-                <span>{routeLabels[route.path]}</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
+          {@render navButton(route.path, route.icon)}
         </Sidebar.MenuItem>
       {/each}
     </Sidebar.Menu>
@@ -313,14 +268,7 @@
   <Sidebar.Menu>
     {#each secondaryRoutes as route (route.path)}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton isActive={isActive(route.path)}>
-          {#snippet child({ props })}
-            <a href={resolve(route.path)} {...props}>
-              <route.icon />
-              <span>{routeLabels[route.path]}</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
+        {@render navButton(route.path, route.icon)}
       </Sidebar.MenuItem>
     {/each}
   </Sidebar.Menu>

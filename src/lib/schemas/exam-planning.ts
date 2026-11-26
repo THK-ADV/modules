@@ -13,10 +13,12 @@ export const examPlanSchema = planDraftWithSemesterResponseSchema.extend({
 export type ExamPlan = z.infer<typeof examPlanSchema>
 
 /** Resolved identity of an examiner or invigilator; `label` is the last name of a person. */
+/** Identity whose label is the lastname of a person, who also has a firstname. */
 export const identityRefSchema = z.object({
   id: z.string(),
   kind: z.string(),
   label: z.string(),
+  firstname: z.string().nullable(),
   abbreviation: z.string()
 })
 export type IdentityRef = z.infer<typeof identityRefSchema>
@@ -217,3 +219,23 @@ export const examPlanningLabelSchemas = {
   rooms: z.array(coreDataSchemas.rooms.omit({ type: true, capacity: true })),
   studyPrograms: z.array(studyProgramSchema)
 }
+
+/**
+ * Published appointment with all its rooms, its semester and exam phase. First examiners and invigilators are identity
+ * ids, resolved by the page from the identities it loads anyway.
+ */
+export const invigilationEntrySchema = examEntryBaseSchema
+  .pick({ id: true, start: true, end: true, examName: true })
+  .extend({
+    semester: z.string(),
+    phase: z.string(),
+    modules: z.array(moduleRefSchema.extend({ firstExaminer: z.string().nullable() })),
+    rooms: z.array(examRoomSchema.omit({ id: true }).extend({ invigilators: z.array(z.string()) }))
+  })
+export type InvigilationEntry = z.infer<typeof invigilationEntrySchema>
+
+/** Appointments with the last publication time of the exam plan of each of their semesters. */
+export const invigilationPageSchema = z.object({
+  entries: z.array(invigilationEntrySchema),
+  publishedAt: z.record(z.string(), z.iso.datetime({ offset: true }))
+})

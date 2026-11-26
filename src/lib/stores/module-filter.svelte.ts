@@ -6,7 +6,7 @@ import type { FilterData } from '$lib/types/filter-data'
 import type { ModuleView } from '$lib/types/module'
 import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
 import type { PaginationState } from '@tanstack/table-core'
-import type { ModuleFilterShareState } from '$lib/settings/module-filter-share-url'
+import { getShareList, type FilterShareParams } from '$lib/components/filter-share'
 import {
   clearItemFromLocalStorage,
   getArrayFromLocalStorage,
@@ -33,8 +33,8 @@ function createModuleFilter() {
   let selectedModuleStatus = $state(getArrayFromLocalStorage('mf-selected-module-status'))
 
   let title = $state('')
-  let temporaryShareSession = $state(false)
-  let initialShareState: ModuleFilterShareState | null = null
+  // A shared link shows its filters without overwriting the viewer's own in local storage.
+  let shared = $state(false)
 
   const pages = ['15', '30', '45', 'Alle']
   let pagination = $state(getPaginationFromLocalStorage('mf-pagination', +pages[0]))
@@ -48,40 +48,15 @@ function createModuleFilter() {
     pagination = getPaginationFromLocalStorage('mf-pagination', +pages[0])
   }
 
-  function setArraySelection(
-    next: string[],
-    persistKey: string,
-    allowedValues: string[]
-  ): string[] {
-    const validValues = new Set(allowedValues)
-    const sanitized = next
-      .map((value) => value.trim())
-      .filter((value, index, all) => value.length > 0 && all.indexOf(value) === index)
-      .filter((value) => validValues.has(value))
-
-    if (!temporaryShareSession) {
-      setArrayToLocalStorage(persistKey, sanitized)
+  function shareParams(): FilterShareParams {
+    return {
+      sp: selectedStudyPrograms,
+      sem: selectedSemester,
+      id: selectedIdentities,
+      mt: selectedModuleTypes,
+      st: selectedModuleStatus,
+      q: title
     }
-    return sanitized
-  }
-
-  function hasAddedSelections(current: string[], initial: string[]) {
-    return current.some((value) => !initial.includes(value))
-  }
-
-  function hasAddedFiltersSinceShareLoad() {
-    if (!temporaryShareSession || initialShareState === null) {
-      return false
-    }
-
-    return (
-      hasAddedSelections(selectedStudyPrograms, initialShareState.selectedStudyPrograms) ||
-      hasAddedSelections(selectedIdentities, initialShareState.selectedIdentities) ||
-      hasAddedSelections(selectedSemester, initialShareState.selectedSemester) ||
-      hasAddedSelections(selectedModuleTypes, initialShareState.selectedModuleTypes) ||
-      hasAddedSelections(selectedModuleStatus, initialShareState.selectedModuleStatus) ||
-      (title.trim().length > 0 && title.trim() !== initialShareState.title)
-    )
   }
 
   return {
@@ -127,28 +102,15 @@ function createModuleFilter() {
     get changed() {
       return changed
     },
-    get temporaryShareSession() {
-      return temporaryShareSession
+    get shared() {
+      return shared
     },
-    get shareState(): ModuleFilterShareState {
-      return {
-        selectedStudyPrograms: [...selectedStudyPrograms],
-        selectedIdentities: [...selectedIdentities],
-        selectedSemester: [...selectedSemester],
-        selectedModuleTypes: [...selectedModuleTypes],
-        selectedModuleStatus: [...selectedModuleStatus],
-        title
-      }
-    },
-    get resetButtonLabel() {
-      if (temporaryShareSession && !hasAddedFiltersSinceShareLoad()) {
-        return 'Geteilte Filter zurücksetzen'
-      }
-      return 'Alle Filter zurücksetzen'
+    get shareParams() {
+      return shareParams()
     },
     set pagination(value: PaginationState) {
       pagination = value
-      if (!temporaryShareSession) {
+      if (!shared) {
         setPaginationToLocalStorage('mf-pagination', value)
       }
     },
@@ -162,7 +124,7 @@ function createModuleFilter() {
       } else {
         selectedStudyPrograms.push(id)
       }
-      if (!temporaryShareSession) {
+      if (!shared) {
         setArrayToLocalStorage('mf-selected-study-programs', selectedStudyPrograms)
       }
       changed++
@@ -173,7 +135,7 @@ function createModuleFilter() {
       } else {
         selectedSemester.push(id)
       }
-      if (!temporaryShareSession) {
+      if (!shared) {
         setArrayToLocalStorage('mf-selected-semester', selectedSemester)
       }
       changed++
@@ -184,7 +146,7 @@ function createModuleFilter() {
       } else {
         selectedIdentities.push(id)
       }
-      if (!temporaryShareSession) {
+      if (!shared) {
         setArrayToLocalStorage('mf-selected-identities', selectedIdentities)
       }
       changed++
@@ -195,7 +157,7 @@ function createModuleFilter() {
       } else {
         selectedModuleTypes.push(id)
       }
-      if (!temporaryShareSession) {
+      if (!shared) {
         setArrayToLocalStorage('mf-selected-module-types', selectedModuleTypes)
       }
       changed++
@@ -206,42 +168,42 @@ function createModuleFilter() {
       } else {
         selectedModuleStatus.push(id)
       }
-      if (!temporaryShareSession) {
+      if (!shared) {
         setArrayToLocalStorage('mf-selected-module-status', selectedModuleStatus)
       }
       changed++
     },
     clearSelectedStudyPrograms() {
       selectedStudyPrograms = []
-      if (!temporaryShareSession) {
+      if (!shared) {
         clearItemFromLocalStorage('mf-selected-study-programs')
       }
       changed++
     },
     clearSelectedIdentities() {
       selectedIdentities = []
-      if (!temporaryShareSession) {
+      if (!shared) {
         clearItemFromLocalStorage('mf-selected-identities')
       }
       changed++
     },
     clearSelectedSemester() {
       selectedSemester = []
-      if (!temporaryShareSession) {
+      if (!shared) {
         clearItemFromLocalStorage('mf-selected-semester')
       }
       changed++
     },
     clearSelectedModuleTypes() {
       selectedModuleTypes = []
-      if (!temporaryShareSession) {
+      if (!shared) {
         clearItemFromLocalStorage('mf-selected-module-types')
       }
       changed++
     },
     clearSelectedModuleStatus() {
       selectedModuleStatus = []
-      if (!temporaryShareSession) {
+      if (!shared) {
         clearItemFromLocalStorage('mf-selected-module-status')
       }
       changed++
@@ -254,53 +216,23 @@ function createModuleFilter() {
       this.clearSelectedModuleStatus()
       title = ''
     },
-    setTemporaryShareSession(enabled: boolean) {
-      if (temporaryShareSession === enabled) {
+    applyShare(params: URLSearchParams | null) {
+      if (!params) {
+        if (shared) {
+          shared = false
+          loadFromLocalStorage()
+          title = ''
+          changed++
+        }
         return
       }
-      temporaryShareSession = enabled
-      if (!temporaryShareSession) {
-        initialShareState = null
-        loadFromLocalStorage()
-        title = ''
-      }
-      changed++
-    },
-    applyShareState(state: ModuleFilterShareState) {
-      selectedStudyPrograms = setArraySelection(
-        state.selectedStudyPrograms,
-        'mf-selected-study-programs',
-        studyPrograms.map((option) => option.id)
-      )
-      selectedIdentities = setArraySelection(
-        state.selectedIdentities,
-        'mf-selected-identities',
-        identities.map((option) => option.id)
-      )
-      selectedSemester = setArraySelection(
-        state.selectedSemester,
-        'mf-selected-semester',
-        semester.map((option) => option.id)
-      )
-      selectedModuleTypes = setArraySelection(
-        state.selectedModuleTypes,
-        'mf-selected-module-types',
-        moduleTypes.map((option) => option.id)
-      )
-      selectedModuleStatus = setArraySelection(
-        state.selectedModuleStatus,
-        'mf-selected-module-status',
-        moduleStatus.map((option) => option.id)
-      )
-      title = state.title.trim()
-      initialShareState = {
-        selectedStudyPrograms: [...selectedStudyPrograms],
-        selectedIdentities: [...selectedIdentities],
-        selectedSemester: [...selectedSemester],
-        selectedModuleTypes: [...selectedModuleTypes],
-        selectedModuleStatus: [...selectedModuleStatus],
-        title
-      }
+      shared = true
+      selectedStudyPrograms = getShareList(params, 'sp')
+      selectedSemester = getShareList(params, 'sem')
+      selectedIdentities = getShareList(params, 'id')
+      selectedModuleTypes = getShareList(params, 'mt')
+      selectedModuleStatus = getShareList(params, 'st')
+      title = params.get('q')?.trim() ?? ''
       pagination = { ...pagination, pageIndex: 0 }
       changed++
     },

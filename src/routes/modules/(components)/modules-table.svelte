@@ -27,7 +27,6 @@
   const isMobile = new IsMobile()
 
   let sorting = $state<SortingState>([{ id: 'title', desc: false }])
-  let pagination = $state(moduleFilter.pagination)
 
   let columnVisibility: VisibilityState = $derived.by(() => {
     if (isMobile.current) {
@@ -73,12 +72,8 @@
     // pagination
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
-        pagination = updater(pagination)
-      } else {
-        pagination = updater
-      }
-      moduleFilter.pagination = pagination
+      moduleFilter.pagination =
+        typeof updater === 'function' ? updater(moduleFilter.pagination) : updater
     },
     // state
     state: {
@@ -86,7 +81,7 @@
         return sorting
       },
       get pagination() {
-        return pagination
+        return moduleFilter.pagination
       },
       get globalFilter() {
         return globalFilter

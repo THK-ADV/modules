@@ -32,9 +32,18 @@ function setStringToLocalStorage(key: string, value: string) {
   localStorage.setItem(key, value)
 }
 
+// Short names of the calendar views in shared links.
+const sharedViews = new Map([
+  ['day', 'timeGridDay'],
+  ['week', 'timeGridWeek'],
+  ['month', 'dayGridMonth']
+])
+
 function createUiStore() {
   let selectedCalendarView = $state(getSelectedCalendarView())
   let selectedCalendarDate = $state(getSelectedCalendarDate())
+  // A shared link shows its view and date without overwriting the viewer's own.
+  let shared = false
 
   return {
     get selectedCalendarView() {
@@ -42,14 +51,28 @@ function createUiStore() {
     },
     set selectedCalendarView(view: string) {
       selectedCalendarView = view
-      setStringToLocalStorage('selected-calendar-view', view)
+      if (!shared) setStringToLocalStorage('selected-calendar-view', view)
     },
     get selectedCalendarDate() {
       return selectedCalendarDate
     },
     set selectedCalendarDate(date: string) {
       selectedCalendarDate = date
-      setStringToLocalStorage('selected-calendar-date', date)
+      if (!shared) setStringToLocalStorage('selected-calendar-date', date)
+    },
+    get shareParams() {
+      return {
+        view: [...sharedViews].find(([, view]) => view === selectedCalendarView)?.[0] ?? '',
+        // Local day as YYYY-MM-DD; the ISO string is UTC and may fall on the previous day.
+        date: new Date(selectedCalendarDate).toLocaleDateString('sv-SE')
+      }
+    },
+    /** Shows the view and date of a shared link, or restores the viewer's own on `null`. */
+    applyShare(params: URLSearchParams | null) {
+      shared = params !== null
+      const date = params?.get('date') ?? ''
+      selectedCalendarView = sharedViews.get(params?.get('view') ?? '') ?? getSelectedCalendarView()
+      selectedCalendarDate = Number.isNaN(Date.parse(date)) ? getSelectedCalendarDate() : date
     }
   }
 }

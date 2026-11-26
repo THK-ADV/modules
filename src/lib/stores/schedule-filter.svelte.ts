@@ -9,8 +9,9 @@ import type { Identity, ModuleCore } from '$lib/types/core'
 import type { FilterData } from '$lib/types/filter-data'
 import type { Room, TeachingUnit } from '$lib/types/schedule'
 import type { StudyProgram } from '$lib/types/study-program'
+import { getShareList, type FilterShareParams } from '$lib/components/filter-share'
+import { uiStore } from './ui.svelte'
 import {
-  clearItemFromLocalStorage,
   getArrayFromLocalStorage,
   getBooleanFromLocalStorage,
   setArrayToLocalStorage,
@@ -24,11 +25,11 @@ export function createScheduleFilter(prefix: FilterType) {
   // Search
   let searchString = $state('')
 
-  let showSemester = $state(getBooleanFromLocalStorage(`${prefix}-show-semester-plan`, true))
-  let showSchedule = $state(getBooleanFromLocalStorage(`${prefix}-show-schedule`, true))
-  let showCampus = $state(getBooleanFromLocalStorage(`${prefix}-show-campus`, true))
-  let showFaculty = $state(getBooleanFromLocalStorage(`${prefix}-show-faculty`, false))
-  let showExams = $state(getBooleanFromLocalStorage(`${prefix}-show-exams`, true))
+  let showSemester = $state(true)
+  let showSchedule = $state(true)
+  let showCampus = $state(true)
+  let showFaculty = $state(false)
+  let showExams = $state(true)
   const showModuleManagementFilter = prefix === 'sf'
 
   // Filter options
@@ -43,25 +44,72 @@ export function createScheduleFilter(prefix: FilterType) {
   let moduleTypes: FilterData[] = $state.raw([])
 
   // Selected options by the user
-  let selectedTeachingUnits: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-teaching-units`)
-  )
-  let selectedCourseTypes: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-course-types`)
-  )
-  let selectedModules: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-modules`))
-  let selectedStudyPrograms: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-study-programs`)
-  )
-  let selectedSemesters: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-semesters`))
-  let selectedLecturers: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-lecturers`))
-  let selectedModuleManagers: string[] = $state(
-    showModuleManagementFilter ? getArrayFromLocalStorage(`${prefix}-selected-module-managers`) : []
-  )
-  let selectedRooms: string[] = $state(getArrayFromLocalStorage(`${prefix}-selected-rooms`))
-  let selectedModuleTypes: string[] = $state(
-    getArrayFromLocalStorage(`${prefix}-selected-module-types`)
-  )
+  let selectedTeachingUnits: string[] = $state([])
+  let selectedCourseTypes: string[] = $state([])
+  let selectedModules: string[] = $state([])
+  let selectedStudyPrograms: string[] = $state([])
+  let selectedSemesters: string[] = $state([])
+  let selectedLecturers: string[] = $state([])
+  let selectedModuleManagers: string[] = $state([])
+  let selectedRooms: string[] = $state([])
+  let selectedModuleTypes: string[] = $state([])
+
+  // A shared link shows its filters without overwriting the viewer's own in local storage.
+  let shared = $state(false)
+
+  function save(key: string, value: string[] | boolean) {
+    if (shared) return
+    if (typeof value === 'boolean') {
+      setBooleanToLocalStorage(`${prefix}-${key}`, value)
+    } else {
+      setArrayToLocalStorage(`${prefix}-${key}`, value)
+    }
+  }
+
+  function loadFromLocalStorage() {
+    showSemester = getBooleanFromLocalStorage(`${prefix}-show-semester-plan`, true)
+    showSchedule = getBooleanFromLocalStorage(`${prefix}-show-schedule`, true)
+    showCampus = getBooleanFromLocalStorage(`${prefix}-show-campus`, true)
+    showFaculty = getBooleanFromLocalStorage(`${prefix}-show-faculty`, false)
+    showExams = getBooleanFromLocalStorage(`${prefix}-show-exams`, true)
+    selectedTeachingUnits = getArrayFromLocalStorage(`${prefix}-selected-teaching-units`)
+    selectedCourseTypes = getArrayFromLocalStorage(`${prefix}-selected-course-types`)
+    selectedModules = getArrayFromLocalStorage(`${prefix}-selected-modules`)
+    selectedStudyPrograms = getArrayFromLocalStorage(`${prefix}-selected-study-programs`)
+    selectedSemesters = getArrayFromLocalStorage(`${prefix}-selected-semesters`)
+    selectedLecturers = getArrayFromLocalStorage(`${prefix}-selected-lecturers`)
+    selectedModuleManagers = showModuleManagementFilter
+      ? getArrayFromLocalStorage(`${prefix}-selected-module-managers`)
+      : []
+    selectedRooms = getArrayFromLocalStorage(`${prefix}-selected-rooms`)
+    selectedModuleTypes = getArrayFromLocalStorage(`${prefix}-selected-module-types`)
+  }
+  loadFromLocalStorage()
+
+  function shareParams(): FilterShareParams {
+    const sources = [
+      showSemester && 'semester',
+      showSchedule && 'schedule',
+      showCampus && 'campus',
+      showFaculty && 'faculty',
+      showExams && 'exams'
+    ].filter((source) => source !== false)
+    return {
+      q: searchString,
+      tu: selectedTeachingUnits,
+      sem: selectedSemesters,
+      sp: selectedStudyPrograms,
+      mod: selectedModules,
+      mt: selectedModuleTypes,
+      ct: selectedCourseTypes,
+      mm: selectedModuleManagers,
+      lec: selectedLecturers,
+      ro: selectedRooms,
+      // `none` keeps "all sources off" apart from a link without sources, which keeps the viewer's own.
+      src: sources.length > 0 ? sources : ['none'],
+      ...uiStore.shareParams
+    }
+  }
 
   return {
     // Search
@@ -78,35 +126,35 @@ export function createScheduleFilter(prefix: FilterType) {
     },
     set showSemester(value: boolean) {
       showSemester = value
-      setBooleanToLocalStorage(`${prefix}-show-semester-plan`, value)
+      save('show-semester-plan', value)
     },
     get showSchedule() {
       return showSchedule
     },
     set showSchedule(value: boolean) {
       showSchedule = value
-      setBooleanToLocalStorage(`${prefix}-show-schedule`, value)
+      save('show-schedule', value)
     },
     get showCampus() {
       return showCampus
     },
     set showCampus(value: boolean) {
       showCampus = value
-      setBooleanToLocalStorage(`${prefix}-show-campus`, value)
+      save('show-campus', value)
     },
     get showFaculty() {
       return showFaculty
     },
     set showFaculty(value: boolean) {
       showFaculty = value
-      setBooleanToLocalStorage(`${prefix}-show-faculty`, value)
+      save('show-faculty', value)
     },
     get showExams() {
       return showExams
     },
     set showExams(value: boolean) {
       showExams = value
-      setBooleanToLocalStorage(`${prefix}-show-exams`, value)
+      save('show-exams', value)
     },
 
     // Filter options
@@ -128,11 +176,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedCourseTypes = [...selectedCourseTypes, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-course-types`, selectedCourseTypes)
+      save('selected-course-types', selectedCourseTypes)
     },
     clearSelectedCourseTypes() {
       selectedCourseTypes = []
-      clearItemFromLocalStorage(`${prefix}-selected-course-types`)
+      save('selected-course-types', [])
     },
     selectTeachingUnit(id: string) {
       if (selectedTeachingUnits.includes(id)) {
@@ -140,11 +188,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedTeachingUnits = [...selectedTeachingUnits, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-teaching-units`, selectedTeachingUnits)
+      save('selected-teaching-units', selectedTeachingUnits)
     },
     clearSelectedTeachingUnits() {
       selectedTeachingUnits = []
-      clearItemFromLocalStorage(`${prefix}-selected-teaching-units`)
+      save('selected-teaching-units', [])
     },
     get modules() {
       return modules
@@ -158,11 +206,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedModules = [...selectedModules, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-modules`, selectedModules)
+      save('selected-modules', selectedModules)
     },
     clearSelectedModules() {
       selectedModules = []
-      clearItemFromLocalStorage(`${prefix}-selected-modules`)
+      save('selected-modules', [])
     },
     get studyPrograms() {
       return studyPrograms
@@ -176,11 +224,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedStudyPrograms = [...selectedStudyPrograms, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-study-programs`, selectedStudyPrograms)
+      save('selected-study-programs', selectedStudyPrograms)
     },
     clearSelectedStudyPrograms() {
       selectedStudyPrograms = []
-      clearItemFromLocalStorage(`${prefix}-selected-study-programs`)
+      save('selected-study-programs', [])
     },
     get semesters() {
       return semesters
@@ -194,11 +242,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedSemesters = [...selectedSemesters, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-semesters`, selectedSemesters)
+      save('selected-semesters', selectedSemesters)
     },
     clearSelectedSemesters() {
       selectedSemesters = []
-      clearItemFromLocalStorage(`${prefix}-selected-semesters`)
+      save('selected-semesters', [])
     },
     get identities() {
       return identities
@@ -212,11 +260,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedLecturers = [...selectedLecturers, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-lecturers`, selectedLecturers)
+      save('selected-lecturers', selectedLecturers)
     },
     clearSelectedLecturers() {
       selectedLecturers = []
-      clearItemFromLocalStorage(`${prefix}-selected-lecturers`)
+      save('selected-lecturers', [])
     },
     get selectedModuleManagers() {
       return selectedModuleManagers
@@ -228,12 +276,12 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedModuleManagers = [...selectedModuleManagers, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-module-managers`, selectedModuleManagers)
+      save('selected-module-managers', selectedModuleManagers)
     },
     clearSelectedModuleManagers() {
       if (!showModuleManagementFilter) return
       selectedModuleManagers = []
-      clearItemFromLocalStorage(`${prefix}-selected-module-managers`)
+      save('selected-module-managers', [])
     },
     get showModuleManagementFilter() {
       return showModuleManagementFilter
@@ -250,11 +298,11 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedRooms = [...selectedRooms, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-rooms`, selectedRooms)
+      save('selected-rooms', selectedRooms)
     },
     clearSelectedRooms() {
       selectedRooms = []
-      clearItemFromLocalStorage(`${prefix}-selected-rooms`)
+      save('selected-rooms', [])
     },
     get moduleTypes() {
       return moduleTypes
@@ -268,15 +316,56 @@ export function createScheduleFilter(prefix: FilterType) {
       } else {
         selectedModuleTypes = [...selectedModuleTypes, id]
       }
-      setArrayToLocalStorage(`${prefix}-selected-module-types`, selectedModuleTypes)
+      save('selected-module-types', selectedModuleTypes)
     },
     clearSelectedModuleTypes() {
       selectedModuleTypes = []
-      clearItemFromLocalStorage(`${prefix}-selected-module-types`)
+      save('selected-module-types', [])
     },
     get studyProgramsWithSpecialization() {
       return studyProgramsWithSpecialization
     },
+    // Share
+    get shared() {
+      return shared
+    },
+    get shareParams() {
+      return shareParams()
+    },
+    applyShare(params: URLSearchParams | null) {
+      if (!params) {
+        if (shared) {
+          shared = false
+          loadFromLocalStorage()
+          searchString = ''
+          uiStore.applyShare(null)
+        }
+        return
+      }
+      shared = true
+      // Keeps the viewer's own sources when the link has none.
+      loadFromLocalStorage()
+      uiStore.applyShare(params)
+      searchString = params.get('q')?.trim() ?? ''
+      selectedTeachingUnits = getShareList(params, 'tu')
+      selectedSemesters = getShareList(params, 'sem')
+      selectedStudyPrograms = getShareList(params, 'sp')
+      selectedModules = getShareList(params, 'mod')
+      selectedModuleTypes = getShareList(params, 'mt')
+      selectedCourseTypes = getShareList(params, 'ct')
+      selectedModuleManagers = showModuleManagementFilter ? getShareList(params, 'mm') : []
+      selectedLecturers = getShareList(params, 'lec')
+      selectedRooms = getShareList(params, 'ro')
+      if (params.has('src')) {
+        const sources = getShareList(params, 'src')
+        showSemester = sources.includes('semester')
+        showSchedule = sources.includes('schedule')
+        showCampus = sources.includes('campus')
+        showFaculty = sources.includes('faculty')
+        showExams = sources.includes('exams')
+      }
+    },
+
     // Reset
     clearSelections() {
       searchString = ''

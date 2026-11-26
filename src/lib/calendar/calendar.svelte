@@ -156,6 +156,17 @@
     calendar?.gotoDate(date)
   }
 
+  // Follows view and date changes from outside the calendar, e.g. opening a shared link.
+  $effect(() => {
+    const view = uiStore.selectedCalendarView
+    const date = uiStore.selectedCalendarDate
+    untrack(() => {
+      if (calendar && (calendar.view.type !== view || calendar.getDate().toISOString() !== date)) {
+        calendar.changeView(view, date)
+      }
+    })
+  })
+
   function handleViewChange(value: string) {
     if (!value) return
     uiStore.selectedCalendarView = value

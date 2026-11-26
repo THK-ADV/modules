@@ -1,11 +1,6 @@
 <script lang="ts">
-  import { browser } from '$app/environment'
-  import { onDestroy } from 'svelte'
   import FilterOption from '$lib/components/filter-option.svelte'
-  import {
-    applyModuleFilterShareStateToSearchParams,
-    clearModuleFilterShareParams
-  } from '$lib/settings/module-filter-share-url'
+  import { FilterShareButton, resetFilter, syncShare } from '$lib/components/filter-share'
   import { StudyProgramFilter } from '$lib/components/study-program-filter'
   import { Badge } from '$lib/components/ui/badge/index.js'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -14,7 +9,7 @@
   import { IsMobile } from '$lib/hooks/is-mobile.svelte.js'
   import { moduleFilter } from '$lib/stores/module-filter.svelte'
   import { cn } from '$lib/utils.js'
-  import { Check, ChevronDown, Copy, Funnel, Search, X } from '@lucide/svelte'
+  import { ChevronDown, Funnel, Search, X } from '@lucide/svelte'
 
   let showReset = $derived.by(() => {
     const {
@@ -104,79 +99,9 @@
     }
   }
 
-  let shareStatus = $state<'idle' | 'copied' | 'error'>('idle')
-  let shareFeedbackTimeout: ReturnType<typeof setTimeout> | null = null
   let showSearchShortcut = $derived(moduleFilter.title.trim().length === 0)
 
-  function resetShareFeedbackAfterDelay() {
-    if (shareFeedbackTimeout !== null) {
-      clearTimeout(shareFeedbackTimeout)
-    }
-    shareFeedbackTimeout = setTimeout(() => {
-      shareStatus = 'idle'
-      shareFeedbackTimeout = null
-    }, 2000)
-  }
-
-  onDestroy(() => {
-    if (shareFeedbackTimeout !== null) {
-      clearTimeout(shareFeedbackTimeout)
-    }
-  })
-
-  async function shareCurrentSelection() {
-    if (!browser) {
-      return
-    }
-
-    const shareUrl = new URL(window.location.href)
-    applyModuleFilterShareStateToSearchParams(shareUrl.searchParams, moduleFilter.shareState)
-    const shareText = shareUrl.toString()
-
-    try {
-      await navigator.clipboard.writeText(shareText)
-      shareStatus = 'copied'
-    } catch {
-      const helper = document.createElement('textarea')
-      helper.value = shareText
-      helper.setAttribute('readonly', 'true')
-      helper.style.position = 'fixed'
-      helper.style.opacity = '0'
-      helper.style.pointerEvents = 'none'
-      document.body.appendChild(helper)
-      helper.select()
-      helper.setSelectionRange(0, helper.value.length)
-
-      const copiedWithFallback = document.execCommand('copy')
-      document.body.removeChild(helper)
-
-      if (copiedWithFallback) {
-        shareStatus = 'copied'
-      } else {
-        window.prompt('Link manuell kopieren:', shareText)
-        shareStatus = 'error'
-      }
-    }
-
-    resetShareFeedbackAfterDelay()
-  }
-
-  function resetFilters() {
-    if (!browser) {
-      moduleFilter.clearSelections()
-      return
-    }
-
-    if (!moduleFilter.temporaryShareSession) {
-      moduleFilter.clearSelections()
-      return
-    }
-
-    moduleFilter.setTemporaryShareSession(false)
-    const cleanUrl = new URL(window.location.href)
-    clearModuleFilterShareParams(cleanUrl.searchParams)
-    history.replaceState(history.state, '', cleanUrl.toString())
-  }
+  syncShare(moduleFilter)
 </script>
 
 <svelte:window onkeydown={handleGlobalKeydown} />
@@ -278,38 +203,6 @@
             </Button>
           {/snippet}
         </Collapsible.Trigger>
-
-        {#if showReset}
-          <Button
-            onclick={shareCurrentSelection}
-            variant="outline"
-            size="icon"
-            class={cn(
-              'h-10 w-10 shrink-0 border-2 border-dashed',
-              shareStatus === 'copied'
-                ? 'border-emerald-400/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/30'
-                : shareStatus === 'error'
-                  ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
-                  : 'border-muted-foreground/25 hover:bg-muted/50'
-            )}
-            aria-label={shareStatus === 'copied'
-              ? 'Link kopiert'
-              : shareStatus === 'error'
-                ? 'Kopieren fehlgeschlagen'
-                : 'Filteransicht teilen'}
-            title={shareStatus === 'copied'
-              ? 'Link kopiert'
-              : shareStatus === 'error'
-                ? 'Kopieren fehlgeschlagen'
-                : 'Filteransicht teilen'}
-          >
-            {#if shareStatus === 'copied'}
-              <Check class="size-4" />
-            {:else}
-              <Copy class="size-4" />
-            {/if}
-          </Button>
-        {/if}
       </div>
 
       <Collapsible.Content class="overflow-hidden">
@@ -346,33 +239,6 @@
             >
           {/if}
         </div>
-
-        {#if showReset}
-          <Button
-            onclick={shareCurrentSelection}
-            variant="outline"
-            size="sm"
-            class={cn(
-              'h-10 shrink-0 gap-2 border-dashed',
-              shareStatus === 'copied'
-                ? 'border-emerald-400/50 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/30'
-                : shareStatus === 'error'
-                  ? 'border-destructive/40 text-destructive hover:bg-destructive/10'
-                  : ''
-            )}
-          >
-            {#if shareStatus === 'copied'}
-              <Check class="size-4" />
-              Link kopiert
-            {:else if shareStatus === 'error'}
-              <Copy class="size-4" />
-              Kopieren fehlgeschlagen
-            {:else}
-              <Copy class="size-4" />
-              Filteransicht teilen
-            {/if}
-          </Button>
-        {/if}
       </div>
     </div>
 
@@ -391,16 +257,19 @@
   {/if}
 
   <div class="flex flex-wrap items-center gap-3">
-    {#if showReset}
+    {#if showReset || moduleFilter.shared}
       <Button
-        onclick={resetFilters}
+        onclick={() => resetFilter(moduleFilter)}
         variant="outline"
         size="sm"
         class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
       >
         <X class="size-4" />
-        {moduleFilter.resetButtonLabel}
+        {moduleFilter.shared ? 'Geteilte Filter zurücksetzen' : 'Alle Filter zurücksetzen'}
       </Button>
+    {/if}
+    {#if showReset}
+      <FilterShareButton filter={moduleFilter} />
     {/if}
   </div>
 </div>

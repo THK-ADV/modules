@@ -5,6 +5,7 @@
   import ExamEntryDetailsDialog from '$lib/components/schedule/exam-entry-details-dialog.svelte'
   import ScheduleEntryDetailsDialog from '$lib/components/schedule/schedule-entry-details-dialog.svelte'
   import { liveScheduleEntryEditorApi } from '$lib/components/schedule/schedule-entry-editor-api'
+  import { syncShare } from '$lib/components/filter-share'
   import ScheduleFilter from '$lib/components/schedule/schedule-filter.svelte'
   import { ScheduleSources } from '$lib/components/schedule/schedule-sources.svelte'
   import Schedule from '$lib/components/schedule/schedule.svelte'
@@ -18,6 +19,8 @@
   const HINT_STORAGE_KEY = 'schedule-intro-week-hint-read'
 
   const { data }: PageProps = $props()
+
+  syncShare(scheduleFilter)
 
   const sources = new ScheduleSources(() => ({
     filter: scheduleFilter,
@@ -82,7 +85,7 @@
     </p>
   </div>
 
-  <ScheduleFilter {scheduleFilter} canShowFaculty={data.canSeeFaculty} canShowExams />
+  <ScheduleFilter {scheduleFilter} canShowFaculty={data.canSeeFaculty} canShowExams shareable />
 
   <Schedule
     holidays={data.holidays}

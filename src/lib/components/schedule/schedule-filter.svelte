@@ -1,5 +1,6 @@
 <script lang="ts">
   import FilterOption from '$lib/components/filter-option.svelte'
+  import { FilterShareButton, resetFilter } from '$lib/components/filter-share'
   import { ModuleMultiSelect } from '$lib/components/module-filter'
   import { Badge } from '$lib/components/ui/badge/index.js'
   import { Button } from '$lib/components/ui/button/index.js'
@@ -16,12 +17,14 @@
   let {
     scheduleFilter,
     canShowFaculty = false,
-    canShowExams = false
+    canShowExams = false,
+    shareable = false
   }: {
     scheduleFilter: ScheduleProps['scheduleFilter']
     canShowFaculty?: boolean
     /** Whether the calendar loads exams; otherwise the source stays disabled. */
     canShowExams?: boolean
+    shareable?: boolean
   } = $props()
 
   const showReset = $derived.by(() => {
@@ -408,17 +411,22 @@
   {/if}
 
   <!-- Reset Section -->
-  {#if showReset}
-    <div class="flex items-center gap-3">
-      <Button
-        onclick={() => scheduleFilter.clearSelections()}
-        variant="outline"
-        size="sm"
-        class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
-      >
-        <X class="size-4" />
-        Filter zurücksetzen
-      </Button>
+  {#if showReset || scheduleFilter.shared || shareable}
+    <div class="flex flex-wrap items-center gap-3">
+      {#if showReset || scheduleFilter.shared}
+        <Button
+          onclick={() => resetFilter(scheduleFilter)}
+          variant="outline"
+          size="sm"
+          class="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
+        >
+          <X class="size-4" />
+          {scheduleFilter.shared ? 'Geteilte Filter zurücksetzen' : 'Alle Filter zurücksetzen'}
+        </Button>
+      {/if}
+      {#if shareable}
+        <FilterShareButton filter={scheduleFilter} />
+      {/if}
     </div>
   {/if}
 </div>

@@ -1,20 +1,6 @@
-import { SEMESTER_PLAN_TYPES } from '$lib/types/schedule'
 import { z } from 'zod/v4'
 
 const nonEmptyStringSchema = z.string().trim().min(1)
-
-export const moduleCatalogOptionsSchema = z.array(
-  z.object({
-    id: nonEmptyStringSchema,
-    start: z.iso.date(),
-    end: z.iso.date(),
-    type: z.enum(SEMESTER_PLAN_TYPES),
-    teachingUnit: nonEmptyStringSchema.nullable(),
-    teachingUnitLabel: nonEmptyStringSchema.nullable(),
-    semesterIndex: z.array(z.number().int()).nullable(),
-    phase: z.string().nullable()
-  })
-)
 
 export const moduleCatalogModuleOptionSchema = z.object({
   id: z.uuid(),

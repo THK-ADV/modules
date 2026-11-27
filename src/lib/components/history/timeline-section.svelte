@@ -1,6 +1,6 @@
 <script lang="ts">
   import { HistoryTimeline } from '$lib/components/history'
-  import type { ModuleVersion } from '$lib/types/module-version'
+  import type { ModuleVersion } from '$lib/schemas/module-version'
   import * as Card from '$lib/components/ui/card'
 
   type Side = 'left' | 'right'

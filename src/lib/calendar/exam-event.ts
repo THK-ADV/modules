@@ -1,5 +1,4 @@
-import type { ExamEntry } from '$lib/schemas/exam-planning'
-import { examMethodLabels } from '$lib/types/exam-planning'
+import { examMethodLabels, type ExamEntry } from '$lib/schemas/exam-planning'
 import { EXAM_COLOR, type CalendarEvent, type ExamEventProps } from './types'
 
 /** Maps an exam appointment to a calendar event. */

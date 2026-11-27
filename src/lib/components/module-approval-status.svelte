@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Approval } from '$lib/types/module-approval'
+  import type { Approval } from '$lib/schemas/module-approval'
 
   let { approvals }: { approvals: Approval[] } = $props()
 
@@ -23,8 +23,8 @@
         <div class="mt-2 text-sm text-amber-700">
           {#each rejectedApprovals as { id, respondedBy, role, studyProgram, comment } (id)}
             <p class="mb-3">
-              Ihre Moduländerungen wurden von {respondedBy.firstname}
-              {respondedBy.lastname} in der Rolle als {role.deLabel} ({studyProgram.deLabel})
+              Ihre Moduländerungen wurden von {respondedBy?.firstname}
+              {respondedBy?.lastname} in der Rolle als {role.deLabel} ({studyProgram.deLabel})
               abgelehnt. Bitte nehmen Sie die angeforderten Änderungen vor:
             </p>
             <div class="rounded border border-amber-200 bg-white p-3">

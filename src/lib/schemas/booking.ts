@@ -1,17 +1,26 @@
-import { BOOKING_KINDS } from '$lib/types/booking'
 import { z } from 'zod/v4'
 import {
   backendDateTimeResponseSchema,
+  clonePOs,
   courseTypeSchema,
   isSameScheduleDate,
   scheduleEntryFormFields,
   scheduleEntryResponseSchema,
   scheduleManagementResponseSchema,
   schedulePoSchema,
-  scheduleRoomResponseSchema
+  scheduleRoomResponseSchema,
+  type ScheduleEntry
 } from './schedule'
 
-export const bookingKindSchema = z.enum(BOOKING_KINDS)
+export const bookingKindSchema = z.enum(['teaching', 'campus', 'faculty'])
+
+export type BookingKind = z.infer<typeof bookingKindSchema>
+
+export const BOOKING_KIND_LABELS: Record<BookingKind, string> = {
+  teaching: 'Lehre',
+  campus: 'Campus-Event',
+  faculty: 'Fakultäts-Event'
+}
 const otherBookingKindSchema = z.enum(['campus', 'faculty'])
 
 function withDateChecks<T extends z.ZodType<{ start: Date; end: Date }>>(schema: T): T {
@@ -76,6 +85,9 @@ export const updateBookingInputSchema = withDateChecks(
   ])
 )
 
+export type BookingCreate = z.infer<typeof createBookingsInputSchema>[number]
+export type BookingEdit = z.infer<typeof updateBookingInputSchema>
+
 // Backend responses
 const teachingBookingResponseSchema = scheduleEntryResponseSchema.safeExtend({
   kind: z.literal('teaching'),
@@ -111,6 +123,53 @@ const bookingResponseSchema = z.discriminatedUnion('kind', [
   teachingBookingResponseSchema,
   otherBookingResponseSchema
 ])
+
+/** Read model for teaching bookings: a schedule entry plus booking fields. */
+export type TeachingBooking = z.infer<typeof teachingBookingResponseSchema>
+/** Read model for campus and faculty bookings. `lecturer` holds the contact persons. */
+export type CampusBooking = z.infer<typeof otherBookingResponseSchema>
+export type Booking = TeachingBooking | CampusBooking
+export type BookingMetadata = Pick<Booking, 'createdBy' | 'updatedAt'>
+
+export function isTeachingBooking(
+  entry: ScheduleEntry | TeachingBooking
+): entry is TeachingBooking {
+  return 'kind' in entry && entry.kind === 'teaching'
+}
+
+/** Narrows teaching bookings and teaching write-models by `kind`. */
+export function isTeachingKind<T extends { kind: string }>(
+  value: T
+): value is T & { kind: 'teaching' } {
+  return value.kind === 'teaching'
+}
+
+export function toBookingEdit(
+  raw: Booking,
+  start: Date = raw.start,
+  end: Date = raw.end
+): BookingEdit {
+  const base = {
+    id: raw.id,
+    seriesId: raw.seriesId,
+    title: raw.title,
+    note: raw.note,
+    start: new Date(start),
+    end: new Date(end),
+    rooms: raw.rooms.map(({ id }) => id),
+    lecturer: raw.lecturer.map(({ id }) => id)
+  }
+  if (isTeachingKind(raw)) {
+    return {
+      ...base,
+      kind: 'teaching',
+      module: raw.module,
+      courseType: raw.courseType,
+      po: clonePOs(raw.po)
+    }
+  }
+  return { ...base, kind: raw.kind }
+}
 
 export const bookingListResponseSchema = z.array(bookingResponseSchema)
 export const nonEmptyBookingListResponseSchema = z.array(bookingResponseSchema).min(1)

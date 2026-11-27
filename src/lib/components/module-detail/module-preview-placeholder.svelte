@@ -3,7 +3,7 @@
   import ModuleDetail from './module-detail.svelte'
   import { Button } from '$lib/components/ui/button'
   import { Skeleton } from '$lib/components/ui/skeleton'
-  import { canEdit, type ModuleDraftState } from '$lib/types/module-draft'
+  import { canEdit, type ModuleDraftState } from '$lib/schemas/module-draft'
   import { SquarePen, X } from '@lucide/svelte'
   import { getLatestModuleDetail } from './module-preview.remote'
 

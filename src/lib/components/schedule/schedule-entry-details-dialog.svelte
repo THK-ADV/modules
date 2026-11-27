@@ -9,10 +9,10 @@
   import { Button, buttonVariants } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import { isTeachingBooking, type TeachingBooking } from '$lib/types/booking'
-  import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
-  import type { StudyProgram } from '$lib/types/study-program'
-  import { fmtWeekdayDate, fmtStudyProgramName, fmtTime } from '$lib/formats'
+  import { isTeachingBooking, type TeachingBooking } from '$lib/schemas/booking'
+  import type { ScheduleEntry } from '$lib/schemas/schedule'
+  import type { StudyProgram } from '$lib/schemas/study-program'
+  import { fmtCourseType, fmtWeekdayDate, fmtStudyProgramName, fmtTime } from '$lib/formats'
   import {
     CalendarDays,
     Clock,

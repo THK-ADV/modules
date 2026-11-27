@@ -6,7 +6,8 @@
   import * as Empty from '$lib/components/ui/empty/index.js'
   import { Input } from '$lib/components/ui/input'
   import * as ScrollArea from '$lib/components/ui/scroll-area/index.js'
-  import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
+  import { fmtCourseType } from '$lib/formats'
+  import type { ScheduleEntry } from '$lib/schemas/schedule'
   import { BookOpen, FileText, GripVertical, Plus, Search, User } from '@lucide/svelte'
 
   let {

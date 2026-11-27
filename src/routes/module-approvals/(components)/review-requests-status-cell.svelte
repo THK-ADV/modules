@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { ModuleReviewItem, ModuleReviewStatus } from '$lib/types/review-request'
+  import type { ModuleReviewItem, ModuleReviewStatus } from '$lib/schemas/module-review'
 
   let { status, items }: { status: ModuleReviewStatus; items: ModuleReviewItem[] } = $props()
 

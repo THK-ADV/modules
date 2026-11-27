@@ -11,18 +11,19 @@
   import { Switch } from '$lib/components/ui/switch/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { getErrorMessage } from '$lib/errors'
-  import { scheduleEntryFormSchema, type ScheduleEntryFormData } from '$lib/schemas/schedule'
-  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import {
     arraysEqual,
     clonePOs,
     mergePOs,
     posEqual,
+    scheduleEntryFormSchema,
     type ScheduleEntryCreate,
     type ScheduleEntryEdit,
+    type ScheduleEntryFormData,
     type ScheduleEntryUpdateScope,
     type SeriesOccurrence
-  } from '$lib/types/schedule'
+  } from '$lib/schemas/schedule'
+  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date'
   import { Copy, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'

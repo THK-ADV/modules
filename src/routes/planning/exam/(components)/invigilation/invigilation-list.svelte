@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { examModuleAbbrevs } from '$lib/types/exam-planning'
+  import { examModuleAbbrevs } from '$lib/schemas/exam-planning'
   import * as Card from '$lib/components/ui/card/index.js'
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import * as Empty from '$lib/components/ui/empty/index.js'

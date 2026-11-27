@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { ModuleDraftState } from '$lib/types/module-draft'
+  import type { ModuleDraftState } from '$lib/schemas/module-draft'
   import {
     BookCheck,
     Clock,

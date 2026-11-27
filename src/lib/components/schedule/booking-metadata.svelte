@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { BookingMetadata } from '$lib/types/booking'
+  import type { BookingMetadata } from '$lib/schemas/booking'
   import { fmtDateTime } from '$lib/formats'
   import { History, UserRound } from '@lucide/svelte'
 

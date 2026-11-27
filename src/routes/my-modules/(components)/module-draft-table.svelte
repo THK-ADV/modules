@@ -3,7 +3,7 @@
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { myModuleFilter } from '$lib/stores/my-module-filter.svelte'
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import type { ModuleDraft } from '$lib/schemas/module-draft'
   import {
     type ColumnDef,
     type ColumnFiltersState,

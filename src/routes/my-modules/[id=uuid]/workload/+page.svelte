@@ -2,11 +2,10 @@
   import ModificationIndicator from '$lib/components/modification-indicator.svelte'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
-  import { getPOsWithIds } from '$lib/http'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import { onMount } from 'svelte'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
+  import { getEctsFactors } from './ects-factors.remote'
 
   const { data }: PageProps = $props()
 
@@ -23,26 +22,10 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
-  let ectsFactors: number[] = $state([])
-
-  // fetch all ECTS factors from the POs that are linked to the module
-  onMount(async () => {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const factors = new Set<number>()
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const pos = new Set<string>()
-    for (const { po } of $formData.po.mandatory) {
-      pos.add(po)
-    }
-    for (const { po } of $formData.po.optional) {
-      pos.add(po)
-    }
-    const posWithECTSFactor = await getPOsWithIds(Array.from(pos))
-    for (const { ectsFactor } of posWithECTSFactor) {
-      factors.add(ectsFactor)
-    }
-    ectsFactors = factors.size > 0 ? Array.from(factors) : [30] // fallback to 30 if no POs are linked to the module
-  })
+  // ECTS factors of the POs that are linked to the module
+  const ectsFactors = await getEctsFactors(
+    [...new Set([...$formData.po.mandatory, ...$formData.po.optional].map(({ po }) => po))].sort()
+  )
 
   const total = $derived(
     $formData.workload.lecture +

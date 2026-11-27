@@ -3,13 +3,13 @@ import {
   type Booking,
   type CampusBooking,
   type TeachingBooking
-} from '$lib/types/booking'
+} from '$lib/schemas/booking'
 import type {
   CourseType,
   ScheduleEntry,
   SemesterPlanEntry,
   SemesterPlanType
-} from '$lib/types/schedule'
+} from '$lib/schemas/schedule'
 import type { ExamEntry } from '$lib/schemas/exam-planning'
 import type { EventInput } from '@fullcalendar/core'
 

@@ -1,7 +1,8 @@
+import type { IdentityOption, ModuleCore } from './schemas/module-options'
+import type { IdentityKind, PersonShort } from './schemas/module-view'
+import type { CourseType } from './schemas/schedule'
 import type { Semester } from './schemas/semester'
-import type { Identity, ModuleManagement } from './types/core'
-import type { IdentityKind, PersonShort } from './types/module'
-import type { StudyProgram } from './types/study-program'
+import type { StudyProgram } from './schemas/study-program'
 
 export const TIME_ZONE = 'Europe/Berlin'
 
@@ -28,7 +29,12 @@ function compareByKind<T extends { kind: IdentityKind }>(
     : ordinalKind(a.kind) - ordinalKind(b.kind)
 }
 
-export function peopleOrdering(a: Identity, b: Identity): number {
+/** The parts of an identity that name and order it. */
+type NamedIdentity =
+  | Pick<Extract<IdentityOption, { kind: 'person' }>, 'id' | 'kind' | 'firstname' | 'lastname'>
+  | Extract<IdentityOption, { kind: 'group' | 'unknown' }>
+
+export function peopleOrdering(a: NamedIdentity, b: NamedIdentity): number {
   return compareByKind(a, b, (x) =>
     x.kind === 'person' ? x.lastname : x.kind === 'group' ? x.label : x.id
   )
@@ -86,7 +92,7 @@ const conjunction = new Intl.ListFormat('de', { type: 'conjunction' })
 /** `A, B und C` */
 export const fmtList = (items: string[]) => conjunction.format(items)
 
-export function fmtPerson(p: Identity): string {
+export function fmtPerson(p: NamedIdentity): string {
   switch (p.kind) {
     case 'person':
       return fmtPersonName(p)
@@ -97,7 +103,11 @@ export function fmtPerson(p: Identity): string {
   }
 }
 
-export function fmtPersonShort(p: Identity): string {
+export function fmtPersonShort(
+  p:
+    | Pick<Extract<IdentityOption, { kind: 'person' }>, 'kind' | 'abbreviation'>
+    | Pick<Extract<IdentityOption, { kind: 'group' | 'unknown' }>, 'kind' | 'id'>
+): string {
   switch (p.kind) {
     case 'person':
       return p.abbreviation
@@ -108,7 +118,7 @@ export function fmtPersonShort(p: Identity): string {
   }
 }
 
-export function fmtManagement(m: ModuleManagement): string {
+export function fmtManagement(m: ModuleCore['moduleManagement'][number]): string {
   const lastname = m.lastname?.trim() ?? ''
   const firstname = m.firstname?.trim() ?? ''
 
@@ -119,6 +129,21 @@ export function fmtManagement(m: ModuleManagement): string {
       return lastname || m.id
     case 'unknown':
       return 'N.N.'
+  }
+}
+
+export function fmtCourseType(courseType: CourseType): string {
+  switch (courseType) {
+    case 'lecture':
+      return 'Vorlesung'
+    case 'lab':
+      return 'Praktikum'
+    case 'exercise':
+      return 'Übung'
+    case 'seminar':
+      return 'Seminar'
+    case 'tutorial':
+      return 'Tutorium'
   }
 }
 

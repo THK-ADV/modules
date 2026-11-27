@@ -6,7 +6,7 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import type { ExamOffer } from '$lib/schemas/exam-planning'
   import { fmtDate } from '$lib/formats'
-  import type { StudyProgram } from '$lib/types/study-program'
+  import type { StudyProgram } from '$lib/schemas/study-program'
   import { cn } from '$lib/utils'
   import { Draggable } from '@fullcalendar/interaction'
   import { CalendarPlus, GripVertical, Search } from '@lucide/svelte'

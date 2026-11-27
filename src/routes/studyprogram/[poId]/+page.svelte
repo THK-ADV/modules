@@ -8,7 +8,7 @@
   import { previewModuleCatalog } from '$lib/preview-action'
   import { getStudyProgram, publishModuleCatalog } from '../studyprogram.remote'
   import { getErrorMessage } from '$lib/errors'
-  import type { StudyProgram } from '$lib/types/study-program'
+  import type { StudyProgram } from '$lib/schemas/study-program'
   import type { PageProps } from './$types'
   import ModuleCatalogUploadIntroDialog from '../(components)/module-catalog-upload-intro-dialog.svelte'
   import { CatalogConfig } from './(components)/catalog-config.svelte'

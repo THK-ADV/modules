@@ -8,7 +8,7 @@
     EventInfoCard,
     downloadModuleVersion
   } from '$lib/components/history'
-  import { isParsed, type ModuleVersion } from '$lib/types/module-version'
+  import { isParsed, type ModuleVersion } from '$lib/schemas/module-version'
   import { fmtDateLong } from '$lib/formats'
   import * as Card from '$lib/components/ui/card'
   import * as Empty from '$lib/components/ui/empty'

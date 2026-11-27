@@ -2,12 +2,10 @@
   import { resolve } from '$app/paths'
   import { page } from '$app/state'
   import { FileText, Settings } from '@lucide/svelte'
-  import type { PageProps } from './$types'
-
-  const { data }: PageProps = $props()
+  import { getModuleReviewKeys } from '$lib/components/module-review.remote'
 
   const moduleReviewKeys = $derived(
-    data.moduleReviewKeys
+    (await getModuleReviewKeys())
       .map((key) => key.label)
       .toSorted((a, b) => a.localeCompare(b))
       .join(', ')

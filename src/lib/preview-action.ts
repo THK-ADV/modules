@@ -2,7 +2,7 @@ import { previewArtifact } from '../routes/studyprogram/studyprogram.remote'
 import { getErrorMessage } from './errors'
 import type { ExamListConfig } from './schemas/exam-list'
 import type { ModuleCatalogConfig } from './schemas/module-catalog'
-import type { StudyProgram } from './types/study-program'
+import type { StudyProgram } from './schemas/study-program'
 
 function htmlPlaceholder(actionLabel: string, studyProgramLabel: string) {
   return `

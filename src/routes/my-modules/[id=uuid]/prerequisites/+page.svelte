@@ -5,9 +5,10 @@
   import { Input } from '$lib/components/ui/input/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
   import { Switch } from '$lib/components/ui/switch/index.js'
-  import { moduleUpdateState } from '$lib/stores/store.svelte'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
   import { getModuleFormContext } from '../context'
+  import { getModuleOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
@@ -21,11 +22,10 @@
   // svelte-ignore state_referenced_locally
   const assessmentPrerequisiteStatus = data.fieldStatuses?.assessmentPrerequisite
 
+  const modules = await loadEditorOptions(getModuleOptions)
   const moduleOptions = $derived.by(() => {
     const module = data.module
-    return module !== null
-      ? moduleUpdateState.modules.filter((m) => m.id !== module.id)
-      : moduleUpdateState.modules
+    return module !== null ? modules.filter((m) => m.id !== module.id) : modules
   })
 
   const form = getModuleFormContext()

@@ -3,6 +3,7 @@
     form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     studyPrograms: StudyProgram[]
+    genericModules: GenericModule[]
     value: POOptional[]
     modificationStatus?: ModificationStatus // optional modification tracking
   }
@@ -17,20 +18,25 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import { fmtStudyProgram } from '$lib/formats'
   import { electiveStudyProgramRelationFormSchema } from '$lib/schemas/module'
-  import { moduleUpdateState } from '$lib/stores/store.svelte'
-  import type { ModificationStatus } from '$lib/types/module-draft-keys'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import type { POOptional } from '$lib/types/module-protocol'
-  import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
+  import type { GenericModule } from '$lib/schemas/module-options'
+  import type { ModificationStatus } from '$lib/components/forms/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
+  import type { POOptional } from '$lib/schemas/module-protocol'
+  import { getFullPOId, type StudyProgram } from '$lib/schemas/study-program'
   import { SquarePen, Plus, Trash2 } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
   import ModificationIndicator from '../modification-indicator.svelte'
   import { createSemesterOptions, showPO, showRecommendedSemester } from './forms'
 
-  let { form, name, studyPrograms, value = $bindable(), modificationStatus }: Props = $props()
-
-  const genericModules = moduleUpdateState.genericModules
+  let {
+    form,
+    name,
+    studyPrograms,
+    genericModules,
+    value = $bindable(),
+    modificationStatus
+  }: Props = $props()
 
   const studyProgramsWithGenericModules = $derived(
     studyPrograms.filter((sp) => {

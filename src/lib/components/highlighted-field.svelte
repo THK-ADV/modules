@@ -1,6 +1,9 @@
 <script lang="ts">
   import ModificationIndicator from './modification-indicator.svelte'
-  import { getFieldHighlightClasses, type ModificationStatus } from '$lib/types/module-draft-keys'
+  import {
+    getFieldHighlightClasses,
+    type ModificationStatus
+  } from '$lib/components/forms/module-draft-keys'
   import type { Snippet } from 'svelte'
 
   interface Props {

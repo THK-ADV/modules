@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { page } from '$app/state'
+  import { navigating, page } from '$app/state'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { ChartLine } from '@lucide/svelte'
-  import type { PageProps } from './$types'
+  import { getAssessmentMethodCounts } from './assessment-methods.remote'
 
-  const { data }: PageProps = $props()
-  const countsByAssessmentMethod = $derived(data.countsByAssessmentMethod)
+  const counts = getAssessmentMethodCounts()
+  // on client navigation, counts still cached from an earlier visit may be stale or failed;
+  // on hydration they are fresh from server rendering
+  if (navigating.type && !counts.loading) void counts.refresh()
+  const countsByAssessmentMethod = $derived(await counts)
 
   const assessmentMethodLinks = [
     { id: 'written-exam', title: 'Klausurarbeiten' },

@@ -1,7 +1,6 @@
 <script lang="ts" module>
-  import type { ExamEntry, ExamPO } from '$lib/schemas/exam-planning'
-  import type { StudyProgram } from '$lib/types/study-program'
-  import { examExaminers } from '$lib/types/exam-planning'
+  import { examExaminers, type ExamEntry, type ExamPO } from '$lib/schemas/exam-planning'
+  import type { StudyProgram } from '$lib/schemas/study-program'
   import {
     fmtList,
     fmtPersonInitialFirst,

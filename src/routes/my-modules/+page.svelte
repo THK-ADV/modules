@@ -1,16 +1,18 @@
 <script lang="ts">
+  import QueryError from '$lib/components/query-error.svelte'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
-  import { page } from '$app/state'
+  import { navigating, page } from '$app/state'
   import { ModulePreviewPlaceholder } from '$lib/components/module-detail'
   import SuccessMessage from '$lib/components/success-message.svelte'
   import { Button } from '$lib/components/ui/button'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
   import * as Empty from '$lib/components/ui/empty/index.js'
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import type { ModuleDraft } from '$lib/schemas/module-draft'
   import { BookOpen, Plus } from '@lucide/svelte'
   import type { ColumnDef } from '@tanstack/table-core'
   import type { PageProps } from './$types'
+  import { getModuleDrafts } from './module-drafts.remote'
   import ModuleDraftStatusCell from './(components)/module-draft-status-cell.svelte'
   import ModuleDraftTableActions from './(components)/module-draft-table-actions.svelte'
   import ModuleDraftTable from './(components)/module-draft-table.svelte'
@@ -21,12 +23,14 @@
 
   const canCreateModules = $derived(data.userInfo?.hasExtendedModuleEditPermissions ?? false)
 
-  let moduleDrafts = $derived(data.moduleDrafts)
-  let hasAdditionalModules = $derived(data.hasAdditionalModules)
+  const drafts = getModuleDrafts()
+  // on client navigation, drafts still cached from an earlier visit may be stale or failed;
+  // on hydration they are fresh from server rendering
+  if (navigating.type && !drafts.loading) void drafts.refresh()
   let showSuccessMessage = $state<string | undefined>(undefined)
   let selectedModuleId = $state<string | null>(null)
   let selectedModule = $derived(
-    moduleDrafts.find(({ module }) => module.id === selectedModuleId) ?? null
+    drafts.current?.moduleDrafts.find(({ module }) => module.id === selectedModuleId) ?? null
   )
 
   const columns: ColumnDef<ModuleDraft>[] = [
@@ -122,26 +126,29 @@
       {/if}
     </div>
 
-    {#if moduleDrafts.length > 0}
-      <SemesterCycleProgress />
-    {/if}
-
-    {#if moduleDrafts.length > 0}
-      <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} {selectedModuleId} />
-    {:else}
-      <Empty.Root class="border-border/70 bg-muted/30 min-h-80 border">
-        <Empty.Header class="gap-3">
-          <Empty.Media variant="icon" class="bg-muted text-muted-foreground size-14 rounded-2xl">
-            <BookOpen class="size-7" />
-          </Empty.Media>
-          <Empty.Title>Keine Module zugewiesen</Empty.Title>
-          <Empty.Description class="max-w-sm">
-            Sie werden derzeit in keinem Modul als Modulverantwortliche*r geführt und haben keine
-            über Rollen zugeteilten Module.
-          </Empty.Description>
-        </Empty.Header>
-      </Empty.Root>
-    {/if}
+    <svelte:boundary>
+      {@const { moduleDrafts, hasAdditionalModules } = await drafts}
+      {#if moduleDrafts.length > 0}
+        <SemesterCycleProgress />
+        <ModuleDraftTable {moduleDrafts} {columns} {hasAdditionalModules} {selectedModuleId} />
+      {:else}
+        <Empty.Root class="border-border/70 bg-muted/30 min-h-80 border">
+          <Empty.Header class="gap-3">
+            <Empty.Media variant="icon" class="bg-muted text-muted-foreground size-14 rounded-2xl">
+              <BookOpen class="size-7" />
+            </Empty.Media>
+            <Empty.Title>Keine Module zugewiesen</Empty.Title>
+            <Empty.Description class="max-w-sm">
+              Sie werden derzeit in keinem Modul als Modulverantwortliche*r geführt und haben keine
+              über Rollen zugeteilten Module.
+            </Empty.Description>
+          </Empty.Header>
+        </Empty.Root>
+      {/if}
+      {#snippet failed(error, reset)}
+        <QueryError title="Module nicht verfügbar" {error} {reset} query={drafts} />
+      {/snippet}
+    </svelte:boundary>
   </div>
 
   <aside

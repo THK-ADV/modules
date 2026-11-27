@@ -21,7 +21,7 @@
     type FormFieldPath,
     type Section,
     type SectionId
-  } from '$lib/types/module-draft-keys'
+  } from '$lib/components/forms/module-draft-keys'
   import { cn } from '$lib/utils'
   import type { ActionResult } from '@sveltejs/kit'
   import SuperDebug, { superForm, type ValidationErrors } from 'sveltekit-superforms'

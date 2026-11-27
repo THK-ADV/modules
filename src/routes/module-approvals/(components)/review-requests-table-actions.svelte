@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { Button } from '$lib/components/ui/button'
-  import type { ModuleReviewItem } from '$lib/types/review-request'
+  import type { ModuleReviewItem } from '$lib/schemas/module-review'
   import { Eye } from '@lucide/svelte'
 
   let { items, moduleId }: { items: ModuleReviewItem[]; moduleId: string } = $props()

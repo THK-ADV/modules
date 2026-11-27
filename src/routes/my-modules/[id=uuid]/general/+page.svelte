@@ -1,7 +1,8 @@
 <script lang="ts">
   import ComboboxField from '$lib/components/combobox.svelte'
   import InputField from '$lib/components/input-field.svelte'
-  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
+  import { getGeneralOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
 
@@ -9,11 +10,8 @@
 
   const canEditTitle = $derived(data.userInfo?.hasExtendedModuleEditPermissions ?? false)
 
-  let moduleTypes = moduleUpdateState.moduleTypes
-  let languages = moduleUpdateState.languages
-  let seasons = moduleUpdateState.seasons
-  let locations = moduleUpdateState.locations
-  let status = moduleUpdateState.status
+  const { moduleTypes, languages, seasons, locations, status } =
+    await loadEditorOptions(getGeneralOptions)
 
   const form = getModuleFormContext()
   const { form: formData, errors } = form

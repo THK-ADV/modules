@@ -1,4 +1,4 @@
-import type { StudyProgram } from '../../types/study-program'
+import type { StudyProgram } from '../../schemas/study-program'
 
 export interface StudyProgramFilterOption {
   id: string

@@ -48,7 +48,7 @@ export const roomEquipmentSchema = z.enum([
 export type RoomEquipment = z.infer<typeof roomEquipmentSchema>
 
 const labelSchema = z.object({ id: z.string(), deLabel: z.string(), enLabel: z.string() })
-const personSchema = z.object({
+export const personSchema = z.object({
   id: z.string(),
   kind: z.literal('person'),
   lastname: z.string(),

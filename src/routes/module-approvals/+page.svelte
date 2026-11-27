@@ -44,20 +44,24 @@
 </script>
 
 <script lang="ts">
+  import QueryError from '$lib/components/query-error.svelte'
   import { browser } from '$app/environment'
   import { goto } from '$app/navigation'
-  import { page } from '$app/state'
+  import { navigating, page } from '$app/state'
   import Button from '$lib/components/ui/button/button.svelte'
   import { renderComponent } from '$lib/components/ui/data-table'
-  import type { ModuleReview } from '$lib/types/review-request'
+  import type { ModuleReview } from '$lib/schemas/module-review'
   import { ChevronDown, ChevronUp, Info } from '@lucide/svelte'
-  import type { PageProps } from './$types'
   import ReviewKeysExplanation from './(components)/review-keys-explanation.svelte'
   import ReviewRequestsStatusCell from './(components)/review-requests-status-cell.svelte'
   import ReviewRequestsTableActions from './(components)/review-requests-table-actions.svelte'
   import ModuleApprovalsTable from './(components)/review-requests-table.svelte'
+  import { getModuleReviews } from './module-approvals.remote'
 
-  const { data }: PageProps = $props()
+  const reviews = getModuleReviews()
+  // on client navigation, reviews still cached from an earlier visit may be stale or failed;
+  // on hydration they are fresh from server rendering
+  if (navigating.type && !reviews.loading) void reviews.refresh()
   let showReviewKeysExplanation = $state(false)
   let showSuccessMessage = $state<string | null>(null)
 
@@ -139,10 +143,12 @@
     </Button>
   </div>
 
-  <ReviewKeysExplanation
-    reviewKeys={data.moduleReviewKeys}
-    showComponent={showReviewKeysExplanation}
-  />
+  <ReviewKeysExplanation showComponent={showReviewKeysExplanation} />
 
-  <ModuleApprovalsTable moduleReviews={data.moduleReviews} {columns} />
+  <svelte:boundary>
+    <ModuleApprovalsTable moduleReviews={await reviews} {columns} />
+    {#snippet failed(error, reset)}
+      <QueryError title="Freigaben nicht verfügbar" {error} {reset} query={reviews} />
+    {/snippet}
+  </svelte:boundary>
 </div>

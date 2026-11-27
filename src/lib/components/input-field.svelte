@@ -2,8 +2,8 @@
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { ModificationStatus } from '$lib/types/module-draft-keys'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import type { ModificationStatus } from '$lib/components/forms/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
   import ModificationIndicator from './modification-indicator.svelte'
 
   interface Props {

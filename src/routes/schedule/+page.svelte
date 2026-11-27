@@ -11,8 +11,8 @@
   import Schedule from '$lib/components/schedule/schedule.svelte'
   import { getBooleanFromLocalStorage, setBooleanToLocalStorage } from '$lib/stores/local-storage'
   import { scheduleFilter } from '$lib/stores/schedule-filter.svelte'
-  import type { CampusBooking, TeachingBooking } from '$lib/types/booking'
-  import type { ScheduleEntry } from '$lib/types/schedule'
+  import type { CampusBooking, TeachingBooking } from '$lib/schemas/booking'
+  import type { ScheduleEntry } from '$lib/schemas/schedule'
   import { TriangleAlert, X } from '@lucide/svelte'
   import type { PageProps } from './$types'
 

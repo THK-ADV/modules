@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PersonShort } from '$lib/types/module'
+  import type { PersonShort } from '$lib/schemas/module-view'
   import { fmtPersonInitial } from '$lib/formats'
 
   let { management }: { management: PersonShort[] } = $props()

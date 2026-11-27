@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { User, UserInfo } from '$lib/auth'
+  import type { User } from '$lib/auth'
+  import type { UserInfo } from '$lib/schemas/user-info'
   import TeamSwitcher from '$lib/components/team-switcher.svelte'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import type { ComponentProps } from 'svelte'

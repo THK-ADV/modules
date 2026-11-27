@@ -5,18 +5,18 @@ import {
   bookingListResponseSchema,
   createBookingsInputSchema,
   fetchBookingsInputSchema,
-  nonEmptyBookingListResponseSchema,
-  updateBookingInputSchema
-} from '$lib/schemas/booking'
-import { scheduleSeriesOccurrenceListResponseSchema } from '$lib/schemas/schedule'
-import {
   isTeachingKind,
+  nonEmptyBookingListResponseSchema,
+  updateBookingInputSchema,
   type Booking,
   type BookingCreate,
   type BookingEdit,
   type BookingKind
-} from '$lib/types/booking'
-import type { SeriesOccurrence } from '$lib/types/schedule'
+} from '$lib/schemas/booking'
+import {
+  scheduleSeriesOccurrenceListResponseSchema,
+  type SeriesOccurrence
+} from '$lib/schemas/schedule'
 import { z } from 'zod/v4'
 import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
 

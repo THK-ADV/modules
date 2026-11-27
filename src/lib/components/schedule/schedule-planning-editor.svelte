@@ -21,7 +21,7 @@
     type BookingKind,
     type CampusBooking,
     type TeachingBooking
-  } from '$lib/types/booking'
+  } from '$lib/schemas/booking'
   import {
     isScheduleLike,
     type CalendarEvent,
@@ -49,7 +49,7 @@
     ScheduleEntryCreate,
     ScheduleEntryEdit,
     ScheduleEntryUpdateScope
-  } from '$lib/types/schedule'
+  } from '$lib/schemas/schedule'
   import type {
     CalendarEvent as HolidayCalendarEvent,
     HolidayEventProps,

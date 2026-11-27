@@ -1,14 +1,9 @@
-import {
-  createModuleFilterOptions,
-  type ModuleFilterOption
-} from '$lib/components/module-filter/types'
+import { browser } from '$app/environment'
+import type { ModuleFilterOption } from '$lib/components/module-filter/types'
 import { type StudyProgramFilterOption } from '$lib/components/study-program-filter'
 import { toStudyProgramFilterOption } from '$lib/components/study-program-filter/options'
-import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
-import type { Identity, ModuleCore } from '$lib/types/core'
-import type { FilterData } from '$lib/types/filter-data'
-import type { Room, TeachingUnit } from '$lib/types/schedule'
-import type { StudyProgram } from '$lib/types/study-program'
+import type { FilterData } from '$lib/components/filter-option.svelte'
+import type { StudyProgram } from '$lib/schemas/study-program'
 import { getShareList, type FilterShareParams } from '$lib/components/filter-share'
 import { uiStore } from './ui.svelte'
 import {
@@ -17,6 +12,7 @@ import {
   setArrayToLocalStorage,
   setBooleanToLocalStorage
 } from './local-storage'
+import { getScheduleFilterOptions } from './filter-options.remote'
 import { getModuleTypeOptions, getSemesterOptions } from './store.svelte'
 
 type FilterType = 'sf' | 'spf'
@@ -34,14 +30,22 @@ export function createScheduleFilter(prefix: FilterType) {
 
   // Filter options
   let teachingUnits: FilterData[] = $state.raw([])
-  let courseTypes: FilterData[] = $state.raw([])
+  const courseTypes: FilterData[] = [
+    { id: 'lecture', label: 'Vorlesung', badge: 'V' },
+    { id: 'lab', label: 'Praktikum', badge: 'P' },
+    { id: 'exercise', label: 'Übung', badge: 'Ü' },
+    { id: 'seminar', label: 'Seminar', badge: 'S' },
+    { id: 'tutorial', label: 'Tutorium', badge: 'T' }
+  ]
   let modules: ModuleFilterOption[] = $state.raw([])
-  const studyPrograms: StudyProgramFilterOption[] = $state.raw([])
-  const studyProgramsWithSpecialization: StudyProgram[] = $state.raw([])
-  let semesters: FilterData[] = $state.raw([])
+  let studyPrograms: StudyProgramFilterOption[] = $state.raw([])
+  let studyProgramsWithSpecialization: StudyProgram[] = $state.raw([])
+  const semesters = getSemesterOptions()
   let identities: FilterData[] = $state.raw([])
   let rooms: FilterData[] = $state.raw([])
-  let moduleTypes: FilterData[] = $state.raw([])
+  const moduleTypes = getModuleTypeOptions()
+  // a retry refreshes, since the browser may still cache the earlier, incomplete result
+  let retry = false
 
   // Selected options by the user
   let selectedTeachingUnits: string[] = $state([])
@@ -380,73 +384,34 @@ export function createScheduleFilter(prefix: FilterType) {
       this.clearSelectedModuleTypes()
     },
 
-    async init(fetch: typeof globalThis.fetch) {
-      if (semesters.length === 0) {
-        semesters = getSemesterOptions()
-      }
-      if (courseTypes.length === 0) {
-        courseTypes = [
-          { id: 'lecture', label: 'Vorlesung', badge: 'V' },
-          { id: 'lab', label: 'Praktikum', badge: 'P' },
-          { id: 'exercise', label: 'Übung', badge: 'Ü' },
-          { id: 'seminar', label: 'Seminar', badge: 'S' },
-          { id: 'tutorial', label: 'Tutorium', badge: 'T' }
-        ]
-      }
-      if (moduleTypes.length === 0) {
-        moduleTypes = getModuleTypeOptions()
-      }
+    /**
+     * Loads the options in the page load, so they are ready on first use and hydrate from the
+     * server render. The browser keeps complete options; on the server they stay request-local.
+     */
+    async init() {
       if (
-        teachingUnits.length === 0 ||
-        modules.length === 0 ||
-        studyPrograms.length === 0 ||
-        identities.length === 0 ||
-        rooms.length === 0
+        teachingUnits.length &&
+        modules.length &&
+        studyPrograms.length &&
+        identities.length &&
+        rooms.length
       ) {
-        // fetch all study programs for planning mode
-        const studyProgramFetch =
-          prefix === 'spf'
-            ? fetch('/api/studyPrograms?filter=not-expired')
-            : fetch('/api/studyPrograms?filter=currently-active')
-        const [tu, m, sp, id, ro] = await Promise.allSettled([
-          fetch('/api/teachingUnits'),
-          fetch('/api/modules?source=live'),
-          studyProgramFetch,
-          fetch('/api/identities'),
-          fetch('/api/rooms')
-        ])
-        if (tu.status === 'fulfilled' && tu.value.ok) {
-          const xs: TeachingUnit[] = await tu.value.json()
-          teachingUnits = xs.map((tu) => ({
-            id: tu.id,
-            label: tu.label,
-            badge: tu.label.slice(0, 3).toUpperCase()
-          }))
-        }
-        if (m.status === 'fulfilled' && m.value.ok) {
-          const xs: ModuleCore[] = await m.value.json()
-          modules = createModuleFilterOptions(xs)
-        }
-        if (sp.status === 'fulfilled' && sp.value.ok) {
-          const xs: StudyProgram[] = await sp.value.json()
-          for (const sp of xs) {
-            studyProgramsWithSpecialization.push(sp)
-            if (!sp.specialization) {
-              // Remove POs with specialization from UI filter
-              studyPrograms.push(toStudyProgramFilterOption(sp))
-            }
-          }
-        }
-        if (id.status === 'fulfilled' && id.value.ok) {
-          const xs: Identity[] = await id.value.json()
-          xs.sort(peopleOrdering)
-          identities = xs.map((i) => ({ id: i.id, label: fmtPerson(i), badge: fmtPersonShort(i) }))
-        }
-        if (ro.status === 'fulfilled' && ro.value.ok) {
-          const xs: Room[] = await ro.value.json()
-          rooms = xs.map((r) => ({ id: r.id, label: r.abbrev, badge: r.abbrev }))
-        }
+        return
       }
+      const query = getScheduleFilterOptions(prefix)
+      if (retry) void query.refresh()
+      retry = browser
+      const options = await query.catch(() => null)
+      if (!browser || !options) return
+      teachingUnits = options.teachingUnits
+      modules = options.modules
+      studyProgramsWithSpecialization = options.studyPrograms
+      // Remove POs with specialization from UI filter
+      studyPrograms = options.studyPrograms
+        .filter((sp) => !sp.specialization)
+        .map(toStudyProgramFilterOption)
+      identities = options.identities
+      rooms = options.rooms
     }
   }
 }

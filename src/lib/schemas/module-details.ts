@@ -1,13 +1,13 @@
-import { MODULE_DRAFT_STATES } from '$lib/types/module-draft'
 import { z } from 'zod/v4'
-
-export const moduleDraftStateResponseSchema = z.object({ id: z.enum(MODULE_DRAFT_STATES) })
 
 export const moduleShortResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
   abbreviation: z.string()
 })
+
+/** Module of `/modules/:id/options` that a generic module can be taken as. */
+export const genericModuleOptionSchema = moduleShortResponseSchema.extend({ status: z.string() })
 
 const identityResponseSchema = z.union([
   z.object({
@@ -113,7 +113,7 @@ export const moduleDetailResponseSchema = z.object({
 
 export type ModuleDetail = z.infer<typeof moduleDetailResponseSchema>
 export type ModuleShort = z.infer<typeof moduleShortResponseSchema>
-export type GenericModuleOption = ModuleShort & { status: string }
+export type GenericModuleOption = z.infer<typeof genericModuleOptionSchema>
 export type Prerequisite = NonNullable<ModuleDetail['requiredPrerequisites']>
 export type POMandatory = ModuleDetail['poMandatory'][number]
 export type Identity = ModuleDetail['firstExaminer']

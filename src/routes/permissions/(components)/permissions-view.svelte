@@ -17,7 +17,7 @@
   import { getErrorMessage } from '$lib/errors'
   import { fmtPersonName, fmtStudyProgram } from '$lib/formats'
   import type { Permission } from '$lib/schemas/permission'
-  import { getFullPOId } from '$lib/types/study-program'
+  import { getFullPOId } from '$lib/schemas/study-program'
   import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Search, SquarePen, Trash2 } from '@lucide/svelte'
   import {
     type ColumnDef,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation'
+  import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import Button, { type ButtonVariant } from '$lib/components/ui/button/button.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index'
@@ -12,11 +12,13 @@
     canPublish,
     canRequestReview,
     type ModuleDraftState
-  } from '$lib/types/module-draft'
+  } from '$lib/schemas/module-draft'
   import { cn } from '$lib/utils'
   import { SquarePen, Ellipsis, Eye, Trash2, Upload, X, Zap, type IconProps } from '@lucide/svelte'
   import type { Component } from 'svelte'
   import type { ModuleDraftTableAction } from '$lib/schemas/module-actions'
+  import { getErrorMessage } from '$lib/errors'
+  import { runModuleDraftAction } from '../module-drafts.remote'
 
   type ActionKey = ModuleDraftTableAction | 'edit'
 
@@ -75,25 +77,11 @@
 
   async function performAction(action: ModuleDraftTableAction) {
     try {
-      const response = await fetch(`/actions/module-actions/${moduleId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ action })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || `${action} failed`)
-      }
-
-      // refresh the page data
-      await invalidateAll()
+      await runModuleDraftAction({ id: moduleId, action })
       onActionComplete()
     } catch (error) {
       console.error(`${action} failed:`, error)
-      alert(`Fehler: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`)
+      alert(`Fehler: ${getErrorMessage(error)}`)
     } finally {
       // reset loading states
       switch (action) {

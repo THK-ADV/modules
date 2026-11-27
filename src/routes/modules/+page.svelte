@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import DataTableTitleButton from '$lib/components/modules-table-title-button.svelte'
   import { renderComponent } from '$lib/components/ui/data-table/index.js'
-  import type { ModuleView, StudyProgramModuleAssociation } from '$lib/types/module'
+  import type { ModuleView, StudyProgramModuleAssociation } from '$lib/schemas/module-view'
   import type { ColumnDef } from '@tanstack/table-core'
   import DataTableModuleTypeCell from './(components)/modules-table-moduleType-cell.svelte'
 
@@ -108,15 +108,6 @@
   import ModuleTableManagementCell from './(components)/modules-table-management-cell.svelte'
 
   let { data }: PageProps = $props()
-
-  const latestModuleUpdate = $derived.by(() => {
-    const latest = data.latestModuleUpdate as Date | null
-    if (!latest) {
-      return null
-    }
-
-    return fmtDate(latest)
-  })
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
@@ -125,10 +116,10 @@
     <p class="text-muted-foreground text-sm">
       Veröffentlichte Modulbeschreibungen aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>
-    {#if latestModuleUpdate}
+    {#if data.latestModuleUpdate}
       <div class="text-muted-foreground flex items-center gap-2 text-sm">
         <Calendar class="size-4" />
-        <span class="text-sm">Letzte Aktualisierung: {latestModuleUpdate}</span>
+        <span class="text-sm">Letzte Aktualisierung: {fmtDate(data.latestModuleUpdate)}</span>
       </div>
     {/if}
   </div>

@@ -5,25 +5,28 @@
   import { Button } from '$lib/components/ui/button/index.js'
   import Spinner from '$lib/components/ui/spinner/spinner.svelte'
   import { getErrorMessage } from '$lib/errors'
-  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
   import ModuleExams from './module-exams.svelte'
   import { getModuleExams } from './module-exams.remote'
   import type { PageProps } from './$types'
   import { getModuleFormContext } from '../context'
+  import { getExaminationOptions, getIdentityOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
 
   let { data, params }: PageProps = $props()
 
-  const modulePermittedAssessmentMethodOptions = moduleUpdateState.assessmentMethods
+  const form = getModuleFormContext()
+  const { form: formData, errors } = form
+
+  const [{ assessmentMethods, examPhases }, identities] = await Promise.all([
+    loadEditorOptions(getExaminationOptions),
+    loadEditorOptions(getIdentityOptions)
+  ])
+
+  const modulePermittedAssessmentMethodOptions = assessmentMethods
     .filter(({ isRPO }) => isRPO)
     .map(({ id, deLabel }) => ({ id, label: deLabel }))
 
-  const identityOptions = moduleUpdateState.identities.map(({ identity, label }) => ({
-    id: identity.id,
-    deLabel: label
-  }))
-
-  const form = getModuleFormContext()
-  const { form: formData, errors } = form
+  const identityOptions = identities.map(({ id, label }) => ({ id, deLabel: label }))
 
   // ensure that module assessment methods are a subset of permitted assessment methods
   function validateAssessmentMethods() {
@@ -77,7 +80,7 @@
         {form}
         name="assessmentMethods"
         label="Prüfungsformen im kommenden Semester"
-        assessmentMethods={moduleUpdateState.assessmentMethods}
+        {assessmentMethods}
         permittedAssessmentMethods={$formData.permittedAssessmentMethods}
         bind:value={$formData.assessmentMethods}
         modificationStatus={assessmentMethodsStatus}
@@ -134,7 +137,7 @@
         name="examPhases"
         label="Prüfungsphasen"
         description="Gibt an, in welchen Phasen die Prüfung grundsätzlich angeboten wird. Ist nicht beschränkt auf das kommende Semester. Wird in den Prüfungslisten verwendet."
-        options={moduleUpdateState.examPhases}
+        options={examPhases}
         bind:value={$formData.examPhases}
         {errors}
         modificationStatus={examPhasesStatus}

@@ -1,6 +1,7 @@
-import type { CampusBooking } from '$lib/types/booking'
-import { examExaminers, examModuleAbbrevs, examRoomLabel } from '$lib/types/exam-planning'
-import { fmtCourseType, type ScheduleEntry } from '$lib/types/schedule'
+import type { CampusBooking } from '$lib/schemas/booking'
+import { examExaminers, examModuleAbbrevs, examRoomLabel } from '$lib/schemas/exam-planning'
+import { fmtCourseType } from '$lib/formats'
+import type { ScheduleEntry } from '$lib/schemas/schedule'
 import type { EventContentArg } from '@fullcalendar/core/index.js'
 import {
   BOOKING_KIND_COLORS,

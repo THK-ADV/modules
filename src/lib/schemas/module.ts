@@ -70,8 +70,8 @@ const workloadNumber = z
 
 // update the following parts if this schema changes:
 // - fieldToSectionMap in /my-modules/[id=uuid]/+layout.svelte
-// - SERVER_KEY_TO_FORM_FIELD_MAP in /lib/types/module-draft-keys.ts
-// - SECTION_FIELD_MAP in /lib/types/module-draft-keys.ts
+// - SERVER_KEY_TO_FORM_FIELD_MAP in /lib/components/forms/module-draft-keys.ts
+// - SECTION_FIELD_MAP in /lib/components/forms/module-draft-keys.ts
 
 export const assessmentMethodFormSchema = z.object({
   method: z.string().nonempty('Prüfungsform erforderlich'),

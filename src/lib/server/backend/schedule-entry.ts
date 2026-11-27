@@ -1,6 +1,6 @@
 import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
 import { COURSE_TYPE_COLORS } from '$lib/calendar/types'
-import type { ScheduleEntry, ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/types/schedule'
+import type { ScheduleEntry, ScheduleEntryCreate, ScheduleEntryEdit } from '$lib/schemas/schedule'
 
 // Note(BK9C2F): Event and write-request mapping is a twin of Note(BK9C2F) in
 // booking.ts. Keep calendar event shape and ISO write payloads in sync.

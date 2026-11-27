@@ -1,18 +1,17 @@
-import { isParsed, type ModuleVersion } from '$lib/types/module-version'
 import { MODULE_ROUTE_ID } from '$lib/routes'
+import { isParsed, moduleVersionSchema } from '$lib/schemas/module-version'
+import { fetchBackendJson } from '$lib/server/backend/http'
 import { error } from '@sveltejs/kit'
+import { z } from 'zod/v4'
 import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-  const res = await fetch(`/auth-api/modules/${params.id}/history`)
-  if (!res.ok) {
-    const message: { message: string } = await res
-      .json()
-      .catch(() => ({ message: 'Unbekannter Fehler' }))
-    throw error(res.status, message)
-  }
-
-  const history: ModuleVersion[] = await res.json()
+  const history = await fetchBackendJson(
+    fetch,
+    `/auth-api/modules/${params.id}/history`,
+    z.array(moduleVersionSchema),
+    'Modulhistorie konnte nicht geladen werden'
+  )
   history.sort((a, b) => new Date(a.committedAt).getTime() - new Date(b.committedAt).getTime())
   const latestVersion = history.findLast(isParsed)
 

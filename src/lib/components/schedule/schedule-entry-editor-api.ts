@@ -5,7 +5,7 @@ import type {
   ScheduleEntryEdit,
   ScheduleEntryUpdateScope,
   SeriesOccurrence
-} from '$lib/types/schedule'
+} from '$lib/schemas/schedule'
 import {
   createDraftScheduleEntries,
   deleteDraftScheduleEntry,

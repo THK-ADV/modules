@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
-  import type { ModificationStatus } from '$lib/types/module-draft-keys'
+  import type { ModificationStatus } from '$lib/components/forms/module-draft-keys'
   import { SquarePen, Eye } from '@lucide/svelte'
 
   interface Props {

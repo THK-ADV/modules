@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { StudyProgram } from '$lib/types/study-program'
+  import type { StudyProgram } from '$lib/schemas/study-program'
   import Button from '$lib/components/ui/button/button.svelte'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import Input from '$lib/components/ui/input/input.svelte'

@@ -3,7 +3,7 @@
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import type { ExamEventProps } from '$lib/calendar'
   import { fmtTime, fmtWeekdayDate } from '$lib/formats'
-  import type { StudyProgram } from '$lib/types/study-program'
+  import type { StudyProgram } from '$lib/schemas/study-program'
   import { CalendarDays, Clock } from '@lucide/svelte'
   import ExamEntryFacts, { examSubtitle } from './exam-entry-facts.svelte'
 

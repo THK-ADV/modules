@@ -16,8 +16,7 @@
     fmtPersonInitialFirst,
     fmtTime
   } from '$lib/formats'
-  import type { InvigilationEntry } from '$lib/schemas/exam-planning'
-  import { examRoomLabel } from '$lib/types/exam-planning'
+  import { examRoomLabel, type InvigilationEntry } from '$lib/schemas/exam-planning'
   import { cn } from '$lib/utils'
   import {
     CalendarX2,

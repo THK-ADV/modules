@@ -1,21 +1,4 @@
-import type { Person } from './types/core'
-
-export type UserInfo = {
-  person: Person
-  hasDirectorPrivileges: boolean
-  hasModuleReviewPrivileges: boolean
-  hasModulesToEdit: boolean
-  hasExtendedModuleEditPermissions: boolean
-  rejectedReviews: number
-  reviewsToApprove: number
-  fastForwardApprovalPOs: string[] | undefined
-  hasSchedulePlanningPrivileges: boolean
-  hasExamPlanningPrivileges: boolean
-  hasExamPlanningViewPrivileges: boolean // superset of hasExamPlanningPrivileges
-  hasSchedulePlanningViewPrivileges: boolean // superset of hasSchedulePlanningPrivileges
-  hasCoreDataEditPrivileges: boolean
-  hasScheduleBookingPrivileges: boolean
-}
+import type { UserInfo } from './schemas/user-info'
 
 export interface User {
   roles: string[]

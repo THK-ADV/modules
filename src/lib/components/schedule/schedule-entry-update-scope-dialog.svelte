@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import type { ScheduleEntryUpdateScope, SeriesOccurrence } from '$lib/types/schedule'
+  import type { ScheduleEntryUpdateScope, SeriesOccurrence } from '$lib/schemas/schedule'
   import { fmtTime, fmtWeekdayDate } from '$lib/formats'
   import { CalendarDays, Clock } from '@lucide/svelte'
 

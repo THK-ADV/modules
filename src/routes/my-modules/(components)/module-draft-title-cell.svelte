@@ -4,7 +4,7 @@
   import { Badge } from '$lib/components/ui/badge/index.js'
   import InactiveModuleIcon from '$lib/components/inactive-module-icon.svelte'
 
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import type { ModuleDraft } from '$lib/schemas/module-draft'
   import { Star } from '@lucide/svelte'
 
   let {

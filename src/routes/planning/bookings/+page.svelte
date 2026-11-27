@@ -31,8 +31,8 @@
     type BookingCreate,
     type BookingEdit,
     type BookingKind
-  } from '$lib/types/booking'
-  import type { ScheduleEntry, ScheduleEntryUpdateScope } from '$lib/types/schedule'
+  } from '$lib/schemas/booking'
+  import type { ScheduleEntry, ScheduleEntryUpdateScope } from '$lib/schemas/schedule'
   import { Plus } from '@lucide/svelte'
   import type { PageProps } from './$types'
 

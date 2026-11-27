@@ -51,7 +51,8 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation'
   import { page } from '$app/state'
-  import { isProfessor, type User, type UserInfo } from '$lib/auth'
+  import { isProfessor, type User } from '$lib/auth'
+  import type { UserInfo } from '$lib/schemas/user-info'
   import * as Collapsible from '$lib/components/ui/collapsible/index.js'
   import * as Sidebar from '$lib/components/ui/sidebar/index.js'
   import { useSidebar } from '$lib/components/ui/sidebar/context.svelte.js'

@@ -7,7 +7,7 @@
   import * as RadioGroup from '$lib/components/ui/radio-group/index.js'
   import { IsMobile } from '$lib/hooks/is-mobile.svelte.js'
   import { myModuleFilter } from '$lib/stores/my-module-filter.svelte'
-  import type { ModuleDraft } from '$lib/types/module-draft'
+  import type { ModuleDraft } from '$lib/schemas/module-draft'
   import { ChevronDown, Funnel, Search, X } from '@lucide/svelte'
   import type { Table } from '@tanstack/table-core'
   import type { Selection } from './types'

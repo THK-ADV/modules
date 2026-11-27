@@ -3,7 +3,7 @@
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
   import { moduleFilter, showModuleTableRow } from '$lib/stores/module-filter.svelte'
-  import type { ModuleView } from '$lib/types/module'
+  import type { ModuleView } from '$lib/schemas/module-view'
   import {
     type ColumnDef,
     getCoreRowModel,

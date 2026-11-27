@@ -1,5 +1,5 @@
 import { fmtCredits, fmtManagement } from '$lib/formats'
-import type { ModuleCore } from '$lib/types/core'
+import type { ModuleCore } from '$lib/schemas/module-options'
 
 export interface ModuleFilterOption {
   id: string

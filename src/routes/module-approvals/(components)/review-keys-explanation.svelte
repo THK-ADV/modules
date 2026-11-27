@@ -1,11 +1,12 @@
 <script lang="ts">
-  import type { ModuleReviewKey } from '$lib/types/module-review-keys'
+  import { getModuleReviewKeys } from '$lib/components/module-review.remote'
 
-  const { reviewKeys, showComponent }: { reviewKeys: ModuleReviewKey[]; showComponent: boolean } =
-    $props()
+  const { showComponent }: { showComponent: boolean } = $props()
+  // Loaded only once the explanation is shown.
+  const reviewKeys = $derived(showComponent ? await getModuleReviewKeys() : [])
 </script>
 
-{#if showComponent && reviewKeys.length > 0}
+{#if reviewKeys.length > 0}
   <div class="rounded-lg border bg-linear-to-r from-amber-50 to-yellow-50 p-6">
     <div class="space-y-4">
       <div class="space-y-2">

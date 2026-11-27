@@ -7,8 +7,14 @@
   import type { LayoutProps } from './$types'
   import AppSidebar from './(components)/app-sidebar.svelte'
   import NavBreadcrumb from './(components)/nav-breadcrumb.svelte'
+  import { getCurrentUserInfo } from './user-info.remote'
 
   let { children, data }: LayoutProps = $props()
+
+  // seeded by the layout load; commands refresh it, so sidebar counts follow draft and review writes
+  // svelte-ignore state_referenced_locally
+  const userInfoQuery = data.isAuthenticated ? getCurrentUserInfo() : undefined
+  const userInfo = $derived(userInfoQuery?.current ?? data.userInfo)
 
   function sideBarOpenChange(open: boolean) {
     setSidebarState(open, document)
@@ -18,7 +24,7 @@
 <ModeWatcher />
 
 <Sidebar.Provider open={data.sidebarOpen} onOpenChange={sideBarOpenChange}>
-  <AppSidebar user={data.user} userInfo={data.userInfo} />
+  <AppSidebar user={data.user} {userInfo} />
   <Sidebar.Inset class="min-w-0">
     <header
       class="flex h-14 shrink-0 items-center gap-2 transition-[width,height] ease-linear md:h-16 group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"

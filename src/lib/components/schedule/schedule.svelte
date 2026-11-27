@@ -10,8 +10,8 @@
   import { getErrorMessage } from '$lib/errors'
   import type { PublishedExamEntry } from '$lib/schemas/exam-planning'
   import { uiStore } from '$lib/stores/ui.svelte.js'
-  import type { ScheduleEntry } from '$lib/types/schedule'
-  import { isTeachingKind } from '$lib/types/booking'
+  import type { ScheduleEntry } from '$lib/schemas/schedule'
+  import { isTeachingKind } from '$lib/schemas/booking'
   import { RefreshCw, TriangleAlert } from '@lucide/svelte'
 
   const {

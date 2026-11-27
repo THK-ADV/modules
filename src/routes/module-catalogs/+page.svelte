@@ -1,8 +1,12 @@
 <script lang="ts">
-  import type { PageProps } from './$types'
   import PublishedDocumentTable from '$lib/components/published-document-table.svelte'
+  import { navigating } from '$app/state'
+  import { getPublishedDocuments } from '../studyprogram/studyprogram.remote'
 
-  let { data }: PageProps = $props()
+  const documents = getPublishedDocuments('moduleCatalogs')
+  // on client navigation, documents still cached from an earlier visit may be stale or failed;
+  // on hydration they are fresh from server rendering
+  if (navigating.type && !documents.loading) void documents.refresh()
 </script>
 
 <div class="flex h-full flex-1 flex-col space-y-8">
@@ -12,5 +16,5 @@
       Freigegebene Modulhandbücher aller Studiengänge der TH Köln am Campus Gummersbach.
     </p>
   </div>
-  <PublishedDocumentTable data={data.moduleCatalogs} fileBasePath="/api/moduleCatalogs/file/" />
+  <PublishedDocumentTable data={await documents} fileBasePath="/api/moduleCatalogs/file/" />
 </div>

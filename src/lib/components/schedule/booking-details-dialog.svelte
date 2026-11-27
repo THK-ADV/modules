@@ -5,7 +5,7 @@
   // differences (booking kind vs module/course type, no study programs/metadata) are expected.
   import { buttonVariants } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
-  import { BOOKING_KIND_LABELS, type CampusBooking } from '$lib/types/booking'
+  import { BOOKING_KIND_LABELS, type CampusBooking } from '$lib/schemas/booking'
   import { fmtWeekdayDate, fmtTime } from '$lib/formats'
   import { CalendarDays, Clock, MapPin, StickyNote, Users } from '@lucide/svelte'
 

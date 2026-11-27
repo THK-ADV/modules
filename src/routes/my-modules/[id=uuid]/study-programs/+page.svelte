@@ -1,8 +1,9 @@
 <script lang="ts">
   import StudyProgramElectiveRelationsForm from '$lib/components/forms/study-program-elective-relations-form.svelte'
   import StudyProgramMandatoryRelationsForm from '$lib/components/forms/study-program-mandatory-relations-form.svelte'
-  import { moduleUpdateState } from '$lib/stores/store.svelte'
   import { getModuleFormContext } from '../context'
+  import { getStudyProgramOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
@@ -12,7 +13,7 @@
   // svelte-ignore state_referenced_locally
   const poOptionalStatus = data.fieldStatuses?.['po.optional']
 
-  const studyPrograms = moduleUpdateState.studyPrograms
+  const { studyPrograms, genericModules } = await loadEditorOptions(getStudyProgramOptions)
 
   const form = getModuleFormContext()
   const { form: formData } = form
@@ -45,6 +46,7 @@
       {form}
       name="po.optional"
       {studyPrograms}
+      {genericModules}
       bind:value={$formData.po.optional}
       modificationStatus={poOptionalStatus}
     />

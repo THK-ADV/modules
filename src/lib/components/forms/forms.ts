@@ -1,5 +1,5 @@
 import { fmtStudyProgram } from '$lib/formats'
-import type { StudyProgram } from '$lib/types/study-program'
+import type { StudyProgram } from '$lib/schemas/study-program'
 
 export function showPO(
   studyPrograms: StudyProgram[]

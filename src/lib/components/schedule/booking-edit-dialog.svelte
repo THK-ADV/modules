@@ -15,20 +15,18 @@
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { getErrorMessage } from '$lib/errors'
   import {
+    BOOKING_KIND_LABELS,
+    bookingFormSchema,
+    isTeachingKind,
     otherBookingFormSchema,
     teachingBookingFormSchema,
-    bookingFormSchema,
-    type BookingFormData
-  } from '$lib/schemas/booking'
-  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
-  import {
-    BOOKING_KIND_LABELS,
-    isTeachingKind,
     type BookingCreate,
     type BookingEdit,
+    type BookingFormData,
     type BookingKind,
     type BookingMetadata
-  } from '$lib/types/booking'
+  } from '$lib/schemas/booking'
+  import { schedulePlanningFilter } from '$lib/stores/schedule-filter.svelte'
   import {
     arraysEqual,
     clonePOs,
@@ -36,7 +34,7 @@
     posEqual,
     type ScheduleEntryUpdateScope,
     type SeriesOccurrence
-  } from '$lib/types/schedule'
+  } from '$lib/schemas/schedule'
   import { fromDate, getLocalTimeZone, type DateValue } from '@internationalized/date'
   import { Copy, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'

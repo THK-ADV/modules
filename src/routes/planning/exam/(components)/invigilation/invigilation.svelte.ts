@@ -1,8 +1,11 @@
 import { goto } from '$app/navigation'
-import { examModuleAbbrevs } from '$lib/types/exam-planning'
 import { getErrorMessage } from '$lib/errors'
 import { fmtWeekdayLong } from '$lib/formats'
-import type { ExamEntryDraft, ExamPoolConfig } from '$lib/schemas/exam-planning'
+import {
+  examModuleAbbrevs,
+  type ExamEntryDraft,
+  type ExamPoolConfig
+} from '$lib/schemas/exam-planning'
 import { SvelteMap, SvelteSet } from 'svelte/reactivity'
 import { assignInvigilators, updateExamRooms } from '../../exam-planning.remote'
 import {

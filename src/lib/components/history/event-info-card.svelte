@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type ModuleVersion } from '$lib/types/module-version'
+  import { type ModuleVersion } from '$lib/schemas/module-version'
   import { TriangleAlert, Trash2 } from '@lucide/svelte'
   import { cn } from '$lib/utils'
   import { fmtDateLong } from '$lib/formats'

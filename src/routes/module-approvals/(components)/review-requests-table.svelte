@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js'
   import * as Table from '$lib/components/ui/table/index.js'
-  import type { ModuleReview } from '$lib/types/review-request'
+  import type { ModuleReview } from '$lib/schemas/module-review'
   import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core'
 
   let {

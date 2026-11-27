@@ -1,5 +1,5 @@
 import { moduleDraftSchema, type ModuleDraft } from '$lib/schemas/module.js'
-import type { ModuleProtocol } from '$lib/types/module-protocol.js'
+import type { ModuleProtocol } from '$lib/schemas/module-protocol'
 import { fail } from '@sveltejs/kit'
 import { superValidate, type SuperValidated } from 'sveltekit-superforms'
 import { zod4 } from 'sveltekit-superforms/adapters'

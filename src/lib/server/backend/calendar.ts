@@ -21,15 +21,13 @@ import {
   schedulePoOptionListResponseSchema,
   scheduleSeriesOccurrenceListResponseSchema,
   semesterPlanEntryListResponseSchema,
-  updateScheduleEntryInputSchema
+  updateScheduleEntryInputSchema,
+  type PO,
+  type ScheduleEntryCreate,
+  type ScheduleEntryEdit,
+  type SemesterPlanEntry,
+  type SeriesOccurrence
 } from '$lib/schemas/schedule'
-import type {
-  PO,
-  ScheduleEntryCreate,
-  ScheduleEntryEdit,
-  SemesterPlanEntry,
-  SeriesOccurrence
-} from '$lib/types/schedule'
 import type { Cookies } from '@sveltejs/kit'
 import { z } from 'zod/v4'
 import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'

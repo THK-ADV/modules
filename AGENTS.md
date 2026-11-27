@@ -47,6 +47,7 @@
 ### Schemas
 
 - Define a zod schema in `src/lib/schemas` for every type received from the backend REST API and derive the TypeScript type from it via `z.infer`; do not declare these types by hand
+- Each domain has one module in `src/lib/schemas`: zod schemas, enum values, types inferred via `z.infer`, derived view types and small pure helpers for these types. Types that only belong to one component live next to it. There is no `src/lib/types` and no re-export shims
 
 ### Loading and mutating data
 

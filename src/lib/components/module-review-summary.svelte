@@ -1,16 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
+  import { getErrorMessage } from '$lib/errors'
   import { Checkbox } from '$lib/components/ui/checkbox/index.js'
   import { Label } from '$lib/components/ui/label/index.js'
   import { CircleCheck, CircleX, Eye, FileDiff, SquarePen } from '@lucide/svelte'
   import ErrorMessage from './error-message.svelte'
   import Button from './ui/button/button.svelte'
   import Spinner from './ui/spinner/spinner.svelte'
+  import { getMergeRequestUrl, reviewModule } from './module-review.remote'
   import { Textarea } from './ui/textarea'
 
   let {
     reviews,
-    // eslint-disable-next-line no-useless-assignment -- required for Svelte bindable prop
     reviewInProgress = $bindable(),
     moduleId
   }: {
@@ -21,7 +22,7 @@
 
   const minRejectCommentLength = 10
 
-  let errorMessage = $state(undefined)
+  let errorMessage = $state<string | undefined>(undefined)
   // svelte-ignore state_referenced_locally
   let reviewedStudyPrograms = $state(new Array<boolean>(reviews.length).fill(false))
   let comment = $state('')
@@ -35,31 +36,23 @@
   const hasSelectedReviews = $derived(reviewedStudyPrograms.some((r) => r))
 
   async function performAction(action: 'approve' | 'reject'): Promise<void> {
+    // Stays in progress until the list is shown, so a repeated click or Enter cannot review twice.
+    if (reviewInProgress) return
     reviewInProgress = true
-    const response = await fetch('/actions/module-approval', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+    errorMessage = undefined
+    try {
+      await reviewModule({
         action,
         comment: comment.trim(),
         reviews: reviews
           .filter((_, index) => reviewedStudyPrograms[index])
           .map(({ reviewId }) => reviewId)
       })
-    })
-
-    reviewInProgress = false
-
-    if (response.ok) {
-      const result = await response.json()
-      if (result.success) {
-        goto(`/module-approvals?approved=${action === 'approve'}`)
-      }
-    } else {
-      const err = await response.json()
-      errorMessage = err.message
+      await goto(`/module-approvals?approved=${action === 'approve'}`)
+    } catch (err) {
+      errorMessage = getErrorMessage(err)
+    } finally {
+      reviewInProgress = false
     }
   }
 
@@ -76,15 +69,12 @@
   async function openGitLabMR() {
     errorMessage = undefined
     mrURLisLoading = true
-    const response = await fetch(`/actions/module-approval?moduleId=${moduleId}`)
-    if (response.ok) {
-      const url = await response.text()
+    try {
+      window.open(await getMergeRequestUrl(moduleId), '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      errorMessage = getErrorMessage(err)
+    } finally {
       mrURLisLoading = false
-      window.open(url, '_blank', 'noopener,noreferrer')
-    } else {
-      mrURLisLoading = false
-      const err = await response.json()
-      errorMessage = err.message
     }
   }
 </script>

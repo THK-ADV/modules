@@ -1,9 +1,5 @@
-import {
-  moduleDetailResponseSchema,
-  moduleDraftStateResponseSchema,
-  type ModuleDetail
-} from '$lib/schemas/module-details'
-import type { ModuleDraftState } from '$lib/types/module-draft'
+import { moduleDetailResponseSchema, type ModuleDetail } from '$lib/schemas/module-details'
+import { moduleDraftStateResponseSchema, type ModuleDraftState } from '$lib/schemas/module-draft'
 import { z } from 'zod/v4'
 import { fetchBackendJson, parseBackendRequestInput } from './http'
 

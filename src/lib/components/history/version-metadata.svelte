@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isParsed, type ModuleVersion } from '$lib/types/module-version'
+  import { isParsed, type ModuleVersion } from '$lib/schemas/module-version'
   import { fmtDateLong, fmtSemester } from '$lib/formats'
 
   type Props = { version: ModuleVersion }

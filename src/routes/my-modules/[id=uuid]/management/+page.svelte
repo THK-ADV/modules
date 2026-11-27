@@ -1,7 +1,8 @@
 <script lang="ts">
   import MultiSelectCombobox from '$lib/components/multi-select-combobox.svelte'
-  import { moduleUpdateState } from '$lib/stores/store.svelte.js'
   import { getModuleFormContext } from '../context'
+  import { getIdentityOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
   import type { PageProps } from './$types'
 
   let { data }: PageProps = $props()
@@ -16,24 +17,11 @@
   // svelte-ignore state_referenced_locally
   const updatePermissionsStatus = data.fieldStatuses?.updatePermissions
 
-  const identities = moduleUpdateState.identities
-  const people = identities.filter((a) => a.identity.kind === 'person')
-
-  let nonManagementPeople = $derived.by(() => {
-    const currentManagement = $formData.management
-    return people.filter((a) => !currentManagement.includes(a.identity.id))
-  })
-
-  const identityOptions = identities.map(({ identity, label }) => ({
-    id: identity.id,
-    label
-  }))
+  const identityOptions = await loadEditorOptions(getIdentityOptions)
+  const people = identityOptions.filter(({ kind }) => kind === 'person')
 
   const nonManagementOptions = $derived(
-    nonManagementPeople.map(({ identity, label }) => ({
-      id: identity.id,
-      label
-    }))
+    people.filter(({ id }) => !$formData.management.includes(id))
   )
 </script>
 

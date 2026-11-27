@@ -7,10 +7,10 @@
   import * as Table from '$lib/components/ui/table/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { assessmentMethodFormSchema } from '$lib/schemas/module'
-  import type { AssessmentMethod } from '$lib/types/core'
-  import type { ModificationStatus } from '$lib/types/module-draft-keys'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
-  import type { AssessmentEntry } from '$lib/types/module-protocol'
+  import type { LabelOption } from '$lib/schemas/module-options'
+  import type { ModificationStatus } from '$lib/components/forms/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
+  import type { AssessmentEntry } from '$lib/schemas/module-protocol'
   import { SquarePen, Plus, Trash2, TriangleAlert } from '@lucide/svelte'
   import { superForm } from 'sveltekit-superforms'
   import { zod4Client } from 'sveltekit-superforms/adapters'
@@ -22,7 +22,7 @@
     form: any // eslint-disable-line @typescript-eslint/no-explicit-any
     name: string // name of the field in the form
     label: string
-    assessmentMethods: AssessmentMethod[]
+    assessmentMethods: (LabelOption & { isRPO: boolean })[]
     permittedAssessmentMethods: string[]
     value: AssessmentEntry[]
     modificationStatus?: ModificationStatus // optional modification tracking

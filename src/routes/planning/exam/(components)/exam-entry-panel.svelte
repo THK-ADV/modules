@@ -23,7 +23,7 @@
   import * as Popover from '$lib/components/ui/popover/index.js'
   import { getErrorMessage } from '$lib/errors'
   import { fmtTime, fmtWeekdayDate } from '$lib/formats'
-  import { examMethodLabels, examRoomLabel } from '$lib/types/exam-planning'
+  import { examMethodLabels, examRoomLabel } from '$lib/schemas/exam-planning'
   import { cn } from '$lib/utils'
   import { parseDate } from '@internationalized/date'
   import {

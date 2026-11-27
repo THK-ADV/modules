@@ -3,9 +3,10 @@
   import { ModuleMultiSelect } from '$lib/components/module-filter'
   import * as Form from '$lib/components/ui/form/index.js'
   import { Input } from '$lib/components/ui/input/index.js'
-  import { moduleUpdateState } from '$lib/stores/store.svelte'
-  import { getFieldHighlightClasses } from '$lib/types/module-draft-keys'
+  import { getFieldHighlightClasses } from '$lib/components/forms/module-draft-keys'
   import { getModuleFormContext } from '../context'
+  import { getModuleOptions } from '../module-options.remote'
+  import { loadEditorOptions } from '../editor-options'
   import type { PageProps } from './$types'
 
   const { data }: PageProps = $props()
@@ -20,11 +21,10 @@
   const form = getModuleFormContext()
   const { form: formData, errors } = form
 
+  const modules = await loadEditorOptions(getModuleOptions)
   const moduleOptions = $derived.by(() => {
     const module = data.module
-    return module !== null
-      ? moduleUpdateState.modules.filter(({ id }) => id !== module.id)
-      : moduleUpdateState.modules
+    return module !== null ? modules.filter(({ id }) => id !== module.id) : modules
   })
 
   let participantsMin = {

@@ -1,10 +1,9 @@
+import { browser } from '$app/environment'
 import type { StudyProgramFilterOption } from '$lib/components/study-program-filter'
 import { toStudyProgramFilterOption } from '$lib/components/study-program-filter/options'
-import { fmtPerson, fmtPersonShort, peopleOrdering } from '$lib/formats'
-import type { Identity, Status } from '$lib/types/core'
-import type { FilterData } from '$lib/types/filter-data'
-import type { ModuleView } from '$lib/types/module'
-import { getFullPOId, type StudyProgram } from '$lib/types/study-program'
+import type { FilterData } from '$lib/components/filter-option.svelte'
+import type { ModuleView } from '$lib/schemas/module-view'
+import { getFullPOId } from '$lib/schemas/study-program'
 import type { PaginationState } from '@tanstack/table-core'
 import { getShareList, type FilterShareParams } from '$lib/components/filter-share'
 import {
@@ -14,6 +13,7 @@ import {
   setArrayToLocalStorage,
   setPaginationToLocalStorage
 } from './local-storage'
+import { getModuleFilterOptions } from './filter-options.remote'
 import { getModuleTypeOptions, getSemesterOptions } from './store.svelte'
 
 function createModuleFilter() {
@@ -22,9 +22,11 @@ function createModuleFilter() {
 
   let studyPrograms = $state.raw(new Array<StudyProgramFilterOption>())
   let identities = $state.raw(new Array<FilterData>())
-  let semester = $state.raw(new Array<FilterData>())
-  let moduleTypes = $state.raw(new Array<FilterData>())
+  const semester = getSemesterOptions()
+  const moduleTypes = getModuleTypeOptions()
   let moduleStatus = $state.raw(new Array<FilterData>())
+  // a retry refreshes, since the browser may still cache the earlier, incomplete result
+  let retry = false
 
   let selectedStudyPrograms = $state(getArrayFromLocalStorage('mf-selected-study-programs'))
   let selectedIdentities = $state(getArrayFromLocalStorage('mf-selected-identities'))
@@ -236,41 +238,20 @@ function createModuleFilter() {
       pagination = { ...pagination, pageIndex: 0 }
       changed++
     },
-    async init(fetch: typeof globalThis.fetch) {
-      if (semester.length === 0) {
-        semester = getSemesterOptions()
-      }
-      if (moduleTypes.length === 0) {
-        moduleTypes = getModuleTypeOptions()
-      }
-      if (studyPrograms.length === 0 || identities.length === 0 || moduleStatus.length === 0) {
-        const [sp, id, st] = await Promise.allSettled([
-          fetch('/api/studyPrograms?filter=currently-active'),
-          fetch('/api/identities'),
-          fetch('/api/status')
-        ])
-        if (sp.status === 'fulfilled' && sp.value.ok) {
-          const xs: StudyProgram[] = await sp.value.json()
-          studyPrograms = xs.map((sp) => toStudyProgramFilterOption(sp))
-        }
-        if (id.status === 'fulfilled' && id.value.ok) {
-          const xs: Identity[] = await id.value.json()
-          xs.sort(peopleOrdering)
-          identities = xs.map((id) => ({
-            label: fmtPerson(id),
-            id: id.id,
-            badge: fmtPersonShort(id)
-          }))
-        }
-        if (st.status === 'fulfilled' && st.value.ok) {
-          const xs: Status[] = await st.value.json()
-          moduleStatus = xs.map((s) => ({
-            label: s.deLabel,
-            id: s.id,
-            badge: s.deLabel
-          }))
-        }
-      }
+    /**
+     * Loads the options in the page load, so they are ready on first use and hydrate from the
+     * server render. The browser keeps complete options; on the server they stay request-local.
+     */
+    async init() {
+      if (studyPrograms.length && identities.length && moduleStatus.length) return
+      const query = getModuleFilterOptions()
+      if (retry) void query.refresh()
+      retry = browser
+      const options = await query.catch(() => null)
+      if (!browser || !options) return
+      studyPrograms = options.studyPrograms.map(toStudyProgramFilterOption)
+      identities = options.identities
+      moduleStatus = options.moduleStatus
     }
   }
 }

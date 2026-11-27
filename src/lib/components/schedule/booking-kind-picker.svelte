@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button/index.js'
   import * as Dialog from '$lib/components/ui/dialog/index.js'
-  import { BOOKING_KINDS, BOOKING_KIND_LABELS, type BookingKind } from '$lib/types/booking'
+  import { BOOKING_KIND_LABELS, bookingKindSchema, type BookingKind } from '$lib/schemas/booking'
 
   let {
     open,
@@ -26,7 +26,7 @@
       <Dialog.Description>Welche Art von Buchung soll angelegt werden?</Dialog.Description>
     </Dialog.Header>
     <div class="grid gap-2 py-2">
-      {#each BOOKING_KINDS as kind (kind)}
+      {#each bookingKindSchema.options as kind (kind)}
         <Button variant="outline" class="justify-start" onclick={() => onSelect(kind)}>
           {BOOKING_KIND_LABELS[kind]}
         </Button>

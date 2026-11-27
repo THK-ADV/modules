@@ -1,6 +1,8 @@
 import { dev } from '$app/environment'
 import { KEYCLOAK_CLIENT_ID, KEYCLOAK_REALM, KEYCLOAK_URL } from '$env/static/private'
-import type { User, UserInfo } from '$lib/auth'
+import type { User } from '$lib/auth'
+import { userInfoSchema, type UserInfo } from '$lib/schemas/user-info'
+import { fetchBackendJson } from '$lib/server/backend/http'
 import { error, type Cookies } from '@sveltejs/kit'
 
 // caution: all functions should only be called within a server context
@@ -223,16 +225,12 @@ export async function getUser(
 }
 
 export async function getUserInfo(fetch: typeof globalThis.fetch): Promise<UserInfo | undefined> {
-  const res = await fetch('/auth-api/user')
-  if (!res.ok) {
-    return undefined
-  }
-  try {
-    return await res.json()
-  } catch (err) {
-    console.error(err)
-    return undefined
-  }
+  return fetchBackendJson(
+    fetch,
+    '/auth-api/user',
+    userInfoSchema,
+    'Benutzerinformationen konnten nicht geladen werden'
+  ).catch(() => undefined)
 }
 
 export function setCookies(

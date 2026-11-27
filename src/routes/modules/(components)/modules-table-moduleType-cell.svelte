@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ModuleType } from '$lib/types/module'
+  import type { ModuleType } from '$lib/schemas/module-view'
   import { CircleFadingPlus, CircleQuestionMark, CirclePlus } from '@lucide/svelte'
 
   let { moduleType }: { moduleType: ModuleType | undefined } = $props()

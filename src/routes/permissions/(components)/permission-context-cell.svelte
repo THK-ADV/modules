@@ -2,7 +2,7 @@
   import { Badge } from '$lib/components/ui/badge/index.js'
   import * as Tooltip from '$lib/components/ui/tooltip/index.js'
   import { fmtStudyProgram } from '$lib/formats'
-  import type { StudyProgram } from '$lib/types/study-program'
+  import type { StudyProgram } from '$lib/schemas/study-program'
 
   let { context, studyPrograms }: { context: string[]; studyPrograms: Map<string, StudyProgram> } =
     $props()

@@ -1,9 +1,5 @@
 import type { ModuleForm } from '$lib/schemas/module'
-
-export interface ModuleDraftKeys {
-  keysToBeReviewed: { id: string }[]
-  modifiedKeys: { id: string }[]
-}
+import type { ModuleDraftKeys } from '$lib/schemas/module-draft'
 
 // Utility type to get all possible paths from a nested object type
 type Paths<T> = T extends object

@@ -1,10 +1,17 @@
+<script lang="ts" module>
+  export interface FilterData {
+    label: string
+    id: string
+    badge: string
+  }
+</script>
+
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge'
   import { buttonVariants } from '$lib/components/ui/button'
   import * as Command from '$lib/components/ui/command'
   import * as Popover from '$lib/components/ui/popover'
   import { Separator } from '$lib/components/ui/separator'
-  import type { FilterData } from '$lib/types/filter-data'
   import { cn } from '$lib/utils.js'
   import { Check, CirclePlus } from '@lucide/svelte'
 

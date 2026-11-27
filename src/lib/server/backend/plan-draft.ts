@@ -2,7 +2,8 @@ import type { CalendarEvent, ScheduleEventProps } from '$lib/calendar'
 import {
   createPlanDraftInputSchema,
   planDraftResponseSchema,
-  planDraftWithSemesterResponseSchema
+  planDraftWithSemesterResponseSchema,
+  type PlanDraft
 } from '$lib/schemas/plan-draft'
 import {
   createDraftScheduleEntriesInputSchema,
@@ -12,10 +13,11 @@ import {
   nonEmptyScheduleEntryListResponseSchema,
   scheduleEntryListResponseSchema,
   scheduleSeriesOccurrenceListResponseSchema,
-  updateDraftScheduleEntryInputSchema
+  updateDraftScheduleEntryInputSchema,
+  type ScheduleEntryCreate,
+  type ScheduleEntryEdit,
+  type SeriesOccurrence
 } from '$lib/schemas/schedule'
-import type { PlanDraft, PlanDraftCreate } from '$lib/types/plan-draft'
-import type { ScheduleEntryCreate, ScheduleEntryEdit, SeriesOccurrence } from '$lib/types/schedule'
 import { semesterSchema, type Semester } from '$lib/schemas/semester'
 import { z } from 'zod/v4'
 import { fetchBackend, fetchBackendJson, parseBackendRequestInput } from './http'
@@ -63,7 +65,7 @@ export async function fetchPlanDraft(
 /** Creates a new plan draft */
 export async function createPlanDraft(
   fetch: typeof globalThis.fetch,
-  payload: PlanDraftCreate
+  payload: z.infer<typeof createPlanDraftInputSchema>
 ): Promise<void> {
   const parsedPayload = parseBackendRequestInput(
     createPlanDraftInputSchema,
